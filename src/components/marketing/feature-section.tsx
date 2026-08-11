@@ -4,8 +4,8 @@ import { FEATURES } from "@/lib/data/features";
 
 export function FeatureSection() {
   return (
-    <section id="fonctionnalites" className="py-24 sm:py-28">
-      <Container className="flex flex-col gap-12">
+    <section id="fonctionnalites" className="py-14 sm:py-16">
+      <Container className="flex flex-col gap-10">
         <SectionHeading
           eyebrow="Fonctionnalités"
           title="Tout ce dont vous avez besoin pour prendre l'avantage"

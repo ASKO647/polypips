@@ -13,7 +13,7 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-surface/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 backdrop-blur-md">
       <div className="mx-auto flex h-18 w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
         <Logo />
 

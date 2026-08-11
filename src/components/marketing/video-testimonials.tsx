@@ -18,7 +18,7 @@ export function VideoTestimonials() {
   };
 
   return (
-    <section className="py-24 sm:py-28">
+    <section className="py-14 sm:py-16">
       <Container className="flex flex-col gap-10">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <SectionHeading

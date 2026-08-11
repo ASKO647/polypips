@@ -5,7 +5,7 @@ import { FOOTER_COLUMNS, SOCIAL_LINKS } from "@/lib/data/nav";
 
 export function Footer() {
   return (
-    <footer className="bg-surface">
+    <footer className="border-t border-black/[0.06] bg-surface">
       <Container className="grid grid-cols-2 gap-10 py-16 sm:grid-cols-3 lg:grid-cols-6 lg:gap-8">
         <div className="col-span-2 flex flex-col gap-4 sm:col-span-3 lg:col-span-2">
           <Logo />
@@ -46,7 +46,7 @@ export function Footer() {
         ))}
       </Container>
 
-      <div className="border-t border-border py-6">
+      <div className="border-t border-black/[0.06] py-6">
         <Container>
           <p className="text-center text-xs text-body-soft">
             © {new Date().getFullYear()} Polypips. Tous droits réservés.

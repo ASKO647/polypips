@@ -4,8 +4,8 @@ import { HOW_IT_WORKS_STEPS } from "@/lib/data/how-it-works";
 
 export function HowItWorks() {
   return (
-    <section id="comment-ca-marche" className="py-24 sm:py-28">
-      <Container className="flex flex-col gap-16">
+    <section id="comment-ca-marche" className="py-14 sm:py-16">
+      <Container className="flex flex-col gap-12">
         <SectionHeading
           eyebrow="Processus"
           title="Comment ça marche ?"

@@ -16,7 +16,7 @@ export function Hero() {
     <section className="relative isolate overflow-hidden">
       <HeroBackground />
 
-      <div className="relative mx-auto flex w-full max-w-[860px] flex-col items-center px-6 pt-16 pb-20 text-center sm:pt-20 sm:pb-24 lg:pt-24 lg:pb-28">
+      <div className="relative mx-auto flex w-full max-w-[860px] flex-col items-center px-6 pt-16 pb-10 text-center sm:pt-20 sm:pb-12 lg:pt-20 lg:pb-14">
         <SocialProofRow align="center" className="animate-fade-up" />
 
         <h1

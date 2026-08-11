@@ -151,7 +151,7 @@ function DemoPreview() {
 
 export function ProductDemo() {
   return (
-    <section id="demonstration" className="py-24 sm:py-28">
+    <section id="demonstration" className="py-14 sm:py-16">
       <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col gap-6">
           <Eyebrow>Voir Polypips en action</Eyebrow>
