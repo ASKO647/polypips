@@ -4,31 +4,16 @@ import { cn } from "@/lib/utils";
 export function CheckItem({
   children,
   className,
-  tone = "default",
 }: {
   children: React.ReactNode;
   className?: string;
-  tone?: "default" | "muted";
 }) {
   return (
     <li className={cn("flex items-center gap-2.5 text-sm", className)}>
-      <span
-        className={cn(
-          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full",
-          tone === "muted" ? "bg-white/15" : "bg-brand-500/15"
-        )}
-      >
-        <Check
-          className={cn(
-            "h-3 w-3",
-            tone === "muted" ? "text-white" : "text-brand-600"
-          )}
-          strokeWidth={3}
-        />
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-500/15">
+        <Check className="h-3 w-3 text-brand-600" strokeWidth={3} />
       </span>
-      <span className={tone === "muted" ? "text-white/90" : "text-body"}>
-        {children}
-      </span>
+      <span className="text-body">{children}</span>
     </li>
   );
 }

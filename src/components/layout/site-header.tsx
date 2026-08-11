@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
@@ -18,13 +19,13 @@ export function SiteHeader() {
 
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV_LINKS.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="text-sm font-medium text-body transition-colors hover:text-ink"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -51,14 +52,14 @@ export function SiteHeader() {
         <div className="border-t border-border bg-surface px-6 py-6 lg:hidden">
           <nav className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-3 text-[15px] font-medium text-ink transition-colors hover:bg-brand-50"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <div className="mt-5 flex items-center gap-3">

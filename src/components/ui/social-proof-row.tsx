@@ -53,7 +53,7 @@ export function SocialProofRow({
             {Array.from({ length: 5 }).map((_, i) => (
               <Star
                 key={i}
-                className="h-3.5 w-3.5 fill-brand-500 text-brand-500"
+                className="h-3.5 w-3.5 fill-[#00b67a] text-[#00b67a]"
               />
             ))}
           </div>

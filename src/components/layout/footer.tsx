@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { Container } from "@/components/ui/container";
 import { FOOTER_COLUMNS, SOCIAL_LINKS } from "@/lib/data/nav";
@@ -32,12 +33,12 @@ export function Footer() {
             <ul className="flex flex-col gap-2.5">
               {col.links.map((link) => (
                 <li key={link.label}>
-                  <a
+                  <Link
                     href={link.href}
                     className="text-sm text-body transition-colors hover:text-brand-600"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

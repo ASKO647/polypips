@@ -1,7 +1,7 @@
 export const NAV_LINKS = [
   { label: "Fonctionnalités", href: "#fonctionnalites" },
   { label: "Tarifs", href: "#tarifs" },
-  { label: "À propos", href: "#a-propos" },
+  { label: "À propos", href: "/about" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -17,32 +17,32 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
       { label: "Fonctionnalités", href: "#fonctionnalites" },
       { label: "Tarifs", href: "#tarifs" },
       { label: "Comment ça marche", href: "#comment-ca-marche" },
-      { label: "Mises à jour", href: "#" },
+      { label: "Mises à jour", href: "/changelog" },
     ],
   },
   {
     title: "Ressources",
     links: [
-      { label: "Blog", href: "#" },
-      { label: "Guides", href: "#" },
-      { label: "API", href: "#" },
-      { label: "Support", href: "#" },
+      { label: "Blog", href: "/blog" },
+      { label: "Guides", href: "/guides" },
+      { label: "API", href: "/developers" },
+      { label: "Support", href: "/support" },
     ],
   },
   {
     title: "Légal",
     links: [
-      { label: "Conditions d'utilisation", href: "#" },
-      { label: "Politique de confidentialité", href: "#" },
-      { label: "Mentions légales", href: "#" },
+      { label: "Conditions d'utilisation", href: "/terms" },
+      { label: "Politique de confidentialité", href: "/privacy" },
+      { label: "Mentions légales", href: "/legal" },
     ],
   },
   {
     title: "Entreprise",
     links: [
-      { label: "À propos", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Partenaires", href: "#" },
+      { label: "À propos", href: "/about" },
+      { label: "Contact", href: "/contact" },
+      { label: "Partenaires", href: "/partners" },
     ],
   },
 ];

@@ -50,7 +50,7 @@ export function Hero() {
           className="mt-9 flex animate-fade-up flex-col items-center gap-3 sm:flex-row"
           style={{ animationDelay: "220ms" }}
         >
-          <Button href="/signup" size="lg">
+          <Button href="#tarifs" size="lg">
             Débutez pour 0,99&nbsp;€ <span aria-hidden>→</span>
           </Button>
           <Button href="#demonstration" variant="outline" size="lg">

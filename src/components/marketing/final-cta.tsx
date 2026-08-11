@@ -12,16 +12,15 @@ export function FinalCTA() {
   return (
     <section className="py-20 sm:py-24">
       <Container>
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-ink-solid px-6 py-16 text-center sm:px-12 sm:py-20">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-60"
-            style={{
-              background:
-                "radial-gradient(ellipse at 50% 0%, rgba(239,42,61,0.35), transparent 60%)",
-            }}
-          />
+        <div
+          className="relative overflow-hidden rounded-[2.5rem] border border-brand-100 px-6 py-16 text-center sm:px-12 sm:py-20"
+          style={{
+            background:
+              "radial-gradient(ellipse at 50% 0%, var(--color-brand-100) 0%, var(--color-surface-rose) 45%, var(--color-surface) 85%)",
+          }}
+        >
           <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-7">
-            <h2 className="text-balance font-display text-3xl font-semibold leading-[1.15] tracking-tight text-white sm:text-4xl lg:text-5xl">
+            <h2 className="text-balance font-display text-3xl font-semibold leading-[1.15] tracking-tight text-ink sm:text-4xl lg:text-5xl">
               Prêt à prendre l&apos;avantage
               <br />
               sur les marchés&nbsp;?
@@ -29,9 +28,7 @@ export function FinalCTA() {
 
             <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
               {ARGUMENTS.map((arg) => (
-                <CheckItem key={arg} tone="muted">
-                  {arg}
-                </CheckItem>
+                <CheckItem key={arg}>{arg}</CheckItem>
               ))}
             </ul>
 

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   Maximize2,
   Pause,
@@ -39,6 +42,8 @@ function MiniStat({ label, value, tone = "default" }: { label: string; value: st
 }
 
 function DemoPreview() {
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
   return (
     <div className="relative aspect-auto min-h-[22rem] w-full overflow-hidden rounded-3xl bg-[#160b0c] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.45)] ring-1 ring-white/10 sm:aspect-video sm:min-h-0">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(239,42,61,0.18),transparent_55%)]" />
@@ -126,10 +131,20 @@ function DemoPreview() {
       <button
         type="button"
         aria-label="Lancer la démonstration"
+        onClick={() => {
+          setShowComingSoon(true);
+          window.setTimeout(() => setShowComingSoon(false), 2600);
+        }}
         className="group absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_18px_40px_-12px_rgba(239,42,61,0.65)] transition-transform duration-200 hover:scale-105"
       >
         <Play className="ml-1 h-6 w-6 fill-current" />
       </button>
+
+      {showComingSoon && (
+        <div className="absolute left-1/2 top-1/2 mt-14 -translate-x-1/2 translate-y-6 animate-fade-up rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink shadow-lg">
+          Vidéo bientôt disponible
+        </div>
+      )}
     </div>
   );
 }

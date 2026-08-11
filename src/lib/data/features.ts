@@ -13,8 +13,6 @@ export type Feature = {
   icon: LucideIcon;
   title: string;
   description: string;
-  metric?: { label: string; value: string };
-  size: "lg" | "md";
 };
 
 export const FEATURES: Feature[] = [
@@ -23,49 +21,41 @@ export const FEATURES: Feature[] = [
     icon: Brain,
     title: "Analyse IA profonde",
     description:
-      "Question, règles de résolution, données de marché et sources externes : l'IA décortique chaque marché et explique sa décision, YES ou NO.",
-    metric: { label: "Opportunity Score", value: "87/100" },
-    size: "lg",
+      "L'IA analyse chaque marché en profondeur et vous dit quoi parier et pourquoi.",
   },
   {
     id: "smart-money",
     icon: Radar,
     title: "Suivi Smart Money",
     description:
-      "Repérez les portefeuilles qui performent et suivez leurs mouvements en temps réel.",
-    size: "md",
+      "Suivez en temps réel les achats des meilleurs portefeuilles de Polymarket.",
   },
   {
     id: "copy-trading",
     icon: Repeat2,
     title: "Copy Trading",
     description:
-      "Définissez vos règles de risque et laissez une stratégie s'exécuter pour vous.",
-    size: "md",
+      "Laissez notre IA parier pour vous, automatiquement, sur les meilleurs marchés.",
   },
   {
     id: "ai-selected",
     icon: Sparkles,
-    title: "Paris sélectionnés par l'IA",
+    title: "Paris sélectionnés",
     description:
-      "Chaque jour, une sélection de marchés à fort potentiel, triés par edge et confiance.",
-    metric: { label: "Edge moyen", value: "+14,2%" },
-    size: "md",
+      "Découvrez chaque jour les meilleurs paris sélectionnés par notre IA.",
   },
   {
     id: "ai-coach",
     icon: MessageCircleHeart,
     title: "Coach IA personnel",
     description:
-      "Posez vos questions, comparez des marchés, comprenez chaque analyse en détail.",
-    size: "md",
+      "Posez toutes vos questions et obtenez des réponses claires de notre IA.",
   },
   {
     id: "stats",
     icon: BarChart3,
     title: "Statistiques avancées",
     description:
-      "Précision historique, edge moyen, performance par catégorie : suivez votre progression.",
-    size: "lg",
+      "Suivez vos performances, vos gains et toutes vos statistiques clés.",
   },
 ];
