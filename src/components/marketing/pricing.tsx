@@ -32,7 +32,7 @@ export function Pricing() {
               )}
             >
               {plan.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ink px-3.5 py-1 text-xs font-bold text-white shadow-md">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ink-solid px-3.5 py-1 text-xs font-bold text-white shadow-md">
                   {plan.badge}
                 </span>
               )}

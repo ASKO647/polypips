@@ -3,10 +3,16 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  color-scheme: light;
+
   --color-surface: #ffffff;
   --color-surface-muted: #fef4f4;
   --color-surface-rose: #fff0f1;
   --color-ink: #170b0d;
+  /* Fixed, theme-independent near-black. Use for decorative "always dark"
+     surfaces (banner cards, final CTA) that must not flip in dark mode —
+     unlike --color-ink, which is a semantic foreground color and inverts. */
+  --color-ink-solid: #170b0d;
   --color-body: #5b5257;
   --color-body-soft: #8a8085;
   --color-border: #f0e3e4;
@@ -26,6 +32,8 @@
 }
 
 .dark {
+  color-scheme: dark;
+
   --color-surface: #120a0b;
   --color-surface-muted: #1a1011;
   --color-surface-rose: #1d1113;
@@ -56,6 +64,7 @@
   --color-surface-muted: var(--color-surface-muted);
   --color-surface-rose: var(--color-surface-rose);
   --color-ink: var(--color-ink);
+  --color-ink-solid: var(--color-ink-solid);
   --color-body: var(--color-body);
   --color-body-soft: var(--color-body-soft);
   --color-border: var(--color-border);

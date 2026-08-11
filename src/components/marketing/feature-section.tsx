@@ -45,7 +45,7 @@ export function FeatureSection() {
             </div>
             {big.metric && (
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <span className="rounded-full bg-ink px-3.5 py-1.5 text-xs font-bold text-white">
+                <span className="rounded-full bg-ink-solid px-3.5 py-1.5 text-xs font-bold text-white">
                   YES
                 </span>
                 <MetricChip label="Probabilité IA" value="68%" />
@@ -94,7 +94,7 @@ export function FeatureSection() {
           ))}
 
           {banner && (
-            <article className="flex flex-col items-start gap-6 rounded-3xl border border-border bg-ink p-8 sm:col-span-2 lg:col-span-3 lg:flex-row lg:items-center lg:justify-between">
+            <article className="flex flex-col items-start gap-6 rounded-3xl border border-border bg-ink-solid p-8 sm:col-span-2 lg:col-span-3 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-start gap-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-brand-400">
                   <banner.icon className="h-5 w-5" strokeWidth={2} />
