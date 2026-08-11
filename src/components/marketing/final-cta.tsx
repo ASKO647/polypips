@@ -10,10 +10,10 @@ const ARGUMENTS = [
 
 export function FinalCTA() {
   return (
-    <section className="py-12 sm:py-16">
+    <section className="py-8 sm:py-10">
       <Container>
         <div
-          className="relative overflow-hidden rounded-[2.5rem] border border-brand-100 px-6 py-12 text-center sm:px-12 sm:py-14"
+          className="relative overflow-hidden rounded-[2.5rem] border border-brand-100 px-6 py-10 text-center sm:px-12 sm:py-12"
           style={{
             background:
               "radial-gradient(ellipse at 50% 0%, var(--color-brand-100) 0%, var(--color-surface-rose) 45%, var(--color-surface) 85%)",

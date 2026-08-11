@@ -18,8 +18,8 @@ export function VideoTestimonials() {
   };
 
   return (
-    <section className="py-14 sm:py-16">
-      <Container className="flex flex-col gap-10">
+    <section className="py-10 sm:py-12">
+      <Container className="flex flex-col gap-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <SectionHeading
             align="left"
@@ -33,7 +33,7 @@ export function VideoTestimonials() {
               type="button"
               onClick={() => scrollBy(-1)}
               aria-label="Précédent"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink transition-colors hover:border-brand-300 hover:bg-brand-50"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink transition-all duration-150 ease-out hover:scale-105 hover:border-brand-300 hover:bg-brand-50 active:scale-95"
             >
               <ChevronLeft className="h-4.5 w-4.5" />
             </button>
@@ -41,7 +41,7 @@ export function VideoTestimonials() {
               type="button"
               onClick={() => scrollBy(1)}
               aria-label="Suivant"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink transition-colors hover:border-brand-300 hover:bg-brand-50"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink transition-all duration-150 ease-out hover:scale-105 hover:border-brand-300 hover:bg-brand-50 active:scale-95"
             >
               <ChevronRight className="h-4.5 w-4.5" />
             </button>

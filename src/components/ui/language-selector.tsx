@@ -16,13 +16,17 @@ export function LanguageSelector({ className }: { className?: string }) {
 
   useEffect(() => {
     if (!open) return;
-    const onClick = (e: MouseEvent) => {
+    const onClick = (e: MouseEvent | TouchEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("touchstart", onClick);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("touchstart", onClick);
+    };
   }, [open]);
 
   return (
@@ -47,7 +51,7 @@ export function LanguageSelector({ className }: { className?: string }) {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 w-40 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-[0_16px_40px_-12px_rgba(23,11,13,0.2)]"
+          className="absolute left-0 top-[calc(100%+8px)] z-50 w-40 overflow-hidden rounded-xl border border-border bg-surface py-1.5 shadow-[0_16px_40px_-12px_rgba(23,11,13,0.2)]"
         >
           {LANGUAGES.map((option) => (
             <button

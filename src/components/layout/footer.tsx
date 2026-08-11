@@ -6,7 +6,7 @@ import { FOOTER_COLUMNS, SOCIAL_LINKS } from "@/lib/data/nav";
 export function Footer() {
   return (
     <footer className="border-t border-black/[0.06] bg-surface">
-      <Container className="grid grid-cols-2 gap-10 py-16 sm:grid-cols-3 lg:grid-cols-6 lg:gap-8">
+      <Container className="grid grid-cols-2 gap-10 py-12 sm:grid-cols-3 lg:grid-cols-6 lg:gap-8">
         <div className="col-span-2 flex flex-col gap-4 sm:col-span-3 lg:col-span-2">
           <Logo />
           <p className="max-w-xs text-sm leading-relaxed text-body">

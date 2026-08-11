@@ -135,7 +135,7 @@ function DemoPreview() {
           setShowComingSoon(true);
           window.setTimeout(() => setShowComingSoon(false), 2600);
         }}
-        className="group absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_18px_40px_-12px_rgba(239,42,61,0.65)] transition-transform duration-200 hover:scale-105"
+        className="group absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_18px_40px_-12px_rgba(239,42,61,0.65)] transition-transform duration-200 ease-out hover:scale-[1.04] active:scale-95"
       >
         <Play className="ml-1 h-6 w-6 fill-current" />
       </button>
@@ -151,7 +151,7 @@ function DemoPreview() {
 
 export function ProductDemo() {
   return (
-    <section id="demonstration" className="py-14 sm:py-16">
+    <section id="demonstration" className="py-10 sm:py-12">
       <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col gap-6">
           <Eyebrow>Voir Polypips en action</Eyebrow>

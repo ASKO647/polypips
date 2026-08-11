@@ -37,7 +37,7 @@ export function AccordionTrigger({
       >
         {children}
         <Plus
-          className="h-4.5 w-4.5 shrink-0 text-brand-500 transition-transform duration-300 group-data-[state=open]:rotate-45"
+          className="h-4.5 w-4.5 shrink-0 text-brand-500 transition-transform duration-200 ease-out group-hover:scale-110 group-data-[state=open]:rotate-45"
           strokeWidth={2.5}
         />
       </AccordionPrimitive.Trigger>

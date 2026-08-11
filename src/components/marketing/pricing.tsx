@@ -12,8 +12,8 @@ export function Pricing() {
   const deadline = getDefaultLaunchDeadline();
 
   return (
-    <section id="tarifs" className="py-14 sm:py-16">
-      <Container className="flex flex-col gap-10">
+    <section id="tarifs" className="py-10 sm:py-12">
+      <Container className="flex flex-col gap-8">
         <SectionHeading
           eyebrow="Tarifs"
           title="Choisissez votre plan"

@@ -10,8 +10,8 @@ import { FAQ_ITEMS } from "@/lib/data/faq";
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-14 sm:py-16">
-      <Container className="flex flex-col gap-10">
+    <section id="faq" className="py-10 sm:py-12">
+      <Container className="flex flex-col gap-8">
         <SectionHeading
           eyebrow="FAQ"
           title="Questions fréquentes"

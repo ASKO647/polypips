@@ -49,7 +49,7 @@ export function SiteHeader() {
       </div>
 
       {open && (
-        <div className="border-t border-border bg-surface px-6 py-6 lg:hidden">
+        <div className="overflow-x-hidden border-t border-black/[0.07] bg-surface px-6 py-6 lg:hidden">
           <nav className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => (
               <Link
