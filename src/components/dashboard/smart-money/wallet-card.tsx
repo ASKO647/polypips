@@ -1,0 +1,92 @@
+"use client";
+
+import { ArrowRight, Check, Plus } from "lucide-react";
+import { Button, ButtonIcon } from "@/components/ui/button";
+import type { Wallet } from "@/lib/data/smart-money";
+import { cn, formatEUR } from "@/lib/utils";
+
+export function WalletCard({
+  wallet,
+  isFollowed,
+  onToggleFollow,
+  onViewDetail,
+}: {
+  wallet: Wallet;
+  isFollowed: boolean;
+  onToggleFollow: () => void;
+  onViewDetail: () => void;
+}) {
+  const positive = wallet.changePercent >= 0;
+
+  return (
+    <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="font-display text-base font-bold text-white">
+            {wallet.handle}
+          </p>
+          <p className="mt-1 text-xl font-bold text-white">
+            {formatEUR(wallet.totalValue)}
+          </p>
+        </div>
+        <span
+          className={cn(
+            "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
+            positive
+              ? "bg-emerald-500/15 text-emerald-400"
+              : "bg-rose-500/15 text-rose-400"
+          )}
+        >
+          {positive ? "+" : ""}
+          {wallet.changePercent}%
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <p className="text-white/35">Positions actives</p>
+          <p className="mt-0.5 font-semibold text-white">
+            {wallet.activePositionsCount}
+          </p>
+        </div>
+        <div>
+          <p className="text-white/35">Marchés suivis</p>
+          <p className="mt-0.5 font-semibold text-white">
+            {wallet.marketsTrackedCount}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <button
+          type="button"
+          onClick={onToggleFollow}
+          className={cn(
+            "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors duration-150",
+            isFollowed
+              ? "border-brand-400 bg-brand-500/15 text-brand-400"
+              : "border-white/15 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white"
+          )}
+        >
+          {isFollowed ? (
+            <Check className="h-3.5 w-3.5" />
+          ) : (
+            <Plus className="h-3.5 w-3.5" />
+          )}
+          {isFollowed ? "Ne plus suivre" : "Suivre ce wallet"}
+        </button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onViewDetail}
+          className="flex-1"
+        >
+          Voir le détail
+          <ButtonIcon variant="outline">
+            <ArrowRight className="h-4 w-4" />
+          </ButtonIcon>
+        </Button>
+      </div>
+    </div>
+  );
+}
