@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// /login's card puts the email/password fields close enough to the top
-// that the fixed mobile chat launcher sits on top of them - hide it there
-// rather than chase a magic-number offset that only ever fixes one page.
-const HIDDEN_ON = ["/login"];
+// These auth cards put form fields close enough to the top that the fixed
+// mobile chat launcher sits on top of them - hide it there rather than
+// chase a magic-number offset that only ever fixes one page.
+const HIDDEN_ON = ["/login", "/forgot-password"];
 
 export function ChatButton() {
   const [open, setOpen] = useState(false);
