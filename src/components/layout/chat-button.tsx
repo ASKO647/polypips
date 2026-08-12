@@ -1,11 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// /login's card puts the email/password fields close enough to the top
+// that the fixed mobile chat launcher sits on top of them - hide it there
+// rather than chase a magic-number offset that only ever fixes one page.
+const HIDDEN_ON = ["/login"];
+
 export function ChatButton() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+
+  if (HIDDEN_ON.includes(pathname)) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">

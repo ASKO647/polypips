@@ -16,7 +16,7 @@ export function AuthHeader() {
           <p className="text-sm text-body">
             <span className="hidden sm:inline">Déjà un compte&nbsp;? </span>
             <Link
-              href="#"
+              href="/login"
               className="font-semibold text-brand-600 hover:text-brand-700"
             >
               Se connecter

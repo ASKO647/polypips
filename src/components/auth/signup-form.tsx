@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { GoogleIcon } from "@/components/auth/google-icon";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { getPasswordStrength } from "@/lib/password-strength";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -20,36 +22,91 @@ const OAUTH_ERROR_MESSAGE =
   "La connexion avec Google a échoué. Merci de réessayer.";
 
 export function SignupForm({ oauthError }: { oauthError?: string }) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<React.ReactNode>(
     oauthError ? OAUTH_ERROR_MESSAGE : null
   );
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const strength = useMemo(() => getPasswordStrength(password), [password]);
   const canSubmit = email.trim().length > 3 && password.length > 0 && agreed;
 
-  const handleGoogleSignIn = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit || submitting) return;
+
     setError(null);
-    setGoogleLoading(true);
+    setSuccessMessage(null);
+    setSubmitting(true);
 
     const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
-    if (signInError) {
-      setError(OAUTH_ERROR_MESSAGE);
-      setGoogleLoading(false);
+    if (signUpError) {
+      if (
+        signUpError.code === "user_already_exists" ||
+        signUpError.code === "email_exists"
+      ) {
+        setError(
+          <>
+            Un compte existe déjà avec cet email.{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-brand-600 hover:text-brand-700"
+            >
+              Connectez-vous plutôt.
+            </Link>
+          </>
+        );
+      } else if (signUpError.code === "weak_password") {
+        setError(`Mot de passe trop faible : ${signUpError.message}`);
+      } else {
+        setError("Une erreur est survenue. Merci de réessayer.");
+      }
+      setSubmitting(false);
+      return;
     }
-    // On success the browser is redirected to Google, so no further
-    // state update happens here.
+
+    // Supabase silently returns a user with no identities instead of an
+    // error when the email is already registered (anti-enumeration).
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      setError(
+        <>
+          Un compte existe déjà avec cet email.{" "}
+          <Link
+            href="/login"
+            className="font-semibold text-brand-600 hover:text-brand-700"
+          >
+            Connectez-vous plutôt.
+          </Link>
+        </>
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    if (data.session) {
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
+
+    // No session means email confirmation is required before sign-in.
+    setSuccessMessage(
+      "Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter."
+    );
+    setSubmitting(false);
   };
 
   return (
@@ -68,19 +125,17 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={googleLoading}
-        className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-border-strong bg-surface text-sm font-semibold text-ink transition-colors hover:bg-ink/[0.03] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {googleLoading ? (
-          <Loader2 className="h-4.5 w-4.5 animate-spin" />
-        ) : (
-          <GoogleIcon className="h-4.5 w-4.5" />
-        )}
-        {googleLoading ? "Redirection vers Google..." : "Continuer avec Google"}
-      </button>
+      {successMessage && (
+        <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{successMessage}</span>
+        </div>
+      )}
+
+      <GoogleAuthButton
+        onError={setError}
+        errorRedirectPath="/signup"
+      />
 
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-border" />
@@ -90,12 +145,7 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <form
-        className="flex flex-col gap-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-        }}
-      >
+      <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-2">
           <label
             htmlFor="email"
@@ -195,8 +245,17 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
           </span>
         </label>
 
-        <Button type="submit" size="lg" disabled={!canSubmit} className="w-full">
-          Créer mon compte
+        <Button
+          type="submit"
+          size="lg"
+          disabled={!canSubmit || submitting}
+          className="w-full"
+        >
+          {submitting ? (
+            <Loader2 className="h-4.5 w-4.5 animate-spin" />
+          ) : (
+            "Créer mon compte"
+          )}
         </Button>
 
         <p className="text-center text-xs leading-relaxed text-body-soft">
