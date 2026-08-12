@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { GraduationCap } from "lucide-react";
-import { PlaceholderSection } from "@/components/dashboard/placeholder-section";
+import { CoachFlow } from "@/components/dashboard/coach/coach-flow";
 
 export const metadata: Metadata = {
   title: "Coach IA — Polypips",
 };
 
 export default function CoachPage() {
-  return (
-    <PlaceholderSection
-      icon={GraduationCap}
-      title="Coach IA"
-      description="Posez vos questions à votre coach IA personnel et obtenez des explications sur chaque analyse de marché."
-    />
-  );
+  return <CoachFlow />;
 }
