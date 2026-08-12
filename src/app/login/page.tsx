@@ -27,7 +27,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
 
   return (
     <>
-      <AuthHeader />
+      <AuthHeader variant="login" />
 
       <main className="relative flex-1">
         <AuthBackground />

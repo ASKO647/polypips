@@ -11,7 +11,7 @@ export function DashboardSidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-[260px] shrink-0 flex-col border-r border-white/10 bg-[#160b0c] lg:flex">
+    <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#160b0c] lg:flex">
       <Link
         href="/dashboard"
         className="flex h-[72px] items-center gap-2 px-6"

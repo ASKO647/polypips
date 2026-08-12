@@ -30,7 +30,13 @@ export function WalletChart({
   const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
 
   return (
-    <div className={cn(positive ? "text-emerald-400" : "text-rose-400", className)}>
+    <div
+      className={cn(
+        "h-full w-full",
+        positive ? "text-emerald-400" : "text-rose-400",
+        className
+      )}
+    >
       <svg
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"

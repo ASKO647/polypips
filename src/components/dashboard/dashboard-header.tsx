@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Bell, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 
 export function DashboardHeader({
   menuOpen,
@@ -35,14 +36,7 @@ export function DashboardHeader({
           Offre découverte
         </span>
 
-        <button
-          type="button"
-          aria-label="Notifications"
-          className="relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 hover:text-white active:scale-95"
-        >
-          <Bell className="h-[18px] w-[18px]" strokeWidth={2} />
-          <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-brand-500" />
-        </button>
+        <NotificationsBell />
 
         <button
           type="button"

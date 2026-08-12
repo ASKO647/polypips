@@ -30,6 +30,12 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageSelector />
+          <Link
+            href="/login"
+            className="text-sm font-medium text-body transition-colors hover:text-ink"
+          >
+            Se connecter
+          </Link>
           <Button href="/signup" size="md" className="h-[52px]">
             Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
@@ -63,7 +69,14 @@ export function SiteHeader() {
           <div className="mt-5 flex items-center gap-3">
             <LanguageSelector />
           </div>
-          <Button href="/signup" size="lg" className="mt-5 w-full">
+          <Link
+            href="/login"
+            onClick={() => setOpen(false)}
+            className="mt-5 flex items-center justify-center rounded-lg px-3 py-3 text-[15px] font-medium text-ink transition-colors hover:bg-brand-50"
+          >
+            Se connecter
+          </Link>
+          <Button href="/signup" size="lg" className="mt-2 w-full">
             Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>

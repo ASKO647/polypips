@@ -10,13 +10,18 @@ import { CoachSidebar } from "@/components/dashboard/coach/coach-sidebar";
 import { TypingIndicator } from "@/components/dashboard/coach/typing-indicator";
 import {
   GENERIC_FALLBACK_RESPONSE,
-  MOCK_CONVERSATIONS,
   WELCOME_MESSAGE,
+  type Conversation,
   type Message,
   type QuickQuestion,
 } from "@/lib/data/coach";
 
-export function CoachFlow() {
+export function CoachFlow({
+  initialConversations,
+}: {
+  initialConversations: Conversation[];
+}) {
+  const [conversations] = useState<Conversation[]>(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
@@ -34,7 +39,7 @@ export function CoachFlow() {
   }, [messages, isTyping]);
 
   const activeConversation =
-    MOCK_CONVERSATIONS.find((c) => c.id === activeConversationId) ?? null;
+    conversations.find((c) => c.id === activeConversationId) ?? null;
 
   const handleNewConversation = () => {
     setActiveConversationId(null);
@@ -43,7 +48,7 @@ export function CoachFlow() {
   };
 
   const handleSelectConversation = (id: string) => {
-    const conversation = MOCK_CONVERSATIONS.find((c) => c.id === id);
+    const conversation = conversations.find((c) => c.id === id);
     if (!conversation) return;
     setActiveConversationId(id);
     setMessages(conversation.messages);
@@ -87,7 +92,7 @@ export function CoachFlow() {
   return (
     <div className="flex h-[calc(100vh-180px)] min-h-[520px] gap-4">
       <CoachSidebar
-        conversations={MOCK_CONVERSATIONS}
+        conversations={conversations}
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}
@@ -147,7 +152,7 @@ export function CoachFlow() {
       <CoachMobileHistory
         open={historyOpen}
         onClose={() => setHistoryOpen(false)}
-        conversations={MOCK_CONVERSATIONS}
+        conversations={conversations}
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
         onNewConversation={handleNewConversation}

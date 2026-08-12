@@ -59,24 +59,30 @@ export function CoachMobileHistory({
         </div>
 
         <div className="mt-3 flex flex-1 flex-col gap-1 overflow-y-auto px-4 pb-4">
-          {conversations.map((conv) => (
-            <button
-              key={conv.id}
-              type="button"
-              onClick={() => {
-                onSelectConversation(conv.id);
-                onClose();
-              }}
-              className={cn(
-                "truncate rounded-xl px-3 py-2.5 text-left text-sm transition-colors duration-150",
-                activeConversationId === conv.id
-                  ? "bg-brand-500/15 text-white"
-                  : "text-white/55 hover:bg-white/[0.06] hover:text-white"
-              )}
-            >
-              {conv.title}
-            </button>
-          ))}
+          {conversations.length === 0 ? (
+            <p className="px-3 py-4 text-center text-xs leading-relaxed text-white/35">
+              Aucune conversation pour le moment.
+            </p>
+          ) : (
+            conversations.map((conv) => (
+              <button
+                key={conv.id}
+                type="button"
+                onClick={() => {
+                  onSelectConversation(conv.id);
+                  onClose();
+                }}
+                className={cn(
+                  "truncate rounded-xl px-3 py-2.5 text-left text-sm transition-colors duration-150",
+                  activeConversationId === conv.id
+                    ? "bg-brand-500/15 text-white"
+                    : "text-white/55 hover:bg-white/[0.06] hover:text-white"
+                )}
+              >
+                {conv.title}
+              </button>
+            ))
+          )}
         </div>
       </div>
     </div>

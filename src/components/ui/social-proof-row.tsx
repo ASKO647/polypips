@@ -23,7 +23,12 @@ export function SocialProofRow({
         className
       )}
     >
-      <div className="flex flex-col gap-0.5 text-left">
+      <div
+        className={cn(
+          "flex flex-col gap-0.5",
+          align === "center" ? "items-center text-center" : "items-start text-left"
+        )}
+      >
         <p className="text-sm font-semibold text-ink">
           +{userCount}{" "}
           <span className="font-normal text-body">

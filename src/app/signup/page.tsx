@@ -38,7 +38,7 @@ export default async function SignupPage(props: PageProps<"/signup">) {
 
         <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 items-center gap-16 px-6 py-16 lg:grid-cols-2 lg:gap-12 lg:py-24 lg:px-8">
           <div className="flex flex-col gap-8">
-            <SocialProofRow />
+            <SocialProofRow align="center" />
 
             <div className="flex flex-col gap-4">
               <h1 className="text-balance font-display text-4xl font-bold leading-[1.12] tracking-tight text-ink sm:text-[2.75rem]">

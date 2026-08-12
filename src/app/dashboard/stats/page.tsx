@@ -5,6 +5,8 @@ import { AnalysisHistoryList } from "@/components/dashboard/stats/analysis-histo
 import { CategoryTable } from "@/components/dashboard/stats/category-table";
 import { DecisionSplit } from "@/components/dashboard/stats/decision-split";
 import { StatCard } from "@/components/dashboard/stats/stat-card";
+import { StatsEmptyState } from "@/components/dashboard/stats/stats-empty-state";
+import { IS_DEMO_MODE } from "@/lib/config/demo-mode";
 import {
   CATEGORY_STATS,
   DECISION_SPLIT,
@@ -28,46 +30,52 @@ export default function StatsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatCard
-          icon={BarChart3}
-          value={String(KEY_STATS.totalAnalyses)}
-          label="Analyses réalisées"
-        />
-        <StatCard
-          icon={Target}
-          value={`${KEY_STATS.precision}%`}
-          label="Précision historique"
-        />
-        <StatCard
-          icon={TrendingUp}
-          value={`+${KEY_STATS.averageEdge}%`}
-          label="Edge moyen"
-        />
-        <StatCard
-          icon={Gauge}
-          value={`${KEY_STATS.averageOpportunityScore}/100`}
-          label="Score moyen d'opportunité"
-        />
-      </div>
+      {IS_DEMO_MODE ? (
+        <>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <StatCard
+              icon={BarChart3}
+              value={String(KEY_STATS.totalAnalyses)}
+              label="Analyses réalisées"
+            />
+            <StatCard
+              icon={Target}
+              value={`${KEY_STATS.precision}%`}
+              label="Précision historique"
+            />
+            <StatCard
+              icon={TrendingUp}
+              value={`+${KEY_STATS.averageEdge}%`}
+              label="Edge moyen"
+            />
+            <StatCard
+              icon={Gauge}
+              value={`${KEY_STATS.averageOpportunityScore}/100`}
+              label="Score moyen d'opportunité"
+            />
+          </div>
 
-      <AccuracyEvolutionChart />
+          <AccuracyEvolutionChart />
 
-      <DecisionSplit split={DECISION_SPLIT} />
+          <DecisionSplit split={DECISION_SPLIT} />
 
-      <div className="flex flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-          Statistiques par catégorie
-        </p>
-        <CategoryTable rows={CATEGORY_STATS} />
-      </div>
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+              Statistiques par catégorie
+            </p>
+            <CategoryTable rows={CATEGORY_STATS} />
+          </div>
 
-      <div className="flex flex-col gap-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-          Historique des analyses
-        </p>
-        <AnalysisHistoryList items={RESOLVED_ANALYSES} />
-      </div>
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+              Historique des analyses
+            </p>
+            <AnalysisHistoryList items={RESOLVED_ANALYSES} />
+          </div>
+        </>
+      ) : (
+        <StatsEmptyState />
+      )}
     </div>
   );
 }

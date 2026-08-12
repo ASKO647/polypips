@@ -13,8 +13,8 @@ import { FinalCTA } from "@/components/marketing/final-cta";
 export default function Home() {
   return (
     <>
-      <SiteHeader />
       <AnnouncementBar />
+      <SiteHeader />
       <main>
         <Hero />
         <FeatureSection />
