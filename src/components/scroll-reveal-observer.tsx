@@ -9,6 +9,11 @@ import { useEffect } from "react";
  */
 export function ScrollRevealObserver() {
   useEffect(() => {
+    // The .reveal CSS effect only applies at the lg breakpoint (1024px+);
+    // skip setting up the observer entirely below that so mobile hydration
+    // doesn't pay for work with no visual effect.
+    if (window.innerWidth < 1024) return;
+
     const elements = document.querySelectorAll<HTMLElement>(".reveal");
     if (elements.length === 0) return;
 

@@ -187,16 +187,23 @@ body {
   opacity: 0.035;
 }
 
-/* Scroll-reveal: sections fade/rise into place once, on first intersection. */
-.reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+/* Scroll-reveal: sections fade/rise into place once, on first intersection.
+   Desktop only (lg+) — on phones this depends on IntersectionObserver
+   running after hydration, which under a slower real-device CPU (especially
+   `next dev`'s unminified bundle) can lag noticeably behind the user's
+   scroll, reading as a large blank gap. Mobile just shows content
+   immediately instead of risking that. */
+@media (min-width: 1024px) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .reveal {
