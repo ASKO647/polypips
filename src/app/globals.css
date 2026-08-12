@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 :root {
   color-scheme: light;
 
@@ -38,35 +36,6 @@
   /* Rouge CTA — reserved for primary buttons. */
   --color-cta: #ff2d3d;
   --color-cta-hover: #e52323;
-}
-
-.dark {
-  color-scheme: dark;
-
-  --color-page-bg: #0f0a0a;
-  --color-surface: #171010;
-  --color-surface-muted: #1e1313;
-  --color-surface-rose: #221414;
-  --color-ink: #fafafa;
-  --color-body: #b8b0b0;
-  --color-body-soft: #8f8484;
-  --color-border: #2c1f1f;
-  --color-border-strong: #3a2828;
-
-  --color-brand-50: #3d0808;
-  --color-brand-100: #5c0d0d;
-  --color-brand-200: #7d1212;
-  --color-brand-300: #a31818;
-  --color-brand-400: #c91e1e;
-  --color-brand-500: #f04747;
-  --color-brand-600: #ff6363;
-  --color-brand-700: #ff9d9d;
-  --color-brand-800: #ffc7c7;
-  --color-brand-900: #ffe1e1;
-  --color-brand-950: #fff1f1;
-
-  --color-cta: #ff2d3d;
-  --color-cta-hover: #ff5c68;
 }
 
 @theme inline {

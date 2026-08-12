@@ -1,6 +1,5 @@
 import { Logo } from "@/components/ui/logo";
 import { LanguageSelector } from "@/components/ui/language-selector";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Link from "next/link";
 
 export function AuthHeader() {
@@ -12,7 +11,6 @@ export function AuthHeader() {
         <div className="flex items-center gap-2.5 sm:gap-4">
           <div className="hidden items-center gap-2.5 sm:flex">
             <LanguageSelector />
-            <ThemeToggle />
           </div>
           <span className="hidden h-5 w-px bg-border-strong sm:block" />
           <p className="text-sm text-body">

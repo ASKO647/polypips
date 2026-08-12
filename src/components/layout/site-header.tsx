@@ -6,7 +6,6 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/ui/language-selector";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { NAV_LINKS } from "@/lib/data/nav";
 
 export function SiteHeader() {
@@ -31,7 +30,6 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageSelector />
-          <ThemeToggle />
           <Button href="/signup" size="md" className="h-[52px]">
             Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
@@ -64,7 +62,6 @@ export function SiteHeader() {
           </nav>
           <div className="mt-5 flex items-center gap-3">
             <LanguageSelector />
-            <ThemeToggle />
           </div>
           <Button href="/signup" size="lg" className="mt-5 w-full">
             Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
