@@ -32,9 +32,7 @@ export function AnalyseIaFlow() {
   }
 
   if (state === "result" && result) {
-    return (
-      <AnalysisResult analysis={result} onNewAnalysis={handleNewAnalysis} />
-    );
+    return <AnalysisResult analysis={result} onBack={handleNewAnalysis} />;
   }
 
   return (

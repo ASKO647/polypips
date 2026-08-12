@@ -8,21 +8,18 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import type { ConfidenceLevel, MarketAnalysis } from "@/lib/data/analysis";
+import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
+import type { MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
-
-const CONFIDENCE_LEVEL_INDEX: Record<ConfidenceLevel, number> = {
-  Faible: 1,
-  Moyenne: 2,
-  Élevée: 3,
-};
 
 export function AnalysisResult({
   analysis,
-  onNewAnalysis,
+  onBack,
+  backLabel = "Nouvelle analyse",
 }: {
   analysis: MarketAnalysis;
-  onNewAnalysis: () => void;
+  onBack: () => void;
+  backLabel?: string;
 }) {
   const isYes = analysis.decision === "YES";
   const decisionTone = isYes ? "text-emerald-400" : "text-rose-400";
@@ -115,19 +112,7 @@ export function AnalysisResult({
               </span>
               <span className="font-bold text-white">{analysis.confidence}</span>
             </div>
-            <div className="mt-2.5 flex gap-1.5">
-              {[0, 1, 2].map((i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "h-2 flex-1 rounded-full",
-                    i < CONFIDENCE_LEVEL_INDEX[analysis.confidence]
-                      ? "bg-brand-500"
-                      : "bg-white/10"
-                  )}
-                />
-              ))}
-            </div>
+            <ConfidenceMeter level={analysis.confidence} className="mt-2.5" />
           </div>
         </div>
       </div>
@@ -228,10 +213,10 @@ export function AnalysisResult({
         <Button
           type="button"
           variant="outline"
-          onClick={onNewAnalysis}
+          onClick={onBack}
           className="sm:flex-1"
         >
-          Nouvelle analyse
+          {backLabel}
         </Button>
         <Button href="/dashboard/coach" className="sm:flex-1">
           Poser une question au Coach IA
