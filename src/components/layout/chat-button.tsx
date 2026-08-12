@@ -10,11 +10,19 @@ import { cn } from "@/lib/utils";
 // chase a magic-number offset that only ever fixes one page.
 const HIDDEN_ON = ["/login", "/forgot-password"];
 
+// The dashboard is a separate dark-themed app shell with its own mobile
+// drawer sharing the same z-50 stacking context - the light-themed
+// marketing launcher has no business appearing over it.
+const HIDDEN_ON_PREFIXES = ["/dashboard"];
+
 export function ChatButton() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  if (HIDDEN_ON.includes(pathname)) {
+  if (
+    HIDDEN_ON.includes(pathname) ||
+    HIDDEN_ON_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+  ) {
     return null;
   }
 
