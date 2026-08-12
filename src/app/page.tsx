@@ -3,7 +3,7 @@ import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { Footer } from "@/components/layout/footer";
 import { Hero } from "@/components/marketing/hero";
 import { FeatureSection } from "@/components/marketing/feature-section";
-import { VideoTestimonials } from "@/components/marketing/video-testimonials";
+import { ProofShowcase } from "@/components/marketing/proof-showcase";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { ProductDemo } from "@/components/marketing/product-demo";
 import { Pricing } from "@/components/marketing/pricing";
@@ -18,7 +18,7 @@ export default function Home() {
       <main>
         <Hero />
         <FeatureSection />
-        <VideoTestimonials />
+        <ProofShowcase />
         <HowItWorks />
         <ProductDemo />
         <Pricing />
