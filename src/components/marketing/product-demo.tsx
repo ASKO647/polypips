@@ -10,7 +10,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { CheckItem } from "@/components/ui/check-item";
 
@@ -169,7 +169,9 @@ export function ProductDemo() {
           </ul>
           <div>
             <Button href="#demonstration" size="lg" className="mt-2">
-              <Play className="h-4 w-4 fill-current" />
+              <ButtonIcon>
+                <Play className="h-4 w-4 fill-current" />
+              </ButtonIcon>
               Voir la démo (2:15)
             </Button>
           </div>

@@ -1,7 +1,7 @@
 import { Gift } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { CheckItem } from "@/components/ui/check-item";
 import { Countdown } from "@/components/ui/countdown";
 import { getDefaultLaunchDeadline } from "@/lib/deadline";
@@ -80,6 +80,9 @@ export function Pricing() {
                 className="h-[54px] w-full"
               >
                 {plan.cta}
+                <ButtonIcon variant={plan.highlighted ? "primary" : "outline"}>
+                  →
+                </ButtonIcon>
               </Button>
 
               <ul className="flex flex-col gap-3 border-t border-border pt-6">

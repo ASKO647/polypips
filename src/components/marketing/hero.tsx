@@ -1,5 +1,5 @@
 import { PlayCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { SocialProofRow } from "@/components/ui/social-proof-row";
 import { CheckItem } from "@/components/ui/check-item";
 import { HeroBackground } from "@/components/marketing/hero-background";
@@ -51,10 +51,12 @@ export function Hero() {
           style={{ animationDelay: "220ms" }}
         >
           <Button href="#tarifs" size="lg">
-            Débutez pour 0,99&nbsp;€ <span aria-hidden>→</span>
+            Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
           <Button href="#demonstration" variant="outline" size="lg">
-            <PlayCircle className="h-5 w-5 text-brand-500" strokeWidth={2} />
+            <ButtonIcon variant="outline">
+              <PlayCircle className="h-5 w-5 text-brand-500" strokeWidth={2} />
+            </ButtonIcon>
             Voir la démo
           </Button>
         </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/ui/language-selector";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { NAV_LINKS } from "@/lib/data/nav";
@@ -33,7 +33,7 @@ export function SiteHeader() {
           <LanguageSelector />
           <ThemeToggle />
           <Button href="/signup" size="md" className="h-[52px]">
-            Débutez pour 0,99&nbsp;€ <span aria-hidden>→</span>
+            Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>
 
@@ -67,7 +67,7 @@ export function SiteHeader() {
             <ThemeToggle />
           </div>
           <Button href="/signup" size="lg" className="mt-5 w-full">
-            Débutez pour 0,99&nbsp;€ <span aria-hidden>→</span>
+            Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>
       )}

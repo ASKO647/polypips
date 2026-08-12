@@ -1,5 +1,5 @@
 import { Container } from "@/components/ui/container";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { CheckItem } from "@/components/ui/check-item";
 
 const ARGUMENTS = [
@@ -27,7 +27,7 @@ export function FinalCTA() {
             </ul>
 
             <Button href="/signup" size="lg" className="h-[58px] w-[260px]">
-              Débutez pour 0,99&nbsp;€ <span aria-hidden>→</span>
+              Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
             </Button>
           </div>
         </div>

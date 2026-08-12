@@ -19,6 +19,9 @@
   --color-border: #eaeaea;
   --color-border-strong: #e0e0e0;
 
+  /* Shared premium easing for CTA micro-interactions. */
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+
   /* Rouge principal — icons, accents, text, badges. */
   --color-brand-50: #fff1f1;
   --color-brand-100: #ffe1e1;
@@ -34,7 +37,7 @@
 
   /* Rouge CTA — reserved for primary buttons. */
   --color-cta: #ff2d3d;
-  --color-cta-hover: #e31f2e;
+  --color-cta-hover: #e52323;
 }
 
 .dark {
@@ -136,6 +139,24 @@
       box-shadow: 0 0 0 10px rgba(255, 45, 61, 0);
     }
   }
+  @keyframes cta-sheen {
+    0% {
+      opacity: 0;
+      transform: translateX(-60%) skewX(-18deg);
+    }
+    1% {
+      opacity: 1;
+    }
+    14% {
+      opacity: 1;
+      transform: translateX(200%) skewX(-18deg);
+    }
+    15%,
+    100% {
+      opacity: 0;
+      transform: translateX(220%) skewX(-18deg);
+    }
+  }
 }
 
 @keyframes accordion-down {
@@ -185,6 +206,31 @@ body {
 .bg-grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
   opacity: 0.035;
+}
+
+/* Subtle light sweep across primary CTAs, once every 6s. Purely decorative:
+   pointer-events-none and a narrow low-opacity band so it never interferes
+   with reading the label. */
+.cta-sheen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 45%;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  animation: cta-sheen 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-sheen::before {
+    animation: none;
+    display: none;
+  }
 }
 
 /* Scroll-reveal: sections fade/rise into place once, on first intersection.
