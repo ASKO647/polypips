@@ -9,7 +9,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-brand-500 text-white shadow-[0_1px_0_0_rgba(255,255,255,0.25)_inset,0_10px_24px_-8px_var(--color-brand-500)] hover:scale-[1.02] hover:bg-brand-600 hover:shadow-[0_1px_0_0_rgba(255,255,255,0.25)_inset,0_16px_32px_-8px_var(--color-brand-600)] active:scale-[0.98] active:bg-brand-700",
+          "bg-cta text-white shadow-[0_12px_32px_rgba(229,35,35,0.22)] hover:scale-[1.02] hover:bg-cta-hover hover:shadow-[0_14px_36px_rgba(229,35,35,0.28)] active:scale-[0.98]",
         outline:
           "border border-border-strong bg-surface text-ink hover:scale-[1.015] hover:border-brand-300 hover:bg-brand-50/60 active:scale-[0.985] active:bg-brand-100/60",
         ghost: "text-ink hover:bg-ink/[0.04] active:bg-ink/[0.06]",
@@ -19,7 +19,7 @@ export const buttonVariants = cva(
       size: {
         sm: "h-9 px-4 text-sm",
         md: "h-11 px-5 text-[15px]",
-        lg: "h-[3.25rem] px-7 text-base",
+        lg: "h-14 px-7 text-base",
       },
     },
     defaultVariants: {

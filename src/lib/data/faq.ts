@@ -30,13 +30,8 @@ export const FAQ_ITEMS: FaqItem[] = [
       "La V1 de Polypips est principalement orientée vers les marchés Polymarket. D'autres plateformes de prediction markets seront intégrées progressivement.",
   },
   {
-    question: "Polypips touche-t-il à mon portefeuille ?",
+    question: "Polypips touche-t-il à mon portefeuille ? Comment fonctionne le Copy Trading ?",
     answer:
-      "Non, sauf si vous activez explicitement le Copy Trading et autorisez une stratégie automatisée avec des paramètres de risque que vous définissez vous-même. Vous gardez le contrôle à tout moment.",
-  },
-  {
-    question: "Comment fonctionne le Copy Trading ?",
-    answer:
-      "Vous choisissez une stratégie, puis définissez vos propres paramètres de risque (montant maximum par position, exposition maximale, nombre de positions). Aucun rendement n'est garanti : il s'agit d'une automatisation de vos règles, pas d'une promesse de gain.",
+      "Non, sauf si vous activez explicitement le Copy Trading. Vous choisissez alors une stratégie et définissez vos propres paramètres de risque (montant maximum par position, exposition maximale, nombre de positions) : aucun rendement n'est garanti, il s'agit d'une automatisation de vos règles, pas d'une promesse de gain. Vous gardez le contrôle à tout moment.",
   },
 ];

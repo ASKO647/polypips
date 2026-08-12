@@ -12,13 +12,13 @@ export function VideoTestimonials() {
 
   const scrollBy = (direction: -1 | 1) => {
     scrollerRef.current?.scrollBy({
-      left: direction * 296,
+      left: direction * 240,
       behavior: "smooth",
     });
   };
 
   return (
-    <section className="py-10 sm:py-12">
+    <section className="reveal py-10 sm:py-12">
       <Container className="flex flex-col gap-8">
         <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-end">
           <SectionHeading
@@ -28,12 +28,12 @@ export function VideoTestimonials() {
             description="Découvrez les retours de nos utilisateurs."
             className="max-w-xl"
           />
-          <div className="hidden shrink-0 items-center gap-2 sm:flex">
+          <div className="hidden shrink-0 items-center gap-2.5 sm:flex">
             <button
               type="button"
               onClick={() => scrollBy(-1)}
               aria-label="Précédent"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink transition-all duration-150 ease-out hover:scale-105 hover:border-brand-300 hover:bg-brand-50 active:scale-95"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-[0_8px_20px_-6px_rgba(18,5,7,0.18)] transition-all duration-150 ease-out hover:scale-105 active:scale-95"
             >
               <ChevronLeft className="h-4.5 w-4.5" />
             </button>
@@ -41,7 +41,7 @@ export function VideoTestimonials() {
               type="button"
               onClick={() => scrollBy(1)}
               aria-label="Suivant"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink transition-all duration-150 ease-out hover:scale-105 hover:border-brand-300 hover:bg-brand-50 active:scale-95"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-[0_8px_20px_-6px_rgba(18,5,7,0.18)] transition-all duration-150 ease-out hover:scale-105 active:scale-95"
             >
               <ChevronRight className="h-4.5 w-4.5" />
             </button>
@@ -55,7 +55,7 @@ export function VideoTestimonials() {
           {VIDEO_TESTIMONIALS.map((t) => (
             <article
               key={t.id}
-              className="group relative aspect-[9/16] w-[210px] shrink-0 snap-start overflow-hidden rounded-3xl border border-border shadow-sm sm:w-[240px]"
+              className="group relative h-[392px] w-[220px] shrink-0 snap-start overflow-hidden rounded-[28px] shadow-[0_12px_28px_-14px_rgba(18,5,7,0.3)] transition-transform duration-200 ease-out hover:-translate-y-1"
             >
               <div
                 className={cn(
@@ -63,19 +63,25 @@ export function VideoTestimonials() {
                   t.gradient
                 )}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/20" />
+              <div className="absolute inset-x-0 bottom-0 h-[120px] bg-gradient-to-t from-black/85 to-transparent" />
 
               <button
                 type="button"
                 aria-label={`Lire le témoignage de ${t.handle}`}
-                className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-brand-600 shadow-lg transition-transform duration-200 group-hover:scale-110"
+                className="absolute left-1/2 top-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg transition-transform duration-200 group-hover:scale-110"
               >
-                <Play className="ml-0.5 h-5 w-5 fill-current" />
+                <Play className="ml-0.5 h-6 w-6 fill-brand-500 text-brand-500" />
               </button>
 
+              <span className="absolute right-3.5 top-3.5 rounded-md bg-black/40 px-1.5 py-0.5 text-[15px] font-medium text-white backdrop-blur-sm">
+                {t.duration}
+              </span>
+
               <div className="absolute inset-x-0 bottom-0 p-4">
-                <p className="text-sm font-bold text-white">{t.result}</p>
-                <p className="mt-1 text-xs font-medium text-white/70">
+                <p className="text-[28px] font-bold leading-[1.05] text-white">
+                  {t.result}
+                </p>
+                <p className="mt-1.5 text-[14px] font-medium text-white/70">
                   {t.handle}
                 </p>
               </div>

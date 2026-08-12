@@ -25,13 +25,14 @@ export function ChatButton() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Fermer le support" : "Ouvrir le support"}
         className={cn(
-          "flex h-13 w-13 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_14px_32px_-10px_var(--color-brand-500)] transition-transform duration-200 hover:scale-105 active:scale-95"
+          "flex h-[60px] w-[60px] items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_14px_32px_-10px_rgba(229,35,35,0.5)] transition-transform duration-200 hover:scale-105 active:scale-95",
+          !open && "animate-pulse-soft"
         )}
       >
         {open ? (
-          <X className="h-5 w-5" strokeWidth={2.25} />
+          <X className="h-[26px] w-[26px]" strokeWidth={2.25} />
         ) : (
-          <MessageCircle className="h-5 w-5" strokeWidth={2.25} />
+          <MessageCircle className="h-[26px] w-[26px]" strokeWidth={2.25} />
         )}
       </button>
     </div>

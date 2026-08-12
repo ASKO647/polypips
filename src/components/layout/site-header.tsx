@@ -14,7 +14,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 backdrop-blur-md">
-      <div className="mx-auto flex h-18 w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
+      <div className="mx-auto flex h-[76px] w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
         <Logo />
 
         <nav className="hidden items-center gap-8 lg:flex">
@@ -32,14 +32,14 @@ export function SiteHeader() {
         <div className="hidden items-center gap-3 lg:flex">
           <LanguageSelector />
           <ThemeToggle />
-          <Button href="/signup" size="md">
+          <Button href="/signup" size="md" className="h-[52px]">
             Débutez pour 0,99&nbsp;€ <span aria-hidden>→</span>
           </Button>
         </div>
 
         <button
           type="button"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-strong text-ink lg:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink transition-all duration-150 ease-out hover:scale-105 active:scale-95 lg:hidden"
           aria-label="Ouvrir le menu"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}

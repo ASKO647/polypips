@@ -20,7 +20,7 @@ export function Hero() {
         <SocialProofRow align="center" className="animate-fade-up" />
 
         <h1
-          className="mt-8 animate-fade-up text-balance font-display text-[2.5rem] font-bold leading-[1.08] tracking-tight text-ink sm:text-6xl lg:text-[4rem]"
+          className="mt-8 animate-fade-up text-balance font-display text-[2.5rem] font-extrabold leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-[68px]"
           style={{ animationDelay: "80ms" }}
         >
           L&apos;IA qui analyse.
@@ -31,7 +31,7 @@ export function Hero() {
         </h1>
 
         <p
-          className="mt-6 max-w-xl animate-fade-up text-balance text-lg leading-relaxed text-body"
+          className="mt-6 max-w-[560px] animate-fade-up text-balance text-[18px] leading-[1.65] text-body"
           style={{ animationDelay: "140ms" }}
         >
           Polypips analyse les marchés Polymarket en profondeur, vous indique

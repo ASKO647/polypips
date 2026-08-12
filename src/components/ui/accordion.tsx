@@ -13,7 +13,7 @@ export function AccordionItem({
   return (
     <AccordionPrimitive.Item
       className={cn(
-        "overflow-hidden rounded-2xl border border-border bg-surface transition-colors data-[state=open]:border-brand-200 data-[state=open]:bg-brand-50/40",
+        "overflow-hidden rounded-[20px] border border-border bg-surface transition-colors duration-200 ease-out hover:bg-surface-muted data-[state=open]:border-brand-200 data-[state=open]:bg-surface-muted",
         className
       )}
       {...props}
@@ -30,15 +30,15 @@ export function AccordionTrigger({
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
         className={cn(
-          "group flex flex-1 items-center justify-between gap-4 px-5 py-4.5 text-left text-[15px] font-semibold text-ink transition-colors sm:px-6 sm:py-5",
+          "group flex min-h-[76px] flex-1 items-center justify-between gap-4 px-7 text-left text-[15px] font-semibold text-ink transition-colors",
           className
         )}
         {...props}
       >
         {children}
         <Plus
-          className="h-4.5 w-4.5 shrink-0 text-brand-500 transition-transform duration-200 ease-out group-hover:scale-110 group-data-[state=open]:rotate-45"
-          strokeWidth={2.5}
+          className="h-5 w-5 shrink-0 text-brand-500 transition-transform duration-200 ease-out group-hover:scale-110 group-data-[state=open]:rotate-45"
+          strokeWidth={3}
         />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
@@ -58,7 +58,7 @@ export function AccordionContent({
       )}
       {...props}
     >
-      <div className="px-5 pb-5 sm:px-6">{children}</div>
+      <div className="px-7 pb-6">{children}</div>
     </AccordionPrimitive.Content>
   );
 }

@@ -12,7 +12,7 @@ export function Pricing() {
   const deadline = getDefaultLaunchDeadline();
 
   return (
-    <section id="tarifs" className="py-10 sm:py-12">
+    <section id="tarifs" className="reveal py-10 sm:py-12">
       <Container className="flex flex-col gap-8">
         <SectionHeading
           eyebrow="Tarifs"
@@ -25,10 +25,10 @@ export function Pricing() {
             <div
               key={plan.id}
               className={cn(
-                "relative flex h-full flex-col gap-6 rounded-3xl border p-8",
+                "relative flex flex-col gap-6 rounded-[28px] border p-8 transition-all duration-200 ease-out hover:-translate-y-1",
                 plan.highlighted
-                  ? "border-2 border-brand-300 bg-gradient-to-b from-brand-50/70 to-surface shadow-[0_30px_70px_-28px_var(--color-brand-400)] lg:-translate-y-3"
-                  : "border-border bg-surface"
+                  ? "h-[640px] border-2 border-brand-500 bg-[#FFF7F7] shadow-[0_30px_70px_-28px_rgba(229,35,35,0.35)] lg:-translate-y-3"
+                  : "border-border bg-surface hover:shadow-[0_16px_32px_-16px_rgba(18,5,7,0.12)]"
               )}
             >
               {plan.badge && (
@@ -37,12 +37,12 @@ export function Pricing() {
                 </span>
               )}
               {plan.hasCountdown && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-brand-200 bg-surface px-3 py-1 shadow-sm">
+                <span className="absolute -top-3 right-6 rounded-full border border-brand-200 bg-surface px-3 py-1 shadow-sm">
                   <Countdown deadline={deadline} variant="inline" />
                 </span>
               )}
 
-              <div className="flex flex-col gap-1.5">
+              <div className="flex min-h-[168px] flex-col gap-1.5">
                 <h3 className="flex items-center font-display text-lg font-semibold text-ink">
                   {plan.id === "decouverte" && (
                     <Gift className="mr-1.5 h-4 w-4 text-brand-500" />
@@ -50,34 +50,34 @@ export function Pricing() {
                   {plan.name}
                 </h3>
                 <p className="text-sm text-body">{plan.tagline}</p>
-              </div>
 
-              <div className="flex flex-col gap-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-4xl font-bold tracking-tight text-ink">
-                    {plan.price}
-                  </span>
-                  {plan.originalPrice && (
-                    <span className="text-base font-medium text-body-soft line-through">
-                      {plan.originalPrice}
+                <div className="mt-3 flex flex-col gap-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-display text-4xl font-bold tracking-tight text-ink">
+                      {plan.price}
                     </span>
+                    {plan.originalPrice && (
+                      <span className="text-base font-medium text-body-soft line-through">
+                        {plan.originalPrice}
+                      </span>
+                    )}
+                    <span className="text-sm font-medium text-body-soft">
+                      {plan.priceSuffix}
+                    </span>
+                  </div>
+                  {plan.afterOffer && (
+                    <p className="text-xs font-medium text-body-soft">
+                      {plan.afterOffer}
+                    </p>
                   )}
-                  <span className="text-sm font-medium text-body-soft">
-                    {plan.priceSuffix}
-                  </span>
                 </div>
-                {plan.afterOffer && (
-                  <p className="text-xs font-medium text-body-soft">
-                    {plan.afterOffer}
-                  </p>
-                )}
               </div>
 
               <Button
                 href="/signup"
                 variant={plan.highlighted ? "primary" : "outline"}
                 size="lg"
-                className="w-full"
+                className="h-[54px] w-full"
               >
                 {plan.cta}
               </Button>

@@ -13,7 +13,7 @@ export function Countdown({
   className,
 }: {
   deadline: Date;
-  variant?: "inline" | "blocks";
+  variant?: "inline" | "blocks" | "cells";
   className?: string;
 }) {
   const { days, hours, minutes, seconds } = useCountdown(deadline);
@@ -23,6 +23,21 @@ export function Countdown({
     { label: "m", value: minutes },
     { label: "s", value: seconds },
   ];
+
+  if (variant === "cells") {
+    return (
+      <div className={cn("flex items-center gap-1.5", className)} role="timer">
+        {units.map((unit) => (
+          <span
+            key={unit.label}
+            className="flex h-[34px] w-[34px] items-center justify-center rounded-[8px] bg-brand-500 text-[14px] font-bold tabular-nums text-white"
+          >
+            {pad(unit.value)}
+          </span>
+        ))}
+      </div>
+    );
+  }
 
   if (variant === "blocks") {
     return (

@@ -10,7 +10,7 @@ import { FAQ_ITEMS } from "@/lib/data/faq";
 
 export function FAQ() {
   return (
-    <section id="faq" className="py-10 sm:py-12">
+    <section id="faq" className="reveal py-10 sm:py-12">
       <Container className="flex flex-col gap-8">
         <SectionHeading
           eyebrow="FAQ"

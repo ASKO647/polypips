@@ -1,17 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ChatButton } from "@/components/layout/chat-button";
+import { ScrollRevealObserver } from "@/components/scroll-reveal-observer";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const sora = Sora({
-  variable: "--font-sora",
   subsets: ["latin"],
   display: "swap",
 });
@@ -27,12 +22,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${inter.variable} ${sora.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-surface text-ink">
+      <body className="min-h-full flex flex-col bg-page-bg text-ink">
         <ThemeProvider>
           {children}
           <ChatButton />
+          <ScrollRevealObserver />
         </ThemeProvider>
       </body>
     </html>
