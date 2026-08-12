@@ -1,26 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { ANALYSIS_LOADING_STEPS } from "@/lib/data/analysis";
+import {
+  ANALYSIS_LOADING_STEPS,
+  ANALYSIS_STEP_ORDER,
+  type AnalysisProgressStep,
+} from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
-const STEP_DURATION_MS = 650;
-
-export function AnalysisLoading({ onComplete }: { onComplete: () => void }) {
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    if (activeStep >= ANALYSIS_LOADING_STEPS.length) {
-      const done = window.setTimeout(onComplete, STEP_DURATION_MS);
-      return () => window.clearTimeout(done);
-    }
-    const timer = window.setTimeout(
-      () => setActiveStep((s) => s + 1),
-      STEP_DURATION_MS
-    );
-    return () => window.clearTimeout(timer);
-  }, [activeStep, onComplete]);
+export function AnalysisLoading({
+  currentStep,
+}: {
+  currentStep: AnalysisProgressStep | null;
+}) {
+  const currentIndex = currentStep ? ANALYSIS_STEP_ORDER.indexOf(currentStep) : -1;
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-8 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16">
@@ -29,32 +22,32 @@ export function AnalysisLoading({ onComplete }: { onComplete: () => void }) {
       </span>
 
       <div className="flex w-full max-w-sm flex-col gap-3">
-        {ANALYSIS_LOADING_STEPS.map((step, i) => {
-          const done = i < activeStep;
-          const current = i === activeStep;
+        {ANALYSIS_STEP_ORDER.map((step, i) => {
+          const current = i === currentIndex;
+          const complete = currentIndex >= 0 && i < currentIndex;
           return (
             <div key={step} className="flex items-center gap-3">
               <span
                 className={cn(
                   "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold",
-                  done
+                  complete
                     ? "border-emerald-400 bg-emerald-400/15 text-emerald-400"
                     : current
                       ? "border-brand-400 bg-brand-400/15 text-brand-400"
                       : "border-white/15 text-white/20"
                 )}
               >
-                {done ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
+                {complete ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
               </span>
               <span
                 className={cn(
                   "text-sm transition-colors duration-200",
-                  done && "text-white/40",
+                  complete && "text-white/40",
                   current && "font-medium text-white",
-                  !done && !current && "text-white/25"
+                  !complete && !current && "text-white/25"
                 )}
               >
-                {step}
+                {ANALYSIS_LOADING_STEPS[step]}
               </span>
             </div>
           );

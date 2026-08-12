@@ -1,24 +1,68 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ArrowRight, Clock, Link2, UploadCloud, X } from "lucide-react";
+import { ArrowRight, Clock, Link2, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import { RECENT_ANALYSES, type MarketAnalysis } from "@/lib/data/analysis";
+import type { MarketAnalysis } from "@/lib/data/analysis";
+import type { AnalyzeMarketRequest } from "@/lib/supabase/analyze-market-client";
 import { cn } from "@/lib/utils";
 
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(",")[1] ?? "";
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 export function AnalysisInput({
+  recentAnalyses,
+  errorMessage,
+  link,
+  onLinkChange,
+  file,
+  onFileChange,
   onAnalyze,
   onSelectRecent,
 }: {
-  onAnalyze: () => void;
+  recentAnalyses: MarketAnalysis[];
+  errorMessage: string | null;
+  link: string;
+  onLinkChange: (link: string) => void;
+  file: File | null;
+  onFileChange: (file: File | null) => void;
+  onAnalyze: (request: AnalyzeMarketRequest) => void;
   onSelectRecent: (analysis: MarketAnalysis) => void;
 }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [link, setLink] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canAnalyze = file !== null || link.trim() !== "";
+  const canAnalyze = (file !== null || link.trim() !== "") && !preparing;
+
+  const handleSubmit = async () => {
+    if (!canAnalyze) return;
+    if (file) {
+      setPreparing(true);
+      try {
+        const imageBase64 = await fileToBase64(file);
+        onAnalyze({
+          type: "image",
+          imageBase64,
+          imageMediaType: file.type || "image/png",
+        });
+      } finally {
+        setPreparing(false);
+      }
+    } else {
+      onAnalyze({ type: "link", link: link.trim() });
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -30,6 +74,13 @@ export function AnalysisInput({
           Déposez une capture ou collez un lien de marché Polymarket.
         </p>
       </div>
+
+      {errorMessage && (
+        <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-4 py-3.5">
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" strokeWidth={2} />
+          <p className="text-sm leading-relaxed text-rose-300">{errorMessage}</p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
         <div
@@ -51,7 +102,7 @@ export function AnalysisInput({
             e.preventDefault();
             setDragOver(false);
             const dropped = e.dataTransfer.files?.[0];
-            if (dropped) setFile(dropped);
+            if (dropped) onFileChange(dropped);
           }}
           className={cn(
             "flex cursor-pointer flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-10 text-center transition-colors duration-150",
@@ -67,7 +118,7 @@ export function AnalysisInput({
             className="hidden"
             onChange={(e) => {
               const selected = e.target.files?.[0];
-              if (selected) setFile(selected);
+              if (selected) onFileChange(selected);
             }}
           />
           <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-brand-400">
@@ -83,7 +134,7 @@ export function AnalysisInput({
                 aria-label="Retirer le fichier"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setFile(null);
+                  onFileChange(null);
                   if (inputRef.current) inputRef.current.value = "";
                 }}
                 className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:text-white"
@@ -118,7 +169,7 @@ export function AnalysisInput({
             inputMode="url"
             placeholder="Collez un lien de marché Polymarket"
             value={link}
-            onChange={(e) => setLink(e.target.value)}
+            onChange={(e) => onLinkChange(e.target.value)}
             className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none"
           />
         </div>
@@ -126,7 +177,7 @@ export function AnalysisInput({
         <Button
           type="button"
           disabled={!canAnalyze}
-          onClick={onAnalyze}
+          onClick={handleSubmit}
           className="w-full sm:w-auto sm:self-end"
         >
           Analyser
@@ -136,13 +187,13 @@ export function AnalysisInput({
         </Button>
       </div>
 
-      {RECENT_ANALYSES.length > 0 && (
+      {recentAnalyses.length > 0 && (
         <div className="flex flex-col gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
             Marchés récemment analysés
           </p>
           <div className="flex flex-col gap-2">
-            {RECENT_ANALYSES.map((item) => (
+            {recentAnalyses.map((item) => (
               <button
                 key={item.id}
                 type="button"

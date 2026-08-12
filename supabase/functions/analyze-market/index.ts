@@ -1,0 +1,266 @@
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { corsHeaders } from "../_shared/cors.ts";
+import {
+  extractSlugFromUrl,
+  fetchMarketBySlug,
+  searchMarketByText,
+  MarketNotFoundError,
+  GammaUnavailableError,
+  type GammaMarket,
+} from "./gamma.ts";
+import {
+  analyzeMarket,
+  extractMarketQuestionFromImage,
+} from "./anthropic-analysis.ts";
+
+type AnalyzeRequest =
+  | { type: "link"; link: string }
+  | { type: "image"; imageBase64: string; imageMediaType: string };
+
+/** Steps are reported as they genuinely complete on the server — the
+ * frontend renders these events directly instead of simulating delays. */
+type ProgressStep = "fetching_market" | "calling_ai" | "receiving_result";
+
+function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
+  if (value === "Faible" || value === "Moyenne" || value === "Élevée") {
+    return value;
+  }
+  return "Moyenne";
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(
+      JSON.stringify({ error: "method_not_allowed", message: "Méthode non supportée." }),
+      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader) {
+    return new Response(
+      JSON.stringify({ error: "unauthorized", message: "Authentification requise." }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return new Response(
+      JSON.stringify({ error: "unauthorized", message: "Session invalide ou expirée." }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  let body: AnalyzeRequest;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(
+      JSON.stringify({ error: "invalid_input", message: "Corps de requête JSON invalide." }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  if (
+    body.type !== "link" &&
+    body.type !== "image"
+  ) {
+    return new Response(
+      JSON.stringify({ error: "invalid_input", message: "Type de requête invalide." }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+  if (body.type === "link" && (!body.link || typeof body.link !== "string")) {
+    return new Response(
+      JSON.stringify({ error: "invalid_input", message: "Aucun lien de marché fourni." }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+  if (body.type === "image" && (!body.imageBase64 || !body.imageMediaType)) {
+    return new Response(
+      JSON.stringify({ error: "invalid_input", message: "Image manquante." }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const emit = (payload: Record<string, unknown>) => {
+        controller.enqueue(encoder.encode(JSON.stringify(payload) + "\n"));
+      };
+      const emitProgress = (step: ProgressStep) =>
+        emit({ type: "progress", step });
+      const emitErrorAndClose = (
+        code: string,
+        message: string
+      ) => {
+        emit({ type: "error", code, message });
+        controller.close();
+      };
+
+      let market: GammaMarket;
+      let marketUrl: string | null = null;
+
+      try {
+        emitProgress("fetching_market");
+
+        if (body.type === "link") {
+          marketUrl = body.link;
+          const slug = extractSlugFromUrl(body.link);
+          if (!slug) {
+            emitErrorAndClose(
+              "invalid_input",
+              "Ce lien ne ressemble pas à un lien de marché Polymarket valide (format attendu : https://polymarket.com/event/...)."
+            );
+            return;
+          }
+          market = await fetchMarketBySlug(slug);
+        } else {
+          const question = await extractMarketQuestionFromImage(
+            body.imageBase64,
+            body.imageMediaType
+          );
+          if (!question) {
+            emitErrorAndClose(
+              "image_unreadable",
+              "Impossible de lire une question de marché dans cette image. Essayez avec une capture plus nette ou collez directement le lien du marché."
+            );
+            return;
+          }
+          const found = await searchMarketByText(question);
+          if (!found) {
+            emitErrorAndClose(
+              "market_not_identified",
+              `Le marché n'a pas pu être identifié automatiquement à partir de l'image (question lue : "${question}"). Merci de coller le lien Polymarket du marché à la place.`
+            );
+            return;
+          }
+          market = found;
+        }
+      } catch (error) {
+        if (error instanceof MarketNotFoundError) {
+          emitErrorAndClose("market_not_found", error.message);
+        } else if (error instanceof GammaUnavailableError) {
+          emitErrorAndClose("gamma_unavailable", error.message);
+        } else {
+          console.error("Gamma lookup failed", error);
+          emitErrorAndClose(
+            "gamma_unavailable",
+            "Erreur inattendue lors de la récupération des données du marché."
+          );
+        }
+        return;
+      }
+
+      emitProgress("calling_ai");
+
+      let verdict;
+      try {
+        verdict = await analyzeMarket(market, marketUrl);
+      } catch (error) {
+        console.error("Anthropic analysis failed", error);
+        emitErrorAndClose(
+          "ai_error",
+          `L'analyse IA a échoué : ${(error as Error).message}`
+        );
+        return;
+      }
+
+      emitProgress("receiving_result");
+
+      const marketProbabilityPct = Number.isFinite(market.outcomePrices[0])
+        ? Math.round(market.outcomePrices[0] * 100)
+        : 50;
+      const aiProbability = Math.max(
+        0,
+        Math.min(100, Math.round(verdict.aiProbability))
+      );
+      const edge = aiProbability - marketProbabilityPct;
+      const opportunityScore = Math.max(
+        0,
+        Math.min(100, Math.round(verdict.opportunityScore))
+      );
+
+      const sources = [
+        {
+          name: "Polymarket — données de marché en temps réel",
+          url: marketUrl ?? "https://polymarket.com",
+        },
+      ];
+      if (market.description) {
+        sources.push({
+          name: "Règles de résolution du marché",
+          url: marketUrl ?? "https://polymarket.com",
+        });
+      }
+
+      const analysis = {
+        id: crypto.randomUUID(),
+        question: market.question,
+        category: market.category || "Marché",
+        analyzedAt: new Date().toISOString(),
+        decision: verdict.decision,
+        aiProbability,
+        marketProbability: marketProbabilityPct,
+        edge,
+        opportunityScore,
+        confidence: confidenceLabel(verdict.confidence),
+        explanation: verdict.explanation,
+        favorableFactors: verdict.favorableFactors,
+        risks: verdict.risks,
+        whatCouldChange: verdict.whatCouldChange,
+        sources,
+      };
+
+      const { error: insertError } = await supabase.from("analyses").insert({
+        id: analysis.id,
+        user_id: user.id,
+        question: analysis.question,
+        category: analysis.category,
+        market_url: marketUrl,
+        decision: analysis.decision,
+        ai_probability: analysis.aiProbability,
+        market_probability: analysis.marketProbability,
+        edge: analysis.edge,
+        opportunity_score: analysis.opportunityScore,
+        confidence: analysis.confidence,
+        explanation: analysis.explanation,
+        favorable_factors: analysis.favorableFactors,
+        risks: analysis.risks,
+        what_could_change: analysis.whatCouldChange,
+        sources: analysis.sources,
+      });
+
+      if (insertError) {
+        console.error("Failed to save analysis", insertError);
+      }
+
+      emit({ type: "result", analysis });
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      ...corsHeaders,
+      "Content-Type": "application/x-ndjson",
+      "Cache-Control": "no-cache",
+    },
+  });
+});

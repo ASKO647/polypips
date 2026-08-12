@@ -4,17 +4,49 @@ import { useState } from "react";
 import { AnalysisInput } from "@/components/dashboard/analyse-ia/analysis-input";
 import { AnalysisLoading } from "@/components/dashboard/analyse-ia/analysis-loading";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
-import { NEW_ANALYSIS_RESULT, type MarketAnalysis } from "@/lib/data/analysis";
+import { analysisErrorMessage, type AnalysisProgressStep, type MarketAnalysis } from "@/lib/data/analysis";
+import {
+  AnalysisRequestError,
+  runMarketAnalysis,
+  type AnalyzeMarketRequest,
+} from "@/lib/supabase/analyze-market-client";
 
 type FlowState = "input" | "loading" | "result";
 
-export function AnalyseIaFlow() {
+export function AnalyseIaFlow({
+  initialRecentAnalyses,
+}: {
+  initialRecentAnalyses: MarketAnalysis[];
+}) {
   const [state, setState] = useState<FlowState>("input");
   const [result, setResult] = useState<MarketAnalysis | null>(null);
+  const [recentAnalyses, setRecentAnalyses] = useState(initialRecentAnalyses);
+  const [currentStep, setCurrentStep] = useState<AnalysisProgressStep | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [link, setLink] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
-  const handleLoadingComplete = () => {
-    setResult(NEW_ANALYSIS_RESULT);
-    setState("result");
+  const handleAnalyze = async (request: AnalyzeMarketRequest) => {
+    setErrorMessage(null);
+    setCurrentStep(null);
+    setState("loading");
+    try {
+      const analysis = await runMarketAnalysis(request, (step) => {
+        setCurrentStep(step);
+      });
+      setResult(analysis);
+      setRecentAnalyses((prev) => [analysis, ...prev].slice(0, 5));
+      setLink("");
+      setFile(null);
+      setState("result");
+    } catch (error) {
+      const message =
+        error instanceof AnalysisRequestError
+          ? analysisErrorMessage(error.code)
+          : analysisErrorMessage("unknown");
+      setErrorMessage(message);
+      setState("input");
+    }
   };
 
   const handleSelectRecent = (analysis: MarketAnalysis) => {
@@ -24,11 +56,14 @@ export function AnalyseIaFlow() {
 
   const handleNewAnalysis = () => {
     setResult(null);
+    setErrorMessage(null);
+    setLink("");
+    setFile(null);
     setState("input");
   };
 
   if (state === "loading") {
-    return <AnalysisLoading onComplete={handleLoadingComplete} />;
+    return <AnalysisLoading currentStep={currentStep} />;
   }
 
   if (state === "result" && result) {
@@ -37,7 +72,13 @@ export function AnalyseIaFlow() {
 
   return (
     <AnalysisInput
-      onAnalyze={() => setState("loading")}
+      recentAnalyses={recentAnalyses}
+      errorMessage={errorMessage}
+      link={link}
+      onLinkChange={setLink}
+      file={file}
+      onFileChange={setFile}
+      onAnalyze={handleAnalyze}
       onSelectRecent={handleSelectRecent}
     />
   );
