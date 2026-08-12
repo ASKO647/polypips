@@ -32,24 +32,29 @@ export function LoginForm({ oauthError }: { oauthError?: string }) {
     setError(null);
     setSubmitting(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
 
-    if (signInError) {
-      if (signInError.code === "invalid_credentials") {
-        setError("Email ou mot de passe incorrect.");
-      } else {
-        setError("Une erreur est survenue. Merci de réessayer.");
+      if (signInError) {
+        if (signInError.code === "invalid_credentials") {
+          setError("Email ou mot de passe incorrect.");
+        } else {
+          setError("Une erreur est survenue. Merci de réessayer.");
+        }
+        return;
       }
-      setSubmitting(false);
-      return;
-    }
 
-    router.push("/dashboard");
-    router.refresh();
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Une erreur est survenue. Merci de réessayer.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -44,20 +44,43 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
     setSuccessMessage(null);
     setSubmitting(true);
 
-    const supabase = createClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
 
-    if (signUpError) {
-      if (
-        signUpError.code === "user_already_exists" ||
-        signUpError.code === "email_exists"
-      ) {
+      if (signUpError) {
+        if (
+          signUpError.code === "user_already_exists" ||
+          signUpError.code === "email_exists"
+        ) {
+          setError(
+            <>
+              Un compte existe déjà avec cet email.{" "}
+              <Link
+                href="/login"
+                className="font-semibold text-brand-600 hover:text-brand-700"
+              >
+                Connectez-vous plutôt.
+              </Link>
+            </>
+          );
+        } else if (signUpError.code === "weak_password") {
+          setError(`Mot de passe trop faible : ${signUpError.message}`);
+        } else {
+          setError("Une erreur est survenue. Merci de réessayer.");
+        }
+        return;
+      }
+
+      // Supabase silently returns a user with no identities instead of an
+      // error when the email is already registered (anti-enumeration).
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
         setError(
           <>
             Un compte existe déjà avec cet email.{" "}
@@ -69,44 +92,24 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
             </Link>
           </>
         );
-      } else if (signUpError.code === "weak_password") {
-        setError(`Mot de passe trop faible : ${signUpError.message}`);
-      } else {
-        setError("Une erreur est survenue. Merci de réessayer.");
+        return;
       }
-      setSubmitting(false);
-      return;
-    }
 
-    // Supabase silently returns a user with no identities instead of an
-    // error when the email is already registered (anti-enumeration).
-    if (data.user && data.user.identities && data.user.identities.length === 0) {
-      setError(
-        <>
-          Un compte existe déjà avec cet email.{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-brand-600 hover:text-brand-700"
-          >
-            Connectez-vous plutôt.
-          </Link>
-        </>
+      if (data.session) {
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      // No session means email confirmation is required before sign-in.
+      setSuccessMessage(
+        "Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter."
       );
+    } catch {
+      setError("Une erreur est survenue. Merci de réessayer.");
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    if (data.session) {
-      router.push("/dashboard");
-      router.refresh();
-      return;
-    }
-
-    // No session means email confirmation is required before sign-in.
-    setSuccessMessage(
-      "Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter."
-    );
-    setSubmitting(false);
   };
 
   return (

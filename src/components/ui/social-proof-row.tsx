@@ -2,13 +2,6 @@ import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SOCIAL_PROOF } from "@/lib/data/social-proof";
 
-const AVATAR_GRADIENTS = [
-  "from-brand-300 to-brand-500",
-  "from-orange-300 to-brand-400",
-  "from-rose-300 to-brand-500",
-  "from-brand-400 to-brand-700",
-];
-
 export function SocialProofRow({
   userCount = SOCIAL_PROOF.userCount,
   rating = SOCIAL_PROOF.rating,
@@ -30,17 +23,6 @@ export function SocialProofRow({
         className
       )}
     >
-      <div className="flex -space-x-2.5">
-        {AVATAR_GRADIENTS.map((gradient, i) => (
-          <span
-            key={i}
-            className={cn(
-              "h-8 w-8 rounded-full border-2 border-surface bg-gradient-to-br",
-              gradient
-            )}
-          />
-        ))}
-      </div>
       <div className="flex flex-col gap-0.5 text-left">
         <p className="text-sm font-semibold text-ink">
           +{userCount}{" "}

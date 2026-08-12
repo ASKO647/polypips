@@ -29,29 +29,33 @@ export function ForgotPasswordForm() {
     setError(null);
     setSubmitting(true);
 
-    const supabase = createClient();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email.trim(),
-      { redirectTo: `${window.location.origin}/reset-password` }
-    );
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        { redirectTo: `${window.location.origin}/reset-password` }
+      );
 
-    // Supabase never reveals whether the email exists - any non-error
-    // response means "email sent" from the user's point of view, and we
-    // keep it that way even on our own error handling below.
-    if (resetError) {
-      if (resetError.code === "email_address_invalid") {
-        setError("Adresse email invalide.");
-      } else if (resetError.code === "over_email_send_rate_limit") {
-        setError("Trop de tentatives. Merci de réessayer dans quelques minutes.");
-      } else {
-        setError("Une erreur est survenue. Merci de réessayer.");
+      // Supabase never reveals whether the email exists - any non-error
+      // response means "email sent" from the user's point of view, and we
+      // keep it that way even on our own error handling below.
+      if (resetError) {
+        if (resetError.code === "email_address_invalid") {
+          setError("Adresse email invalide.");
+        } else if (resetError.code === "over_email_send_rate_limit") {
+          setError("Trop de tentatives. Merci de réessayer dans quelques minutes.");
+        } else {
+          setError("Une erreur est survenue. Merci de réessayer.");
+        }
+        return;
       }
-      setSubmitting(false);
-      return;
-    }
 
-    setSuccess(true);
-    setSubmitting(false);
+      setSuccess(true);
+    } catch {
+      setError("Une erreur est survenue. Merci de réessayer.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

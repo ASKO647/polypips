@@ -27,22 +27,27 @@ export function GoogleAuthButton({
     onError(null);
     setLoading(true);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?error_redirect=${encodeURIComponent(
-          errorRedirectPath
-        )}`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?error_redirect=${encodeURIComponent(
+            errorRedirectPath
+          )}`,
+        },
+      });
 
-    if (error) {
+      if (error) {
+        onError(OAUTH_ERROR_MESSAGE);
+        setLoading(false);
+      }
+      // On success the browser is redirected to Google, so no further
+      // state update happens here.
+    } catch {
       onError(OAUTH_ERROR_MESSAGE);
       setLoading(false);
     }
-    // On success the browser is redirected to Google, so no further
-    // state update happens here.
   };
 
   return (
