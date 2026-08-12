@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { ChatButton } from "@/components/layout/chat-button";
 import { ScrollRevealObserver } from "@/components/scroll-reveal-observer";
+import { TouchActiveEnabler } from "@/components/touch-active-enabler";
 import "./globals.css";
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <ChatButton />
           <ScrollRevealObserver />
+          <TouchActiveEnabler />
         </ThemeProvider>
       </body>
     </html>
