@@ -68,7 +68,8 @@ const ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
     "Impossible de lire cette image. Essayez une capture plus nette ou collez le lien du marché.",
   gamma_unavailable:
     "L'API Polymarket est momentanément indisponible. Réessayez dans quelques instants.",
-  ai_error: "L'analyse IA a échoué. Réessayez dans quelques instants.",
+  ai_error:
+    "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
   network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
   unknown: "Une erreur inattendue est survenue. Réessayez.",
 };

@@ -9,6 +9,7 @@ import {
   type GammaMarket,
 } from "./gamma.ts";
 import {
+  AiServiceError,
   analyzeMarket,
   extractMarketQuestionFromImage,
 } from "./anthropic-analysis.ts";
@@ -117,55 +118,90 @@ Deno.serve(async (req) => {
       let market: GammaMarket;
       let marketUrl: string | null = null;
 
-      try {
-        emitProgress("fetching_market");
+      emitProgress("fetching_market");
 
-        if (body.type === "link") {
-          marketUrl = body.link;
-          const slug = extractSlugFromUrl(body.link);
-          if (!slug) {
-            emitErrorAndClose(
-              "invalid_input",
-              "Ce lien ne ressemble pas à un lien de marché Polymarket valide (format attendu : https://polymarket.com/event/...)."
-            );
-            return;
-          }
+      if (body.type === "link") {
+        marketUrl = body.link;
+        const slug = extractSlugFromUrl(body.link);
+        if (!slug) {
+          emitErrorAndClose(
+            "invalid_input",
+            "Ce lien ne ressemble pas à un lien de marché Polymarket valide (format attendu : https://polymarket.com/event/...)."
+          );
+          return;
+        }
+        try {
           market = await fetchMarketBySlug(slug);
-        } else {
-          const question = await extractMarketQuestionFromImage(
+        } catch (error) {
+          if (error instanceof MarketNotFoundError) {
+            emitErrorAndClose("market_not_found", error.message);
+          } else if (error instanceof GammaUnavailableError) {
+            console.error(`[gamma:fetchMarketBySlug] ${error.message}`);
+            emitErrorAndClose(
+              "gamma_unavailable",
+              "L'API Polymarket est momentanément indisponible. Réessayez dans quelques instants."
+            );
+          } else {
+            console.error("[gamma:fetchMarketBySlug] erreur non typée:", error);
+            emitErrorAndClose(
+              "gamma_unavailable",
+              "Erreur inattendue lors de la récupération des données du marché."
+            );
+          }
+          return;
+        }
+      } else {
+        // Step 1: read the market question from the screenshot — this is an
+        // Anthropic call, so its failures must be reported as ai_error, not
+        // mistaken for a Gamma/Polymarket outage.
+        let question: string | null;
+        try {
+          question = await extractMarketQuestionFromImage(
             body.imageBase64,
             body.imageMediaType
           );
-          if (!question) {
-            emitErrorAndClose(
-              "image_unreadable",
-              "Impossible de lire une question de marché dans cette image. Essayez avec une capture plus nette ou collez directement le lien du marché."
-            );
-            return;
-          }
-          const found = await searchMarketByText(question);
-          if (!found) {
-            emitErrorAndClose(
-              "market_not_identified",
-              `Le marché n'a pas pu être identifié automatiquement à partir de l'image (question lue : "${question}"). Merci de coller le lien Polymarket du marché à la place.`
-            );
-            return;
-          }
-          market = found;
+        } catch (error) {
+          // logAnthropicError already logged the precise cause (status, type,
+          // message) inside anthropic-analysis.ts for diagnosis in the
+          // Supabase function logs — the user only ever sees a generic message.
+          console.error(
+            `[analyze-market] échec IA pendant la lecture de l'image (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
+          );
+          emitErrorAndClose(
+            "ai_error",
+            "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
+          );
+          return;
         }
-      } catch (error) {
-        if (error instanceof MarketNotFoundError) {
-          emitErrorAndClose("market_not_found", error.message);
-        } else if (error instanceof GammaUnavailableError) {
-          emitErrorAndClose("gamma_unavailable", error.message);
-        } else {
-          console.error("Gamma lookup failed", error);
+        if (!question) {
+          emitErrorAndClose(
+            "image_unreadable",
+            "Impossible de lire une question de marché dans cette image. Essayez avec une capture plus nette ou collez directement le lien du marché."
+          );
+          return;
+        }
+
+        // Step 2: look the question up on Gamma — this is a Polymarket call,
+        // so its failures are reported as gamma_unavailable.
+        let found: GammaMarket | null;
+        try {
+          found = await searchMarketByText(question);
+        } catch (error) {
+          console.error("[gamma:searchMarketByText] erreur non typée:", error);
           emitErrorAndClose(
             "gamma_unavailable",
-            "Erreur inattendue lors de la récupération des données du marché."
+            "L'API Polymarket est momentanément indisponible. Réessayez dans quelques instants."
           );
+          return;
         }
-        return;
+        if (!found) {
+          emitErrorAndClose(
+            "market_not_identified",
+            `Le marché n'a pas pu être identifié automatiquement à partir de l'image (question lue : "${question}"). Merci de coller le lien Polymarket du marché à la place.`
+          );
+          return;
+        }
+        market = found;
       }
 
       emitProgress("calling_ai");
@@ -174,10 +210,15 @@ Deno.serve(async (req) => {
       try {
         verdict = await analyzeMarket(market, marketUrl);
       } catch (error) {
-        console.error("Anthropic analysis failed", error);
+        // logAnthropicError already logged the precise cause (status, type,
+        // message) inside anthropic-analysis.ts for diagnosis in the
+        // Supabase function logs — the user only ever sees a generic message.
+        console.error(
+          `[analyze-market] échec IA pendant la génération du verdict (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
+        );
         emitErrorAndClose(
           "ai_error",
-          `L'analyse IA a échoué : ${(error as Error).message}`
+          "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
         );
         return;
       }

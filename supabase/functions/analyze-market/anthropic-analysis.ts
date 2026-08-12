@@ -5,6 +5,29 @@ const client = new Anthropic({
   apiKey: Deno.env.get("ANTHROPIC_API_KEY"),
 });
 
+/** Thrown for genuine Anthropic API failures (auth, credit, quota, network,
+ * server errors) — distinct from Gamma failures and from image-unreadable
+ * cases, so the Edge Function can report each source accurately. */
+export class AiServiceError extends Error {}
+
+/** Logs the full technical detail of an Anthropic SDK failure server-side
+ * (status code, error type, message) so a real cause — insufficient credit,
+ * invalid key, rate limit, model outage — is diagnosable from the Supabase
+ * function logs without exposing it to the end user. */
+function logAnthropicError(context: string, error: unknown): void {
+  if (error instanceof Anthropic.APIError) {
+    console.error(
+      `[anthropic:${context}] status=${error.status} name=${error.name} message=${error.message}`
+    );
+    return;
+  }
+  if (error instanceof Error) {
+    console.error(`[anthropic:${context}] ${error.name}: ${error.message}`);
+    return;
+  }
+  console.error(`[anthropic:${context}] erreur non typée:`, error);
+}
+
 export type AiVerdict = {
   decision: "YES" | "NO";
   aiProbability: number;
@@ -113,36 +136,50 @@ export async function analyzeMarket(
   market: GammaMarket,
   marketUrl: string | null
 ): Promise<AiVerdict> {
-  const response = await client.messages.create({
-    model: "claude-opus-5",
-    max_tokens: 4096,
-    thinking: { type: "adaptive" },
-    output_config: {
-      effort: "high",
-      format: {
-        type: "json_schema",
-        schema: VERDICT_SCHEMA,
+  let response;
+  try {
+    response = await client.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 4096,
+      thinking: { type: "adaptive" },
+      output_config: {
+        effort: "high",
+        format: {
+          type: "json_schema",
+          schema: VERDICT_SCHEMA,
+        },
       },
-    },
-    system: SYSTEM_PROMPT,
-    messages: [
-      { role: "user", content: buildUserPrompt(market, marketUrl) },
-    ],
-  });
+      system: SYSTEM_PROMPT,
+      messages: [
+        { role: "user", content: buildUserPrompt(market, marketUrl) },
+      ],
+    });
+  } catch (error) {
+    logAnthropicError("analyzeMarket", error);
+    throw new AiServiceError("Échec de l'appel à l'API Anthropic pour le verdict d'analyse.");
+  }
 
   if (response.stop_reason === "refusal") {
-    throw new Error(
+    console.error(
+      `[anthropic:analyzeMarket] refus de contenu — category=${response.stop_details?.category ?? "inconnue"}`
+    );
+    throw new AiServiceError(
       "L'IA a refusé d'analyser ce marché (contenu potentiellement sensible)."
     );
   }
 
   const textBlock = response.content.find((b) => b.type === "text");
   if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Réponse de l'IA vide ou inattendue.");
+    console.error("[anthropic:analyzeMarket] réponse sans bloc texte exploitable", response);
+    throw new AiServiceError("Réponse de l'IA vide ou inattendue.");
   }
 
-  const parsed = JSON.parse(textBlock.text) as AiVerdict;
-  return parsed;
+  try {
+    return JSON.parse(textBlock.text) as AiVerdict;
+  } catch (error) {
+    console.error("[anthropic:analyzeMarket] JSON invalide dans la réponse:", textBlock.text, error);
+    throw new AiServiceError("Réponse de l'IA mal formée.");
+  }
 }
 
 /** Reads the market question directly from a screenshot using vision, so we
@@ -151,36 +188,47 @@ export async function extractMarketQuestionFromImage(
   imageBase64: string,
   mediaType: string
 ): Promise<string | null> {
-  const response = await client.messages.create({
-    model: "claude-opus-5",
-    max_tokens: 256,
-    thinking: { type: "disabled" },
-    output_config: { effort: "low" },
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: mediaType as
-                | "image/jpeg"
-                | "image/png"
-                | "image/gif"
-                | "image/webp",
-              data: imageBase64,
+  let response;
+  try {
+    response = await client.messages.create({
+      model: "claude-opus-5",
+      max_tokens: 256,
+      thinking: { type: "disabled" },
+      output_config: { effort: "low" },
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: mediaType as
+                  | "image/jpeg"
+                  | "image/png"
+                  | "image/gif"
+                  | "image/webp",
+                data: imageBase64,
+              },
             },
-          },
-          {
-            type: "text",
-            text: "Cette image est une capture d'écran d'un marché Polymarket. Réponds UNIQUEMENT avec la question exacte du marché telle qu'affichée (aucune phrase d'introduction, aucune ponctuation supplémentaire). Si aucune question de marché n'est lisible, réponds exactement: INTROUVABLE",
-          },
-        ],
-      },
-    ],
-  });
+            {
+              type: "text",
+              text: "Cette image est une capture d'écran d'un marché Polymarket. Réponds UNIQUEMENT avec la question exacte du marché telle qu'affichée (aucune phrase d'introduction, aucune ponctuation supplémentaire). Si aucune question de marché n'est lisible, réponds exactement: INTROUVABLE",
+            },
+          ],
+        },
+      ],
+    });
+  } catch (error) {
+    logAnthropicError("extractMarketQuestionFromImage", error);
+    throw new AiServiceError(
+      "Échec de l'appel à l'API Anthropic pour la lecture de l'image."
+    );
+  }
 
+  // A refusal or unreadable image is a content-level outcome, not an API
+  // failure — surfaced to the caller as "no question found" (image_unreadable),
+  // not as an ai_error.
   if (response.stop_reason === "refusal") return null;
 
   const textBlock = response.content.find((b) => b.type === "text");
