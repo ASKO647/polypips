@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AuthHeader } from "@/components/layout/auth-header";
 import { MinimalFooter } from "@/components/layout/minimal-footer";
 import { TrustStrip } from "@/components/ui/trust-strip";
@@ -7,6 +8,7 @@ import { SignupBenefits } from "@/components/auth/signup-benefits";
 import { LaunchOfferCard } from "@/components/auth/launch-offer-card";
 import { SignupForm } from "@/components/auth/signup-form";
 import { AuthBackground } from "@/components/auth/auth-background";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Créer un compte — Polypips",
@@ -14,7 +16,19 @@ export const metadata: Metadata = {
     "Créez votre compte Polypips et prenez l'avantage sur le marché.",
 };
 
-export default function SignupPage() {
+export default async function SignupPage(props: PageProps<"/signup">) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  }
+
+  const { error } = await props.searchParams;
+  const oauthError = typeof error === "string" ? error : undefined;
+
   return (
     <>
       <AuthHeader />
@@ -46,7 +60,7 @@ export default function SignupPage() {
             <LaunchOfferCard />
           </div>
 
-          <SignupForm />
+          <SignupForm oauthError={oauthError} />
         </div>
       </main>
 

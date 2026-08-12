@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { AlertCircle, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { getPasswordStrength } from "@/lib/password-strength";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const STRENGTH_COLORS = [
@@ -15,14 +16,41 @@ const STRENGTH_COLORS = [
   "bg-emerald-500",
 ];
 
-export function SignupForm() {
+const OAUTH_ERROR_MESSAGE =
+  "La connexion avec Google a échoué. Merci de réessayer.";
+
+export function SignupForm({ oauthError }: { oauthError?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | null>(
+    oauthError ? OAUTH_ERROR_MESSAGE : null
+  );
 
   const strength = useMemo(() => getPasswordStrength(password), [password]);
   const canSubmit = email.trim().length > 3 && password.length > 0 && agreed;
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setGoogleLoading(true);
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (signInError) {
+      setError(OAUTH_ERROR_MESSAGE);
+      setGoogleLoading(false);
+    }
+    // On success the browser is redirected to Google, so no further
+    // state update happens here.
+  };
 
   return (
     <div className="w-full rounded-[2rem] border border-border bg-surface p-7 shadow-[0_30px_70px_-30px_rgba(23,11,13,0.18)] sm:p-9">
@@ -33,12 +61,25 @@ export function SignupForm() {
         Accès immédiat à toutes les fonctionnalités
       </p>
 
+      {error && (
+        <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
       <button
         type="button"
-        className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-border-strong bg-surface text-sm font-semibold text-ink transition-colors hover:bg-ink/[0.03]"
+        onClick={handleGoogleSignIn}
+        disabled={googleLoading}
+        className="mt-7 flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-border-strong bg-surface text-sm font-semibold text-ink transition-colors hover:bg-ink/[0.03] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <GoogleIcon className="h-4.5 w-4.5" />
-        Continuer avec Google
+        {googleLoading ? (
+          <Loader2 className="h-4.5 w-4.5 animate-spin" />
+        ) : (
+          <GoogleIcon className="h-4.5 w-4.5" />
+        )}
+        {googleLoading ? "Redirection vers Google..." : "Continuer avec Google"}
       </button>
 
       <div className="my-6 flex items-center gap-4">
