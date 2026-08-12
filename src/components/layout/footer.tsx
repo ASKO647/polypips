@@ -19,9 +19,9 @@ export function Footer() {
                 key={social.label}
                 href={social.href}
                 aria-label={social.label}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-xs font-bold text-body transition-colors hover:border-brand-300 hover:text-brand-600"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong text-body transition-colors hover:border-brand-300 hover:text-brand-600"
               >
-                {social.label[0]}
+                <social.icon className="h-4 w-4" />
               </a>
             ))}
           </div>

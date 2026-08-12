@@ -1,3 +1,11 @@
+import {
+  DiscordIcon,
+  TelegramIcon,
+  XIcon,
+  YoutubeIcon,
+} from "@/components/ui/social-icons";
+import type { ComponentType } from "react";
+
 export const NAV_LINKS = [
   { label: "Fonctionnalités", href: "#fonctionnalites" },
   { label: "Tarifs", href: "#tarifs" },
@@ -47,9 +55,13 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   },
 ];
 
-export const SOCIAL_LINKS = [
-  { label: "X", href: "#" },
-  { label: "YouTube", href: "#" },
-  { label: "Discord", href: "#" },
-  { label: "Telegram", href: "#" },
+export const SOCIAL_LINKS: {
+  label: string;
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+}[] = [
+  { label: "X", href: "#", icon: XIcon },
+  { label: "YouTube", href: "#", icon: YoutubeIcon },
+  { label: "Discord", href: "#", icon: DiscordIcon },
+  { label: "Telegram", href: "#", icon: TelegramIcon },
 ];
