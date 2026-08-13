@@ -74,6 +74,22 @@ export async function countAnalysesToday(
   return count ?? 0;
 }
 
+export async function fetchAnalysisById(
+  supabase: SupabaseClient,
+  id: string
+): Promise<MarketAnalysis | null> {
+  const { data, error } = await supabase
+    .from("analyses")
+    .select(
+      "id, question, category, created_at, decision, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return mapRow(data as AnalysisRow);
+}
+
 export async function fetchRecentAnalyses(
   supabase: SupabaseClient,
   limit = 5

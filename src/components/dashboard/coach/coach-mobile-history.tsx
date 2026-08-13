@@ -2,7 +2,7 @@
 
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Conversation } from "@/lib/data/coach";
+import type { ConversationSummary } from "@/lib/data/coach";
 import { cn } from "@/lib/utils";
 
 export function CoachMobileHistory({
@@ -15,7 +15,7 @@ export function CoachMobileHistory({
 }: {
   open: boolean;
   onClose: () => void;
-  conversations: Conversation[];
+  conversations: ConversationSummary[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;

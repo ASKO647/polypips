@@ -1,16 +1,30 @@
 import type { Metadata } from "next";
 import { CoachFlow } from "@/components/dashboard/coach/coach-flow";
-import { IS_DEMO_MODE } from "@/lib/config/demo-mode";
-import { MOCK_CONVERSATIONS } from "@/lib/data/coach";
+import { createClient } from "@/lib/supabase/server";
+import { fetchConversationSummaries } from "@/lib/supabase/coach";
+import { fetchAnalysisById } from "@/lib/supabase/analyses";
 
 export const metadata: Metadata = {
   title: "Coach IA — Polypips",
 };
 
-export default function CoachPage() {
+export default async function CoachPage({
+  searchParams,
+}: PageProps<"/dashboard/coach">) {
+  const { analysisId } = await searchParams;
+  const supabase = await createClient();
+
+  const [conversations, focusAnalysis] = await Promise.all([
+    fetchConversationSummaries(supabase),
+    typeof analysisId === "string" ? fetchAnalysisById(supabase, analysisId) : null,
+  ]);
+
   return (
     <CoachFlow
-      initialConversations={IS_DEMO_MODE ? MOCK_CONVERSATIONS : []}
+      initialConversations={conversations}
+      initialFocusAnalysis={
+        focusAnalysis ? { id: focusAnalysis.id, question: focusAnalysis.question } : null
+      }
     />
   );
 }

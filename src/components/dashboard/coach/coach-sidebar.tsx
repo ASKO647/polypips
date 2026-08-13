@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Conversation } from "@/lib/data/coach";
+import type { ConversationSummary } from "@/lib/data/coach";
 import { cn } from "@/lib/utils";
 
 export function CoachSidebar({
@@ -11,7 +11,7 @@ export function CoachSidebar({
   onSelectConversation,
   onNewConversation,
 }: {
-  conversations: Conversation[];
+  conversations: ConversationSummary[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
   onNewConversation: () => void;

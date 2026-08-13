@@ -80,3 +80,13 @@ export function getDailyAnalysisLimit(plan: PricingPlan): number | null {
   }
   return null;
 }
+
+/** Same idea as getDailyAnalysisLimit, for the Coach IA weekly message cap.
+ * Returns null when the plan has no such line (i.e. unlimited messages). */
+export function getWeeklyCoachMessageLimit(plan: PricingPlan): number | null {
+  for (const feature of plan.features) {
+    const match = feature.match(/^(\d+)\s+messages?\s+Coach\s+IA\s+par\s+semaine$/i);
+    if (match) return Number(match[1]);
+  }
+  return null;
+}

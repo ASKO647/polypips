@@ -273,7 +273,10 @@ export function AnalysisResult({
         >
           {backLabel}
         </Button>
-        <Button href="/dashboard/coach" className="sm:flex-1">
+        <Button
+          href={`/dashboard/coach?analysisId=${analysis.id}`}
+          className="sm:flex-1"
+        >
           Poser une question au Coach IA
           <ButtonIcon>
             <ArrowRight className="h-4 w-4" />
