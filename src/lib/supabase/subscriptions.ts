@@ -80,3 +80,17 @@ export async function getEffectivePlan(
   const planId = hasAccess ? (data!.plan as PlanId) : "decouverte";
   return PRICING_PLANS.find((p) => p.id === planId) ?? PRICING_PLANS[0];
 }
+
+/** Days left in the discovery trial (current_period_end doubles as the
+ * trial end date while status is "trialing" — see the Stripe webhook's
+ * upsertSubscription). Returns null when the subscription isn't currently
+ * trialing, or has no period end to compute from. */
+export function getTrialDaysRemaining(
+  subscription: SubscriptionRow | null
+): number | null {
+  if (subscription?.status !== "trialing" || !subscription.currentPeriodEnd) {
+    return null;
+  }
+  const diffMs = new Date(subscription.currentPeriodEnd).getTime() - Date.now();
+  return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
+}

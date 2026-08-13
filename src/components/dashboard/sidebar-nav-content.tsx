@@ -63,7 +63,7 @@ export function SidebarNavContent({
 
       <div className="flex flex-col gap-3 px-4 pb-4">
         <AccountStatusCard subscription={subscription} analysesToday={analysesToday} />
-        <Button href="/dashboard" variant="outline" onClick={onNavigate} className="w-full">
+        <Button href="/dashboard/analyse-ia" variant="outline" onClick={onNavigate} className="w-full">
           <Plus className="h-4 w-4" strokeWidth={2.5} />
           Nouvelle analyse
         </Button>

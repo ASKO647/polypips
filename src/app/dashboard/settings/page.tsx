@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { SettingsFlow } from "@/components/dashboard/settings/settings-flow";
 import { createClient } from "@/lib/supabase/server";
-import { fetchSubscription, getEffectivePlan } from "@/lib/supabase/subscriptions";
+import {
+  fetchSubscription,
+  getEffectivePlan,
+  getTrialDaysRemaining,
+} from "@/lib/supabase/subscriptions";
 import { countAnalysesToday } from "@/lib/supabase/analyses";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { getDailyAnalysisLimit, getMaxTrackedWallets, PRICING_PLANS } from "@/lib/data/pricing";
@@ -9,11 +13,6 @@ import { getDailyAnalysisLimit, getMaxTrackedWallets, PRICING_PLANS } from "@/li
 export const metadata: Metadata = {
   title: "Paramètres — Polypips",
 };
-
-function computeTrialDaysRemaining(periodEndIso: string): number {
-  const diffMs = new Date(periodEndIso).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
-}
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -55,11 +54,6 @@ export default async function SettingsPage() {
     maxTrackedWallets
   );
 
-  const trialDaysRemaining =
-    subscription?.status === "trialing" && subscription.currentPeriodEnd
-      ? computeTrialDaysRemaining(subscription.currentPeriodEnd)
-      : null;
-
   return (
     <SettingsFlow
       email={email}
@@ -68,10 +62,9 @@ export default async function SettingsPage() {
       plan={plan}
       analysesToday={analysesToday}
       dailyAnalysisLimit={getDailyAnalysisLimit(plan)}
-      trialDaysRemaining={trialDaysRemaining}
+      trialDaysRemaining={getTrialDaysRemaining(subscription)}
       walletQuotaCount={walletQuota.count}
       walletQuotaMax={maxTrackedWallets}
     />
   );
 }
-

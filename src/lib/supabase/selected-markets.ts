@@ -57,3 +57,10 @@ export async function fetchSelectedMarkets(
   if (error || !data) return [];
   return (data as SelectedMarketRow[]).map(mapRow);
 }
+
+export async function countSelectedMarkets(supabase: SupabaseClient): Promise<number> {
+  const { count } = await supabase
+    .from("selected_markets")
+    .select("id", { count: "exact", head: true });
+  return count ?? 0;
+}

@@ -2,6 +2,7 @@ import {
   BarChart3,
   Copy,
   GraduationCap,
+  LayoutDashboard,
   LifeBuoy,
   LineChart,
   Settings,
@@ -17,7 +18,8 @@ export type DashboardNavItem = {
 };
 
 export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
-  { label: "Analyse IA", href: "/dashboard", icon: Sparkles },
+  { label: "Tableau de bord", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Analyse IA", href: "/dashboard/analyse-ia", icon: Sparkles },
   { label: "Marchés sélectionnés", href: "/dashboard/markets", icon: LineChart },
   { label: "Smart Money", href: "/dashboard/smart-money", icon: Wallet },
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },

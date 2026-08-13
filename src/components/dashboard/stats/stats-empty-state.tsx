@@ -16,7 +16,7 @@ export function StatsEmptyState() {
           apparaître ici.
         </p>
       </div>
-      <Button href="/dashboard" size="md" className="mt-1">
+      <Button href="/dashboard/analyse-ia" size="md" className="mt-1">
         Lancer une analyse
       </Button>
     </div>
