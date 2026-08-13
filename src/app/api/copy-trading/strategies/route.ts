@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectivePlan } from "@/lib/supabase/subscriptions";
 import { getMaxActiveCopyTradingStrategies } from "@/lib/data/pricing";
-import { countActiveStrategies } from "@/lib/supabase/copy-trading";
+import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
+import { formatResetDate } from "@/lib/utils";
 
 type CreateStrategyBody = {
   walletId?: string;
@@ -79,17 +80,18 @@ export async function POST(request: Request) {
   if (!alreadyActive) {
     const plan = await getEffectivePlan(supabase, user.id);
     const maxStrategies = getMaxActiveCopyTradingStrategies(plan);
-    if (maxStrategies !== null) {
-      const currentActive = await countActiveStrategies(supabase, user.id);
-      if (currentActive >= maxStrategies) {
-        return NextResponse.json(
-          {
-            error: "limit_reached",
-            message: `Vous avez déjà ${maxStrategies} stratégie(s) active(s), la limite de votre offre. Passez à un plan supérieur pour en activer davantage.`,
-          },
-          { status: 403 }
-        );
-      }
+    const lock = await getQuotaLockState(supabase, user.id, "copy_trading", maxStrategies);
+    if (lock.locked) {
+      const resetLine = lock.periodEnd
+        ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd)}.`
+        : "";
+      return NextResponse.json(
+        {
+          error: "limit_reached",
+          message: `Vous avez déjà ${lock.count}/${lock.maxAllowed} stratégie(s) active(s) ce mois-ci — c'est votre sélection verrouillée pour ce cycle.${resetLine} Passez à un plan supérieur pour en activer davantage dès maintenant.`,
+        },
+        { status: 403 }
+      );
     }
   }
 

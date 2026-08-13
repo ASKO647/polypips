@@ -9,6 +9,7 @@ import { StrategyCard } from "@/components/dashboard/copy-trading/strategy-card"
 import { StrategyConfigForm } from "@/components/dashboard/copy-trading/strategy-config-form";
 import { TutorialModal } from "@/components/dashboard/copy-trading/tutorial-modal";
 import type { RiskParameters, Strategy, Suggestion } from "@/lib/data/copy-trading";
+import { cn, formatResetDate } from "@/lib/utils";
 
 type FlowState = "list" | "configure" | "active";
 
@@ -19,11 +20,18 @@ export function CopyTradingFlow({
   suggestionsByStrategyId,
   hasActiveSubscription,
   maxActiveStrategies,
+  quotaLocked,
+  quotaResetDate,
 }: {
   strategies: Strategy[];
   suggestionsByStrategyId: Record<string, Suggestion[]>;
   hasActiveSubscription: boolean;
   maxActiveStrategies: number | null;
+  /** True once the user has activated maxActiveStrategies strategies in
+   * the current billing cycle — activating, pausing, and stopping are all
+   * blocked until the subscription renews. Always false for Pro+. */
+  quotaLocked: boolean;
+  quotaResetDate: string | null;
 }) {
   const [strategies, setStrategies] = useState(initialStrategies);
   const suggestions = suggestionsByStrategyId;
@@ -52,8 +60,15 @@ export function CopyTradingFlow({
 
   const activeCount = strategies.filter((s) => s.status === "active").length;
 
+  const lockMessage = quotaLocked
+    ? `Vous avez atteint votre limite mensuelle (${activeCount}/${maxActiveStrategies} stratégies actives). Passez à un plan supérieur pour en activer davantage${
+        quotaResetDate ? `, ou attendez le renouvellement le ${formatResetDate(quotaResetDate)}` : ""
+      }.`
+    : null;
+
   const handleActivate = async (params: RiskParameters) => {
     if (!selectedStrategy) return;
+    if (quotaLocked) throw new Error(lockMessage ?? "Sélection verrouillée pour ce cycle.");
     setError(null);
 
     const response = await fetch("/api/copy-trading/strategies", {
@@ -78,6 +93,10 @@ export function CopyTradingFlow({
 
   const handleTogglePause = async () => {
     if (!selectedStrategy?.strategyId) return;
+    if (quotaLocked) {
+      setError(lockMessage);
+      return;
+    }
     const nextStatus = selectedStrategy.status === "active" ? "paused" : "active";
 
     const response = await fetch(
@@ -103,6 +122,10 @@ export function CopyTradingFlow({
 
   const handleStop = async () => {
     if (!selectedStrategy?.strategyId) return;
+    if (quotaLocked) {
+      setError(lockMessage);
+      return;
+    }
 
     const response = await fetch(
       `/api/copy-trading/strategies/${selectedStrategy.strategyId}`,
@@ -146,6 +169,8 @@ export function CopyTradingFlow({
           onTogglePause={handleTogglePause}
           onStop={handleStop}
           locked={!hasActiveSubscription}
+          quotaLocked={quotaLocked}
+          quotaLockMessage={lockMessage}
         />
         {error && (
           <p className="mt-4 rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-4 py-3 text-xs text-rose-300">
@@ -184,10 +209,24 @@ export function CopyTradingFlow({
       <RiskDisclaimer />
 
       {maxActiveStrategies !== null && (
-        <p className="text-xs text-white/35">
-          {activeCount} / {maxActiveStrategies} stratégie(s) active(s)
-          autorisée(s) par votre offre.
-        </p>
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-xs font-semibold",
+            quotaLocked
+              ? "border-amber-400/20 bg-amber-500/[0.06] text-amber-200"
+              : "border-white/10 bg-white/[0.03] text-white/50"
+          )}
+        >
+          <span>
+            {activeCount}/{maxActiveStrategies} stratégies actives ce mois-ci
+          </span>
+          {quotaLocked && (
+            <span className="text-amber-300">
+              Sélection verrouillée
+              {quotaResetDate ? ` jusqu'au ${formatResetDate(quotaResetDate)}` : ""}
+            </span>
+          )}
+        </div>
       )}
 
       {error && (
@@ -233,6 +272,8 @@ export function CopyTradingFlow({
                 setSelectedWalletId(strategy.walletId);
                 setState(strategy.riskParameters ? "active" : "configure");
               }}
+              configureDisabled={quotaLocked && strategy.strategyId === null}
+              configureDisabledReason={lockMessage}
             />
           ))}
         </div>

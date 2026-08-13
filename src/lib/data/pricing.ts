@@ -25,7 +25,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       "Accès complet à toutes les fonctionnalités",
       "10 analyses IA par jour",
       "3 portefeuilles suivis par mois",
-      "3 copy trading par semaine",
+      "3 stratégies actives par mois",
       "50 messages Coach IA par semaine",
       "3 sélections IA par jour",
     ],
@@ -43,7 +43,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       "10 analyses IA par jour",
       "3 portefeuilles suivis par mois",
-      "3 copy trading par semaine",
+      "3 stratégies actives par mois",
       "50 messages Coach IA par semaine",
       "3 sélections IA par jour",
       "Statistiques avancées",
@@ -92,12 +92,11 @@ export function getWeeklyCoachMessageLimit(plan: PricingPlan): number | null {
 }
 
 /**
- * "3 portefeuilles suivis par mois" reads as a monthly rate on its face,
- * but a followed wallet is a standing thing you keep or drop (like a
- * watchlist), not a one-shot action like an analysis or a message — so
- * this is enforced as a concurrent cap (at most N wallets followed at
- * once), matching how the rest of the follow/unfollow UI behaves. Returns
- * null when unlimited.
+ * "3 portefeuilles suivis par mois" is a locked monthly quota, not a
+ * freely-swappable concurrent cap: once a user has followed N wallets in
+ * the current billing cycle, they can't unfollow one to follow a
+ * different one until the subscription renews (see
+ * lib/supabase/quota-cycles.ts). Returns null when unlimited.
  */
 export function getMaxTrackedWallets(plan: PricingPlan): number | null {
   for (const feature of plan.features) {
@@ -108,13 +107,15 @@ export function getMaxTrackedWallets(plan: PricingPlan): number | null {
 }
 
 /**
- * Same reasoning as getMaxTrackedWallets: "3 copy trading par semaine" is
- * enforced as at most N simultaneously active strategies, not N
- * activations per week. Returns null when unlimited.
+ * "3 stratégies actives par mois" is a locked monthly quota, not a
+ * freely-swappable concurrent cap: once a user has activated N strategies
+ * in the current billing cycle, they can't deactivate one to activate a
+ * different one until the subscription renews (see
+ * lib/supabase/quota-cycles.ts). Returns null when unlimited.
  */
 export function getMaxActiveCopyTradingStrategies(plan: PricingPlan): number | null {
   for (const feature of plan.features) {
-    const match = feature.match(/^(\d+)\s+copy\s+trading\s+par\s+semaine$/i);
+    const match = feature.match(/^(\d+)\s+stratégies?\s+actives?\s+par\s+mois$/i);
     if (match) return Number(match[1]);
   }
   return null;

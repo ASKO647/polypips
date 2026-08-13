@@ -3,6 +3,7 @@ import { CopyTradingFlow } from "@/components/dashboard/copy-trading/copy-tradin
 import { createClient } from "@/lib/supabase/server";
 import { fetchSubscription, getEffectivePlan, hasActiveAccess } from "@/lib/supabase/subscriptions";
 import { fetchStrategies, fetchSuggestions } from "@/lib/supabase/copy-trading";
+import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { getMaxActiveCopyTradingStrategies } from "@/lib/data/pricing";
 import type { Suggestion } from "@/lib/data/copy-trading";
 
@@ -23,15 +24,24 @@ export default async function CopyTradingPage() {
         suggestionsByStrategyId={{}}
         hasActiveSubscription={false}
         maxActiveStrategies={null}
+        quotaLocked={false}
+        quotaResetDate={null}
       />
     );
   }
 
-  const [subscription, strategies, plan] = await Promise.all([
+  const [subscription, plan] = await Promise.all([
     fetchSubscription(supabase),
-    fetchStrategies(supabase, user.id),
     getEffectivePlan(supabase, user.id),
   ]);
+  const maxActiveStrategies = getMaxActiveCopyTradingStrategies(plan);
+
+  // Same "reset on page load" mechanism as Smart Money — see that page's
+  // comment. Must run before fetchStrategies so a rolled-over cycle's
+  // wiped strategies are reflected immediately, not on the next load.
+  const lock = await getQuotaLockState(supabase, user.id, "copy_trading", maxActiveStrategies);
+
+  const strategies = await fetchStrategies(supabase, user.id);
 
   const strategyIds = strategies
     .map((s) => s.strategyId)
@@ -49,7 +59,9 @@ export default async function CopyTradingPage() {
       strategies={strategies}
       suggestionsByStrategyId={suggestionsByStrategyId}
       hasActiveSubscription={hasActiveAccess(subscription)}
-      maxActiveStrategies={getMaxActiveCopyTradingStrategies(plan)}
+      maxActiveStrategies={maxActiveStrategies}
+      quotaLocked={lock.locked}
+      quotaResetDate={lock.periodEnd}
     />
   );
 }

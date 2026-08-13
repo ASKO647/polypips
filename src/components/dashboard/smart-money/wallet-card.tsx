@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, Plus } from "lucide-react";
+import { ArrowRight, Check, Lock, Plus } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ChangeBadge } from "@/components/dashboard/smart-money/change-badge";
 import type { Wallet } from "@/lib/data/smart-money";
@@ -11,11 +11,17 @@ export function WalletCard({
   isFollowed,
   onToggleFollow,
   onViewDetail,
+  toggleDisabled = false,
+  toggleDisabledReason,
 }: {
   wallet: Wallet;
   isFollowed: boolean;
   onToggleFollow: () => void;
   onViewDetail: () => void;
+  /** True once the user's monthly wallet quota is locked — follow AND
+   * unfollow are both blocked until the subscription renews. */
+  toggleDisabled?: boolean;
+  toggleDisabledReason?: string | null;
 }) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -57,14 +63,20 @@ export function WalletCard({
         <button
           type="button"
           onClick={onToggleFollow}
+          disabled={toggleDisabled}
+          title={toggleDisabled ? (toggleDisabledReason ?? undefined) : undefined}
           className={cn(
             "inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors duration-150",
-            isFollowed
-              ? "border-brand-400 bg-brand-500/15 text-brand-400"
-              : "border-white/15 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white"
+            toggleDisabled
+              ? "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
+              : isFollowed
+                ? "border-brand-400 bg-brand-500/15 text-brand-400"
+                : "border-white/15 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white"
           )}
         >
-          {isFollowed ? (
+          {toggleDisabled ? (
+            <Lock className="h-3.5 w-3.5" />
+          ) : isFollowed ? (
             <Check className="h-3.5 w-3.5" />
           ) : (
             <Plus className="h-3.5 w-3.5" />

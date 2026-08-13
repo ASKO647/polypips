@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectivePlan } from "@/lib/supabase/subscriptions";
 import { getMaxTrackedWallets } from "@/lib/data/pricing";
-import { countFollowedWallets, WALLET_ADDRESS_RE } from "@/lib/supabase/wallets";
+import { WALLET_ADDRESS_RE } from "@/lib/supabase/wallets";
+import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
+import { formatResetDate } from "@/lib/utils";
 
 function shortLabel(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
@@ -98,17 +100,18 @@ export async function POST(request: Request) {
 
   const plan = await getEffectivePlan(supabase, user.id);
   const maxWallets = getMaxTrackedWallets(plan);
-  if (maxWallets !== null) {
-    const currentCount = await countFollowedWallets(supabase, user.id);
-    if (currentCount >= maxWallets) {
-      return NextResponse.json(
-        {
-          error: "limit_reached",
-          message: `Vous suivez déjà ${maxWallets} portefeuille(s), la limite de votre offre. Passez à un plan supérieur pour en suivre davantage.`,
-        },
-        { status: 403 }
-      );
-    }
+  const lock = await getQuotaLockState(supabase, user.id, "wallets", maxWallets);
+  if (lock.locked) {
+    const resetLine = lock.periodEnd
+      ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd)}.`
+      : "";
+    return NextResponse.json(
+      {
+        error: "limit_reached",
+        message: `Vous suivez déjà ${lock.count}/${lock.maxAllowed} portefeuille(s) ce mois-ci — c'est votre sélection verrouillée pour ce cycle.${resetLine} Passez à un plan supérieur pour en suivre davantage dès maintenant.`,
+      },
+      { status: 403 }
+    );
   }
 
   const { error: followError } = await supabase
@@ -151,6 +154,22 @@ export async function DELETE(request: Request) {
     return NextResponse.json(
       { error: "invalid_input", message: "walletId requis." },
       { status: 400 }
+    );
+  }
+
+  const plan = await getEffectivePlan(supabase, user.id);
+  const maxWallets = getMaxTrackedWallets(plan);
+  const lock = await getQuotaLockState(supabase, user.id, "wallets", maxWallets);
+  if (lock.locked) {
+    const resetLine = lock.periodEnd
+      ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd)}.`
+      : "";
+    return NextResponse.json(
+      {
+        error: "locked",
+        message: `Vous avez atteint votre limite mensuelle (${lock.count}/${lock.maxAllowed} portefeuilles) : impossible de changer votre sélection avant le renouvellement.${resetLine} Passez à un plan supérieur pour en suivre davantage dès maintenant.`,
+      },
+      { status: 403 }
     );
   }
 

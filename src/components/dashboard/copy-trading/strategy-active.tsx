@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExternalLink, Pause, Play, Square } from "lucide-react";
+import { ExternalLink, Lock, Pause, Play, Square } from "lucide-react";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import type { RiskParameters, Strategy, Suggestion } from "@/lib/data/copy-trading";
@@ -28,6 +28,8 @@ export function StrategyActive({
   onTogglePause,
   onStop,
   locked = false,
+  quotaLocked = false,
+  quotaLockMessage,
 }: {
   strategy: Strategy;
   params: RiskParameters;
@@ -37,6 +39,11 @@ export function StrategyActive({
   onStop: () => Promise<void>;
   /** True when the viewer has no active subscription — see LockedOverlay. */
   locked?: boolean;
+  /** True once the monthly active-strategy quota is locked — pausing and
+   * stopping are both blocked, since either would free a slot to activate
+   * a different strategy before the subscription renews. */
+  quotaLocked?: boolean;
+  quotaLockMessage?: string | null;
 }) {
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [pending, setPending] = useState(false);
@@ -141,11 +148,14 @@ export function StrategyActive({
         <div className="flex gap-2">
           <button
             type="button"
-            disabled={pending}
+            disabled={pending || quotaLocked}
+            title={quotaLocked ? (quotaLockMessage ?? undefined) : undefined}
             onClick={handleTogglePause}
             className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3.5 py-2 text-xs font-semibold text-white/70 transition-colors hover:border-white/25 hover:text-white disabled:opacity-50"
           >
-            {isPaused ? (
+            {quotaLocked ? (
+              <Lock className="h-3.5 w-3.5" />
+            ) : isPaused ? (
               <Play className="h-3.5 w-3.5" />
             ) : (
               <Pause className="h-3.5 w-3.5" />
@@ -154,15 +164,22 @@ export function StrategyActive({
           </button>
           <button
             type="button"
-            disabled={pending}
+            disabled={pending || quotaLocked}
+            title={quotaLocked ? (quotaLockMessage ?? undefined) : undefined}
             onClick={handleStop}
             className="inline-flex items-center gap-1.5 rounded-full border border-rose-400/25 bg-rose-500/[0.08] px-3.5 py-2 text-xs font-semibold text-rose-400 transition-colors hover:border-rose-400/40 disabled:opacity-50"
           >
-            <Square className="h-3.5 w-3.5" />
+            {quotaLocked ? <Lock className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
             Arrêter
           </button>
         </div>
       </div>
+
+      {quotaLocked && quotaLockMessage && (
+        <p className="rounded-xl border border-amber-400/20 bg-amber-500/[0.06] px-4 py-3 text-xs text-amber-200">
+          {quotaLockMessage}
+        </p>
+      )}
 
       <RiskDisclaimer />
 

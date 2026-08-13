@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Plus } from "lucide-react";
+import { Check, Lock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { WalletChart } from "@/components/dashboard/smart-money/wallet-chart";
@@ -90,6 +90,8 @@ export function WalletDetail({
   onToggleFollow,
   onBack,
   locked = false,
+  toggleDisabled = false,
+  toggleDisabledReason,
 }: {
   wallet: Wallet;
   isFollowed: boolean;
@@ -97,6 +99,10 @@ export function WalletDetail({
   onBack: () => void;
   /** True when the viewer has no active subscription — see LockedOverlay. */
   locked?: boolean;
+  /** True once the user's monthly wallet quota is locked — follow AND
+   * unfollow are both blocked until the subscription renews. */
+  toggleDisabled?: boolean;
+  toggleDisabledReason?: string | null;
 }) {
   // The sparkline's own trend (does it end above where it started?) is a
   // separate signal from changePercent — it stays meaningful even before
@@ -135,14 +141,20 @@ export function WalletDetail({
         <button
           type="button"
           onClick={onToggleFollow}
+          disabled={toggleDisabled}
+          title={toggleDisabled ? (toggleDisabledReason ?? undefined) : undefined}
           className={cn(
             "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors duration-150",
-            isFollowed
-              ? "border-brand-400 bg-brand-500/15 text-brand-400"
-              : "border-white/15 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white"
+            toggleDisabled
+              ? "cursor-not-allowed border-white/10 bg-white/[0.02] text-white/30"
+              : isFollowed
+                ? "border-brand-400 bg-brand-500/15 text-brand-400"
+                : "border-white/15 bg-white/[0.03] text-white/60 hover:border-white/25 hover:text-white"
           )}
         >
-          {isFollowed ? (
+          {toggleDisabled ? (
+            <Lock className="h-3.5 w-3.5" />
+          ) : isFollowed ? (
             <Check className="h-3.5 w-3.5" />
           ) : (
             <Plus className="h-3.5 w-3.5" />

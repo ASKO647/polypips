@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import type { Strategy } from "@/lib/data/copy-trading";
 import { cn, formatEUR } from "@/lib/utils";
@@ -10,13 +10,20 @@ export function StrategyCard({
   suggestionCount,
   onConfigure,
   onManage,
+  configureDisabled = false,
+  configureDisabledReason,
 }: {
   strategy: Strategy;
   suggestionCount: number;
   onConfigure: () => void;
   onManage: () => void;
+  /** True once the monthly active-strategy quota is locked and this
+   * wallet has no strategy yet — activating a new one is blocked. */
+  configureDisabled?: boolean;
+  configureDisabledReason?: string | null;
 }) {
   const configured = strategy.strategyId !== null;
+  const blocked = !configured && configureDisabled;
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -74,11 +81,13 @@ export function StrategyCard({
         type="button"
         variant="outline"
         onClick={configured ? onManage : onConfigure}
+        disabled={blocked}
+        title={blocked ? (configureDisabledReason ?? undefined) : undefined}
         className="mt-1 w-full"
       >
         {configured ? "Gérer cette stratégie" : "Configurer cette stratégie"}
         <ButtonIcon variant="outline">
-          <ArrowRight className="h-4 w-4" />
+          {blocked ? <Lock className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
         </ButtonIcon>
       </Button>
     </div>
