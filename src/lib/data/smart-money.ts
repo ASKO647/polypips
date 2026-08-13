@@ -29,7 +29,9 @@ export type Wallet = {
   handle: string;
   source: WalletSource;
   totalValue: number;
-  changePercent: number;
+  /** null when there isn't yet a second wallet_snapshots data point to
+   * compare against — render as a neutral state, not as 0%. */
+  changePercent: number | null;
   activePositionsCount: number;
   marketsTrackedCount: number;
   chart: number[];

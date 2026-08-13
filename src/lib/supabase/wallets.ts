@@ -10,7 +10,7 @@ type TrackedWalletRow = {
   label: string;
   source: "discovered" | "user_added";
   total_value: number;
-  change_percent: number;
+  change_percent: number | null;
   active_positions_count: number;
   markets_tracked_count: number;
   positions: WalletPosition[];
@@ -48,7 +48,7 @@ function mapWalletRow(row: TrackedWalletRow, chart: number[]): Wallet {
     handle: row.label,
     source: row.source,
     totalValue: Number(row.total_value ?? 0),
-    changePercent: Number(row.change_percent ?? 0),
+    changePercent: row.change_percent === null ? null : Number(row.change_percent),
     activePositionsCount: row.active_positions_count ?? 0,
     marketsTrackedCount: row.markets_tracked_count ?? 0,
     chart,

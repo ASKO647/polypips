@@ -98,7 +98,12 @@ export function WalletDetail({
   /** True when the viewer has no active subscription — see LockedOverlay. */
   locked?: boolean;
 }) {
-  const positive = wallet.changePercent >= 0;
+  // The sparkline's own trend (does it end above where it started?) is a
+  // separate signal from changePercent — it stays meaningful even before
+  // there's enough history for a real change_percent (see the flat
+  // 2-point fallback chart built in lib/supabase/wallets.ts).
+  const chartPositive = wallet.chart.length < 2 || wallet.chart.at(-1)! >= wallet.chart[0];
+  const hasChange = wallet.changePercent !== null;
 
   return (
     <div className="flex flex-col gap-5">
@@ -114,11 +119,16 @@ export function WalletDetail({
             <span
               className={cn(
                 "text-sm font-bold",
-                positive ? "text-emerald-400" : "text-rose-400"
+                !hasChange
+                  ? "text-white/35"
+                  : wallet.changePercent! >= 0
+                    ? "text-emerald-400"
+                    : "text-rose-400"
               )}
             >
-              {positive ? "+" : ""}
-              {wallet.changePercent.toFixed(1)}%
+              {!hasChange
+                ? "— (historique insuffisant)"
+                : `${wallet.changePercent! >= 0 ? "+" : ""}${wallet.changePercent!.toFixed(1)}%`}
             </span>
           </div>
         </div>
@@ -150,7 +160,7 @@ export function WalletDetail({
             Évolution — valeur du portefeuille
           </p>
           <div className="mt-4 h-32 sm:h-40">
-            <WalletChart points={wallet.chart} positive={positive} />
+            <WalletChart points={wallet.chart} positive={chartPositive} />
           </div>
         </div>
 

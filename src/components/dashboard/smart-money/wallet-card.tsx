@@ -2,6 +2,7 @@
 
 import { ArrowRight, Check, Plus } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
+import { ChangeBadge } from "@/components/dashboard/smart-money/change-badge";
 import type { Wallet } from "@/lib/data/smart-money";
 import { cn, formatEUR } from "@/lib/utils";
 
@@ -16,8 +17,6 @@ export function WalletCard({
   onToggleFollow: () => void;
   onViewDetail: () => void;
 }) {
-  const positive = wallet.changePercent >= 0;
-
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
       <div className="flex items-start justify-between gap-3">
@@ -36,17 +35,7 @@ export function WalletCard({
             {formatEUR(wallet.totalValue)}
           </p>
         </div>
-        <span
-          className={cn(
-            "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
-            positive
-              ? "bg-emerald-500/15 text-emerald-400"
-              : "bg-rose-500/15 text-rose-400"
-          )}
-        >
-          {positive ? "+" : ""}
-          {wallet.changePercent.toFixed(1)}%
-        </span>
+        <ChangeBadge changePercent={wallet.changePercent} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-xs">

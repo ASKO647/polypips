@@ -40,7 +40,7 @@ export function SmartMoneyFlow({
     () =>
       [...allWallets].sort((a, b) =>
         sortKey === "changePercent"
-          ? Math.abs(b.changePercent) - Math.abs(a.changePercent)
+          ? Math.abs(b.changePercent ?? 0) - Math.abs(a.changePercent ?? 0)
           : b[sortKey] - a[sortKey]
       ),
     [allWallets, sortKey]
@@ -96,7 +96,7 @@ export function SmartMoneyFlow({
               handle: "Nouveau portefeuille",
               source: "user_added",
               totalValue: 0,
-              changePercent: 0,
+              changePercent: null,
               activePositionsCount: 0,
               marketsTrackedCount: 0,
               chart: [0, 0],

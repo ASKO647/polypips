@@ -40,6 +40,11 @@ const ACTIVITY_FETCH_LIMIT = 20;
  * within this trailing window, since there's no real "closed position"
  * concept without an executed trade. */
 const SUGGESTION_LOOKBACK_DAYS = 14;
+/** change_percent is "evolution over roughly a day," not "since the last
+ * cron tick" — comparing against the immediately preceding sync makes the
+ * number meaningless (and near-zero) once the cron runs every few minutes,
+ * while the sign still flips on real noise. */
+const CHANGE_REFERENCE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const currencyFormatter = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
 function formatEUR(value: number): string {
@@ -48,6 +53,36 @@ function formatEUR(value: number): string {
 
 function shortLabel(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
+
+/**
+ * Finds the value to compare a wallet's fresh total against for
+ * change_percent: the most recent snapshot at least ~24h old, or — if the
+ * wallet doesn't have 24h of history yet — the oldest snapshot recorded so
+ * far (some real reference beats none). Returns null when there isn't a
+ * single prior snapshot, which the frontend renders as "no data yet"
+ * rather than a fake "unchanged."
+ */
+async function fetchChangeReferenceValue(
+  supabase: ReturnType<typeof createClient>,
+  walletId: string
+): Promise<number | null> {
+  const { data: snapshots, error } = await supabase
+    .from("wallet_snapshots")
+    .select("total_value, snapshotted_at")
+    .eq("wallet_id", walletId)
+    .order("snapshotted_at", { ascending: true });
+
+  if (error || !snapshots || snapshots.length === 0) return null;
+
+  const cutoff = Date.now() - CHANGE_REFERENCE_WINDOW_MS;
+  for (let i = snapshots.length - 1; i >= 0; i--) {
+    if (new Date(snapshots[i].snapshotted_at).getTime() <= cutoff) {
+      return Number(snapshots[i].total_value);
+    }
+  }
+  // No snapshot is old enough yet — fall back to the earliest one available.
+  return Number(snapshots[0].total_value);
 }
 
 async function mapWithConcurrency<T, R>(
@@ -140,7 +175,7 @@ Deno.serve(async (req) => {
   // --- 2. Refresh every tracked wallet -------------------------------------
   const { data: wallets, error: walletsError } = await supabase
     .from("tracked_wallets")
-    .select("id, address, total_value, last_synced_at");
+    .select("id, address, label, last_synced_at");
 
   if (walletsError) {
     console.error("[sync-smart-money] failed to load tracked wallets", walletsError);
@@ -154,17 +189,22 @@ Deno.serve(async (req) => {
     const address = String(wallet.address).match(WALLET_ADDRESS_RE) ? wallet.address : null;
     if (!address) return { walletId: wallet.id, ok: false as const };
 
-    const previousValue = Number(wallet.total_value ?? 0);
     const previousSyncedAt = wallet.last_synced_at as string | null;
 
-    const [value, positions, activity] = await Promise.all([
+    const [value, positions, activity, referenceValue] = await Promise.all([
       fetchWalletValue(address),
       fetchWalletPositions(address),
       fetchWalletActivity(address, ACTIVITY_FETCH_LIMIT),
+      fetchChangeReferenceValue(supabase, wallet.id),
     ]);
 
+    // null (not 0) when there's no real historical data point yet to
+    // compare against — the frontend renders that as a neutral state
+    // instead of a false "unchanged" reading.
     const changePercent =
-      previousValue > 0 ? ((value - previousValue) / previousValue) * 100 : 0;
+      referenceValue !== null && referenceValue > 0
+        ? ((value - referenceValue) / referenceValue) * 100
+        : null;
     const distinctMarkets = new Set(positions.map((p) => p.market)).size;
     const now = new Date().toISOString();
 
