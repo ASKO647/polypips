@@ -69,3 +69,14 @@ export const PRICING_PLANS: PricingPlan[] = [
     cta: "Choisir Pro+",
   },
 ];
+
+/** Derives a plan's daily analysis cap from its own feature list, so the
+ * dashboard never hardcodes a number that could drift from the pricing page.
+ * Returns null when the plan has no such line (i.e. unlimited analyses). */
+export function getDailyAnalysisLimit(plan: PricingPlan): number | null {
+  for (const feature of plan.features) {
+    const match = feature.match(/^(\d+)\s+analyses?\s+IA\s+par\s+jour$/i);
+    if (match) return Number(match[1]);
+  }
+  return null;
+}

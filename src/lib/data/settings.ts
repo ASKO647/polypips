@@ -18,6 +18,14 @@ export const MOCK_SUBSCRIPTION: MockSubscription = {
   renewalDate: "12 septembre 2026",
 };
 
+/** Mocked pending real per-plan usage tracking. */
+export const MOCK_USAGE = {
+  analysesToday: 7,
+};
+
+/** Only relevant when MOCK_SUBSCRIPTION.planId === "decouverte". */
+export const MOCK_TRIAL_DAYS_REMAINING = 3;
+
 export type NotificationPreference = {
   id: string;
   label: string;

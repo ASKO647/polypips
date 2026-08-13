@@ -2,6 +2,7 @@ import {
   BarChart3,
   Copy,
   GraduationCap,
+  LifeBuoy,
   LineChart,
   Settings,
   Sparkles,
@@ -22,5 +23,9 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },
   { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
   { label: "Statistiques", href: "/dashboard/stats", icon: BarChart3 },
+];
+
+export const DASHBOARD_RESOURCE_ITEMS: DashboardNavItem[] = [
   { label: "Paramètres", href: "/dashboard/settings", icon: Settings },
+  { label: "FAQ / Support", href: "/support", icon: LifeBuoy },
 ];
