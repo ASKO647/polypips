@@ -13,6 +13,7 @@ import { Container } from "@/components/ui/container";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { CheckItem } from "@/components/ui/check-item";
+import { scrollToHashIfAlreadyThere } from "@/lib/hash-scroll";
 
 const DEMO_ITEMS = [
   "Analyse d'un marché",
@@ -168,7 +169,12 @@ export function ProductDemo() {
             ))}
           </ul>
           <div>
-            <Button href="#demonstration" size="lg" className="mt-2">
+            <Button
+              href="#demonstration"
+              size="lg"
+              className="mt-2"
+              onClick={scrollToHashIfAlreadyThere("demonstration")}
+            >
               <ButtonIcon>
                 <Play className="h-4 w-4 fill-current" />
               </ButtonIcon>

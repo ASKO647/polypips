@@ -1,8 +1,11 @@
+"use client";
+
 import { PlayCircle } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { SocialProofRow } from "@/components/ui/social-proof-row";
 import { CheckItem } from "@/components/ui/check-item";
 import { HeroBackground } from "@/components/marketing/hero-background";
+import { scrollToHashIfAlreadyThere } from "@/lib/hash-scroll";
 
 const TRUST_ITEMS = [
   "Accès complet pendant 3 jours",
@@ -50,10 +53,19 @@ export function Hero() {
           className="mt-9 flex animate-fade-up flex-col items-center gap-3 sm:flex-row"
           style={{ animationDelay: "220ms" }}
         >
-          <Button href="#tarifs" size="lg">
+          <Button
+            href="#tarifs"
+            size="lg"
+            onClick={scrollToHashIfAlreadyThere("tarifs")}
+          >
             Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
           </Button>
-          <Button href="#demonstration" variant="outline" size="lg">
+          <Button
+            href="#demonstration"
+            variant="outline"
+            size="lg"
+            onClick={scrollToHashIfAlreadyThere("demonstration")}
+          >
             <ButtonIcon variant="outline">
               <PlayCircle className="h-5 w-5 text-brand-500" strokeWidth={2} />
             </ButtonIcon>
