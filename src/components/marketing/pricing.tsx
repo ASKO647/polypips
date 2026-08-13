@@ -1,11 +1,12 @@
 import { Gift } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
-import { Button, ButtonIcon } from "@/components/ui/button";
 import { CheckItem } from "@/components/ui/check-item";
 import { Countdown } from "@/components/ui/countdown";
+import { PricingPlanButton } from "@/components/marketing/pricing-plan-button";
 import { getDefaultLaunchDeadline } from "@/lib/deadline";
 import { PRICING_PLANS } from "@/lib/data/pricing";
+import type { PlanId } from "@/lib/stripe/plans";
 import { cn } from "@/lib/utils";
 
 export function Pricing() {
@@ -73,17 +74,12 @@ export function Pricing() {
                 </div>
               </div>
 
-              <Button
-                href="/signup"
+              <PricingPlanButton
+                planId={plan.id as PlanId}
+                label={plan.cta}
                 variant={plan.highlighted ? "primary" : "outline"}
-                size="lg"
                 className="h-[54px] w-full"
-              >
-                {plan.cta}
-                <ButtonIcon variant={plan.highlighted ? "primary" : "outline"}>
-                  →
-                </ButtonIcon>
-              </Button>
+              />
 
               <ul className="flex flex-col gap-3 border-t border-border pt-6">
                 {plan.features.map((feature) => (

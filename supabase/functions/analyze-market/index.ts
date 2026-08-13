@@ -22,6 +22,18 @@ type AnalyzeRequest =
  * frontend renders these events directly instead of simulating delays. */
 type ProgressStep = "fetching_market" | "calling_ai" | "receiving_result";
 
+/** Mirrors getDailyAnalysisLimit(PRICING_PLANS) in src/lib/data/pricing.ts —
+ * duplicated here because this Edge Function runs on Deno and can't import
+ * from the Next.js app's src tree. Keep these two in sync by hand. A user
+ * with no row in `subscriptions` (or a lapsed one) is treated as the
+ * "decouverte" free-tier ceiling rather than unlimited or blocked outright,
+ * so the product is still provable without a subscription. */
+const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
+  decouverte: 10,
+  pro: 10,
+  "pro-plus": null,
+};
+
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
   if (value === "Faible" || value === "Moyenne" || value === "Élevée") {
     return value;
@@ -114,6 +126,34 @@ Deno.serve(async (req) => {
         emit({ type: "error", code, message });
         controller.close();
       };
+
+      const { data: subscriptionRow } = await supabase
+        .from("subscriptions")
+        .select("plan, status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const hasAccess =
+        subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing";
+      const effectivePlan = hasAccess ? subscriptionRow!.plan : "decouverte";
+      const dailyLimit = DAILY_ANALYSIS_LIMITS[effectivePlan] ?? 10;
+
+      if (dailyLimit !== null) {
+        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        const { count } = await supabase
+          .from("analyses")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+          .gte("created_at", since);
+
+        if ((count ?? 0) >= dailyLimit) {
+          emitErrorAndClose(
+            "limit_reached",
+            `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui. Passez à Pro+ pour des analyses illimitées.`
+          );
+          return;
+        }
+      }
 
       let market: GammaMarket;
       let marketUrl: string | null = null;

@@ -17,7 +17,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 
 const ALL_CATEGORIES = "Tous";
 
-export function MarketsFlow() {
+export function MarketsFlow({
+  hasActiveSubscription,
+}: {
+  hasActiveSubscription: boolean;
+}) {
   const [selected, setSelected] = useState<MarketAnalysis | null>(null);
   const [category, setCategory] = useState<string>(ALL_CATEGORIES);
   const [sortKey, setSortKey] = useState<SortKey>("opportunityScore");
@@ -49,6 +53,7 @@ export function MarketsFlow() {
         analysis={selected}
         onBack={() => setSelected(null)}
         backLabel="Retour à la liste"
+        locked={!hasActiveSubscription}
       />
     );
   }

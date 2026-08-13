@@ -1,8 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SidebarNavContent } from "@/components/dashboard/sidebar-nav-content";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
-export function DashboardSidebar({ userEmail }: { userEmail: string }) {
+export function DashboardSidebar({
+  userEmail,
+  subscription,
+  analysesToday,
+}: {
+  userEmail: string;
+  subscription: SubscriptionRow | null;
+  analysesToday: number;
+}) {
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#160b0c] lg:flex">
       <Link
@@ -22,7 +31,11 @@ export function DashboardSidebar({ userEmail }: { userEmail: string }) {
         </span>
       </Link>
 
-      <SidebarNavContent userEmail={userEmail} />
+      <SidebarNavContent
+        userEmail={userEmail}
+        subscription={subscription}
+        analysesToday={analysesToday}
+      />
     </aside>
   );
 }

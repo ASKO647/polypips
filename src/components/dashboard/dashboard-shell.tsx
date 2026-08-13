@@ -4,19 +4,28 @@ import { useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 export function DashboardShell({
   userEmail,
+  subscription,
+  analysesToday,
   children,
 }: {
   userEmail: string;
+  subscription: SubscriptionRow | null;
+  analysesToday: number;
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-[#160b0c]">
-      <DashboardSidebar userEmail={userEmail} />
+      <DashboardSidebar
+        userEmail={userEmail}
+        subscription={subscription}
+        analysesToday={analysesToday}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
@@ -30,6 +39,8 @@ export function DashboardShell({
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         userEmail={userEmail}
+        subscription={subscription}
+        analysesToday={analysesToday}
       />
     </div>
   );

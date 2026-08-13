@@ -55,6 +55,7 @@ export type AnalysisErrorCode =
   | "gamma_unavailable"
   | "ai_error"
   | "network_error"
+  | "limit_reached"
   | "unknown";
 
 const ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
@@ -71,6 +72,8 @@ const ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
   ai_error:
     "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
   network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
+  limit_reached:
+    "Vous avez atteint votre limite d'analyses aujourd'hui. Passez à Pro+ pour des analyses illimitées.",
   unknown: "Une erreur inattendue est survenue. Réessayez.",
 };
 

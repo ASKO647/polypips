@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Check, CheckCircle2 } from "lucide-react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { Button } from "@/components/ui/button";
@@ -10,28 +11,47 @@ import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { SettingsToggle } from "@/components/dashboard/settings/settings-toggle";
 import { PRICING_PLANS } from "@/lib/data/pricing";
-import {
-  DEFAULT_NOTIFICATION_PREFERENCES,
-  MOCK_SUBSCRIPTION,
-  type SubscriptionStatus,
-} from "@/lib/data/settings";
+import type { PayingPlanId } from "@/lib/stripe/plans";
+import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
-const plan = PRICING_PLANS.find((p) => p.id === MOCK_SUBSCRIPTION.planId)!;
+const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const STATUS_BADGE: Record<
+  string,
+  { label: string; className: string }
+> = {
+  trialing: { label: "Essai", className: "bg-brand-500/15 text-brand-400" },
+  active: { label: "Actif", className: "bg-emerald-500/15 text-emerald-400" },
+  past_due: { label: "Paiement en échec", className: "bg-amber-500/15 text-amber-400" },
+  canceled: { label: "Terminé", className: "bg-white/10 text-white/50" },
+};
+
+const PAYING_PLAN_IDS: PayingPlanId[] = ["pro", "pro-plus"];
 
 export function SettingsFlow({
   email,
   memberSince,
+  initialSubscription,
 }: {
   email: string;
   memberSince: string;
+  initialSubscription: SubscriptionRow | null;
 }) {
+  const router = useRouter();
   const [notifications, setNotifications] = useState(
     DEFAULT_NOTIFICATION_PREFERENCES
   );
-  const [subscriptionStatus, setSubscriptionStatus] =
-    useState<SubscriptionStatus>(MOCK_SUBSCRIPTION.status);
+  const [subscription, setSubscription] = useState(initialSubscription);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [changingPlan, setChangingPlan] = useState<PayingPlanId | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
 
@@ -41,9 +61,47 @@ export function SettingsFlow({
     );
   };
 
-  const handleConfirmCancel = () => {
-    setSubscriptionStatus("canceled");
-    setCancelModalOpen(false);
+  const handleConfirmCancel = async () => {
+    setCancelling(true);
+    setActionError(null);
+    try {
+      const response = await fetch("/api/stripe/cancel", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      setSubscription((prev) => (prev ? { ...prev, cancelAtPeriodEnd: true } : prev));
+      setCancelModalOpen(false);
+      setTimeout(() => router.refresh(), 1500);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "L'annulation a échoué. Réessayez."
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const handleChangePlan = async (newPlan: PayingPlanId) => {
+    setChangingPlan(newPlan);
+    setActionError(null);
+    try {
+      const response = await fetch("/api/stripe/change-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: newPlan }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      setSubscription((prev) => (prev ? { ...prev, plan: newPlan } : prev));
+      setTimeout(() => router.refresh(), 1500);
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Le changement de plan a échoué. Réessayez."
+      );
+    } finally {
+      setChangingPlan(null);
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -51,6 +109,19 @@ export function SettingsFlow({
     setDeletionRequested(true);
     setDeleteModalOpen(false);
   };
+
+  const plan = subscription
+    ? PRICING_PLANS.find((p) => p.id === subscription.plan)
+    : null;
+  const badge = subscription ? STATUS_BADGE[subscription.status] : null;
+  const periodEndLabel = subscription?.currentPeriodEnd
+    ? DATE_FORMATTER.format(new Date(subscription.currentPeriodEnd))
+    : null;
+  const hasAccess =
+    subscription?.status === "active" || subscription?.status === "trialing";
+  const changeablePlans = subscription
+    ? PAYING_PLAN_IDS.filter((id) => id !== subscription.plan)
+    : [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -94,62 +165,114 @@ export function SettingsFlow({
           <h2 className="font-display text-base font-bold text-white">
             Abonnement
           </h2>
-          <span
-            className={cn(
-              "rounded-full px-2.5 py-1 text-xs font-bold",
-              subscriptionStatus === "active"
-                ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-white/10 text-white/50"
-            )}
-          >
-            {subscriptionStatus === "active" ? "Actif" : "Annulé"}
-          </span>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-baseline gap-2">
-          <span className="font-display text-2xl font-bold text-white">
-            {plan.name}
-          </span>
-          <span className="text-sm text-white/50">
-            {plan.price} {plan.priceSuffix}
-          </span>
-        </div>
-
-        <ul className="mt-4 flex flex-col gap-2">
-          {plan.features.map((feature) => (
-            <li
-              key={feature}
-              className="flex items-start gap-2 text-sm text-white/70"
+          {badge && (
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-1 text-xs font-bold",
+                badge.className
+              )}
             >
-              <Check
-                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400"
-                strokeWidth={2.5}
-              />
-              {feature}
-            </li>
-          ))}
-        </ul>
-
-        <p className="mt-4 text-xs text-white/35">
-          {subscriptionStatus === "active"
-            ? `Renouvellement le ${MOCK_SUBSCRIPTION.renewalDate}`
-            : `Accès jusqu'au ${MOCK_SUBSCRIPTION.renewalDate}`}
-        </p>
-
-        <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
-          <Button href="/#tarifs" variant="outline" className="sm:flex-1">
-            Changer de plan
-          </Button>
-          {subscriptionStatus === "active" && (
-            <button
-              type="button"
-              onClick={() => setCancelModalOpen(true)}
-              className="flex h-11 items-center justify-center rounded-full border border-rose-400/25 bg-rose-500/[0.06] px-5 text-sm font-semibold text-rose-400 transition-colors duration-150 hover:border-rose-400/40 sm:flex-1"
-            >
-              Annuler l&apos;abonnement
-            </button>
+              {badge.label}
+            </span>
           )}
         </div>
+
+        {!subscription || !plan ? (
+          <>
+            <p className="mt-4 text-sm text-white/60">
+              Vous n&apos;avez pas d&apos;abonnement actif.
+            </p>
+            <div className="mt-5">
+              <Button href="/#tarifs">Voir les offres</Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="mt-4 flex flex-wrap items-baseline gap-2">
+              <span className="font-display text-2xl font-bold text-white">
+                {plan.name}
+              </span>
+              <span className="text-sm text-white/50">
+                {plan.price} {plan.priceSuffix}
+              </span>
+            </div>
+
+            <ul className="mt-4 flex flex-col gap-2">
+              {plan.features.map((feature) => (
+                <li
+                  key={feature}
+                  className="flex items-start gap-2 text-sm text-white/70"
+                >
+                  <Check
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400"
+                    strokeWidth={2.5}
+                  />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+
+            {periodEndLabel && (
+              <p className="mt-4 text-xs text-white/35">
+                {subscription.status === "canceled"
+                  ? `Abonnement terminé le ${periodEndLabel}`
+                  : subscription.cancelAtPeriodEnd
+                    ? `Annulation prévue — accès jusqu'au ${periodEndLabel}`
+                    : `Renouvellement le ${periodEndLabel}`}
+              </p>
+            )}
+
+            {actionError && (
+              <p className="mt-3 text-xs font-medium text-rose-400">
+                {actionError}
+              </p>
+            )}
+
+            {hasAccess && changeablePlans.length > 0 && (
+              <div className="mt-5 flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                  Changer de plan
+                </p>
+                <div className="flex flex-col gap-2.5 sm:flex-row">
+                  {changeablePlans.map((id) => {
+                    const target = PRICING_PLANS.find((p) => p.id === id)!;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        disabled={changingPlan !== null}
+                        onClick={() => handleChangePlan(id)}
+                        className="flex h-11 flex-1 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors duration-150 hover:border-white/25 hover:bg-white/[0.08] disabled:opacity-60"
+                      >
+                        {changingPlan === id
+                          ? "Changement en cours..."
+                          : `Passer à ${target.name} (${target.price}${target.priceSuffix})`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {hasAccess && !subscription.cancelAtPeriodEnd && (
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={() => setCancelModalOpen(true)}
+                  className="flex h-11 w-full items-center justify-center rounded-full border border-rose-400/25 bg-rose-500/[0.06] px-5 text-sm font-semibold text-rose-400 transition-colors duration-150 hover:border-rose-400/40 sm:w-auto"
+                >
+                  Annuler l&apos;abonnement
+                </button>
+              </div>
+            )}
+
+            {subscription.status === "canceled" && (
+              <div className="mt-5">
+                <Button href="/#tarifs">Se réabonner</Button>
+              </div>
+            )}
+          </>
+        )}
       </section>
 
       <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
@@ -206,7 +329,8 @@ export function SettingsFlow({
         open={cancelModalOpen}
         onClose={() => setCancelModalOpen(false)}
         onConfirm={handleConfirmCancel}
-        renewalDate={MOCK_SUBSCRIPTION.renewalDate}
+        confirming={cancelling}
+        renewalDate={periodEndLabel ?? ""}
       />
       <DeleteAccountModal
         open={deleteModalOpen}

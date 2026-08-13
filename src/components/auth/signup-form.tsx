@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { getPasswordStrength } from "@/lib/password-strength";
 import { createClient } from "@/lib/supabase/client";
+import { isPlanId } from "@/lib/stripe/plans";
 import { cn } from "@/lib/utils";
 
 const STRENGTH_COLORS = [
@@ -21,8 +22,18 @@ const STRENGTH_COLORS = [
 const OAUTH_ERROR_MESSAGE =
   "La connexion avec Google a échoué. Merci de réessayer.";
 
-export function SignupForm({ oauthError }: { oauthError?: string }) {
+export function SignupForm({
+  oauthError,
+  plan,
+}: {
+  oauthError?: string;
+  /** Plan the user picked on the pricing section before being sent here to
+   * create an account — once signed in they're sent straight to that
+   * plan's Checkout instead of the plain dashboard. */
+  plan?: string;
+}) {
   const router = useRouter();
+  const next = plan && isPlanId(plan) ? `/dashboard?checkout=${plan}` : undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,7 +61,9 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: next
+            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
+            : `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -96,7 +109,7 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
       }
 
       if (data.session) {
-        router.push("/dashboard");
+        router.push(next ?? "/dashboard");
         router.refresh();
         return;
       }
@@ -138,6 +151,7 @@ export function SignupForm({ oauthError }: { oauthError?: string }) {
       <GoogleAuthButton
         onError={setError}
         errorRedirectPath="/signup"
+        next={next}
       />
 
       <div className="my-6 flex items-center gap-4">

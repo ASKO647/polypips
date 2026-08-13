@@ -26,8 +26,9 @@ export default async function SignupPage(props: PageProps<"/signup">) {
     redirect("/dashboard");
   }
 
-  const { error } = await props.searchParams;
+  const { error, plan } = await props.searchParams;
   const oauthError = typeof error === "string" ? error : undefined;
+  const intendedPlan = typeof plan === "string" ? plan : undefined;
 
   return (
     <>
@@ -60,7 +61,7 @@ export default async function SignupPage(props: PageProps<"/signup">) {
             <LaunchOfferCard />
           </div>
 
-          <SignupForm oauthError={oauthError} />
+          <SignupForm oauthError={oauthError} plan={intendedPlan} />
         </div>
       </main>
 

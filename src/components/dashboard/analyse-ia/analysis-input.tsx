@@ -31,7 +31,7 @@ export function AnalysisInput({
   onSelectRecent,
 }: {
   recentAnalyses: MarketAnalysis[];
-  errorMessage: string | null;
+  errorMessage: React.ReactNode | null;
   link: string;
   onLinkChange: (link: string) => void;
   file: File | null;

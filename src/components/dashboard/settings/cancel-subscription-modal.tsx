@@ -7,11 +7,13 @@ export function CancelSubscriptionModal({
   open,
   onClose,
   onConfirm,
+  confirming = false,
   renewalDate,
 }: {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  confirming?: boolean;
   renewalDate: string;
 }) {
   if (!open) return null;
@@ -39,20 +41,26 @@ export function CancelSubscriptionModal({
         </div>
         <p className="mt-2 text-sm leading-relaxed text-white/60">
           Vous conserverez l&apos;accès à votre plan actuel jusqu&apos;à la
-          fin de la période en cours ({renewalDate}), puis votre compte
-          repassera en accès limité.
+          fin de la période en cours{renewalDate ? ` (${renewalDate})` : ""},
+          puis votre compte repassera en accès limité.
         </p>
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
+            disabled={confirming}
             className="sm:flex-1"
           >
             Retour
           </Button>
-          <Button type="button" onClick={onConfirm} className="sm:flex-1">
-            Confirmer l&apos;annulation
+          <Button
+            type="button"
+            onClick={onConfirm}
+            disabled={confirming}
+            className="sm:flex-1"
+          >
+            {confirming ? "Annulation en cours..." : "Confirmer l'annulation"}
           </Button>
         </div>
       </div>

@@ -59,6 +59,21 @@ function mapRow(row: AnalysisRow): MarketAnalysis {
   };
 }
 
+export async function countAnalysesToday(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count, error } = await supabase
+    .from("analyses")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", since);
+
+  if (error) return 0;
+  return count ?? 0;
+}
+
 export async function fetchRecentAnalyses(
   supabase: SupabaseClient,
   limit = 5

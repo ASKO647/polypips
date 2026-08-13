@@ -2,15 +2,20 @@
 
 import { X } from "lucide-react";
 import { SidebarNavContent } from "@/components/dashboard/sidebar-nav-content";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 export function DashboardMobileNav({
   open,
   onClose,
   userEmail,
+  subscription,
+  analysesToday,
 }: {
   open: boolean;
   onClose: () => void;
   userEmail: string;
+  subscription: SubscriptionRow | null;
+  analysesToday: number;
 }) {
   if (!open) return null;
 
@@ -34,7 +39,12 @@ export function DashboardMobileNav({
           </button>
         </div>
 
-        <SidebarNavContent userEmail={userEmail} onNavigate={onClose} />
+        <SidebarNavContent
+          userEmail={userEmail}
+          onNavigate={onClose}
+          subscription={subscription}
+          analysesToday={analysesToday}
+        />
       </div>
     </div>
   );

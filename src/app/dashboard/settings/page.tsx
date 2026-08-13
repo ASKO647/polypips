@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SettingsFlow } from "@/components/dashboard/settings/settings-flow";
 import { createClient } from "@/lib/supabase/server";
+import { fetchSubscription } from "@/lib/supabase/subscriptions";
 
 export const metadata: Metadata = {
   title: "Paramètres — Polypips",
@@ -23,5 +24,13 @@ export default async function SettingsPage() {
     ? MEMBER_SINCE_FORMATTER.format(new Date(user.created_at))
     : "Date inconnue";
 
-  return <SettingsFlow email={email} memberSince={memberSince} />;
+  const subscription = await fetchSubscription(supabase);
+
+  return (
+    <SettingsFlow
+      email={email}
+      memberSince={memberSince}
+      initialSubscription={subscription}
+    />
+  );
 }

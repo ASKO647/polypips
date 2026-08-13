@@ -11,13 +11,18 @@ import {
   DASHBOARD_RESOURCE_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
 export function SidebarNavContent({
   userEmail,
+  subscription,
+  analysesToday,
   onNavigate,
 }: {
   userEmail: string;
+  subscription: SubscriptionRow | null;
+  analysesToday: number;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -57,7 +62,7 @@ export function SidebarNavContent({
       </nav>
 
       <div className="flex flex-col gap-3 px-4 pb-4">
-        <AccountStatusCard />
+        <AccountStatusCard subscription={subscription} analysesToday={analysesToday} />
         <Button href="/dashboard" variant="outline" onClick={onNavigate} className="w-full">
           <Plus className="h-4 w-4" strokeWidth={2.5} />
           Nouvelle analyse

@@ -1,11 +1,7 @@
 import { Crown, Gem, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getDailyAnalysisLimit, PRICING_PLANS } from "@/lib/data/pricing";
-import {
-  MOCK_SUBSCRIPTION,
-  MOCK_TRIAL_DAYS_REMAINING,
-  MOCK_USAGE,
-} from "@/lib/data/settings";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 const PLAN_ICONS: Record<string, typeof Crown> = {
   decouverte: Rocket,
@@ -13,13 +9,32 @@ const PLAN_ICONS: Record<string, typeof Crown> = {
   "pro-plus": Gem,
 };
 
-export function AccountStatusCard() {
+export function AccountStatusCard({
+  subscription,
+  analysesToday,
+}: {
+  subscription: SubscriptionRow | null;
+  analysesToday: number;
+}) {
+  if (!subscription) {
+    return (
+      <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+        <p className="text-sm font-semibold text-white">Aucun abonnement</p>
+        <p className="text-xs text-white/50">
+          Débloquez les résultats d&apos;analyse en clair.
+        </p>
+        <Button href="/#tarifs" size="sm" className="w-full">
+          Voir les offres
+        </Button>
+      </div>
+    );
+  }
+
   const plan =
-    PRICING_PLANS.find((p) => p.id === MOCK_SUBSCRIPTION.planId) ??
-    PRICING_PLANS[0];
+    PRICING_PLANS.find((p) => p.id === subscription.plan) ?? PRICING_PLANS[0];
   const PlanIcon = PLAN_ICONS[plan.id] ?? Crown;
   const dailyLimit = getDailyAnalysisLimit(plan);
-  const isTrial = plan.id === "decouverte";
+  const isTrialing = subscription.status === "trialing";
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
@@ -35,12 +50,17 @@ export function AccountStatusCard() {
       <div className="flex flex-col gap-1">
         <p className="text-xs text-white/50">
           {dailyLimit !== null
-            ? `${MOCK_USAGE.analysesToday}/${dailyLimit} analyses aujourd'hui`
+            ? `${analysesToday}/${dailyLimit} analyses aujourd'hui`
             : "Analyses illimitées"}
         </p>
-        {isTrial && (
+        {isTrialing && (
           <p className="text-xs font-semibold text-brand-400">
-            {MOCK_TRIAL_DAYS_REMAINING} jours restants
+            Période d&apos;essai en cours
+          </p>
+        )}
+        {subscription.status === "past_due" && (
+          <p className="text-xs font-semibold text-amber-400">
+            Paiement en échec
           </p>
         )}
       </div>

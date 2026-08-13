@@ -17,9 +17,14 @@ const OAUTH_ERROR_MESSAGE =
 export function GoogleAuthButton({
   onError,
   errorRedirectPath = "/signup",
+  next,
 }: {
   onError: (message: string | null) => void;
   errorRedirectPath?: string;
+  /** Where /auth/callback should send the user after a successful OAuth
+   * exchange, instead of its own /dashboard default (e.g. to resume a
+   * checkout the user started before signing up). */
+  next?: string;
 }) {
   const [loading, setLoading] = useState(false);
 
@@ -29,12 +34,15 @@ export function GoogleAuthButton({
 
     try {
       const supabase = createClient();
+      const callbackParams = new URLSearchParams({
+        error_redirect: errorRedirectPath,
+      });
+      if (next) callbackParams.set("next", next);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?error_redirect=${encodeURIComponent(
-            errorRedirectPath
-          )}`,
+          redirectTo: `${window.location.origin}/auth/callback?${callbackParams.toString()}`,
         },
       });
 
