@@ -5,16 +5,19 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
+import type { NotificationItem } from "@/lib/data/notifications";
 
 export function DashboardShell({
   userEmail,
   subscription,
   analysesToday,
+  notifications,
   children,
 }: {
   userEmail: string;
   subscription: SubscriptionRow | null;
   analysesToday: number;
+  notifications: NotificationItem[];
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,6 +34,7 @@ export function DashboardShell({
         <DashboardHeader
           menuOpen={mobileMenuOpen}
           onMenuToggle={() => setMobileMenuOpen((v) => !v)}
+          notifications={notifications}
         />
         <main className="flex-1 px-5 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>

@@ -22,9 +22,16 @@ export function WalletCard({
     <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-display text-base font-bold text-white">
-            {wallet.handle}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="font-display text-base font-bold text-white">
+              {wallet.handle}
+            </p>
+            {wallet.source === "user_added" && (
+              <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-white/40">
+                Ajouté par vous
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-xl font-bold text-white">
             {formatEUR(wallet.totalValue)}
           </p>
@@ -38,7 +45,7 @@ export function WalletCard({
           )}
         >
           {positive ? "+" : ""}
-          {wallet.changePercent}%
+          {wallet.changePercent.toFixed(1)}%
         </span>
       </div>
 

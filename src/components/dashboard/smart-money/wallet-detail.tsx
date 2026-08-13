@@ -2,6 +2,7 @@
 
 import { Check, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { WalletChart } from "@/components/dashboard/smart-money/wallet-chart";
 import type {
   Wallet,
@@ -75,16 +76,27 @@ function PositionRow({ position }: { position: WalletPosition }) {
   );
 }
 
+function EmptyRow({ label }: { label: string }) {
+  return (
+    <p className="rounded-xl border border-dashed border-white/10 px-4 py-6 text-center text-xs text-white/35">
+      {label}
+    </p>
+  );
+}
+
 export function WalletDetail({
   wallet,
   isFollowed,
   onToggleFollow,
   onBack,
+  locked = false,
 }: {
   wallet: Wallet;
   isFollowed: boolean;
   onToggleFollow: () => void;
   onBack: () => void;
+  /** True when the viewer has no active subscription — see LockedOverlay. */
+  locked?: boolean;
 }) {
   const positive = wallet.changePercent >= 0;
 
@@ -106,7 +118,7 @@ export function WalletDetail({
               )}
             >
               {positive ? "+" : ""}
-              {wallet.changePercent}%
+              {wallet.changePercent.toFixed(1)}%
             </span>
           </div>
         </div>
@@ -129,47 +141,62 @@ export function WalletDetail({
         </button>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-          Évolution — 14 derniers jours
-        </p>
-        <div className="mt-4 h-32 sm:h-40">
-          <WalletChart points={wallet.chart} positive={positive} />
+      <LockedOverlay
+        locked={locked}
+        message="Le détail des positions, des mouvements et l'historique de ce portefeuille sont réservés aux abonnés."
+      >
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+            Évolution — valeur du portefeuille
+          </p>
+          <div className="mt-4 h-32 sm:h-40">
+            <WalletChart points={wallet.chart} positive={positive} />
+          </div>
         </div>
-      </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-          Positions actuelles
-        </p>
-        <div className="mt-3 flex flex-col gap-2">
-          {wallet.positions.map((position) => (
-            <PositionRow key={position.id} position={position} />
-          ))}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+            Positions actuelles
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            {wallet.positions.length === 0 ? (
+              <EmptyRow label="Aucune position ouverte pour le moment." />
+            ) : (
+              wallet.positions.map((position) => (
+                <PositionRow key={position.id} position={position} />
+              ))
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-          Mouvements récents
-        </p>
-        <div className="mt-3 flex flex-col gap-2">
-          {wallet.recentMovements.map((movement) => (
-            <MovementRow key={movement.id} movement={movement} />
-          ))}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+            Mouvements récents
+          </p>
+          <div className="mt-3 flex flex-col gap-2">
+            {wallet.recentMovements.length === 0 ? (
+              <EmptyRow label="Aucun mouvement récent détecté." />
+            ) : (
+              wallet.recentMovements.map((movement) => (
+                <MovementRow key={movement.id} movement={movement} />
+              ))
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-          Historique
-        </p>
-        <div className="mt-3 flex flex-col gap-2">
-          {wallet.history.map((movement) => (
-            <MovementRow key={movement.id} movement={movement} />
-          ))}
-        </div>
-      </div>
+        {wallet.history.length > 0 && (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+              Historique
+            </p>
+            <div className="mt-3 flex flex-col gap-2">
+              {wallet.history.map((movement) => (
+                <MovementRow key={movement.id} movement={movement} />
+              ))}
+            </div>
+          </div>
+        )}
+      </LockedOverlay>
 
       <Button
         type="button"

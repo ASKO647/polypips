@@ -12,6 +12,10 @@ export type GammaMarket = {
   active?: boolean;
   category?: string;
   slug: string;
+  /** On-chain condition ID — used by sync-smart-money to look up a
+   * market's top holders via the Polymarket Data API's /holders
+   * endpoint, which is keyed by condition ID rather than slug. */
+  conditionId?: string;
 };
 
 export class MarketNotFoundError extends Error {}
@@ -46,6 +50,7 @@ function toGammaMarket(raw: Record<string, unknown>): GammaMarket {
     active: raw.active === undefined ? true : Boolean(raw.active),
     category: typeof raw.category === "string" ? raw.category : undefined,
     slug: String(raw.slug ?? ""),
+    conditionId: typeof raw.conditionId === "string" ? raw.conditionId : undefined,
   };
 }
 

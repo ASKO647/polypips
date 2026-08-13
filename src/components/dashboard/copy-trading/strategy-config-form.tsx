@@ -103,6 +103,12 @@ function SliderField({
   );
 }
 
+const DEFAULT_RISK_PARAMETERS: RiskParameters = {
+  maxPositionAmount: 500,
+  maxExposure: 20,
+  maxSimultaneousPositions: 5,
+};
+
 export function StrategyConfigForm({
   strategy,
   onCancel,
@@ -110,18 +116,29 @@ export function StrategyConfigForm({
 }: {
   strategy: Strategy;
   onCancel: () => void;
-  onActivate: (params: RiskParameters) => void;
+  onActivate: (params: RiskParameters) => Promise<void>;
 }) {
-  const [maxPositionAmount, setMaxPositionAmount] = useState(
-    strategy.defaultRiskParameters.maxPositionAmount
-  );
-  const [maxExposure, setMaxExposure] = useState(
-    strategy.defaultRiskParameters.maxExposure
-  );
+  const initial = strategy.riskParameters ?? DEFAULT_RISK_PARAMETERS;
+  const [maxPositionAmount, setMaxPositionAmount] = useState(initial.maxPositionAmount);
+  const [maxExposure, setMaxExposure] = useState(initial.maxExposure);
   const [maxSimultaneousPositions, setMaxSimultaneousPositions] = useState(
-    strategy.defaultRiskParameters.maxSimultaneousPositions
+    initial.maxSimultaneousPositions
   );
   const [confirmed, setConfirmed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      await onActivate({ maxPositionAmount, maxExposure, maxSimultaneousPositions });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -138,8 +155,8 @@ export function StrategyConfigForm({
           Configurer la stratégie
         </h1>
         <p className="mt-1 text-sm text-white/50">
-          Définissez vos paramètres de risque avant d&apos;activer cette
-          stratégie.
+          Définissez les paramètres de risque qui déclenchent une
+          notification pour {strategy.walletLabel}.
         </p>
       </div>
 
@@ -147,16 +164,16 @@ export function StrategyConfigForm({
 
       <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
         <NumberField
-          label="Montant maximum par position"
+          label="Montant maximum par mouvement"
           value={maxPositionAmount}
           onChange={setMaxPositionAmount}
           min={50}
           max={5000}
           step={50}
-          suffix="Montant maximum engagé sur chaque position copiée."
+          suffix="Vous ne serez alerté que pour les mouvements de ce portefeuille inférieurs ou égaux à ce montant."
         />
         <SliderField
-          label="Exposition maximale"
+          label="Exposition maximale du portefeuille suivi"
           value={maxExposure}
           onChange={setMaxExposure}
           min={5}
@@ -164,12 +181,13 @@ export function StrategyConfigForm({
           unit="%"
         />
         <NumberField
-          label="Nombre maximum de positions simultanées"
+          label="Nombre maximum de suggestions actives"
           value={maxSimultaneousPositions}
           onChange={setMaxSimultaneousPositions}
           min={1}
           max={20}
           step={1}
+          suffix="Au-delà, plus aucune nouvelle suggestion n'est générée pour cette stratégie tant que les précédentes datent de plus de 14 jours."
         />
       </div>
 
@@ -178,12 +196,12 @@ export function StrategyConfigForm({
           Récapitulatif
         </p>
         <p className="mt-2 font-display text-lg font-bold text-white">
-          {strategy.name}
+          {strategy.walletLabel}
         </p>
-        <p className="mt-1 text-sm text-white/60">{strategy.description}</p>
+        <p className="mt-1 text-sm text-white/60">{strategy.walletAddress}</p>
         <div className="mt-4 grid grid-cols-3 gap-3 text-xs">
           <div>
-            <p className="text-white/35">Montant max / position</p>
+            <p className="text-white/35">Montant max</p>
             <p className="mt-0.5 font-semibold text-white">
               {formatEUR(maxPositionAmount)}
             </p>
@@ -193,7 +211,7 @@ export function StrategyConfigForm({
             <p className="mt-0.5 font-semibold text-white">{maxExposure}%</p>
           </div>
           <div>
-            <p className="text-white/35">Positions simultanées</p>
+            <p className="text-white/35">Suggestions actives max</p>
             <p className="mt-0.5 font-semibold text-white">
               {maxSimultaneousPositions}
             </p>
@@ -209,23 +227,20 @@ export function StrategyConfigForm({
           className="mt-0.5 h-4 w-4 shrink-0 accent-brand-500"
         />
         <span className="text-sm text-white/70">
-          Je comprends les risques associés au copy trading.
+          Je comprends que Polypips ne fait qu&apos;envoyer une notification —
+          aucun ordre n&apos;est jamais exécuté à ma place.
         </span>
       </label>
 
+      {error && <p className="text-xs text-rose-400">{error}</p>}
+
       <Button
         type="button"
-        disabled={!confirmed}
-        onClick={() =>
-          onActivate({
-            maxPositionAmount,
-            maxExposure,
-            maxSimultaneousPositions,
-          })
-        }
+        disabled={!confirmed || submitting}
+        onClick={handleSubmit}
         className="w-full sm:w-auto sm:self-end"
       >
-        Activer cette stratégie
+        {submitting ? "Activation..." : "Activer cette stratégie"}
       </Button>
     </div>
   );

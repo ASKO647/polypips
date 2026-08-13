@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PlanId } from "@/lib/stripe/plans";
+import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
 
 export type SubscriptionStatus = "trialing" | "active" | "canceled" | "past_due";
 
@@ -60,4 +61,22 @@ export function hasActiveAccess(subscription: SubscriptionRow | null): boolean {
     subscription !== null &&
     (subscription.status === "active" || subscription.status === "trialing")
   );
+}
+
+/** Same "no access → decouverte limits" fallback used by the coach-chat and
+ * analyze-market Edge Functions, centralized here for Next.js API routes
+ * that need to check a plan-derived limit server-side. */
+export async function getEffectivePlan(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<PricingPlan> {
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("plan, status")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const hasAccess = data?.status === "active" || data?.status === "trialing";
+  const planId = hasAccess ? (data!.plan as PlanId) : "decouverte";
+  return PRICING_PLANS.find((p) => p.id === planId) ?? PRICING_PLANS[0];
 }

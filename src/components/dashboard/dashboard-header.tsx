@@ -4,13 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { NotificationsBell } from "@/components/dashboard/notifications-bell";
+import type { NotificationItem } from "@/lib/data/notifications";
 
 export function DashboardHeader({
   menuOpen,
   onMenuToggle,
+  notifications,
 }: {
   menuOpen: boolean;
   onMenuToggle: () => void;
+  notifications: NotificationItem[];
 }) {
   return (
     <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-white/10 bg-[#160b0c]/95 px-5 backdrop-blur-md lg:px-8">
@@ -36,7 +39,7 @@ export function DashboardHeader({
           Offre découverte
         </span>
 
-        <NotificationsBell />
+        <NotificationsBell notifications={notifications} />
 
         <button
           type="button"

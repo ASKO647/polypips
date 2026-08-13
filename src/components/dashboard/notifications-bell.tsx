@@ -2,13 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Bell, BellOff } from "lucide-react";
-import { MOCK_NOTIFICATIONS } from "@/lib/data/notifications";
+import type { NotificationItem } from "@/lib/data/notifications";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
-export function NotificationsBell() {
+export function NotificationsBell({
+  notifications: initialNotifications,
+}: {
+  notifications: NotificationItem[];
+}) {
   const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState(initialNotifications);
   const ref = useRef<HTMLDivElement>(null);
-  const notifications = MOCK_NOTIFICATIONS;
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
@@ -25,6 +30,22 @@ export function NotificationsBell() {
       document.removeEventListener("touchstart", onClick);
     };
   }, [open]);
+
+  const handleSelect = async (notification: NotificationItem) => {
+    if (!notification.read) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+      );
+      const supabase = createClient();
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", notification.id);
+    }
+    if (notification.linkUrl) {
+      window.open(notification.linkUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <div ref={ref} className="relative">
@@ -63,27 +84,30 @@ export function NotificationsBell() {
           ) : (
             <ul className="flex max-h-80 flex-col overflow-y-auto">
               {notifications.map((notification) => (
-                <li
-                  key={notification.id}
-                  className="flex gap-3 border-b border-white/5 px-4 py-3 last:border-0"
-                >
-                  <span
-                    className={cn(
-                      "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                      notification.read ? "bg-transparent" : "bg-brand-500"
-                    )}
-                  />
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-sm font-medium text-white">
-                      {notification.title}
-                    </p>
-                    <p className="text-xs text-white/50">
-                      {notification.description}
-                    </p>
-                    <p className="mt-0.5 text-[11px] text-white/30">
-                      {notification.timeAgo}
-                    </p>
-                  </div>
+                <li key={notification.id} className="border-b border-white/5 last:border-0">
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(notification)}
+                    className="flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                  >
+                    <span
+                      className={cn(
+                        "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
+                        notification.read ? "bg-transparent" : "bg-brand-500"
+                      )}
+                    />
+                    <div className="flex flex-col gap-0.5">
+                      <p className="text-sm font-medium text-white">
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-white/50">
+                        {notification.description}
+                      </p>
+                      <p className="mt-0.5 text-[11px] text-white/30">
+                        {notification.timeAgo}
+                      </p>
+                    </div>
+                  </button>
                 </li>
               ))}
             </ul>
