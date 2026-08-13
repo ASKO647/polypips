@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { getDailyAnalysisLimit, PRICING_PLANS } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
-const PLAN_ICONS: Record<string, typeof Crown> = {
+export const PLAN_ICONS: Record<string, typeof Crown> = {
   decouverte: Rocket,
   pro: Crown,
   "pro-plus": Gem,
