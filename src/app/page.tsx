@@ -9,6 +9,7 @@ import { ProductDemo } from "@/components/marketing/product-demo";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { FinalCTA } from "@/components/marketing/final-cta";
+import { SmartMoneyActivityPopup } from "@/components/marketing/smart-money-activity-popup";
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
         <FinalCTA />
       </main>
       <Footer />
+      <SmartMoneyActivityPopup />
     </>
   );
 }

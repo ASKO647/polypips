@@ -1,0 +1,55 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+// Public, unauthenticated endpoint — powers the landing page's activity
+// popup. Reads through get_public_smart_money_activity (see the
+// 20260813200000 migration), a SECURITY DEFINER function that exposes only
+// a narrow, filtered slice of tracked_wallets.recent_movements rather than
+// the table itself.
+export const dynamic = "force-dynamic";
+
+const MIN_AMOUNT_EUR = 500;
+const MAX_AGE_HOURS = 48;
+const RESULT_LIMIT = 20;
+
+type ActivityRow = {
+  wallet_label: string;
+  market: string;
+  side: string;
+  movement_type: string;
+  amount: number;
+  occurred_at: string;
+};
+
+const currencyFormatter = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
+
+function formatMessage(row: ActivityRow): string {
+  const amountLabel = `${currencyFormatter.format(row.amount)}€`;
+  const action = row.movement_type === "Vente" ? "a clôturé une position" : "a ouvert une position";
+  return `${row.wallet_label} ${action} ${row.side} de ${amountLabel} sur "${row.market}"`;
+}
+
+export async function GET() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_public_smart_money_activity", {
+    min_amount: MIN_AMOUNT_EUR,
+    max_age_hours: MAX_AGE_HOURS,
+    result_limit: RESULT_LIMIT,
+  });
+
+  if (error) {
+    return NextResponse.json(
+      { error: "db_error", message: "Impossible de charger l'activité récente." },
+      { status: 500 }
+    );
+  }
+
+  const movements = ((data ?? []) as ActivityRow[]).map((row) => ({
+    id: `${row.wallet_label}-${row.occurred_at}-${row.market}`,
+    message: formatMessage(row),
+    occurredAt: row.occurred_at,
+  }));
+
+  return NextResponse.json({ movements });
+}
