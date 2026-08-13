@@ -157,3 +157,46 @@ export async function searchMarketByText(
   }
   return market;
 }
+
+/** Floor below which a market is considered too thin/obscure to bother
+ * scanning — keeps scan-markets focused on markets with real trading
+ * activity instead of burning Anthropic calls on noise. */
+const MIN_CANDIDATE_VOLUME_USD = 5000;
+const MIN_CANDIDATE_LIQUIDITY_USD = 1000;
+
+/**
+ * Lists active, open markets for scan-markets to consider, sorted by
+ * volume (highest first). Requests the Gamma API's own volume ordering as
+ * a hint, but also sorts client-side afterward — the exact set of
+ * supported `order` values isn't something this function can verify
+ * against live docs from every environment, so the client-side sort is
+ * the actual guarantee, not just an optimization.
+ */
+export async function listCandidateMarkets(fetchLimit: number): Promise<GammaMarket[]> {
+  let raw: unknown;
+  try {
+    raw = await gammaFetch(
+      `/markets?active=true&closed=false&order=volume24hr&ascending=false&limit=${fetchLimit}`
+    );
+  } catch (error) {
+    if (error instanceof GammaUnavailableError) throw error;
+    throw new GammaUnavailableError(
+      `Impossible de lister les marchés Polymarket : ${(error as Error).message}`
+    );
+  }
+
+  if (!Array.isArray(raw)) return [];
+
+  return (raw as Array<Record<string, unknown>>)
+    .map(toGammaMarket)
+    .filter(
+      (m) =>
+        m.active &&
+        !m.closed &&
+        m.question &&
+        m.slug &&
+        m.volume >= MIN_CANDIDATE_VOLUME_USD &&
+        m.liquidity >= MIN_CANDIDATE_LIQUIDITY_USD
+    )
+    .sort((a, b) => b.volume - a.volume);
+}

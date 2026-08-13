@@ -23,7 +23,7 @@ const RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat("fr-FR", {
   numeric: "auto",
 });
 
-function formatRelativeTime(isoDate: string): string {
+export function formatRelativeTime(isoDate: string): string {
   const diffMs = new Date(isoDate).getTime() - Date.now();
   const diffMinutes = Math.round(diffMs / 60000);
 
