@@ -28,7 +28,7 @@ export function SidebarNavContent({
   const pathname = usePathname();
 
   const renderLink = (item: DashboardNavItem) => {
-    const active = pathname === item.href;
+    const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
     return (
       <Link
         key={item.href}

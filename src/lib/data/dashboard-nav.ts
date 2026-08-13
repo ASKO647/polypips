@@ -7,6 +7,7 @@ import {
   LineChart,
   Settings,
   Sparkles,
+  Users,
   Wallet,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -24,6 +25,7 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Smart Money", href: "/dashboard/smart-money", icon: Wallet },
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },
   { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
+  { label: "Communauté", href: "/dashboard/community", icon: Users },
   { label: "Statistiques", href: "/dashboard/stats", icon: BarChart3 },
 ];
 

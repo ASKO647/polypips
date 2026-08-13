@@ -120,3 +120,10 @@ export function getMaxActiveCopyTradingStrategies(plan: PricingPlan): number | n
   }
   return null;
 }
+
+/** Communauté is Pro/Pro+ only — unlike most other dashboard features,
+ * l'offre découverte (the 0,99€ trial-priced entry plan) does not unlock
+ * it, so this can't reuse the usual hasActiveAccess() gate. */
+export function hasCommunityAccess(plan: PricingPlan): boolean {
+  return plan.id === "pro" || plan.id === "pro-plus";
+}
