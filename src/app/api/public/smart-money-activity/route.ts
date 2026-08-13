@@ -26,7 +26,7 @@ const currencyFormatter = new Intl.NumberFormat("fr-FR", { maximumFractionDigits
 function formatMessage(row: ActivityRow): string {
   const amountLabel = `${currencyFormatter.format(row.amount)}€`;
   const action = row.movement_type === "Vente" ? "a clôturé une position" : "a ouvert une position";
-  return `${row.wallet_label} ${action} ${row.side} de ${amountLabel} sur "${row.market}"`;
+  return `${row.wallet_label} ${action} de ${amountLabel} sur "${row.market}"`;
 }
 
 export async function GET() {
