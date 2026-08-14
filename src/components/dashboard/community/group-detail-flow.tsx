@@ -297,6 +297,7 @@ export function GroupDetailFlow({
           groupId={group.id}
           groupName={group.name}
           isPrivate={group.isPrivate}
+          inviteCode={group.inviteCode}
           members={initialMembers}
           onChanged={() => router.refresh()}
           onDeleteRequested={() => {

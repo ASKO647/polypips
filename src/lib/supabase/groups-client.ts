@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { GroupMemberStatus, GroupSummary } from "@/lib/data/community";
 
 const RPC_ERROR_MESSAGES: Record<string, string> = {
   authentication_required: "Connectez-vous pour continuer.",
@@ -43,6 +44,47 @@ export async function createGroup(
 export async function joinGroup(supabase: SupabaseClient, groupId: string): Promise<void> {
   const { error } = await supabase.rpc("join_group", { target_group_id: groupId });
   if (error) throw toGroupActionError(error);
+}
+
+type FindGroupByCodeRow = {
+  id: string;
+  name: string;
+  description: string;
+  owner_id: string;
+  is_private: boolean;
+  member_count: number;
+  created_at: string;
+  membership_status: GroupMemberStatus | null;
+};
+
+/** find_group_by_code bypasses the groups SELECT policy on purpose — a
+ * private group is invisible in "Découvrir" but must still be findable by
+ * whoever has its code. Returns null when no group matches (never an
+ * error — an unknown code is an expected outcome, not a failure). */
+export async function findGroupByCode(
+  supabase: SupabaseClient,
+  code: string
+): Promise<GroupSummary | null> {
+  const { data, error } = await supabase.rpc("find_group_by_code", {
+    search_code: code,
+  });
+  if (error) throw toGroupActionError(error);
+
+  const rows = (data ?? []) as FindGroupByCodeRow[];
+  const row = rows[0];
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    ownerId: row.owner_id,
+    isPrivate: row.is_private,
+    memberCount: Number(row.member_count),
+    createdAt: row.created_at,
+    membershipStatus: row.membership_status,
+    inviteCode: null,
+  };
 }
 
 export async function approveMember(

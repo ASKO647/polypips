@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { GroupCard } from "@/components/dashboard/community/group-card";
 import { CreateGroupModal } from "@/components/dashboard/community/create-group-modal";
+import { FindGroupTab } from "@/components/dashboard/community/find-group-tab";
 import type { GroupSummary } from "@/lib/data/community";
 import { cn } from "@/lib/utils";
 
-type Tab = "discover" | "mine";
+type Tab = "discover" | "mine" | "find";
 
 export function CommunityFlow({
   initialDiscoverGroups,
@@ -57,11 +58,12 @@ export function CommunityFlow({
         locked={!hasCommunityAccess}
         message="La Communauté est réservée aux abonnés Pro et Pro+. Passez à un plan supérieur pour rejoindre et créer des groupes."
       >
-        <div className="flex gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1 w-fit">
+        <div className="flex w-fit gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1">
           {(
             [
               { key: "discover", label: "Découvrir" },
               { key: "mine", label: "Mes groupes" },
+              { key: "find", label: "Trouver un groupe" },
             ] as const
           ).map((t) => (
             <button
@@ -80,7 +82,9 @@ export function CommunityFlow({
           ))}
         </div>
 
-        {groups.length === 0 ? (
+        {tab === "find" ? (
+          <FindGroupTab />
+        ) : groups.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
               <Users className="h-5 w-5" strokeWidth={2} />

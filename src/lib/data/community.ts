@@ -19,6 +19,10 @@ export type GroupSummary = {
   /** The current user's membership status in this group, or null if
    * they've never requested/joined it. */
   membershipStatus: GroupMemberStatus | null;
+  /** Only ever populated when fetched by an owner/approved member (see
+   * fetchGroupById) — null on the "Découvrir"/"Mes groupes" list queries,
+   * which don't select it since only the manage panel needs it. */
+  inviteCode: string | null;
 };
 
 export type GroupMember = {

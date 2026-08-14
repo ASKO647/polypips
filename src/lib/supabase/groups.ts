@@ -118,6 +118,7 @@ export async function fetchDiscoverGroups(
     memberCount: counts.get(row.id) ?? 0,
     createdAt: row.created_at,
     membershipStatus: ownStatuses.get(row.id) ?? null,
+    inviteCode: null,
   }));
 }
 
@@ -155,21 +156,26 @@ export async function fetchMyGroups(
     memberCount: counts.get(row.id) ?? 0,
     createdAt: row.created_at,
     membershipStatus: "approved",
+    inviteCode: null,
   }));
 }
 
+/** The only fetch that also selects invite_code — group detail pages are
+ * only reachable by callers who already pass the groups SELECT policy
+ * (owner, approved member, or a public group), so this never leaks a
+ * private group's code to someone without legitimate visibility already. */
 export async function fetchGroupById(
   supabase: SupabaseClient,
   groupId: string
 ): Promise<GroupSummary | null> {
   const { data, error } = await supabase
     .from("groups")
-    .select("id, name, description, owner_id, is_private, created_at")
+    .select("id, name, description, owner_id, is_private, created_at, invite_code")
     .eq("id", groupId)
     .maybeSingle();
 
   if (error || !data) return null;
-  const row = data as GroupRow;
+  const row = data as GroupRow & { invite_code: string | null };
   const counts = await fetchApprovedMemberCounts(supabase, [row.id]);
 
   return {
@@ -181,6 +187,7 @@ export async function fetchGroupById(
     memberCount: counts.get(row.id) ?? 0,
     createdAt: row.created_at,
     membershipStatus: null,
+    inviteCode: row.invite_code,
   };
 }
 

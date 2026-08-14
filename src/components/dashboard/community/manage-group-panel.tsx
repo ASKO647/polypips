@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, UserMinus, X } from "lucide-react";
+import { Check, Copy, Trash2, UserMinus, X } from "lucide-react";
 import { initialsFor, type GroupMember } from "@/lib/data/community";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -19,6 +19,7 @@ export function ManageGroupPanel({
   groupId,
   groupName,
   isPrivate,
+  inviteCode,
   members,
   onChanged,
   onDeleteRequested,
@@ -28,6 +29,7 @@ export function ManageGroupPanel({
   groupId: string;
   groupName: string;
   isPrivate: boolean;
+  inviteCode: string | null;
   members: GroupMember[];
   onChanged: () => void;
   onDeleteRequested: () => void;
@@ -35,8 +37,20 @@ export function ManageGroupPanel({
   const [busyUserId, setBusyUserId] = useState<string | null>(null);
   const [togglingPrivacy, setTogglingPrivacy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   if (!open) return null;
+
+  const handleCopyCode = async () => {
+    if (!inviteCode) return;
+    try {
+      await navigator.clipboard.writeText(inviteCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Impossible de copier le code.");
+    }
+  };
 
   const pending = members.filter((m) => m.status === "pending");
   const approved = members.filter((m) => m.status === "approved");
@@ -106,6 +120,34 @@ export function ManageGroupPanel({
               className="h-5 w-5 shrink-0 accent-brand-500"
             />
           </label>
+
+          {inviteCode && (
+            <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
+              <p className="text-sm font-medium text-white">Code du groupe</p>
+              <p className="mt-0.5 text-xs text-white/40">
+                Partagez ce code pour que d&apos;autres membres trouvent le groupe via
+                l&apos;onglet « Trouver un groupe ».
+              </p>
+              <div className="mt-2.5 flex items-center gap-2">
+                <span className="flex-1 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-center font-mono text-sm font-bold tracking-[0.2em] text-white">
+                  {inviteCode}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className={cn(
+                    "flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors",
+                    copied
+                      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-400"
+                      : "border-white/10 bg-white/[0.04] text-white/60 hover:text-white"
+                  )}
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "Copié" : "Copier"}
+                </button>
+              </div>
+            </div>
+          )}
 
           {isPrivate && (
             <div>
