@@ -13,23 +13,25 @@ import { analyzeMarket, AiServiceError } from "../analyze-market/anthropic-analy
  * than scanning everything Gamma returns — see the task summary for the
  * cost/freshness discussion behind the default cron interval.
  */
-const MAX_CANDIDATES_PER_RUN = 25;
+const MAX_CANDIDATES_PER_RUN = 45;
 /** Over-fetch before filtering/sorting so the volume/liquidity floor in
- * listCandidateMarkets still leaves enough candidates to pick from. */
-const CANDIDATE_FETCH_POOL = 60;
+ * listCandidateMarkets still leaves enough candidates to pick from. Scales
+ * with MAX_CANDIDATES_PER_RUN to keep the same ~2.4x margin as before. */
+const CANDIDATE_FETCH_POOL = 110;
 /** How many Anthropic calls run at once — bounded so a single run doesn't
  * hammer the API, while still finishing well inside an Edge Function's
- * execution time budget (25 sequential thinking-enabled calls would risk
- * timing out; 5-wide batches cut that to ~5 rounds). */
-const CONCURRENCY = 5;
+ * execution time budget. Raised alongside MAX_CANDIDATES_PER_RUN (25→45)
+ * so the run still does 5 sequential thinking-enabled rounds, same as
+ * before, instead of nearly doubling to 9. */
+const CONCURRENCY = 9;
 
 /** A market only gets saved if it clears one of these bars — either the
  * model's own confidence in the opportunity, or a large enough gap from
  * the market's current price to be worth surfacing regardless of the
  * opportunity score. Both are deliberately named constants, not magic
  * numbers, so they're easy to retune later. */
-const OPPORTUNITY_THRESHOLD = 70;
-const MIN_ABS_EDGE = 12;
+const OPPORTUNITY_THRESHOLD = 55;
+const MIN_ABS_EDGE = 8;
 
 /** Rows not refreshed by a run in this long are pruned — generous enough
  * to survive a few missed/failed runs at the default 6h schedule without
