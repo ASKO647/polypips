@@ -52,6 +52,7 @@ export type CoachChatErrorCode =
   | "unauthorized"
   | "ai_error"
   | "limit_reached"
+  | "subscription_required"
   | "network_error"
   | "unknown";
 
@@ -62,6 +63,7 @@ const COACH_ERROR_MESSAGES: Record<CoachChatErrorCode, string> = {
     "Le service d'assistance IA est temporairement indisponible. Réessayez dans quelques instants.",
   limit_reached:
     "Vous avez atteint votre limite de messages Coach IA cette semaine. Passez à Pro+ pour des messages illimités.",
+  subscription_required: "Le Coach IA est réservé aux abonnés. Débutez pour 0,99 € pour y accéder.",
   network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
   unknown: "Une erreur inattendue est survenue. Réessayez.",
 };

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Wallet as WalletIcon } from "lucide-react";
 import { AddWalletForm } from "@/components/dashboard/smart-money/add-wallet-form";
+import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { WalletCard } from "@/components/dashboard/smart-money/wallet-card";
 import { WalletDetail } from "@/components/dashboard/smart-money/wallet-detail";
 import type { Wallet } from "@/lib/data/smart-money";
@@ -160,85 +161,90 @@ export function SmartMoneyFlow({
         </p>
       </div>
 
-      <AddWalletForm onAdded={handleWalletAdded} disabled={quotaLocked} />
+      <LockedOverlay
+        locked={!hasActiveSubscription}
+        message="Débloquez Smart Money — suivez les portefeuilles les plus actifs de Polymarket. Débutez pour 0,99 €"
+      >
+        <AddWalletForm onAdded={handleWalletAdded} disabled={quotaLocked} />
 
-      {followError && (
-        <p className="rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-4 py-3 text-xs text-rose-300">
-          {followError}
-        </p>
-      )}
+        {followError && (
+          <p className="mt-4 rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-4 py-3 text-xs text-rose-300">
+            {followError}
+          </p>
+        )}
 
-      {maxTrackedWallets !== null && (
-        <div
-          className={cn(
-            "flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-xs font-semibold",
-            quotaLocked
-              ? "border-amber-400/20 bg-amber-500/[0.06] text-amber-200"
-              : "border-white/10 bg-white/[0.03] text-white/50"
-          )}
-        >
-          <span>
-            {followedIds.size}/{maxTrackedWallets} wallets suivis ce mois-ci
-          </span>
-          {quotaLocked && (
-            <span className="text-amber-300">
-              Sélection verrouillée
-              {quotaResetDate ? ` jusqu'au ${formatResetDate(quotaResetDate)}` : ""}
+        {maxTrackedWallets !== null && (
+          <div
+            className={cn(
+              "mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-xs font-semibold",
+              quotaLocked
+                ? "border-amber-400/20 bg-amber-500/[0.06] text-amber-200"
+                : "border-white/10 bg-white/[0.03] text-white/50"
+            )}
+          >
+            <span>
+              {followedIds.size}/{maxTrackedWallets} wallets suivis ce mois-ci
             </span>
-          )}
-        </div>
-      )}
-
-      {allWallets.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
-            <WalletIcon className="h-5 w-5" strokeWidth={2} />
-          </span>
-          <p className="text-sm font-semibold text-white">
-            Aucun portefeuille suivi pour le moment
-          </p>
-          <p className="max-w-sm text-xs leading-relaxed text-white/45">
-            Notre système repère périodiquement les portefeuilles les plus
-            actifs sur Polymarket. Revenez un peu plus tard, ou ajoutez
-            vous-même une adresse à suivre ci-dessus.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-white/40">Trier par</span>
-            {SORT_OPTIONS.map((opt) => (
-              <button
-                key={opt.key}
-                type="button"
-                onClick={() => setSortKey(opt.key)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
-                  sortKey === opt.key
-                    ? "border-white/25 bg-white/[0.1] text-white"
-                    : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
+            {quotaLocked && (
+              <span className="text-amber-300">
+                Sélection verrouillée
+                {quotaResetDate ? ` jusqu'au ${formatResetDate(quotaResetDate)}` : ""}
+              </span>
+            )}
           </div>
+        )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sortedWallets.map((wallet) => (
-              <WalletCard
-                key={wallet.id}
-                wallet={wallet}
-                isFollowed={followedIds.has(wallet.id)}
-                onToggleFollow={() => toggleFollow(wallet.id)}
-                onViewDetail={() => setSelectedId(wallet.id)}
-                toggleDisabled={quotaLocked}
-                toggleDisabledReason={lockMessage}
-              />
-            ))}
+        {allWallets.length === 0 ? (
+          <div className="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
+              <WalletIcon className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <p className="text-sm font-semibold text-white">
+              Aucun portefeuille suivi pour le moment
+            </p>
+            <p className="max-w-sm text-xs leading-relaxed text-white/45">
+              Notre système repère périodiquement les portefeuilles les plus
+              actifs sur Polymarket. Revenez un peu plus tard, ou ajoutez
+              vous-même une adresse à suivre ci-dessus.
+            </p>
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-white/40">Trier par</span>
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setSortKey(opt.key)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
+                    sortKey === opt.key
+                      ? "border-white/25 bg-white/[0.1] text-white"
+                      : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white"
+                  )}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {sortedWallets.map((wallet) => (
+                <WalletCard
+                  key={wallet.id}
+                  wallet={wallet}
+                  isFollowed={followedIds.has(wallet.id)}
+                  onToggleFollow={() => toggleFollow(wallet.id)}
+                  onViewDetail={() => setSelectedId(wallet.id)}
+                  toggleDisabled={quotaLocked}
+                  toggleDisabledReason={lockMessage}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </LockedOverlay>
     </div>
   );
 }

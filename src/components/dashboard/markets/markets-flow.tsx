@@ -134,6 +134,7 @@ export function MarketsFlow({
                 key={market.id}
                 market={market}
                 onViewDetail={() => setSelected(market)}
+                locked={!hasActiveSubscription}
               />
             ))}
           </div>

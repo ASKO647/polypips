@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getEffectivePlan } from "@/lib/supabase/subscriptions";
+import { getEffectivePlan, userHasActiveAccess } from "@/lib/supabase/subscriptions";
 import { getMaxTrackedWallets } from "@/lib/data/pricing";
 import { WALLET_ADDRESS_RE } from "@/lib/supabase/wallets";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
@@ -23,6 +23,19 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "unauthorized", message: "Connectez-vous pour continuer." },
       { status: 401 }
+    );
+  }
+
+  // UI blur is not a security boundary — a user with no active
+  // subscription at all must not be able to follow a wallet via a direct
+  // API call either.
+  if (!(await userHasActiveAccess(supabase, user.id))) {
+    return NextResponse.json(
+      {
+        error: "subscription_required",
+        message: "Cette fonctionnalité est réservée aux abonnés. Débutez pour 0,99 €.",
+      },
+      { status: 403 }
     );
   }
 
@@ -139,6 +152,10 @@ export async function DELETE(request: Request) {
       { status: 401 }
     );
   }
+
+  // No subscription gate here on purpose: unfollowing releases a resource,
+  // it doesn't consume one — a user whose subscription has lapsed must
+  // still be able to clean up wallets they followed while subscribed.
 
   let body: { walletId?: string };
   try {

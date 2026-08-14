@@ -9,6 +9,7 @@ import { ChatMessage } from "@/components/dashboard/coach/chat-message";
 import { CoachMobileHistory } from "@/components/dashboard/coach/coach-mobile-history";
 import { CoachSidebar } from "@/components/dashboard/coach/coach-sidebar";
 import { TypingIndicator } from "@/components/dashboard/coach/typing-indicator";
+import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import {
   coachChatErrorMessage,
   WELCOME_MESSAGE,
@@ -47,9 +48,11 @@ function errorContentFor(error: unknown): React.ReactNode {
 export function CoachFlow({
   initialConversations,
   initialFocusAnalysis,
+  hasActiveSubscription,
 }: {
   initialConversations: ConversationSummary[];
   initialFocusAnalysis: FocusAnalysis | null;
+  hasActiveSubscription: boolean;
 }) {
   const [conversations, setConversations] = useState<ConversationSummary[]>(
     initialConversations
@@ -120,7 +123,7 @@ export function CoachFlow({
 
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed || sending || !hasActiveSubscription) return;
 
     setErrorMessage(null);
     setInputValue("");
@@ -188,7 +191,12 @@ export function CoachFlow({
         onNewConversation={handleNewConversation}
       />
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+      <LockedOverlay
+        locked={!hasActiveSubscription}
+        message="Débloquez le Coach IA — Débutez pour 0,99 €"
+        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
+        contentClassName="flex flex-1 flex-col overflow-hidden"
+      >
         <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5 sm:px-5">
           <div className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/15">
@@ -263,9 +271,9 @@ export function CoachFlow({
           onChange={setInputValue}
           onSend={() => handleSend(inputValue)}
           onSelectSuggestion={handleSelectSuggestion}
-          disabled={sending}
+          disabled={sending || !hasActiveSubscription}
         />
-      </div>
+      </LockedOverlay>
 
       <CoachMobileHistory
         open={historyOpen}

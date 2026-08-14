@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { HelpCircle, Users } from "lucide-react";
+import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";
 import { StrategyActive } from "@/components/dashboard/copy-trading/strategy-active";
 import { StrategyCard } from "@/components/dashboard/copy-trading/strategy-card";
@@ -148,6 +149,12 @@ export function CopyTradingFlow({
     setSelectedWalletId(null);
   };
 
+  // "configure" is only reachable by clicking a StrategyCard's button, which
+  // sits inside the LockedOverlay below and is non-interactive once locked
+  // — so a subscription-less viewer can never land here through the UI.
+  // Not wrapped in its own LockedOverlay because that would also disable
+  // StrategyConfigForm's own Cancel button, trapping the user on this
+  // screen with no way back.
   if (state === "configure" && selectedStrategy) {
     return (
       <StrategyConfigForm
@@ -235,49 +242,54 @@ export function CopyTradingFlow({
         </p>
       )}
 
-      {strategies.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
-            <Users className="h-5 w-5" strokeWidth={2} />
-          </span>
-          <p className="text-sm font-semibold text-white">
-            Aucun portefeuille suivi pour l&apos;instant
-          </p>
-          <p className="max-w-sm text-xs leading-relaxed text-white/45">
-            Le copy trading se configure à partir des portefeuilles que vous
-            suivez sur Smart Money. Suivez-en un pour créer votre première
-            stratégie.
-          </p>
-          <Link
-            href="/dashboard/smart-money"
-            className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand-400 bg-brand-500/15 px-4 py-2 text-xs font-semibold text-brand-400 transition-colors hover:bg-brand-500/25"
-          >
-            Aller sur Smart Money
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {strategies.map((strategy) => (
-            <StrategyCard
-              key={strategy.walletId}
-              strategy={strategy}
-              suggestionCount={
-                strategy.strategyId ? (suggestions[strategy.strategyId]?.length ?? 0) : 0
-              }
-              onConfigure={() => {
-                setSelectedWalletId(strategy.walletId);
-                setState("configure");
-              }}
-              onManage={() => {
-                setSelectedWalletId(strategy.walletId);
-                setState(strategy.riskParameters ? "active" : "configure");
-              }}
-              configureDisabled={quotaLocked && strategy.strategyId === null}
-              configureDisabledReason={lockMessage}
-            />
-          ))}
-        </div>
-      )}
+      <LockedOverlay
+        locked={!hasActiveSubscription}
+        message="Débloquez le Copy Trading — Débutez pour 0,99 €"
+      >
+        {strategies.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
+              <Users className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <p className="text-sm font-semibold text-white">
+              Aucun portefeuille suivi pour l&apos;instant
+            </p>
+            <p className="max-w-sm text-xs leading-relaxed text-white/45">
+              Le copy trading se configure à partir des portefeuilles que vous
+              suivez sur Smart Money. Suivez-en un pour créer votre première
+              stratégie.
+            </p>
+            <Link
+              href="/dashboard/smart-money"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand-400 bg-brand-500/15 px-4 py-2 text-xs font-semibold text-brand-400 transition-colors hover:bg-brand-500/25"
+            >
+              Aller sur Smart Money
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {strategies.map((strategy) => (
+              <StrategyCard
+                key={strategy.walletId}
+                strategy={strategy}
+                suggestionCount={
+                  strategy.strategyId ? (suggestions[strategy.strategyId]?.length ?? 0) : 0
+                }
+                onConfigure={() => {
+                  setSelectedWalletId(strategy.walletId);
+                  setState("configure");
+                }}
+                onManage={() => {
+                  setSelectedWalletId(strategy.walletId);
+                  setState(strategy.riskParameters ? "active" : "configure");
+                }}
+                configureDisabled={quotaLocked && strategy.strategyId === null}
+                configureDisabledReason={lockMessage}
+              />
+            ))}
+          </div>
+        )}
+      </LockedOverlay>
     </div>
   );
 }

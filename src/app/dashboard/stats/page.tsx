@@ -4,6 +4,7 @@ import { AccuracyEvolutionChart } from "@/components/dashboard/stats/accuracy-ev
 import { AnalysisHistoryList } from "@/components/dashboard/stats/analysis-history-list";
 import { CategoryTable } from "@/components/dashboard/stats/category-table";
 import { DecisionSplit } from "@/components/dashboard/stats/decision-split";
+import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { StatCard } from "@/components/dashboard/stats/stat-card";
 import { StatsEmptyState } from "@/components/dashboard/stats/stats-empty-state";
 import { IS_DEMO_MODE } from "@/lib/config/demo-mode";
@@ -13,12 +14,18 @@ import {
   KEY_STATS,
   RESOLVED_ANALYSES,
 } from "@/lib/data/stats";
+import { createClient } from "@/lib/supabase/server";
+import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
 
 export const metadata: Metadata = {
   title: "Statistiques — Polypips",
 };
 
-export default function StatsPage() {
+export default async function StatsPage() {
+  const supabase = await createClient();
+  const subscription = await fetchSubscription(supabase);
+  const locked = !hasActiveAccess(subscription);
+
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -30,52 +37,60 @@ export default function StatsPage() {
         </p>
       </div>
 
-      {IS_DEMO_MODE ? (
-        <>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            <StatCard
-              icon={BarChart3}
-              value={String(KEY_STATS.totalAnalyses)}
-              label="Analyses réalisées"
-            />
-            <StatCard
-              icon={Target}
-              value={`${KEY_STATS.precision}%`}
-              label="Précision historique"
-            />
-            <StatCard
-              icon={TrendingUp}
-              value={`+${KEY_STATS.averageEdge}%`}
-              label="Edge moyen"
-            />
-            <StatCard
-              icon={Gauge}
-              value={`${KEY_STATS.averageOpportunityScore}/100`}
-              label="Score moyen d'opportunité"
-            />
-          </div>
+      {/* "Pas d'abonnement" (locked, this overlay) is distinct from "abonné
+       * mais historique encore vide" (StatsEmptyState rendered unblurred
+       * below when not in demo mode) — the two must never look the same. */}
+      <LockedOverlay
+        locked={locked}
+        message="Débloquez les statistiques détaillées — Débutez pour 0,99 €"
+      >
+        {IS_DEMO_MODE ? (
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              <StatCard
+                icon={BarChart3}
+                value={String(KEY_STATS.totalAnalyses)}
+                label="Analyses réalisées"
+              />
+              <StatCard
+                icon={Target}
+                value={`${KEY_STATS.precision}%`}
+                label="Précision historique"
+              />
+              <StatCard
+                icon={TrendingUp}
+                value={`+${KEY_STATS.averageEdge}%`}
+                label="Edge moyen"
+              />
+              <StatCard
+                icon={Gauge}
+                value={`${KEY_STATS.averageOpportunityScore}/100`}
+                label="Score moyen d'opportunité"
+              />
+            </div>
 
-          <AccuracyEvolutionChart />
+            <AccuracyEvolutionChart />
 
-          <DecisionSplit split={DECISION_SPLIT} />
+            <DecisionSplit split={DECISION_SPLIT} />
 
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Statistiques par catégorie
-            </p>
-            <CategoryTable rows={CATEGORY_STATS} />
-          </div>
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                Statistiques par catégorie
+              </p>
+              <CategoryTable rows={CATEGORY_STATS} />
+            </div>
 
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Historique des analyses
-            </p>
-            <AnalysisHistoryList items={RESOLVED_ANALYSES} />
-          </div>
-        </>
-      ) : (
-        <StatsEmptyState />
-      )}
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                Historique des analyses
+              </p>
+              <AnalysisHistoryList items={RESOLVED_ANALYSES} />
+            </div>
+          </>
+        ) : (
+          <StatsEmptyState />
+        )}
+      </LockedOverlay>
     </div>
   );
 }

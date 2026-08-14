@@ -53,14 +53,36 @@ export async function fetchSubscription(
   return mapRow(data as RawRow);
 }
 
+/** The one place "does this status grant access" is decided — everything
+ * else in this file (and userHasActiveAccess below) defers to it so the
+ * active/trialing rule can't drift between the different call shapes. */
+function isActiveStatus(status: string | null | undefined): boolean {
+  return status === "active" || status === "trialing";
+}
+
 /** Active or trialing both grant access — a cancellation only flips this
  * once Stripe actually ends the subscription at period end, so a user who
  * cancelled but is still inside their paid period stays "active" here. */
 export function hasActiveAccess(subscription: SubscriptionRow | null): boolean {
-  return (
-    subscription !== null &&
-    (subscription.status === "active" || subscription.status === "trialing")
-  );
+  return subscription !== null && isActiveStatus(subscription.status);
+}
+
+/** Same check as hasActiveAccess(), but for server code (API routes,
+ * mutating endpoints) that already has a userId and shouldn't pull the
+ * full SubscriptionRow just to gate a request. This is the check every
+ * mutating dashboard endpoint must call before doing anything that
+ * consumes a real resource or exposes real data to a user with no active
+ * subscription at all — UI blur alone is not a security boundary. */
+export async function userHasActiveAccess(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("subscriptions")
+    .select("status")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return isActiveStatus(data?.status);
 }
 
 /** Same "no access → decouverte limits" fallback used by the coach-chat and
@@ -76,7 +98,7 @@ export async function getEffectivePlan(
     .eq("user_id", userId)
     .maybeSingle();
 
-  const hasAccess = data?.status === "active" || data?.status === "trialing";
+  const hasAccess = isActiveStatus(data?.status);
   const planId = hasAccess ? (data!.plan as PlanId) : "decouverte";
   return PRICING_PLANS.find((p) => p.id === planId) ?? PRICING_PLANS[0];
 }

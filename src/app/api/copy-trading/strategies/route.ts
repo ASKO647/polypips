@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getEffectivePlan } from "@/lib/supabase/subscriptions";
+import { getEffectivePlan, userHasActiveAccess } from "@/lib/supabase/subscriptions";
 import { getMaxActiveCopyTradingStrategies } from "@/lib/data/pricing";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { formatResetDate } from "@/lib/utils";
@@ -24,6 +24,16 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "unauthorized", message: "Connectez-vous pour continuer." },
       { status: 401 }
+    );
+  }
+
+  if (!(await userHasActiveAccess(supabase, user.id))) {
+    return NextResponse.json(
+      {
+        error: "subscription_required",
+        message: "Cette fonctionnalité est réservée aux abonnés. Débutez pour 0,99 €.",
+      },
+      { status: 403 }
     );
   }
 

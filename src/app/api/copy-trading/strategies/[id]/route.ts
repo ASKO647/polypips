@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getEffectivePlan } from "@/lib/supabase/subscriptions";
+import { getEffectivePlan, userHasActiveAccess } from "@/lib/supabase/subscriptions";
 import { getMaxActiveCopyTradingStrategies } from "@/lib/data/pricing";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { formatResetDate } from "@/lib/utils";
@@ -53,6 +53,20 @@ export async function PATCH(
     return NextResponse.json(
       { error: "invalid_input", message: "Statut invalide." },
       { status: 400 }
+    );
+  }
+
+  // Only the "resume to active" direction is gated — it (re)activates
+  // suggestion generation, a real resource. Pausing releases it and must
+  // stay available regardless of subscription status, same reasoning as
+  // DELETE below.
+  if (body.status === "active" && !(await userHasActiveAccess(supabase, user.id))) {
+    return NextResponse.json(
+      {
+        error: "subscription_required",
+        message: "Cette fonctionnalité est réservée aux abonnés. Débutez pour 0,99 €.",
+      },
+      { status: 403 }
     );
   }
 

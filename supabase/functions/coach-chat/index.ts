@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
         controller.close();
       };
 
-      // ----- 1. Weekly usage limit -----
+      // ----- 1. Subscription gate + weekly usage limit -----
       const { data: subscriptionRow } = await supabase
         .from("subscriptions")
         .select("plan, status")
@@ -171,7 +171,22 @@ Deno.serve(async (req) => {
 
       const hasAccess =
         subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing";
-      const effectivePlan = hasAccess ? subscriptionRow!.plan : "decouverte";
+
+      // Unlike analyze-market (which deliberately lets a subscription-less
+      // visitor trigger one real analysis so the product can prove itself,
+      // with only the *result* blurred client-side), Coach IA has no such
+      // exception — the chat itself is a Pro-tier feature, so a user with
+      // no active/trialing subscription at all is blocked outright rather
+      // than falling back to découverte's weekly quota.
+      if (!hasAccess) {
+        emitErrorAndClose(
+          "subscription_required",
+          "Le Coach IA est réservé aux abonnés. Débutez pour 0,99 € pour y accéder."
+        );
+        return;
+      }
+
+      const effectivePlan = subscriptionRow!.plan;
       const weeklyLimit = WEEKLY_MESSAGE_LIMITS[effectivePlan] ?? 50;
 
       if (weeklyLimit !== null) {
