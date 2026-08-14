@@ -10,6 +10,32 @@ const client = new Anthropic({
  * cases, so the Edge Function can report each source accurately. */
 export class AiServiceError extends Error {}
 
+/** Internal-only: a response that came back but isn't usable (degenerate
+ * repetition, invalid JSON) — as opposed to AiServiceError, which is a
+ * failed call. Never escapes analyzeMarket(); it's what triggers the one
+ * retry, and is converted to AiServiceError if the retry also fails, so
+ * callers only ever see the one error type they already handle. */
+class MalformedVerdictError extends Error {}
+
+/** Same string, repeated a large number of times in a row, with no other
+ * content in between — matches both a bare character run ("aaaa...") and a
+ * repeated short token ("a a a a..."). Group length is capped at 12 chars
+ * to keep the backreference cheap to check, and the whole thing only ever
+ * runs once per response. 20+ consecutive repeats of anything is not
+ * something real analysis prose produces. */
+const DEGENERATE_REPETITION_PATTERN = /(.{1,12})\1{19,}/;
+
+function hasDegenerateRepetition(text: string): boolean {
+  return DEGENERATE_REPETITION_PATTERN.test(text);
+}
+
+/** Keeps a log line readable when the text itself is the problem (a
+ * runaway repetition can be thousands of characters long). */
+function truncateForLog(text: string, maxLength = 800): string {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}… [${text.length - maxLength} caractères tronqués]`;
+}
+
 /** Logs the full technical detail of an Anthropic SDK failure server-side
  * (status code, error type, message) so a real cause — insufficient credit,
  * invalid key, rate limit, model outage — is diagnosable from the Supabase
@@ -132,7 +158,11 @@ La probabilité de marché actuelle pour l'issue "${market.outcomes[0] ?? "YES"}
 Produis ton verdict structuré sur cette issue.`;
 }
 
-export async function analyzeMarket(
+/** One attempt at getting a usable verdict. Throws AiServiceError for a
+ * failed/refused call (not worth retrying — see analyzeMarket), or
+ * MalformedVerdictError for a call that succeeded but came back unusable
+ * (degenerate repetition or invalid JSON — worth one retry). */
+async function requestVerdictOnce(
   market: GammaMarket,
   marketUrl: string | null
 ): Promise<AiVerdict> {
@@ -140,7 +170,13 @@ export async function analyzeMarket(
   try {
     response = await client.messages.create({
       model: "claude-opus-5",
-      max_tokens: 4096,
+      // Was 4096 — too tight for opus-5 with adaptive thinking + high-effort
+      // json_schema output on this schema (explanation + 3-5 factors + 2-4
+      // risks + whatCouldChange): a response that runs long can hit the cap
+      // mid-string, which is indistinguishable from a truncated/malformed
+      // response by the time it reaches JSON.parse. 8192 gives real headroom
+      // without materially changing latency/cost for the common case.
+      max_tokens: 8192,
       thinking: { type: "adaptive" },
       output_config: {
         effort: "high",
@@ -174,11 +210,60 @@ export async function analyzeMarket(
     throw new AiServiceError("Réponse de l'IA vide ou inattendue.");
   }
 
+  // Catches a degenerate/looping generation (e.g. a field repeating the
+  // same character hundreds of times) before it reaches JSON.parse, where
+  // it would otherwise fail as an opaque "Unterminated string" once the
+  // runaway text pushes the response past max_tokens mid-field.
+  if (hasDegenerateRepetition(textBlock.text)) {
+    console.error(
+      "[anthropic:analyzeMarket] répétition dégénérée détectée dans la réponse:",
+      truncateForLog(textBlock.text)
+    );
+    throw new MalformedVerdictError("Réponse de l'IA dégénérée (répétition anormale détectée).");
+  }
+
   try {
     return JSON.parse(textBlock.text) as AiVerdict;
   } catch (error) {
-    console.error("[anthropic:analyzeMarket] JSON invalide dans la réponse:", textBlock.text, error);
-    throw new AiServiceError("Réponse de l'IA mal formée.");
+    console.error(
+      "[anthropic:analyzeMarket] JSON invalide dans la réponse:",
+      truncateForLog(textBlock.text),
+      error
+    );
+    throw new MalformedVerdictError("Réponse de l'IA mal formée (JSON invalide).");
+  }
+}
+
+/** Shared by scan-markets and analyze-market (Analyse IA à la demande) —
+ * both call this same function, so the retry/repetition protection below
+ * covers both without duplicating anything.
+ *
+ * A malformed response (degenerate repetition or bad JSON) gets exactly
+ * one retry before giving up, since this class of failure is a one-off
+ * generation anomaly, not a persistent problem with the request — a
+ * second attempt is very likely to come back clean. A failed/refused call
+ * is not retried here (unlikely to succeed differently on request retry;
+ * scan-markets already treats a failed candidate as skippable). */
+export async function analyzeMarket(
+  market: GammaMarket,
+  marketUrl: string | null
+): Promise<AiVerdict> {
+  try {
+    return await requestVerdictOnce(market, marketUrl);
+  } catch (error) {
+    if (!(error instanceof MalformedVerdictError)) throw error;
+
+    console.warn(
+      `[anthropic:analyzeMarket] réponse inexploitable (${error.message}) — nouvelle tentative`
+    );
+    try {
+      return await requestVerdictOnce(market, marketUrl);
+    } catch (retryError) {
+      if (retryError instanceof MalformedVerdictError) {
+        throw new AiServiceError(retryError.message);
+      }
+      throw retryError;
+    }
   }
 }
 
