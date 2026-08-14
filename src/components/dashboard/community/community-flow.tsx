@@ -48,10 +48,12 @@ export function CommunityFlow({
             Échangez avec d&apos;autres traders dans des groupes texte et photo.
           </p>
         </div>
-        <Button type="button" onClick={() => setCreateOpen(true)} size="md">
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Créer un groupe
-        </Button>
+        {hasCommunityAccess && (
+          <Button type="button" onClick={() => setCreateOpen(true)} size="md">
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            Créer un groupe
+          </Button>
+        )}
       </div>
 
       <LockedOverlay
