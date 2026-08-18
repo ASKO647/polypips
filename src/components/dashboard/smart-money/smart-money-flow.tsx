@@ -6,6 +6,7 @@ import { AddWalletForm } from "@/components/dashboard/smart-money/add-wallet-for
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { WalletCard } from "@/components/dashboard/smart-money/wallet-card";
 import { WalletDetail } from "@/components/dashboard/smart-money/wallet-detail";
+import { SmartMoneySyncCountdown } from "@/components/dashboard/smart-money/sync-countdown";
 import type { Wallet } from "@/lib/data/smart-money";
 import { cn, formatResetDate } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ export function SmartMoneyFlow({
   maxTrackedWallets,
   quotaLocked,
   quotaResetDate,
+  lastSyncedAt,
 }: {
   wallets: Wallet[];
   initialFollowedIds: string[];
@@ -40,6 +42,10 @@ export function SmartMoneyFlow({
    * (maxTrackedWallets === null). */
   quotaLocked: boolean;
   quotaResetDate: string | null;
+  /** Most recent last_synced_at across the tracked pool — seeds the
+   * "Prochains marchés dans" countdown. Null before the first sync ever
+   * ran. */
+  lastSyncedAt: string | null;
 }) {
   const [allWallets, setAllWallets] = useState(wallets);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -155,15 +161,18 @@ export function SmartMoneyFlow({
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Smart Money
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          Suivez les portefeuilles les plus actifs de Polymarket, repérés et
-          rafraîchis automatiquement à partir de leurs données publiques
-          on-chain.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Smart Money
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
+            Suivez les portefeuilles les plus actifs de Polymarket, repérés et
+            rafraîchis automatiquement à partir de leurs données publiques
+            on-chain.
+          </p>
+        </div>
+        <SmartMoneySyncCountdown lastSyncedAt={lastSyncedAt} />
       </div>
 
       <LockedOverlay

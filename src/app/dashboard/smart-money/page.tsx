@@ -29,6 +29,7 @@ export default async function SmartMoneyPage() {
         maxTrackedWallets={null}
         quotaLocked={false}
         quotaResetDate={null}
+        lastSyncedAt={null}
       />
     );
   }
@@ -48,6 +49,15 @@ export default async function SmartMoneyPage() {
 
   const { wallets, followedWalletIds } = await fetchSmartMoneyData(supabase, user.id);
 
+  // Most recent sync across the whole pool — sync-smart-money refreshes
+  // every tracked wallet in the same run, so this is effectively "when did
+  // the last run finish," used to seed the countdown to the next one.
+  const lastSyncedAt = wallets.reduce<string | null>((latest, wallet) => {
+    if (!wallet.lastSyncedAt) return latest;
+    if (!latest || wallet.lastSyncedAt > latest) return wallet.lastSyncedAt;
+    return latest;
+  }, null);
+
   return (
     <SmartMoneyFlow
       wallets={wallets}
@@ -57,6 +67,7 @@ export default async function SmartMoneyPage() {
       maxTrackedWallets={maxTrackedWallets}
       quotaLocked={lock.locked}
       quotaResetDate={lock.periodEnd}
+      lastSyncedAt={lastSyncedAt}
     />
   );
 }
