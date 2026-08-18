@@ -267,6 +267,30 @@ export async function analyzeMarket(
   }
 }
 
+/** Cropped screenshots, multi-market event pages, and busy Polymarket chrome
+ * (nav bar, price ticker, chart, other cards in a feed) make this a real
+ * OCR-and-disambiguation task, not a trivial read — low effort + no
+ * thinking was producing paraphrased or wrong-card extractions far more
+ * often than outright "unreadable" results. Medium effort + adaptive
+ * thinking lets the model actually look before answering; the prompt itself
+ * now spells out verbatim-copy and multi-market disambiguation rules that
+ * were previously left implicit. */
+const IMAGE_EXTRACTION_PROMPT = `Cette image est une capture d'écran de l'application ou du site Polymarket.
+
+Ta tâche : identifier la question du marché de prédiction affichée, et la recopier EXACTEMENT telle qu'elle apparaît à l'écran.
+
+Où chercher : la question d'un marché Polymarket est le texte principal en gros caractères (souvent en gras), généralement accompagné d'un prix ou d'un pourcentage juste à côté ou en dessous. Ignore tout le reste : barre de navigation, boutons "Trade"/"Buy Yes"/"Buy No", graphique de prix, volume, montants en dollars isolés, commentaires, autres marchés listés plus bas ou sur les côtés.
+
+Si l'image montre PLUSIEURS questions de marché (un flux de plusieurs cartes, ou un événement à choix multiples avec plusieurs lignes de sous-marchés) : choisis celle qui est clairement la question principale/mise en avant — la plus grande, centrée, ou celle associée à la vue détaillée ouverte. Si aucune n'est clairement mise en avant (ex: simple liste de plusieurs marchés similaires sans marché "ouvert"), réponds INTROUVABLE plutôt que de deviner.
+
+Règles de recopie :
+- Recopie le texte MOT POUR MOT, caractère pour caractère, exactement comme affiché.
+- Ne paraphrase JAMAIS, ne traduis JAMAIS, ne résume JAMAIS, ne corrige JAMAIS une formulation qui te semblerait étrange.
+- Conserve la ponctuation, la casse, les chiffres et les unités exactement tels qu'affichés (garde le "?" final s'il est présent).
+- Ne recopie AUCUN autre texte (prix, dates d'échéance, volume, boutons) — uniquement la question elle-même.
+
+Réponds UNIQUEMENT avec cette question, sans phrase d'introduction ni commentaire. Si aucune question de marché n'est lisible avec certitude, réponds exactement: INTROUVABLE`;
+
 /** Reads the market question directly from a screenshot using vision, so we
  * can then look the market up on the Gamma API for real numeric data. */
 export async function extractMarketQuestionFromImage(
@@ -277,9 +301,9 @@ export async function extractMarketQuestionFromImage(
   try {
     response = await client.messages.create({
       model: "claude-opus-5",
-      max_tokens: 256,
-      thinking: { type: "disabled" },
-      output_config: { effort: "low" },
+      max_tokens: 512,
+      thinking: { type: "adaptive" },
+      output_config: { effort: "medium" },
       messages: [
         {
           role: "user",
@@ -298,7 +322,7 @@ export async function extractMarketQuestionFromImage(
             },
             {
               type: "text",
-              text: "Cette image est une capture d'écran d'un marché Polymarket. Réponds UNIQUEMENT avec la question exacte du marché telle qu'affichée (aucune phrase d'introduction, aucune ponctuation supplémentaire). Si aucune question de marché n'est lisible, réponds exactement: INTROUVABLE",
+              text: IMAGE_EXTRACTION_PROMPT,
             },
           ],
         },
@@ -314,12 +338,26 @@ export async function extractMarketQuestionFromImage(
   // A refusal or unreadable image is a content-level outcome, not an API
   // failure — surfaced to the caller as "no question found" (image_unreadable),
   // not as an ai_error.
-  if (response.stop_reason === "refusal") return null;
+  if (response.stop_reason === "refusal") {
+    console.warn("[anthropic:extractMarketQuestionFromImage] refus de contenu sur l'image fournie");
+    return null;
+  }
 
   const textBlock = response.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") return null;
+  if (!textBlock || textBlock.type !== "text") {
+    console.warn(
+      "[anthropic:extractMarketQuestionFromImage] réponse sans bloc texte exploitable"
+    );
+    return null;
+  }
 
   const text = textBlock.text.trim();
-  if (!text || text === "INTROUVABLE") return null;
+  if (!text || text === "INTROUVABLE") {
+    console.warn(
+      `[anthropic:extractMarketQuestionFromImage] question jugée illisible par le modèle (réponse brute: "${text}")`
+    );
+    return null;
+  }
+  console.log(`[anthropic:extractMarketQuestionFromImage] question extraite: "${text}"`);
   return text;
 }

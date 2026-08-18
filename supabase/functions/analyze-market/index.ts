@@ -177,8 +177,9 @@ Deno.serve(async (req) => {
 
       if (body.type === "link") {
         marketUrl = body.link;
-        const slug = extractSlugFromUrl(body.link);
-        if (!slug) {
+        const slugs = extractSlugFromUrl(body.link);
+        if (!slugs) {
+          console.warn(`[analyze-market] format d'URL non reconnu: "${body.link}"`);
           emitErrorAndClose(
             "invalid_input",
             "Ce lien ne ressemble pas à un lien de marché Polymarket valide (format attendu : https://polymarket.com/event/...)."
@@ -186,9 +187,12 @@ Deno.serve(async (req) => {
           return;
         }
         try {
-          market = await fetchMarketBySlug(slug);
+          market = await fetchMarketBySlug(slugs.eventSlug, slugs.marketSlug);
         } catch (error) {
           if (error instanceof MarketNotFoundError) {
+            console.error(
+              `[gamma:fetchMarketBySlug] marché introuvable pour l'URL "${body.link}" (event="${slugs.eventSlug}", market="${slugs.marketSlug ?? "n/a"}"): ${error.message}`
+            );
             emitErrorAndClose("market_not_found", error.message);
           } else if (error instanceof GammaUnavailableError) {
             console.error(`[gamma:fetchMarketBySlug] ${error.message}`);
