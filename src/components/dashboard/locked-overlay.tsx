@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { Lock, RefreshCw } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +16,7 @@ export function LockedOverlay({
   children,
   className,
   contentClassName,
+  cancelled = false,
 }: {
   locked: boolean;
   message: string;
@@ -28,6 +29,12 @@ export function LockedOverlay({
    * panel, which is itself a flex column with its own header/messages/input
    * structure, not a simple vertical stack of cards). */
   contentClassName?: string;
+  /** True when `locked` is caused by a cancellation rather than never
+   * having subscribed — swaps the "Débutez pour 0,99 €" first-time CTA for
+   * a smaller, quieter "réabonnez-vous" one and resubscribes straight to
+   * Pro instead of re-selling the discovery trial to someone who already
+   * had one. `message` is still fully caller-provided either way. */
+  cancelled?: boolean;
 }) {
   const [unlocking, setUnlocking] = useState(false);
 
@@ -38,7 +45,7 @@ export function LockedOverlay({
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "decouverte" }),
+        body: JSON.stringify({ plan: cancelled ? "pro" : "decouverte" }),
       });
       const data = await response.json();
       if (!response.ok || !data.url) {
@@ -54,14 +61,39 @@ export function LockedOverlay({
     <div className={cn("relative", className)}>
       {locked && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-b from-[#160b0c]/50 via-[#160b0c]/80 to-[#160b0c]/95 px-6 py-10 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
-            <Lock className="h-5 w-5" strokeWidth={2} />
+          <span
+            className={cn(
+              "flex items-center justify-center rounded-full",
+              cancelled
+                ? "h-9 w-9 bg-white/10 text-white/60"
+                : "h-12 w-12 bg-brand-500/15 text-brand-400"
+            )}
+          >
+            {cancelled ? (
+              <RefreshCw className="h-4 w-4" strokeWidth={2} />
+            ) : (
+              <Lock className="h-5 w-5" strokeWidth={2} />
+            )}
           </span>
-          <p className="max-w-xs text-sm font-medium leading-relaxed text-white/80">
+          <p
+            className={cn(
+              "max-w-xs leading-relaxed",
+              cancelled ? "text-xs font-medium text-white/60" : "text-sm font-medium text-white/80"
+            )}
+          >
             {message}
           </p>
-          <Button type="button" onClick={handleUnlock} disabled={unlocking}>
-            {unlocking ? "Redirection..." : "Débloquez — Débutez pour 0,99 €"}
+          <Button
+            type="button"
+            size={cancelled ? "sm" : "md"}
+            onClick={handleUnlock}
+            disabled={unlocking}
+          >
+            {unlocking
+              ? "Redirection..."
+              : cancelled
+                ? "Réabonnez-vous"
+                : "Débloquez — Débutez pour 0,99 €"}
             <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav";
-import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
+import { isCancelledSubscription, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { NotificationItem } from "@/lib/data/notifications";
 
 export function DashboardShell({
@@ -35,6 +35,8 @@ export function DashboardShell({
           menuOpen={mobileMenuOpen}
           onMenuToggle={() => setMobileMenuOpen((v) => !v)}
           notifications={notifications}
+          subscription={subscription}
+          cancelled={isCancelledSubscription(subscription)}
         />
         <main className="flex-1 px-5 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>

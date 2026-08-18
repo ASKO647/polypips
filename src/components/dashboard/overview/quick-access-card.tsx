@@ -27,6 +27,7 @@ export function QuickAccessCard({
   return (
     <Link
       href={href}
+      prefetch
       className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-150 hover:border-white/20 hover:bg-white/[0.05]"
     >
       <div className="flex items-center justify-between">

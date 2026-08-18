@@ -33,6 +33,7 @@ export function SidebarNavContent({
       <Link
         key={item.href}
         href={item.href}
+        prefetch
         onClick={onNavigate}
         className={cn(
           "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150",

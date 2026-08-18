@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DashboardOverviewFlow } from "@/components/dashboard/overview/dashboard-overview-flow";
 import { CheckoutIntentRedirect } from "@/components/dashboard/checkout-intent-redirect";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   fetchSubscription,
   getEffectivePlan,
-  getTrialDaysRemaining,
+  getTrialEndsAt,
   hasActiveAccess,
+  isCancelledSubscription,
 } from "@/lib/supabase/subscriptions";
 import { countAnalysesToday } from "@/lib/supabase/analyses";
 import { fetchSelectedMarkets, countSelectedMarkets } from "@/lib/supabase/selected-markets";
@@ -29,9 +30,7 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return (
@@ -73,7 +72,8 @@ export default async function DashboardPage() {
       </Suspense>
       <DashboardOverviewFlow
         hasActiveSubscription={hasActiveAccess(subscription)}
-        trialDaysRemaining={getTrialDaysRemaining(subscription)}
+        cancelled={isCancelledSubscription(subscription)}
+        trialEndsAt={getTrialEndsAt(subscription)}
         analysesToday={analysesToday}
         dailyAnalysisLimit={getDailyAnalysisLimit(plan)}
         selectedMarketsCount={selectedMarketsCount}

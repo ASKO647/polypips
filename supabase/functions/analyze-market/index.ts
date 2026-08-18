@@ -136,12 +136,17 @@ Deno.serve(async (req) => {
 
       const { data: subscriptionRow } = await supabase
         .from("subscriptions")
-        .select("plan, status")
+        .select("plan, status, cancel_at_period_end")
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // A cancellation blurs/blocks access immediately (see hasActiveAccess
+      // in src/lib/supabase/subscriptions.ts) rather than waiting for the
+      // paid period to actually end — mirrored here by hand since this
+      // Edge Function can't import that module.
       const hasAccess =
-        subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing";
+        (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
+        !subscriptionRow?.cancel_at_period_end;
       const dailyLimit = hasAccess
         ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
         : FREE_DEMO_DAILY_LIMIT;

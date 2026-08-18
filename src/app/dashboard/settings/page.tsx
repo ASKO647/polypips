@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SettingsFlow } from "@/components/dashboard/settings/settings-flow";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   fetchSubscription,
   getEffectivePlan,
@@ -16,9 +16,7 @@ export const metadata: Metadata = {
 
 export default async function SettingsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   const email = user?.email ?? "";
   const initialUsername =

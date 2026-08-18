@@ -21,6 +21,7 @@ export function SmartMoneyFlow({
   wallets,
   initialFollowedIds,
   hasActiveSubscription,
+  cancelled,
   maxTrackedWallets,
   quotaLocked,
   quotaResetDate,
@@ -28,6 +29,9 @@ export function SmartMoneyFlow({
   wallets: Wallet[];
   initialFollowedIds: string[];
   hasActiveSubscription: boolean;
+  /** True when access is blocked because the user cancelled — swaps the
+   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
+  cancelled: boolean;
   maxTrackedWallets: number | null;
   /** True once the user has followed maxTrackedWallets wallets in the
    * current billing cycle — follow AND unfollow are both blocked until
@@ -164,7 +168,12 @@ export function SmartMoneyFlow({
 
       <LockedOverlay
         locked={!hasActiveSubscription}
-        message="Débloquez Smart Money — suivez les portefeuilles les plus actifs de Polymarket. Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser Smart Money."
+            : "Débloquez Smart Money — suivez les portefeuilles les plus actifs de Polymarket. Débutez pour 0,99 €"
+        }
       >
         <AddWalletForm onAdded={handleWalletAdded} disabled={quotaLocked} />
 

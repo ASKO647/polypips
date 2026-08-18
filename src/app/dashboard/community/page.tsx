@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { CommunityFlow } from "@/components/dashboard/community/community-flow";
-import { createClient } from "@/lib/supabase/server";
-import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
+import {
+  fetchSubscription,
+  hasActiveAccess,
+  isCancelledSubscription,
+} from "@/lib/supabase/subscriptions";
 import { fetchDiscoverGroups, fetchMyGroups } from "@/lib/supabase/groups";
 
 export const metadata: Metadata = {
@@ -10,9 +14,7 @@ export const metadata: Metadata = {
 
 export default async function CommunityPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return (
@@ -20,6 +22,7 @@ export default async function CommunityPage() {
         initialDiscoverGroups={[]}
         initialMyGroups={[]}
         hasCommunityAccess={false}
+        cancelled={false}
       />
     );
   }
@@ -35,6 +38,7 @@ export default async function CommunityPage() {
       initialDiscoverGroups={discoverGroups}
       initialMyGroups={myGroups}
       hasCommunityAccess={hasActiveAccess(subscription)}
+      cancelled={isCancelledSubscription(subscription)}
     />
   );
 }

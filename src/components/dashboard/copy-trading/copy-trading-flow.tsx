@@ -20,6 +20,7 @@ export function CopyTradingFlow({
   strategies: initialStrategies,
   suggestionsByStrategyId,
   hasActiveSubscription,
+  cancelled,
   maxActiveStrategies,
   quotaLocked,
   quotaResetDate,
@@ -27,6 +28,9 @@ export function CopyTradingFlow({
   strategies: Strategy[];
   suggestionsByStrategyId: Record<string, Suggestion[]>;
   hasActiveSubscription: boolean;
+  /** True when access is blocked because the user cancelled — swaps the
+   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
+  cancelled: boolean;
   maxActiveStrategies: number | null;
   /** True once the user has activated maxActiveStrategies strategies in
    * the current billing cycle — activating, pausing, and stopping are all
@@ -245,7 +249,12 @@ export function CopyTradingFlow({
 
       <LockedOverlay
         locked={!hasActiveSubscription}
-        message="Débloquez le Copy Trading — Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le Copy Trading."
+            : "Débloquez le Copy Trading — Débutez pour 0,99 €"
+        }
       >
         {strategies.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">

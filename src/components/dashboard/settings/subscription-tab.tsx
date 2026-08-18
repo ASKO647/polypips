@@ -27,9 +27,20 @@ export function SubscriptionTab({
   actionError: string | null;
   onOpenCancelModal: () => void;
 }) {
-  const badge = subscription ? STATUS_BADGE[subscription.status] : null;
+  // A cancellation blurs access immediately (see hasActiveAccess in
+  // lib/supabase/subscriptions.ts) even though Stripe's own status field
+  // stays "active"/"trialing" until the paid period actually ends — the
+  // badge and CTAs below reflect the app's own cut-off, not Stripe's.
+  const badge = subscription
+    ? subscription.cancelAtPeriodEnd
+      ? { label: "Annulé", className: "bg-rose-500/15 text-rose-300" }
+      : STATUS_BADGE[subscription.status]
+    : null;
   const hasAccess =
-    subscription?.status === "active" || subscription?.status === "trialing";
+    (subscription?.status === "active" || subscription?.status === "trialing") &&
+    !subscription?.cancelAtPeriodEnd;
+  const needsResubscribe =
+    subscription?.cancelAtPeriodEnd || subscription?.status === "canceled";
 
   if (!subscription || !plan) {
     return (
@@ -87,7 +98,7 @@ export function SubscriptionTab({
           {subscription.status === "canceled"
             ? `Abonnement terminé le ${periodEndLabel}`
             : subscription.cancelAtPeriodEnd
-              ? `Annulation prévue — accès jusqu'au ${periodEndLabel}`
+              ? `Abonnement annulé — accès coupé dès maintenant (période payée jusqu'au ${periodEndLabel})`
               : `Renouvellement le ${periodEndLabel}`}
         </p>
       )}
@@ -98,7 +109,7 @@ export function SubscriptionTab({
         </p>
       )}
 
-      {hasAccess && !subscription.cancelAtPeriodEnd && (
+      {hasAccess && (
         <div className="mt-5">
           <button
             type="button"
@@ -110,7 +121,7 @@ export function SubscriptionTab({
         </div>
       )}
 
-      {subscription.status === "canceled" && (
+      {needsResubscribe && (
         <div className="mt-5">
           <Button href="/#tarifs">Se réabonner</Button>
         </div>

@@ -162,12 +162,17 @@ Deno.serve(async (req) => {
       // ----- 1. Subscription gate + weekly usage limit -----
       const { data: subscriptionRow } = await supabase
         .from("subscriptions")
-        .select("plan, status")
+        .select("plan, status, cancel_at_period_end")
         .eq("user_id", user.id)
         .maybeSingle();
 
+      // A cancellation blurs/blocks access immediately (see hasActiveAccess
+      // in src/lib/supabase/subscriptions.ts) rather than waiting for the
+      // paid period to actually end — mirrored here by hand since this
+      // Edge Function can't import that module.
       const hasAccess =
-        subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing";
+        (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
+        !subscriptionRow?.cancel_at_period_end;
 
       // Unlike analyze-market (which deliberately lets a subscription-less
       // visitor trigger one real analysis so the product can prove itself,

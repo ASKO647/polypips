@@ -49,10 +49,14 @@ export function CoachFlow({
   initialConversations,
   initialFocusAnalysis,
   hasActiveSubscription,
+  cancelled,
 }: {
   initialConversations: ConversationSummary[];
   initialFocusAnalysis: FocusAnalysis | null;
   hasActiveSubscription: boolean;
+  /** True when access is blocked because the user cancelled — swaps the
+   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
+  cancelled: boolean;
 }) {
   const [conversations, setConversations] = useState<ConversationSummary[]>(
     initialConversations
@@ -193,7 +197,12 @@ export function CoachFlow({
 
       <LockedOverlay
         locked={!hasActiveSubscription}
-        message="Débloquez le Coach IA — Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le Coach IA."
+            : "Débloquez le Coach IA — Débutez pour 0,99 €"
+        }
         className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
         contentClassName="flex flex-1 flex-col overflow-hidden"
       >

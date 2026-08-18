@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { SmartMoneyFlow } from "@/components/dashboard/smart-money/smart-money-flow";
-import { createClient } from "@/lib/supabase/server";
-import { fetchSubscription, getEffectivePlan, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
+import {
+  fetchSubscription,
+  getEffectivePlan,
+  hasActiveAccess,
+  isCancelledSubscription,
+} from "@/lib/supabase/subscriptions";
 import { fetchSmartMoneyData } from "@/lib/supabase/wallets";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { getMaxTrackedWallets } from "@/lib/data/pricing";
@@ -12,9 +17,7 @@ export const metadata: Metadata = {
 
 export default async function SmartMoneyPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return (
@@ -22,6 +25,7 @@ export default async function SmartMoneyPage() {
         wallets={[]}
         initialFollowedIds={[]}
         hasActiveSubscription={false}
+        cancelled={false}
         maxTrackedWallets={null}
         quotaLocked={false}
         quotaResetDate={null}
@@ -49,6 +53,7 @@ export default async function SmartMoneyPage() {
       wallets={wallets}
       initialFollowedIds={Array.from(followedWalletIds)}
       hasActiveSubscription={hasActiveAccess(subscription)}
+      cancelled={isCancelledSubscription(subscription)}
       maxTrackedWallets={maxTrackedWallets}
       quotaLocked={lock.locked}
       quotaResetDate={lock.periodEnd}

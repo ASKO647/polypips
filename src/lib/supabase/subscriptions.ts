@@ -60,11 +60,29 @@ function isActiveStatus(status: string | null | undefined): boolean {
   return status === "active" || status === "trialing";
 }
 
-/** Active or trialing both grant access — a cancellation only flips this
- * once Stripe actually ends the subscription at period end, so a user who
- * cancelled but is still inside their paid period stays "active" here. */
+/** Active/trialing AND not scheduled to cancel. By product decision, a
+ * cancellation blurs access immediately — the user does not keep access
+ * for the remainder of a period they already paid for. Stripe itself
+ * still charges/keeps the subscription alive until period end (no refund,
+ * cancel_at_period_end just stops the *next* renewal) — only the app's own
+ * access gate cuts off early. */
 export function hasActiveAccess(subscription: SubscriptionRow | null): boolean {
-  return subscription !== null && isActiveStatus(subscription.status);
+  return (
+    subscription !== null &&
+    isActiveStatus(subscription.status) &&
+    !subscription.cancelAtPeriodEnd
+  );
+}
+
+/** True once the user has requested cancellation (whether Stripe has
+ * actually ended the subscription yet or not) — used to pick the
+ * "réabonnez-vous" locked-overlay copy over the "premier abonnement" copy
+ * a never-subscribed visitor sees. */
+export function isCancelledSubscription(subscription: SubscriptionRow | null): boolean {
+  return (
+    subscription !== null &&
+    (subscription.cancelAtPeriodEnd || subscription.status === "canceled")
+  );
 }
 
 /** Same check as hasActiveAccess(), but for server code (API routes,
@@ -79,10 +97,10 @@ export async function userHasActiveAccess(
 ): Promise<boolean> {
   const { data } = await supabase
     .from("subscriptions")
-    .select("status")
+    .select("status, cancel_at_period_end")
     .eq("user_id", userId)
     .maybeSingle();
-  return isActiveStatus(data?.status);
+  return isActiveStatus(data?.status) && !data?.cancel_at_period_end;
 }
 
 /** Same "no access → decouverte limits" fallback used by the coach-chat and
@@ -94,11 +112,11 @@ export async function getEffectivePlan(
 ): Promise<PricingPlan> {
   const { data } = await supabase
     .from("subscriptions")
-    .select("plan, status")
+    .select("plan, status, cancel_at_period_end")
     .eq("user_id", userId)
     .maybeSingle();
 
-  const hasAccess = isActiveStatus(data?.status);
+  const hasAccess = isActiveStatus(data?.status) && !data?.cancel_at_period_end;
   const planId = hasAccess ? (data!.plan as PlanId) : "decouverte";
   return PRICING_PLANS.find((p) => p.id === planId) ?? PRICING_PLANS[0];
 }
@@ -115,4 +133,15 @@ export function getTrialDaysRemaining(
   }
   const diffMs = new Date(subscription.currentPeriodEnd).getTime() - Date.now();
   return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
+}
+
+/** Raw ISO trial-end date, for callers (TrialBanner) that recompute the
+ * days-remaining count themselves on the client so the display keeps
+ * ticking down without needing a page reload every 24h. Same "trialing
+ * only" condition as getTrialDaysRemaining. */
+export function getTrialEndsAt(subscription: SubscriptionRow | null): string | null {
+  if (subscription?.status !== "trialing" || !subscription.currentPeriodEnd) {
+    return null;
+  }
+  return subscription.currentPeriodEnd;
 }

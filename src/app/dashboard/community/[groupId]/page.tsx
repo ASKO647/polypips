@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GroupDetailFlow } from "@/components/dashboard/community/group-detail-flow";
-import { createClient } from "@/lib/supabase/server";
-import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
+import {
+  fetchSubscription,
+  hasActiveAccess,
+  isCancelledSubscription,
+} from "@/lib/supabase/subscriptions";
 import {
   fetchGroupById,
   fetchGroupMembers,
@@ -24,9 +28,7 @@ export default async function GroupDetailPage({
 }: PageProps<"/dashboard/community/[groupId]">) {
   const { groupId } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   const group = await fetchGroupById(supabase, groupId);
   if (!group) notFound();
@@ -40,6 +42,7 @@ export default async function GroupDetailPage({
         initialMessages={[]}
         initialMembers={[]}
         hasCommunityAccess={false}
+        cancelled={false}
       />
     );
   }
@@ -59,6 +62,7 @@ export default async function GroupDetailPage({
       initialMessages={messages}
       initialMembers={members}
       hasCommunityAccess={hasActiveAccess(subscription)}
+      cancelled={isCancelledSubscription(subscription)}
     />
   );
 }

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { CopyTradingFlow } from "@/components/dashboard/copy-trading/copy-trading-flow";
-import { createClient } from "@/lib/supabase/server";
-import { fetchSubscription, getEffectivePlan, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
+import {
+  fetchSubscription,
+  getEffectivePlan,
+  hasActiveAccess,
+  isCancelledSubscription,
+} from "@/lib/supabase/subscriptions";
 import { fetchStrategies, fetchSuggestions } from "@/lib/supabase/copy-trading";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { getMaxActiveCopyTradingStrategies } from "@/lib/data/pricing";
@@ -13,9 +18,7 @@ export const metadata: Metadata = {
 
 export default async function CopyTradingPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return (
@@ -23,6 +26,7 @@ export default async function CopyTradingPage() {
         strategies={[]}
         suggestionsByStrategyId={{}}
         hasActiveSubscription={false}
+        cancelled={false}
         maxActiveStrategies={null}
         quotaLocked={false}
         quotaResetDate={null}
@@ -59,6 +63,7 @@ export default async function CopyTradingPage() {
       strategies={strategies}
       suggestionsByStrategyId={suggestionsByStrategyId}
       hasActiveSubscription={hasActiveAccess(subscription)}
+      cancelled={isCancelledSubscription(subscription)}
       maxActiveStrategies={maxActiveStrategies}
       quotaLocked={lock.locked}
       quotaResetDate={lock.periodEnd}

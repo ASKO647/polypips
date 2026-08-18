@@ -14,7 +14,8 @@ import type { NotificationItem } from "@/lib/data/notifications";
 
 export function DashboardOverviewFlow({
   hasActiveSubscription,
-  trialDaysRemaining,
+  cancelled,
+  trialEndsAt,
   analysesToday,
   dailyAnalysisLimit,
   selectedMarketsCount,
@@ -27,7 +28,13 @@ export function DashboardOverviewFlow({
   notifications,
 }: {
   hasActiveSubscription: boolean;
-  trialDaysRemaining: number | null;
+  /** True when access is blocked because the user cancelled — swaps the
+   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
+  cancelled: boolean;
+  /** ISO end-of-trial date, only while genuinely still trialing (not
+   * cancelled) — TrialBanner recomputes the days-remaining count itself
+   * client-side so it keeps ticking down without a page reload. */
+  trialEndsAt: string | null;
   analysesToday: number;
   dailyAnalysisLimit: number | null;
   selectedMarketsCount: number;
@@ -74,13 +81,16 @@ export function DashboardOverviewFlow({
         </p>
       </div>
 
-      {trialDaysRemaining !== null && (
-        <TrialBanner daysRemaining={trialDaysRemaining} />
-      )}
+      {trialEndsAt !== null && !cancelled && <TrialBanner trialEndsAt={trialEndsAt} />}
 
       <LockedOverlay
         locked={!hasActiveSubscription}
-        message="Débloquez le tableau de bord complet — Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le tableau de bord."
+            : "Débloquez le tableau de bord complet — Débutez pour 0,99 €"
+        }
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <QuickAccessCard

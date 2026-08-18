@@ -29,6 +29,7 @@ export function GroupDetailFlow({
   initialMessages,
   initialMembers,
   hasCommunityAccess,
+  cancelled,
 }: {
   group: GroupSummary;
   currentUserId: string | null;
@@ -36,6 +37,9 @@ export function GroupDetailFlow({
   initialMessages: GroupMessage[];
   initialMembers: GroupMember[];
   hasCommunityAccess: boolean;
+  /** True when access is blocked because the user cancelled — swaps the
+   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
+  cancelled: boolean;
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState<GroupMessage[]>(initialMessages);
@@ -188,7 +192,12 @@ export function GroupDetailFlow({
 
       <LockedOverlay
         locked={!hasCommunityAccess}
-        message="Débloquez la Communauté pour participer — Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser la Communauté."
+            : "Débloquez la Communauté pour participer — Débutez pour 0,99 €"
+        }
       >
         <div className="flex h-[calc(100vh-220px)] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5 sm:px-5">

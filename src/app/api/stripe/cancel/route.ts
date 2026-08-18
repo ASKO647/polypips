@@ -3,10 +3,13 @@ import { getStripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Schedules cancellation at the end of the current billing period — the
- * user keeps access (and doesn't get refunded) until then, matching what
- * they already paid for. The `subscriptions` row itself is only ever
- * updated by the webhook once Stripe confirms the change.
+ * Schedules cancellation at the end of the current billing period on the
+ * Stripe side (no refund, subscription stays real/billable until then) —
+ * but the app's own access gate cuts off immediately: hasActiveAccess()
+ * treats cancel_at_period_end as "no access" the moment it's set, by
+ * product decision, rather than waiting for the period to actually end.
+ * The `subscriptions` row itself is only ever updated by the webhook once
+ * Stripe confirms the change.
  */
 export async function POST() {
   const supabase = await createClient();

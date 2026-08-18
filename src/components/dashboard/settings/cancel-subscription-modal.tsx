@@ -40,9 +40,11 @@ export function CancelSubscriptionModal({
           </button>
         </div>
         <p className="mt-2 text-sm leading-relaxed text-white/60">
-          Vous conserverez l&apos;accès à votre plan actuel jusqu&apos;à la
-          fin de la période en cours{renewalDate ? ` (${renewalDate})` : ""},
-          puis votre compte repassera en accès limité.
+          Votre accès sera coupé immédiatement, même s&apos;il vous reste du
+          temps payé sur la période en cours
+          {renewalDate ? ` (jusqu'au ${renewalDate})` : ""} — pas de
+          remboursement, mais pas non plus d&apos;accès maintenu après
+          l&apos;annulation.
         </p>
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
           <Button

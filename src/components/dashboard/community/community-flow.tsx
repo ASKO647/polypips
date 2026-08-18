@@ -17,10 +17,14 @@ export function CommunityFlow({
   initialDiscoverGroups,
   initialMyGroups,
   hasCommunityAccess,
+  cancelled,
 }: {
   initialDiscoverGroups: GroupSummary[];
   initialMyGroups: GroupSummary[];
   hasCommunityAccess: boolean;
+  /** True when access is blocked because the user cancelled — swaps the
+   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
+  cancelled: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("discover");
@@ -58,7 +62,12 @@ export function CommunityFlow({
 
       <LockedOverlay
         locked={!hasCommunityAccess}
-        message="Débloquez la Communauté — rejoignez et créez des groupes. Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser la Communauté."
+            : "Débloquez la Communauté — rejoignez et créez des groupes. Débutez pour 0,99 €"
+        }
       >
         <div className="flex w-fit gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1">
           {(

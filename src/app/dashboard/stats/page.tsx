@@ -15,7 +15,11 @@ import {
   RESOLVED_ANALYSES,
 } from "@/lib/data/stats";
 import { createClient } from "@/lib/supabase/server";
-import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import {
+  fetchSubscription,
+  hasActiveAccess,
+  isCancelledSubscription,
+} from "@/lib/supabase/subscriptions";
 
 export const metadata: Metadata = {
   title: "Statistiques — Polypips",
@@ -25,6 +29,7 @@ export default async function StatsPage() {
   const supabase = await createClient();
   const subscription = await fetchSubscription(supabase);
   const locked = !hasActiveAccess(subscription);
+  const cancelled = isCancelledSubscription(subscription);
 
   return (
     <div className="flex flex-col gap-8">
@@ -42,7 +47,12 @@ export default async function StatsPage() {
        * below when not in demo mode) — the two must never look the same. */}
       <LockedOverlay
         locked={locked}
-        message="Débloquez les statistiques détaillées — Débutez pour 0,99 €"
+        cancelled={cancelled}
+        message={
+          cancelled
+            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser les statistiques."
+            : "Débloquez les statistiques détaillées — Débutez pour 0,99 €"
+        }
       >
         {IS_DEMO_MODE ? (
           <>
