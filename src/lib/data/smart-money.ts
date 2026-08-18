@@ -12,11 +12,12 @@
  * migration), so this number can't be read back from the database: it's a
  * plain constant that must be kept in sync by hand with whatever interval
  * was configured for the sync-smart-money cron job in the Supabase
- * dashboard/SQL editor. Only used to drive the "Prochains marchés dans"
- * countdown on /dashboard/smart-money — purely cosmetic, doesn't affect
- * when the Edge Function itself actually runs.
+ * dashboard/SQL editor — currently `* * * * *` (every minute). Only used
+ * to drive the "Prochains marchés dans" countdown on /dashboard/smart-money
+ * — purely cosmetic, doesn't affect when the Edge Function itself actually
+ * runs.
  */
-export const SYNC_SMART_MONEY_INTERVAL_MINUTES = 5;
+export const SYNC_SMART_MONEY_INTERVAL_MINUTES = 1;
 
 export type WalletPosition = {
   id: string;
