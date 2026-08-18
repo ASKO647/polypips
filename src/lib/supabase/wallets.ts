@@ -22,6 +22,13 @@ type TrackedWalletRow = {
     timestamp: string;
   }>;
   last_synced_at: string | null;
+  win_rate: number | null;
+  roi_percent: number | null;
+  consistency_score: number | null;
+  category_diversity: number | null;
+  avg_position_size: number | null;
+  risk_level: "low" | "medium" | "high" | null;
+  track_record_days: number | null;
 };
 
 /** How many of a wallet's fetched movements show under "Mouvements
@@ -56,6 +63,13 @@ function mapWalletRow(row: TrackedWalletRow, chart: number[]): Wallet {
     recentMovements: movements.slice(0, RECENT_MOVEMENTS_SPLIT),
     history: movements.slice(RECENT_MOVEMENTS_SPLIT),
     lastSyncedAt: row.last_synced_at,
+    winRate: row.win_rate === null ? null : Number(row.win_rate),
+    roiPercent: row.roi_percent === null ? null : Number(row.roi_percent),
+    consistencyScore: row.consistency_score,
+    categoryDiversity: row.category_diversity,
+    avgPositionSize: row.avg_position_size === null ? null : Number(row.avg_position_size),
+    riskLevel: row.risk_level,
+    trackRecordDays: row.track_record_days,
   };
 }
 
@@ -70,7 +84,7 @@ export async function fetchSmartMoneyData(
   const { data: walletRows, error } = await supabase
     .from("tracked_wallets")
     .select(
-      "id, address, label, source, total_value, change_percent, active_positions_count, markets_tracked_count, positions, recent_movements, last_synced_at"
+      "id, address, label, source, total_value, change_percent, active_positions_count, markets_tracked_count, positions, recent_movements, last_synced_at, win_rate, roi_percent, consistency_score, category_diversity, avg_position_size, risk_level, track_record_days"
     )
     .order("total_value", { ascending: false })
     .limit(60);

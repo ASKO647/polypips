@@ -136,6 +136,13 @@ export function SmartMoneyFlow({
               recentMovements: [],
               history: [],
               lastSyncedAt: null,
+              winRate: null,
+              roiPercent: null,
+              consistencyScore: null,
+              categoryDiversity: null,
+              avgPositionSize: null,
+              riskLevel: null,
+              trackRecordDays: null,
             },
           ]
     );

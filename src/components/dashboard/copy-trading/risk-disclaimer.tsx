@@ -15,7 +15,9 @@ export function RiskDisclaimer({ className }: { className?: string }) {
       />
       <p className="text-xs leading-relaxed text-amber-100/70">
         Le copy trading comporte des risques. Les performances passées ne
-        préjugent pas des performances futures.
+        préjugent pas des performances futures. Polypips fonctionne en mode
+        simulation : aucun ordre n&apos;est jamais exécuté automatiquement à
+        votre place, sur aucun marché.
       </p>
     </div>
   );

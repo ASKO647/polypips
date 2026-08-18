@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";
 import type { RiskParameters, Strategy } from "@/lib/data/copy-trading";
-import { formatEUR } from "@/lib/utils";
+import { cn, formatEUR } from "@/lib/utils";
 
 function NumberField({
   label,
@@ -104,10 +104,51 @@ function SliderField({
 }
 
 const DEFAULT_RISK_PARAMETERS: RiskParameters = {
-  maxPositionAmount: 500,
+  maxBudget: 1000,
+  maxPositionAmount: 250,
   maxExposure: 20,
   maxSimultaneousPositions: 5,
+  riskLevel: "medium",
 };
+
+const RISK_LEVEL_OPTIONS: { value: RiskParameters["riskLevel"]; label: string }[] = [
+  { value: "low", label: "Faible" },
+  { value: "medium", label: "Moyen" },
+  { value: "high", label: "Élevé" },
+];
+
+function RiskLevelSelector({
+  value,
+  onChange,
+}: {
+  value: RiskParameters["riskLevel"];
+  onChange: (value: RiskParameters["riskLevel"]) => void;
+}) {
+  return (
+    <div>
+      <label className="text-xs font-semibold uppercase tracking-wide text-white/40">
+        Niveau de risque
+      </label>
+      <div className="mt-2 grid grid-cols-3 gap-2">
+        {RISK_LEVEL_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={cn(
+              "rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors duration-150",
+              value === opt.value
+                ? "border-brand-400 bg-brand-500/15 text-brand-400"
+                : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/20 hover:text-white"
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function StrategyConfigForm({
   strategy,
@@ -119,11 +160,13 @@ export function StrategyConfigForm({
   onActivate: (params: RiskParameters) => Promise<void>;
 }) {
   const initial = strategy.riskParameters ?? DEFAULT_RISK_PARAMETERS;
+  const [maxBudget, setMaxBudget] = useState(initial.maxBudget);
   const [maxPositionAmount, setMaxPositionAmount] = useState(initial.maxPositionAmount);
   const [maxExposure, setMaxExposure] = useState(initial.maxExposure);
   const [maxSimultaneousPositions, setMaxSimultaneousPositions] = useState(
     initial.maxSimultaneousPositions
   );
+  const [riskLevel, setRiskLevel] = useState<RiskParameters["riskLevel"]>(initial.riskLevel);
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +175,13 @@ export function StrategyConfigForm({
     setError(null);
     setSubmitting(true);
     try {
-      await onActivate({ maxPositionAmount, maxExposure, maxSimultaneousPositions });
+      await onActivate({
+        maxBudget,
+        maxPositionAmount,
+        maxExposure,
+        maxSimultaneousPositions,
+        riskLevel,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");
     } finally {
@@ -164,16 +213,25 @@ export function StrategyConfigForm({
 
       <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
         <NumberField
-          label="Montant maximum par mouvement"
+          label="Budget maximum de la stratégie"
+          value={maxBudget}
+          onChange={setMaxBudget}
+          min={100}
+          max={50000}
+          step={100}
+          suffix="Le montant total que vous acceptez d'allouer à cette stratégie — chaque trade copié y puise, jamais au-delà."
+        />
+        <NumberField
+          label="Maximum par trade"
           value={maxPositionAmount}
           onChange={setMaxPositionAmount}
-          min={50}
+          min={10}
           max={5000}
-          step={50}
-          suffix="Vous ne serez alerté que pour les mouvements de ce portefeuille inférieurs ou égaux à ce montant."
+          step={10}
+          suffix="Aucun trade copié ne dépassera ce montant, même si le portefeuille suivi mise beaucoup plus."
         />
         <SliderField
-          label="Exposition maximale du portefeuille suivi"
+          label="Exposition maximale simultanée (% du budget)"
           value={maxExposure}
           onChange={setMaxExposure}
           min={5}
@@ -181,14 +239,15 @@ export function StrategyConfigForm({
           unit="%"
         />
         <NumberField
-          label="Nombre maximum de suggestions actives"
+          label="Nombre maximum de positions simultanées"
           value={maxSimultaneousPositions}
           onChange={setMaxSimultaneousPositions}
           min={1}
           max={20}
           step={1}
-          suffix="Au-delà, plus aucune nouvelle suggestion n'est générée pour cette stratégie tant que les précédentes datent de plus de 14 jours."
+          suffix="Au-delà, plus aucun nouveau trade n'est copié pour cette stratégie tant que les précédents datent de plus de 14 jours."
         />
+        <RiskLevelSelector value={riskLevel} onChange={setRiskLevel} />
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
@@ -199,21 +258,33 @@ export function StrategyConfigForm({
           {strategy.walletLabel}
         </p>
         <p className="mt-1 text-sm text-white/60">{strategy.walletAddress}</p>
-        <div className="mt-4 grid grid-cols-3 gap-3 text-xs">
+        <div className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
           <div>
-            <p className="text-white/35">Montant max</p>
+            <p className="text-white/35">Budget</p>
+            <p className="mt-0.5 font-semibold text-white">{formatEUR(maxBudget)}</p>
+          </div>
+          <div>
+            <p className="text-white/35">Maximum par trade</p>
             <p className="mt-0.5 font-semibold text-white">
               {formatEUR(maxPositionAmount)}
             </p>
           </div>
           <div>
             <p className="text-white/35">Exposition max</p>
-            <p className="mt-0.5 font-semibold text-white">{maxExposure}%</p>
+            <p className="mt-0.5 font-semibold text-white">
+              {maxExposure}% ({formatEUR((maxBudget * maxExposure) / 100)})
+            </p>
           </div>
           <div>
-            <p className="text-white/35">Suggestions actives max</p>
+            <p className="text-white/35">Positions simultanées max</p>
             <p className="mt-0.5 font-semibold text-white">
               {maxSimultaneousPositions}
+            </p>
+          </div>
+          <div>
+            <p className="text-white/35">Risque</p>
+            <p className="mt-0.5 font-semibold text-white">
+              {RISK_LEVEL_OPTIONS.find((o) => o.value === riskLevel)?.label}
             </p>
           </div>
         </div>

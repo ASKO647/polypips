@@ -169,6 +169,85 @@ export function WalletDetail({
       >
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+            Profil du portefeuille
+          </p>
+          {wallet.winRate === null &&
+          wallet.roiPercent === null &&
+          wallet.consistencyScore === null &&
+          wallet.riskLevel === null ? (
+            <p className="mt-2 text-xs text-white/35">
+              Pas encore de profil calculé — disponible après la première
+              actualisation de ce portefeuille.
+            </p>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 gap-4 text-xs sm:grid-cols-4">
+              <div>
+                <p className="text-white/35">Win rate</p>
+                <p className="mt-0.5 font-semibold text-white">
+                  {wallet.winRate !== null ? `${Math.round(wallet.winRate * 100)}%` : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-white/35">ROI</p>
+                <p
+                  className={cn(
+                    "mt-0.5 font-semibold",
+                    wallet.roiPercent === null
+                      ? "text-white"
+                      : wallet.roiPercent >= 0
+                        ? "text-emerald-400"
+                        : "text-rose-400"
+                  )}
+                >
+                  {wallet.roiPercent !== null
+                    ? `${wallet.roiPercent >= 0 ? "+" : ""}${wallet.roiPercent.toFixed(1)}%`
+                    : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-white/35">Consistance</p>
+                <p className="mt-0.5 font-semibold text-white">
+                  {wallet.consistencyScore !== null ? `${wallet.consistencyScore}/100` : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-white/35">Diversification</p>
+                <p className="mt-0.5 font-semibold text-white">
+                  {wallet.categoryDiversity !== null
+                    ? `${wallet.categoryDiversity} catégorie${wallet.categoryDiversity > 1 ? "s" : ""}`
+                    : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-white/35">Risque</p>
+                <p className="mt-0.5 font-semibold capitalize text-white">
+                  {wallet.riskLevel === "low"
+                    ? "Faible"
+                    : wallet.riskLevel === "high"
+                      ? "Élevé"
+                      : wallet.riskLevel === "medium"
+                        ? "Moyen"
+                        : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-white/35">Taille moyenne</p>
+                <p className="mt-0.5 font-semibold text-white">
+                  {wallet.avgPositionSize !== null ? formatEUR(wallet.avgPositionSize) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-white/35">Track record</p>
+                <p className="mt-0.5 font-semibold text-white">
+                  {wallet.trackRecordDays !== null ? `${wallet.trackRecordDays} j.` : "—"}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
             Évolution — valeur du portefeuille
           </p>
           <div className="mt-4 h-32 sm:h-40">

@@ -10,6 +10,8 @@ type CreateStrategyBody = {
   maxPositionAmount?: number;
   maxExposure?: number;
   maxSimultaneousPositions?: number;
+  maxBudget?: number;
+  riskLevel?: "low" | "medium" | "high";
 };
 
 /** Creates (or reactivates) a copy-trading strategy for a wallet the user
@@ -47,12 +49,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const { walletId, maxPositionAmount, maxExposure, maxSimultaneousPositions } = body;
+  const { walletId, maxPositionAmount, maxExposure, maxSimultaneousPositions, maxBudget, riskLevel } =
+    body;
   if (
     !walletId ||
     typeof maxPositionAmount !== "number" ||
     typeof maxExposure !== "number" ||
-    typeof maxSimultaneousPositions !== "number"
+    typeof maxSimultaneousPositions !== "number" ||
+    typeof maxBudget !== "number" ||
+    (riskLevel !== "low" && riskLevel !== "medium" && riskLevel !== "high")
   ) {
     return NextResponse.json(
       { error: "invalid_input", message: "Paramètres de risque manquants ou invalides." },
@@ -115,6 +120,8 @@ export async function POST(request: Request) {
         max_position_amount: maxPositionAmount,
         max_exposure_percent: maxExposure,
         max_simultaneous_positions: maxSimultaneousPositions,
+        max_budget: maxBudget,
+        risk_level: riskLevel,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id,wallet_id" }

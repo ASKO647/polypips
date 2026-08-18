@@ -38,6 +38,13 @@ export type WalletMovement = {
   side: "YES" | "NO";
   txHash: string;
   timestamp: string;
+  /** Price paid for the outcome share, 0-1 (e.g. 0.43 = 43¢) — same
+   * unverified-shape caveat as the rest of this file: `price` is the most
+   * plausible field name for this on a Data API activity entry, but it
+   * could not be confirmed against a live response. null when absent or
+   * unparseable; callers (Smart Copy's price-proximity gate) must treat
+   * null as "can't evaluate this gate," never as 0. */
+  entryPrice: number | null;
 };
 
 async function dataApiFetch(path: string): Promise<unknown> {
@@ -111,6 +118,13 @@ export async function fetchWalletActivity(
       .map((a) => {
         const amount = Number(a.usdcSize ?? a.size ?? a.amount ?? 0);
         const sideRaw = String(a.side ?? "").toUpperCase();
+        const rawPrice = a.price;
+        const parsedPrice =
+          typeof rawPrice === "number"
+            ? rawPrice
+            : typeof rawPrice === "string"
+              ? Number(rawPrice)
+              : NaN;
         return {
           id: String(a.transactionHash),
           type: sideRaw === "SELL" ? "Vente" : "Achat",
@@ -129,6 +143,9 @@ export async function fetchWalletActivity(
               ? new Date(Number(a.timestamp) * 1000 || Date.parse(String(a.timestamp))).toISOString()
               : new Date().toISOString()
           ),
+          entryPrice: Number.isFinite(parsedPrice) && parsedPrice >= 0 && parsedPrice <= 1
+            ? parsedPrice
+            : null,
         } satisfies WalletMovement;
       });
   } catch (error) {

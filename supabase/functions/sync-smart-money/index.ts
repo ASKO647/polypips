@@ -5,7 +5,9 @@ import {
   fetchMarketBySlug,
   GammaUnavailableError,
   MarketNotFoundError,
+  type GammaMarket,
 } from "../analyze-market/gamma.ts";
+import { analyzeMarket, AiServiceError } from "../analyze-market/anthropic-analysis.ts";
 import {
   fetchWalletActivity,
   fetchWalletPositions,
@@ -174,6 +176,94 @@ async function resolveCategory(
     return null;
   }
 }
+// --- Wallet quality profile, persisted on tracked_wallets ------------------
+// Computed for every tracked wallet on every refresh (not just discovery
+// candidates) so wallet cards/strategy cards can show more than raw
+// portfolio value. Win rate/PnL/ROI/avg size are free — derived from
+// positions already fetched for the refresh itself. Only category
+// diversity costs anything extra (Gamma lookups), bounded by its own
+// shared per-run budget below.
+
+/** Ratio of average position size to total portfolio value, above which a
+ * wallet is classified as concentrating unusually large bets — an original
+ * heuristic (Polymarket doesn't expose a risk rating), not a guarantee of
+ * anything. Tune freely. */
+const HIGH_RISK_CONCENTRATION_RATIO = 0.15;
+const MEDIUM_RISK_CONCENTRATION_RATIO = 0.05;
+
+function classifyRiskLevel(avgPositionSize: number, totalValue: number): "low" | "medium" | "high" {
+  if (totalValue <= 0) return "medium";
+  const ratio = avgPositionSize / totalValue;
+  if (ratio >= HIGH_RISK_CONCENTRATION_RATIO) return "high";
+  if (ratio >= MEDIUM_RISK_CONCENTRATION_RATIO) return "medium";
+  return "low";
+}
+
+/** 0-100: how tightly a wallet's position P&L clusters around its own
+ * average rather than swinging wildly — a coefficient-of-variation on
+ * position P&L, inverted and clamped. Another original heuristic (no
+ * Polymarket equivalent exists); neutral (50) when there isn't enough data
+ * to measure variance from. */
+function computeConsistencyScore(positions: WalletPosition[]): number {
+  if (positions.length < 2) return 50;
+  const pnls = positions.map((p) => p.pnl);
+  const mean = pnls.reduce((sum, v) => sum + v, 0) / pnls.length;
+  const variance = pnls.reduce((sum, v) => sum + (v - mean) ** 2, 0) / pnls.length;
+  const stdev = Math.sqrt(variance);
+  const coefficientOfVariation = stdev / (Math.abs(mean) + 1);
+  return Math.round(Math.max(0, Math.min(100, 100 - coefficientOfVariation * 25)));
+}
+
+/** Hard cap on distinct market→category Gamma lookups spent computing
+ * category diversity across the *whole tracked pool* in one refresh pass —
+ * mirrors MAX_CATEGORY_LOOKUPS_PER_RUN's discovery-time budget but is its
+ * own separate budget, since refresh (unlike discovery) always runs. */
+const MAX_REFRESH_CATEGORY_LOOKUPS_PER_RUN = 80;
+
+type WalletQuality = {
+  winRate: number;
+  totalPnl: number;
+  roiPercent: number | null;
+  avgPositionSize: number;
+  riskLevel: "low" | "medium" | "high";
+  consistencyScore: number;
+  categoryDiversity: number;
+};
+
+async function computeWalletQuality(
+  positions: WalletPosition[],
+  activity: WalletMovement[],
+  totalValue: number,
+  categoryCache: Map<string, string | null>,
+  categoryBudget: { remaining: number }
+): Promise<WalletQuality> {
+  const { winRate, totalPnl } = winRateAndPnl(positions);
+  const avgPositionSize =
+    positions.length > 0
+      ? positions.reduce((sum, p) => sum + p.amount, 0) / positions.length
+      : 0;
+  const roiPercent = totalValue > 0 ? (totalPnl / totalValue) * 100 : null;
+
+  const slugs = Array.from(
+    new Set(activity.map((m) => m.marketSlug).filter((s): s is string => !!s))
+  );
+  const categories = new Set<string>();
+  for (const slug of slugs) {
+    const category = await resolveCategory(slug, categoryCache, categoryBudget);
+    if (category) categories.add(category);
+  }
+
+  return {
+    winRate,
+    totalPnl,
+    roiPercent,
+    avgPositionSize,
+    riskLevel: classifyRiskLevel(avgPositionSize, totalValue),
+    consistencyScore: computeConsistencyScore(positions),
+    categoryDiversity: categories.size,
+  };
+}
+
 /** max_simultaneous_positions is enforced as a cap on suggestions created
  * within this trailing window, since there's no real "closed position"
  * concept without an executed trade. */
@@ -221,6 +311,196 @@ async function fetchChangeReferenceValue(
   }
   // No snapshot is old enough yet — fall back to the earliest one available.
   return Number(snapshots[0].total_value);
+}
+
+// --- Smart Copy: 6-gate decision pipeline for a followed wallet's fresh
+// movement, cheapest/most-decisive checks first so an already-disqualified
+// movement never reaches the expensive AI-analysis gate. ------------------
+
+/** A market below this much on-chain liquidity is too thin to bother
+ * copying into — same floor analyze-market/gamma.ts uses to decide whether
+ * a market is worth scanning at all. */
+const MIN_LIQUIDITY_FOR_COPY_USD = 1000;
+/** If the market has moved more than this many probability points since
+ * the followed wallet's own entry, the opportunity that motivated their
+ * trade may no longer exist by the time the user could act on it. */
+const MAX_PRICE_DRIFT_PCT = 8;
+/** Below this sized amount, a "copy" isn't worth suggesting — closer to
+ * noise than a real position. */
+const MIN_COPY_AMOUNT_USD = 1;
+/** Hard cap on Anthropic verdict calls in a single run, shared across every
+ * strategy — analyzeMarket() uses Opus with extended thinking (several
+ * seconds to tens of seconds per call), and the cron runs every minute, so
+ * letting every fresh movement across every strategy trigger one risks
+ * both runaway cost and the run itself overrunning its next tick. A
+ * candidate that clears every cheaper gate but doesn't get an AI slot this
+ * run is logged as ignored ("analysis capacity reached") rather than
+ * silently dropped — once a movement's tx_hash has been evaluated (see the
+ * unique constraint on copy_trading_suggestions), it can never be
+ * re-evaluated on a later run, so every movement must reach a real
+ * decision the first time it's seen. */
+const MAX_AI_ANALYSIS_CALLS_PER_RUN = 5;
+/** Same qualifying bar scan-markets uses for "is this opportunity worth
+ * acting on" — reused so Smart Copy and Marchés apply a consistent
+ * standard for what counts as a positive edge. */
+const AI_OPPORTUNITY_THRESHOLD = 55;
+const AI_MIN_ABS_EDGE = 8;
+
+type SmartCopyDecision =
+  | { decision: "ignored"; reason: string; currentPrice: number | null }
+  | {
+      decision: "copied";
+      copiedAmount: number;
+      currentPrice: number | null;
+      analysis: {
+        marketProbability: number;
+        aiProbability: number;
+        edge: number;
+        opportunityScore: number;
+        confidence: string;
+      };
+    };
+
+async function evaluateMovement(
+  movement: WalletMovement,
+  strategy: { max_position_amount: number; max_exposure_percent: number },
+  context: {
+    maxExposureAmount: number;
+    currentExposure: number;
+    aiAnalysisBudget: { remaining: number };
+  }
+): Promise<SmartCopyDecision> {
+  // Gate 2: is the market still available?
+  if (!movement.marketSlug) {
+    return {
+      decision: "ignored",
+      reason: "Marché non identifiable (identifiant manquant dans le mouvement détecté).",
+      currentPrice: null,
+    };
+  }
+
+  let market: GammaMarket;
+  try {
+    market = await fetchMarketBySlug(movement.marketSlug, null);
+  } catch (error) {
+    if (error instanceof MarketNotFoundError) {
+      return { decision: "ignored", reason: "Marché introuvable ou fermé.", currentPrice: null };
+    }
+    return {
+      decision: "ignored",
+      reason: "Marché temporairement indisponible — nouvelle tentative au prochain mouvement.",
+      currentPrice: null,
+    };
+  }
+  if (market.closed || market.active === false) {
+    return {
+      decision: "ignored",
+      reason: "Marché fermé ou clôturé depuis le mouvement détecté.",
+      currentPrice: null,
+    };
+  }
+
+  // Gate 3: is liquidity sufficient?
+  if (market.liquidity < MIN_LIQUIDITY_FOR_COPY_USD) {
+    return {
+      decision: "ignored",
+      reason: "Liquidité du marché insuffisante pour copier ce mouvement.",
+      currentPrice: null,
+    };
+  }
+
+  const sideIndex = market.outcomes.findIndex((o) => o.toUpperCase() === movement.side);
+  const currentPrice =
+    sideIndex >= 0 ? (market.outcomePrices[sideIndex] ?? null) : (market.outcomePrices[0] ?? null);
+
+  // Gate 4: is the current price still close to the wallet's entry? Only
+  // evaluated when there's a real entry price to compare against —
+  // entryPrice is an unverified field (see polymarket-data.ts), so a null
+  // here skips this gate rather than blocking on data we don't trust.
+  if (movement.entryPrice !== null && currentPrice !== null && Number.isFinite(currentPrice)) {
+    const driftPct = Math.abs(currentPrice - movement.entryPrice) * 100;
+    if (driftPct > MAX_PRICE_DRIFT_PCT) {
+      return {
+        decision: "ignored",
+        reason: `Le prix a bougé de ${driftPct.toFixed(1)} pts depuis l'entrée du portefeuille suivi (max ${MAX_PRICE_DRIFT_PCT} pts).`,
+        currentPrice,
+      };
+    }
+  }
+
+  // Gate 5: position sizing — never copy the wallet's raw amount, only
+  // what fits under the strategy's own per-trade cap and remaining
+  // exposure headroom.
+  const remainingExposure = context.maxExposureAmount - context.currentExposure;
+  const copiedAmount = Math.min(
+    movement.amount,
+    Number(strategy.max_position_amount),
+    Math.max(0, remainingExposure)
+  );
+  if (copiedAmount < MIN_COPY_AMOUNT_USD) {
+    return {
+      decision: "ignored",
+      reason: "Budget ou exposition maximale de la stratégie atteinte.",
+      currentPrice,
+    };
+  }
+
+  // Gate 6: Polypips AI analysis — last because it's the most expensive,
+  // and capped per run (see MAX_AI_ANALYSIS_CALLS_PER_RUN above).
+  if (context.aiAnalysisBudget.remaining <= 0) {
+    return {
+      decision: "ignored",
+      reason:
+        "Limite d'analyses IA atteinte pour ce cycle — les prochains mouvements de ce portefeuille seront analysés normalement.",
+      currentPrice,
+    };
+  }
+  context.aiAnalysisBudget.remaining--;
+
+  const marketUrl = `https://polymarket.com/event/${movement.marketSlug}`;
+  let verdict;
+  try {
+    verdict = await analyzeMarket(market, marketUrl);
+  } catch (error) {
+    console.error(
+      `[sync-smart-money] Smart Copy analysis failed for ${movement.marketSlug}`,
+      error instanceof AiServiceError ? error.message : error
+    );
+    return {
+      decision: "ignored",
+      reason: "Échec de l'analyse IA sur ce marché.",
+      currentPrice,
+    };
+  }
+
+  const marketProbabilityPct =
+    currentPrice !== null && Number.isFinite(currentPrice) ? Math.round(currentPrice * 100) : 50;
+  const aiProbability = Math.max(0, Math.min(100, Math.round(verdict.aiProbability)));
+  const edge = aiProbability - marketProbabilityPct;
+  const opportunityScore = Math.max(0, Math.min(100, Math.round(verdict.opportunityScore)));
+
+  const qualifies =
+    opportunityScore >= AI_OPPORTUNITY_THRESHOLD || Math.abs(edge) >= AI_MIN_ABS_EDGE;
+  if (!qualifies) {
+    return {
+      decision: "ignored",
+      reason: "L'analyse Polypips ne montre plus un edge suffisant sur ce marché.",
+      currentPrice,
+    };
+  }
+
+  return {
+    decision: "copied",
+    copiedAmount,
+    currentPrice,
+    analysis: {
+      marketProbability: marketProbabilityPct,
+      aiProbability,
+      edge,
+      opportunityScore,
+      confidence: verdict.confidence,
+    },
+  };
 }
 
 async function mapWithConcurrency<T, R>(
@@ -378,7 +658,7 @@ Deno.serve(async (req) => {
   // --- 2. Refresh every tracked wallet -------------------------------------
   const { data: wallets, error: walletsError } = await supabase
     .from("tracked_wallets")
-    .select("id, address, label, last_synced_at");
+    .select("id, address, label, last_synced_at, created_at");
 
   if (walletsError) {
     console.error("[sync-smart-money] failed to load tracked wallets", walletsError);
@@ -387,6 +667,12 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // Shared across the whole refresh pass — every tracked wallet's category
+  // diversity is computed this run, but Gamma lookups stay bounded
+  // regardless of pool size (same pattern as discovery's own budget).
+  const refreshCategoryCache = new Map<string, string | null>();
+  const refreshCategoryBudget = { remaining: MAX_REFRESH_CATEGORY_LOOKUPS_PER_RUN };
 
   const refreshed = await mapWithConcurrency(wallets ?? [], 5, async (wallet) => {
     const address = String(wallet.address).match(WALLET_ADDRESS_RE) ? wallet.address : null;
@@ -411,6 +697,20 @@ Deno.serve(async (req) => {
     const distinctMarkets = new Set(positions.map((p) => p.market)).size;
     const now = new Date().toISOString();
 
+    const quality = await computeWalletQuality(
+      positions,
+      activity,
+      value,
+      refreshCategoryCache,
+      refreshCategoryBudget
+    );
+    const trackRecordDays = wallet.created_at
+      ? Math.max(
+          0,
+          Math.floor((Date.now() - new Date(wallet.created_at as string).getTime()) / 86_400_000)
+        )
+      : null;
+
     const { error: updateError } = await supabase
       .from("tracked_wallets")
       .update({
@@ -421,6 +721,13 @@ Deno.serve(async (req) => {
         positions,
         recent_movements: activity,
         last_synced_at: now,
+        win_rate: quality.winRate,
+        roi_percent: quality.roiPercent,
+        consistency_score: quality.consistencyScore,
+        category_diversity: quality.categoryDiversity,
+        avg_position_size: quality.avgPositionSize,
+        risk_level: quality.riskLevel,
+        track_record_days: trackRecordDays,
       })
       .eq("id", wallet.id);
 
@@ -534,11 +841,14 @@ Deno.serve(async (req) => {
     }
   }
 
-  // --- 4. Check active copy-trading strategies for qualifying movements ---
+  // --- 4. Smart Copy: run every active strategy's fresh movements through --
+  // the 6-gate decision pipeline — every movement reaches a logged decision
+  // (copied or ignored + reason) this run, never silently dropped. See
+  // evaluateMovement() above for the gate order and reasoning.
   const { data: strategies, error: strategiesError } = await supabase
     .from("copy_trading_strategies")
     .select(
-      "id, user_id, wallet_id, max_position_amount, max_exposure_percent, max_simultaneous_positions"
+      "id, user_id, wallet_id, max_position_amount, max_exposure_percent, max_simultaneous_positions, max_budget"
     )
     .eq("status", "active");
 
@@ -547,6 +857,9 @@ Deno.serve(async (req) => {
   }
 
   let suggestionsCreated = 0;
+  let ignoredCount = 0;
+  // Shared across every strategy this run — see MAX_AI_ANALYSIS_CALLS_PER_RUN.
+  const aiAnalysisBudget = { remaining: MAX_AI_ANALYSIS_CALLS_PER_RUN };
 
   for (const strategy of strategies ?? []) {
     const walletState = refreshedById.get(strategy.wallet_id);
@@ -559,30 +872,45 @@ Deno.serve(async (req) => {
     const lookbackCutoff = new Date(
       Date.now() - SUGGESTION_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
     ).toISOString();
-    const { count: recentSuggestionCount } = await supabase
+    // Only 'copied' rows consume slots/exposure — an 'ignored' row is a
+    // logged explanation, not a position, and must never count against the
+    // strategy's own limits.
+    const { data: recentCopiedRows } = await supabase
       .from("copy_trading_suggestions")
-      .select("id", { count: "exact", head: true })
+      .select("amount")
       .eq("strategy_id", strategy.id)
+      .eq("decision", "copied")
       .gte("created_at", lookbackCutoff);
 
+    const copiedRows = recentCopiedRows ?? [];
     let slotsAvailable = Math.max(
       0,
-      Number(strategy.max_simultaneous_positions) - (recentSuggestionCount ?? 0)
+      Number(strategy.max_simultaneous_positions) - copiedRows.length
     );
-    if (slotsAvailable === 0) continue;
+    let currentExposure = copiedRows.reduce((sum, r) => sum + Number(r.amount), 0);
+
+    const maxBudget = Number(strategy.max_budget);
+    const maxExposureAmount = maxBudget * (Number(strategy.max_exposure_percent) / 100);
 
     const walletLabel = String(walletRow.label ?? shortLabel(walletRow.address));
-    const walletValue = Number(walletState.value) || 1;
 
     for (const movement of freshMovements) {
-      if (slotsAvailable <= 0) break;
-      if (movement.amount > Number(strategy.max_position_amount)) continue;
-      const exposurePercent = (movement.amount / walletValue) * 100;
-      if (exposurePercent > Number(strategy.max_exposure_percent)) continue;
-
       const marketUrl = movement.marketSlug
         ? `https://polymarket.com/event/${movement.marketSlug}`
         : `https://polymarket.com/profile/${walletRow.address}`;
+
+      const outcome: SmartCopyDecision =
+        slotsAvailable <= 0
+          ? {
+              decision: "ignored",
+              reason: "Nombre maximum de positions simultanées atteint.",
+              currentPrice: null,
+            }
+          : await evaluateMovement(movement, strategy, {
+              maxExposureAmount,
+              currentExposure,
+              aiAnalysisBudget,
+            });
 
       const { data: insertedSuggestion, error: suggestionError } = await supabase
         .from("copy_trading_suggestions")
@@ -593,24 +921,45 @@ Deno.serve(async (req) => {
           market_question: movement.market,
           market_url: marketUrl,
           side: movement.side,
-          amount: movement.amount,
+          amount: outcome.decision === "copied" ? outcome.copiedAmount : movement.amount,
+          original_amount: movement.amount,
           tx_hash: movement.txHash,
+          decision: outcome.decision,
+          ignore_reason: outcome.decision === "ignored" ? outcome.reason : null,
+          entry_price_original: movement.entryPrice,
+          entry_price_current: outcome.currentPrice,
+          market_probability: outcome.decision === "copied" ? outcome.analysis.marketProbability : null,
+          ai_probability: outcome.decision === "copied" ? outcome.analysis.aiProbability : null,
+          edge: outcome.decision === "copied" ? outcome.analysis.edge : null,
+          opportunity_score: outcome.decision === "copied" ? outcome.analysis.opportunityScore : null,
+          confidence: outcome.decision === "copied" ? outcome.analysis.confidence : null,
         })
         .select("id")
         .single();
 
       // A conflict on (strategy_id, tx_hash) means this movement was
-      // already turned into a suggestion in a prior run — not an error.
+      // already evaluated in a prior run — not an error.
       if (suggestionError || !insertedSuggestion) continue;
+
+      const notificationTitle =
+        outcome.decision === "copied"
+          ? `Trade copié — ${walletLabel}`
+          : `Trade ignoré — ${walletLabel}`;
+      const notificationDescription =
+        outcome.decision === "copied"
+          ? `${movement.type} ${movement.side} sur "${movement.market}" — original ${formatEUR(
+              movement.amount
+            )}, copié ${formatEUR(outcome.copiedAmount)}. Score d'opportunité ${
+              outcome.analysis.opportunityScore
+            }/100.`
+          : `${movement.type} ${movement.side} sur "${movement.market}" ignoré : ${outcome.reason}`;
 
       const { data: insertedNotification, error: notificationError } = await supabase
         .from("notifications")
         .insert({
           user_id: strategy.user_id,
-          title: `Nouveau mouvement suivi — ${walletLabel}`,
-          description: `${movement.type} ${movement.side} sur "${movement.market}" pour ${formatEUR(
-            movement.amount
-          )}. Cliquez pour l'exécuter vous-même sur Polymarket si vous le souhaitez.`,
+          title: notificationTitle,
+          description: notificationDescription,
           link_url: marketUrl,
         })
         .select("id")
@@ -623,8 +972,13 @@ Deno.serve(async (req) => {
           .eq("id", insertedSuggestion.id);
       }
 
-      suggestionsCreated++;
-      slotsAvailable--;
+      if (outcome.decision === "copied") {
+        suggestionsCreated++;
+        slotsAvailable--;
+        currentExposure += outcome.copiedAmount;
+      } else {
+        ignoredCount++;
+      }
     }
   }
 
@@ -635,6 +989,8 @@ Deno.serve(async (req) => {
     refreshFailed: refreshed.filter((r) => !r.ok).length,
     followNotificationsCreated,
     suggestionsCreated,
+    ignoredCount,
+    aiAnalysisCallsUsed: MAX_AI_ANALYSIS_CALLS_PER_RUN - aiAnalysisBudget.remaining,
   };
   console.log("[sync-smart-money] run complete", summary);
 

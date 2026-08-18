@@ -37,6 +37,8 @@ export type WalletMovement = {
 
 export type WalletSource = "discovered" | "user_added";
 
+export type WalletRiskLevel = "low" | "medium" | "high";
+
 export type Wallet = {
   id: string;
   address: string;
@@ -53,4 +55,15 @@ export type Wallet = {
   recentMovements: WalletMovement[];
   history: WalletMovement[];
   lastSyncedAt: string | null;
+  /** Quality profile computed by sync-smart-money on each refresh — all
+   * null until the wallet has synced at least once. See that function's
+   * computeWalletQuality() for the (documented, original) heuristics
+   * behind riskLevel and consistencyScore. */
+  winRate: number | null;
+  roiPercent: number | null;
+  consistencyScore: number | null;
+  categoryDiversity: number | null;
+  avgPositionSize: number | null;
+  riskLevel: WalletRiskLevel | null;
+  trackRecordDays: number | null;
 };

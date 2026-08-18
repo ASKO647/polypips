@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ExternalLink, Lock, Pause, Play, Square } from "lucide-react";
+import { ExternalLink, FlaskConical, Lock, Pause, Play, Square } from "lucide-react";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import type { RiskParameters, Strategy, Suggestion } from "@/lib/data/copy-trading";
@@ -18,6 +18,12 @@ const STATUS_TONE: Record<Suggestion["status"], string> = {
   nouvelle: "bg-brand-500/15 text-brand-400",
   vue: "bg-white/10 text-white/60",
   lien_cliquee: "bg-emerald-500/15 text-emerald-400",
+};
+
+const RISK_LEVEL_LABEL: Record<RiskParameters["riskLevel"], string> = {
+  low: "Faible",
+  medium: "Moyen",
+  high: "Élevé",
 };
 
 export function StrategyActive({
@@ -191,9 +197,13 @@ export function StrategyActive({
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
             Paramètres configurés
           </p>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-xs">
+          <div className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
             <div>
-              <p className="text-white/35">Montant max / mouvement</p>
+              <p className="text-white/35">Budget</p>
+              <p className="mt-0.5 font-semibold text-white">{formatEUR(params.maxBudget)}</p>
+            </div>
+            <div>
+              <p className="text-white/35">Maximum par trade</p>
               <p className="mt-0.5 font-semibold text-white">
                 {formatEUR(params.maxPositionAmount)}
               </p>
@@ -201,65 +211,127 @@ export function StrategyActive({
             <div>
               <p className="text-white/35">Exposition max</p>
               <p className="mt-0.5 font-semibold text-white">
-                {params.maxExposure}%
+                {params.maxExposure}% ({formatEUR((params.maxBudget * params.maxExposure) / 100)})
               </p>
             </div>
             <div>
-              <p className="text-white/35">Suggestions actives max</p>
+              <p className="text-white/35">Positions simultanées max</p>
               <p className="mt-0.5 font-semibold text-white">
                 {params.maxSimultaneousPositions}
+              </p>
+            </div>
+            <div>
+              <p className="text-white/35">Risque</p>
+              <p className="mt-0.5 font-semibold text-white">
+                {RISK_LEVEL_LABEL[params.riskLevel]}
               </p>
             </div>
           </div>
         </div>
 
+        <div className="flex items-start gap-2.5 rounded-xl border border-brand-400/20 bg-brand-500/[0.06] px-4 py-3">
+          <FlaskConical className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" strokeWidth={2} />
+          <p className="text-xs leading-relaxed text-white/70">
+            <span className="font-bold text-brand-400">Mode simulation.</span>{" "}
+            Chaque ligne ci-dessous montre ce que Polypips aurait copié ou
+            pourquoi elle a ignoré un mouvement — aucun ordre n&apos;est
+            jamais exécuté automatiquement. Cliquez sur une ligne pour ouvrir
+            le marché sur Polymarket et agir vous-même.
+          </p>
+        </div>
+
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-            Suggestions reçues
+            Activité récente
           </p>
           <p className="mt-1 text-[11px] text-white/30">
-            Ce sont des alertes, jamais des ordres exécutés. Cliquez pour
-            ouvrir le marché sur Polymarket et décider vous-même.
+            Chaque mouvement détecté du portefeuille suivi, copié ou ignoré —
+            avec la raison quand il ne l&apos;a pas été.
           </p>
           <div className="mt-3 flex flex-col gap-2">
             {suggestions.length === 0 ? (
               <p className="rounded-xl border border-dashed border-white/10 px-4 py-6 text-center text-xs text-white/35">
-                Aucune suggestion reçue pour le moment. Vous serez notifié dès
-                qu&apos;un mouvement de {strategy.walletLabel} correspond à
-                vos paramètres.
+                Aucun mouvement détecté pour le moment. Vous serez notifié dès
+                que {strategy.walletLabel} ouvre une nouvelle position.
               </p>
             ) : (
-              suggestions.map((suggestion) => (
-                <button
-                  key={suggestion.id}
-                  type="button"
-                  onClick={() => handleOpenSuggestion(suggestion)}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-left transition-colors hover:border-white/20"
-                >
-                  <div className="flex min-w-0 flex-col gap-1">
-                    <p className="truncate text-sm text-white/85">
-                      {suggestion.marketQuestion}
-                    </p>
-                    <span className="flex flex-wrap items-center gap-2 text-[11px] text-white/35">
-                      <span
+              suggestions.map((suggestion) => {
+                const isCopied = suggestion.decision === "copied";
+                return (
+                  <button
+                    key={suggestion.id}
+                    type="button"
+                    onClick={() => handleOpenSuggestion(suggestion)}
+                    className={cn(
+                      "flex items-start justify-between gap-3 rounded-xl border px-4 py-3 text-left transition-colors",
+                      isCopied
+                        ? "border-white/10 bg-white/[0.02] hover:border-white/20"
+                        : "border-white/5 bg-white/[0.01] hover:border-white/15"
+                    )}
+                  >
+                    <div className="flex min-w-0 flex-col gap-1">
+                      <p
                         className={cn(
-                          "rounded-full px-2 py-0.5 font-bold",
-                          STATUS_TONE[suggestion.status]
+                          "truncate text-sm",
+                          isCopied ? "text-white/85" : "text-white/50"
                         )}
                       >
-                        {STATUS_LABEL[suggestion.status]}
+                        {suggestion.marketQuestion}
+                      </p>
+                      <span className="flex flex-wrap items-center gap-2 text-[11px] text-white/35">
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5 font-bold",
+                            isCopied
+                              ? "bg-emerald-500/15 text-emerald-400"
+                              : "bg-white/10 text-white/50"
+                          )}
+                        >
+                          {isCopied ? "Copié" : "Ignoré"}
+                        </span>
+                        {isCopied && (
+                          <span
+                            className={cn(
+                              "rounded-full px-2 py-0.5 font-bold",
+                              STATUS_TONE[suggestion.status]
+                            )}
+                          >
+                            {STATUS_LABEL[suggestion.status]}
+                          </span>
+                        )}
+                        {suggestion.side} · {suggestion.createdAgo}
+                        {isCopied && suggestion.opportunityScore !== null && (
+                          <span>· Score {suggestion.opportunityScore}/100</span>
+                        )}
                       </span>
-                      {suggestion.side} · {suggestion.createdAgo}
-                    </span>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <span className="text-sm font-semibold text-white">
-                      {formatEUR(suggestion.amount)}
-                    </span>
-                    <ExternalLink className="h-4 w-4 text-white/40" />
-                  </div>
-                </button>
-              ))
+                      {!isCopied && suggestion.ignoreReason && (
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-white/40">
+                          {suggestion.ignoreReason}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-0.5">
+                      {isCopied ? (
+                        <>
+                          <span className="text-sm font-semibold text-white">
+                            {formatEUR(suggestion.amount)}
+                          </span>
+                          {suggestion.originalAmount !== null && (
+                            <span className="text-[11px] text-white/35">
+                              original {formatEUR(suggestion.originalAmount)}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="text-sm font-semibold text-white/40">
+                          {formatEUR(suggestion.originalAmount ?? suggestion.amount)}
+                        </span>
+                      )}
+                      <ExternalLink className="mt-1 h-4 w-4 text-white/30" />
+                    </div>
+                  </button>
+                );
+              })
             )}
           </div>
         </div>

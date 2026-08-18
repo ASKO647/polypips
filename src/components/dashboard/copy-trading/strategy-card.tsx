@@ -49,24 +49,50 @@ export function StrategyCard({
           Portefeuille suivi : {formatEUR(strategy.walletTotalValue)} sous
           gestion actuellement.
         </p>
+        {(strategy.walletWinRate !== null || strategy.walletRoiPercent !== null) && (
+          <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
+            {strategy.walletWinRate !== null && (
+              <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-white/60">
+                Win rate {Math.round(strategy.walletWinRate * 100)}%
+              </span>
+            )}
+            {strategy.walletRoiPercent !== null && (
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5",
+                  strategy.walletRoiPercent >= 0
+                    ? "bg-emerald-500/15 text-emerald-400"
+                    : "bg-rose-500/15 text-rose-400"
+                )}
+              >
+                ROI {strategy.walletRoiPercent >= 0 ? "+" : ""}
+                {strategy.walletRoiPercent.toFixed(1)}%
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {configured && strategy.riskParameters ? (
         <div className="grid grid-cols-3 gap-3 text-xs">
           <div>
-            <p className="text-white/35">Montant max</p>
+            <p className="text-white/35">Budget</p>
             <p className="mt-0.5 font-semibold text-white">
-              {formatEUR(strategy.riskParameters.maxPositionAmount)}
+              {formatEUR(strategy.riskParameters.maxBudget)}
             </p>
           </div>
           <div>
-            <p className="text-white/35">Exposition max</p>
-            <p className="mt-0.5 font-semibold text-white">
-              {strategy.riskParameters.maxExposure}%
+            <p className="text-white/35">Risque</p>
+            <p className="mt-0.5 font-semibold capitalize text-white">
+              {strategy.riskParameters.riskLevel === "low"
+                ? "Faible"
+                : strategy.riskParameters.riskLevel === "high"
+                  ? "Élevé"
+                  : "Moyen"}
             </p>
           </div>
           <div>
-            <p className="text-white/35">Suggestions reçues</p>
+            <p className="text-white/35">Mouvements évalués</p>
             <p className="mt-0.5 font-semibold text-white">{suggestionCount}</p>
           </div>
         </div>
