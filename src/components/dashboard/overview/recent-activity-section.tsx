@@ -2,6 +2,11 @@ import { Bell, BellOff } from "lucide-react";
 import type { NotificationItem } from "@/lib/data/notifications";
 import { cn } from "@/lib/utils";
 
+/** Mirrors SmartMoneyActivityPopup's card recipe exactly (icon pill +
+ * uppercase eyebrow + message, rounded-2xl bordered card) — same
+ * component family, just translated from the landing page's light tokens
+ * to the dashboard's dark ones, and from a single floating toast to a
+ * stacked list of cards instead of one at a time. */
 export function RecentActivitySection({
   notifications,
 }: {
@@ -21,25 +26,30 @@ export function RecentActivitySection({
           </p>
         </div>
       ) : (
-        <ul className="mt-4 flex flex-col gap-1">
+        <ul className="mt-4 flex flex-col gap-3">
           {notifications.map((notification) => {
-            const content = (
-              <div className="flex gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-white/[0.03]">
+            const card = (
+              <div
+                className={cn(
+                  "flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-colors duration-150",
+                  notification.linkUrl && "hover:border-white/20 hover:bg-white/[0.05]"
+                )}
+              >
                 <span
                   className={cn(
-                    "mt-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full",
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
                     notification.read
-                      ? "bg-white/[0.05] text-white/30"
+                      ? "bg-white/[0.06] text-white/30"
                       : "bg-brand-500/15 text-brand-400"
                   )}
                 >
-                  <Bell className="h-3 w-3" strokeWidth={2} />
+                  <Bell className="h-4 w-4" strokeWidth={2.25} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-white">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-white/40">
                     {notification.title}
                   </p>
-                  <p className="line-clamp-1 text-xs text-white/45">
+                  <p className="mt-1 text-sm leading-snug text-white">
                     {notification.description}
                   </p>
                 </div>
@@ -58,10 +68,10 @@ export function RecentActivitySection({
                     rel="noopener noreferrer"
                     className="block"
                   >
-                    {content}
+                    {card}
                   </a>
                 ) : (
-                  content
+                  card
                 )}
               </li>
             );
