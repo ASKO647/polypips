@@ -25,18 +25,20 @@ const CANDIDATE_FETCH_POOL = 110;
  * before, instead of nearly doubling to 9. */
 const CONCURRENCY = 9;
 
-/** A market only gets saved if it clears one of these bars — either the
- * model's own confidence in the opportunity, or a large enough gap from
- * the market's current price to be worth surfacing regardless of the
- * opportunity score. Both are deliberately named constants, not magic
- * numbers, so they're easy to retune later. */
+/** A market only qualifies as a candidate for selection if it clears one of
+ * these bars — either the model's own confidence in the opportunity, or a
+ * large enough gap from the market's current price to be worth surfacing
+ * regardless of the opportunity score. Both are deliberately named
+ * constants, not magic numbers, so they're easy to retune later. */
 const OPPORTUNITY_THRESHOLD = 55;
 const MIN_ABS_EDGE = 8;
 
-/** Rows not refreshed by a run in this long are pruned — generous enough
- * to survive a few missed/failed runs at the default 6h schedule without
- * wiping the table, while still keeping the list current. */
-const STALE_AFTER_HOURS = 24;
+/** Every run keeps exactly this many markets — the current run's top N by
+ * opportunity score, ranked among whatever cleared the quality bar above.
+ * If fewer than N qualify this run, the table ends up with fewer than N
+ * rows rather than padding it out with sub-threshold picks just to hit the
+ * round number. */
+const SELECTION_SIZE = 9;
 
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
   if (value === "Faible" || value === "Moyenne" || value === "Élevée") {
@@ -64,8 +66,27 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
+type SelectedMarketRow = {
+  slug: string;
+  market_url: string;
+  question: string;
+  category: string;
+  decision: "YES" | "NO";
+  ai_probability: number;
+  market_probability: number;
+  edge: number;
+  opportunity_score: number;
+  confidence: "Faible" | "Moyenne" | "Élevée";
+  explanation: string;
+  favorable_factors: string[];
+  risks: string[];
+  what_could_change: string;
+  sources: { name: string; url: string }[];
+  scanned_at: string;
+};
+
 type ScanOutcome =
-  | { status: "selected"; slug: string }
+  | { status: "qualified"; row: SelectedMarketRow }
   | { status: "rejected"; slug: string }
   | { status: "failed"; slug: string };
 
@@ -109,7 +130,12 @@ Deno.serve(async (req) => {
   }
 
   const toScan = candidates.slice(0, MAX_CANDIDATES_PER_RUN);
+  const scannedAt = new Date().toISOString();
 
+  // Evaluate every candidate first and hold the qualifying ones in memory —
+  // nothing is written to selected_markets yet. Writing has to wait until
+  // every verdict is in so the top SELECTION_SIZE can be picked from the
+  // full qualifying pool, not just "whichever N happened to qualify first."
   const outcomes = await mapWithConcurrency(toScan, CONCURRENCY, async (market) => {
     const marketUrl = `https://polymarket.com/event/${market.slug}`;
 
@@ -136,8 +162,9 @@ Deno.serve(async (req) => {
       return { status: "rejected", slug: market.slug } satisfies ScanOutcome;
     }
 
-    const { error: upsertError } = await supabase.from("selected_markets").upsert(
-      {
+    return {
+      status: "qualified",
+      row: {
         slug: market.slug,
         market_url: marketUrl,
         question: market.question,
@@ -155,31 +182,43 @@ Deno.serve(async (req) => {
         sources: [
           { name: "Polymarket — données de marché en temps réel", url: marketUrl },
         ],
-        scanned_at: new Date().toISOString(),
+        scanned_at: scannedAt,
       },
-      { onConflict: "slug" }
-    );
-
-    if (upsertError) {
-      console.error(`[scan-markets] upsert failed for ${market.slug}`, upsertError);
-      return { status: "failed", slug: market.slug } satisfies ScanOutcome;
-    }
-
-    return { status: "selected", slug: market.slug } satisfies ScanOutcome;
+    } satisfies ScanOutcome;
   });
 
-  const staleCutoff = new Date(Date.now() - STALE_AFTER_HOURS * 60 * 60 * 1000).toISOString();
-  const { error: pruneError } = await supabase
+  const top = outcomes
+    .filter((o): o is { status: "qualified"; row: SelectedMarketRow } => o.status === "qualified")
+    .map((o) => o.row)
+    .sort((a, b) => b.opportunity_score - a.opportunity_score)
+    .slice(0, SELECTION_SIZE);
+
+  // Full replace, not a cumulative upsert: this run's selection becomes the
+  // *entire* table, so a market that qualified last run but isn't in this
+  // run's top SELECTION_SIZE doesn't linger around. Delete-then-insert
+  // (rather than diffing old vs new) briefly leaves the table empty
+  // between the two statements — acceptable for a periodic background job
+  // nobody is polling mid-run, and far simpler than reconstructing a safe
+  // "not in the new set" delete filter.
+  const { error: deleteError } = await supabase
     .from("selected_markets")
     .delete()
-    .lt("scanned_at", staleCutoff);
-  if (pruneError) {
-    console.error("[scan-markets] failed to prune stale rows", pruneError);
+    .not("id", "is", null);
+  if (deleteError) {
+    console.error("[scan-markets] failed to clear previous selection", deleteError);
+  }
+
+  if (top.length > 0) {
+    const { error: insertError } = await supabase.from("selected_markets").insert(top);
+    if (insertError) {
+      console.error("[scan-markets] failed to insert new selection", insertError);
+    }
   }
 
   const summary = {
     scanned: outcomes.length,
-    selected: outcomes.filter((o) => o.status === "selected").length,
+    qualified: outcomes.filter((o) => o.status === "qualified").length,
+    selected: top.length,
     rejected: outcomes.filter((o) => o.status === "rejected").length,
     failed: outcomes.filter((o) => o.status === "failed").length,
   };
