@@ -30,7 +30,8 @@ export function CopyTradingFlow({
   maxActiveStrategies: number | null;
   /** True once the user has activated maxActiveStrategies strategies in
    * the current billing cycle — activating, pausing, and stopping are all
-   * blocked until the subscription renews. Always false for Pro+. */
+   * blocked until the subscription renews. Always false now: both plans
+   * are unlimited on this quota (maxActiveStrategies === null). */
   quotaLocked: boolean;
   quotaResetDate: string | null;
 }) {

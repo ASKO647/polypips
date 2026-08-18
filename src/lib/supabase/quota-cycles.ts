@@ -70,8 +70,8 @@ export type QuotaLockState = {
 /**
  * Syncs the quota cycle (resetting on rollover) and reports whether the
  * user is currently locked at their plan's limit for `feature`.
- * maxAllowed === null (Pro+, or no billing cycle to anchor to) always
- * means unlocked — Pro+ has no restriction of this kind at all.
+ * maxAllowed === null (both plans are unlimited on this quota now, or
+ * there's no billing cycle to anchor to) always means unlocked.
  */
 export async function getQuotaLockState(
   supabase: SupabaseClient,

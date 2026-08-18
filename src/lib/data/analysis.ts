@@ -73,7 +73,7 @@ const ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
     "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
   network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
   limit_reached:
-    "Vous avez atteint votre limite d'analyses aujourd'hui. Passez à Pro+ pour des analyses illimitées.",
+    "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
   unknown: "Une erreur inattendue est survenue. Réessayez.",
 };
 

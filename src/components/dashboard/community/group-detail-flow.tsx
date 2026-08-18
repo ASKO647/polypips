@@ -188,7 +188,7 @@ export function GroupDetailFlow({
 
       <LockedOverlay
         locked={!hasCommunityAccess}
-        message="La Communauté est réservée aux abonnés Pro et Pro+. Passez à un plan supérieur pour participer."
+        message="Débloquez la Communauté pour participer — Débutez pour 0,99 €"
       >
         <div className="flex h-[calc(100vh-220px)] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
           <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5 sm:px-5">

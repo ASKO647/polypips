@@ -13,7 +13,6 @@ import { NotificationsTab } from "@/components/dashboard/settings/notifications-
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
-import type { PayingPlanId } from "@/lib/stripe/plans";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
@@ -22,8 +21,6 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   month: "long",
   year: "numeric",
 });
-
-const PAYING_PLAN_IDS: PayingPlanId[] = ["pro", "pro-plus"];
 
 export function SettingsFlow({
   email,
@@ -45,7 +42,7 @@ export function SettingsFlow({
   /** Days left in the discovery trial, or null when not currently trialing. */
   trialDaysRemaining: number | null;
   walletQuotaCount: number;
-  /** null = Pro+, unlimited. */
+  /** null = unlimited (both plans are unlimited on this quota now). */
   walletQuotaMax: number | null;
 }) {
   const router = useRouter();
@@ -57,7 +54,6 @@ export function SettingsFlow({
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [changingPlan, setChangingPlan] = useState<PayingPlanId | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
 
@@ -86,30 +82,6 @@ export function SettingsFlow({
     }
   };
 
-  const handleChangePlan = async (newPlan: PayingPlanId) => {
-    setChangingPlan(newPlan);
-    setActionError(null);
-    try {
-      const response = await fetch("/api/stripe/change-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: newPlan }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-      setSubscription((prev) => (prev ? { ...prev, plan: newPlan } : prev));
-      setTimeout(() => router.refresh(), 1500);
-    } catch (error) {
-      setActionError(
-        error instanceof Error
-          ? error.message
-          : "Le changement de plan a échoué. Réessayez."
-      );
-    } finally {
-      setChangingPlan(null);
-    }
-  };
-
   const handleConfirmDelete = () => {
     console.log("Demande de suppression de compte déclenchée (mock, non branchée à Supabase).");
     setDeletionRequested(true);
@@ -122,12 +94,6 @@ export function SettingsFlow({
   const periodEndLabel = subscription?.currentPeriodEnd
     ? DATE_FORMATTER.format(new Date(subscription.currentPeriodEnd))
     : null;
-  const changeablePlans = subscription
-    ? PAYING_PLAN_IDS.filter((id) => id !== subscription.plan).map((id) => ({
-        id,
-        target: PRICING_PLANS.find((p) => p.id === id)!,
-      }))
-    : [];
 
   const PlanIcon = PLAN_ICONS[plan.id] ?? PLAN_ICONS.pro;
   const planBadgeValue = trialDaysRemaining !== null ? `${trialDaysRemaining}J d'essai` : plan.name;
@@ -188,10 +154,7 @@ export function SettingsFlow({
             subscription={subscription}
             plan={currentPlan}
             periodEndLabel={periodEndLabel}
-            changeablePlans={changeablePlans}
-            changingPlan={changingPlan}
             actionError={actionError}
-            onChangePlan={handleChangePlan}
             onOpenCancelModal={() => setCancelModalOpen(true)}
           />
         )}

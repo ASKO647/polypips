@@ -3,7 +3,7 @@ import type { GroupMemberStatus, GroupSummary } from "@/lib/data/community";
 
 const RPC_ERROR_MESSAGES: Record<string, string> = {
   authentication_required: "Connectez-vous pour continuer.",
-  community_access_required: "La Communauté est réservée aux abonnés Pro et Pro+.",
+  community_access_required: "La Communauté est réservée aux abonnés Polypips.",
   invalid_name: "Donnez un nom à votre groupe.",
   group_not_found: "Ce groupe n'existe plus.",
   not_authorized: "Seul le propriétaire du groupe peut faire ça.",

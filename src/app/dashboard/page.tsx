@@ -74,7 +74,6 @@ export default async function DashboardPage() {
       <DashboardOverviewFlow
         hasActiveSubscription={hasActiveAccess(subscription)}
         trialDaysRemaining={getTrialDaysRemaining(subscription)}
-        isTopPlan={plan.id === "pro-plus"}
         analysesToday={analysesToday}
         dailyAnalysisLimit={getDailyAnalysisLimit(plan)}
         selectedMarketsCount={selectedMarketsCount}

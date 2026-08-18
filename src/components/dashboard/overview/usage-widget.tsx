@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 function UsageCircle({
@@ -36,13 +35,11 @@ export function UsageWidget({
   walletsFollowed,
   walletsMax,
   coachMessagesRemaining,
-  isTopPlan,
 }: {
   analysesRemaining: string;
   walletsFollowed: string;
   walletsMax: string;
   coachMessagesRemaining: string;
-  isTopPlan: boolean;
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
@@ -61,17 +58,6 @@ export function UsageWidget({
         />
         <UsageCircle value={coachMessagesRemaining} label="Coach IA" tone="amber" />
       </div>
-
-      {!isTopPlan && (
-        <div className="mt-5 flex flex-col gap-2.5 rounded-xl border border-emerald-400/20 bg-emerald-500/[0.06] px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-xs font-semibold text-emerald-300">
-            Passez au plan Pro+ → Tout illimité
-          </span>
-          <Button href="/dashboard/settings" size="sm" variant="outline">
-            Changer de plan
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

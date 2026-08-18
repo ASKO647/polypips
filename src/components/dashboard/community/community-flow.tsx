@@ -58,7 +58,7 @@ export function CommunityFlow({
 
       <LockedOverlay
         locked={!hasCommunityAccess}
-        message="La Communauté est réservée aux abonnés Pro et Pro+. Passez à un plan supérieur pour rejoindre et créer des groupes."
+        message="Débloquez la Communauté — rejoignez et créez des groupes. Débutez pour 0,99 €"
       >
         <div className="flex w-fit gap-1 rounded-full border border-white/10 bg-white/[0.03] p-1">
           {(

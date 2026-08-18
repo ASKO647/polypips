@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe/server";
-import { isPlanId, priceIdForPlan, type PlanId } from "@/lib/stripe/plans";
+import { isPlanId, PLAN_PRICE_IDS, type PlanId } from "@/lib/stripe/plans";
 import { createClient } from "@/lib/supabase/server";
 
 /** 0,99 € — the "decouverte" plan's upfront charge, in cents. Not a Stripe
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
-        { price: priceIdForPlan(plan), quantity: 1 },
+        { price: PLAN_PRICE_IDS.pro, quantity: 1 },
         ...(plan === "decouverte"
           ? [
               {

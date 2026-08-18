@@ -18,10 +18,10 @@ export function Pricing() {
         <SectionHeading
           eyebrow="Tarifs"
           title="Choisissez votre plan"
-          description="Pas d'essai gratuit. Juste un accès immédiat à la puissance de Polypips."
+          description="Accès complet pendant 3 jours pour 0,99 €, puis 29,99 € / mois. Annulez quand vous voulez."
         />
 
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-3xl grid-cols-1 items-start gap-6 sm:grid-cols-2">
           {PRICING_PLANS.map((plan) => (
             <div
               key={plan.id}

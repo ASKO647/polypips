@@ -22,17 +22,24 @@ type AnalyzeRequest =
  * frontend renders these events directly instead of simulating delays. */
 type ProgressStep = "fetching_market" | "calling_ai" | "receiving_result";
 
-/** Mirrors getDailyAnalysisLimit(PRICING_PLANS) in src/lib/data/pricing.ts —
- * duplicated here because this Edge Function runs on Deno and can't import
- * from the Next.js app's src tree. Keep these two in sync by hand. A user
- * with no row in `subscriptions` (or a lapsed one) is treated as the
- * "decouverte" free-tier ceiling rather than unlimited or blocked outright,
- * so the product is still provable without a subscription. */
+/** Both real plans (decouverte and pro) are full-access, unlimited tiers —
+ * mirrors PRICING_PLANS in src/lib/data/pricing.ts, duplicated here because
+ * this Edge Function runs on Deno and can't import from the Next.js app's
+ * src tree. Keep these two in sync by hand. */
 const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
-  decouverte: 10,
-  pro: 10,
-  "pro-plus": null,
+  decouverte: null,
+  pro: null,
 };
+
+/** A user with NO row in `subscriptions` at all (never paid, or a lapsed
+ * subscription) still gets to run real analyses up to this ceiling, so the
+ * product is provable before paying — this is deliberately independent of
+ * the "decouverte" plan's own limits above, which only apply to someone
+ * genuinely on that paid 3-day trial. Don't fold this into
+ * DAILY_ANALYSIS_LIMITS.decouverte: that plan is unlimited now, and a
+ * literal-string fallback collision there would make anonymous non-payers
+ * unlimited too. */
+const FREE_DEMO_DAILY_LIMIT = 10;
 
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
   if (value === "Faible" || value === "Moyenne" || value === "Élevée") {
@@ -135,8 +142,9 @@ Deno.serve(async (req) => {
 
       const hasAccess =
         subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing";
-      const effectivePlan = hasAccess ? subscriptionRow!.plan : "decouverte";
-      const dailyLimit = DAILY_ANALYSIS_LIMITS[effectivePlan] ?? 10;
+      const dailyLimit = hasAccess
+        ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
+        : FREE_DEMO_DAILY_LIMIT;
 
       if (dailyLimit !== null) {
         const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -149,7 +157,9 @@ Deno.serve(async (req) => {
         if ((count ?? 0) >= dailyLimit) {
           emitErrorAndClose(
             "limit_reached",
-            `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui. Passez à Pro+ pour des analyses illimitées.`
+            hasAccess
+              ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
+              : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
           );
           return;
         }

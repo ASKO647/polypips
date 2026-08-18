@@ -23,11 +23,11 @@ export const PRICING_PLANS: PricingPlan[] = [
     afterOffer: "Puis 29,99 € / mois",
     features: [
       "Accès complet à toutes les fonctionnalités",
-      "10 analyses IA par jour",
-      "3 portefeuilles suivis par mois",
-      "3 stratégies actives par mois",
-      "50 messages Coach IA par semaine",
-      "3 sélections IA par jour",
+      "Analyses IA illimitées",
+      "Portefeuilles suivis illimités",
+      "Copy trading illimité",
+      "Messages Coach IA illimités",
+      "Sélections IA illimitées",
     ],
     cta: "Débutez pour 0,99 €",
     hasCountdown: true,
@@ -35,38 +35,20 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
   {
     id: "pro",
-    name: "Pro",
-    tagline: "Pour analyser sérieusement, chaque jour",
+    name: "Polypips Pro",
+    tagline: "L'accès complet à Polypips, sans limites",
     price: "29,99 €",
     priceSuffix: "/ mois",
     originalPrice: "49,99 €",
-    features: [
-      "10 analyses IA par jour",
-      "3 portefeuilles suivis par mois",
-      "3 stratégies actives par mois",
-      "50 messages Coach IA par semaine",
-      "3 sélections IA par jour",
-      "Statistiques avancées",
-    ],
-    cta: "Choisir Pro",
-    badge: "Le plus populaire",
-  },
-  {
-    id: "pro-plus",
-    name: "Pro+",
-    tagline: "Pour une utilisation intensive, sans limites",
-    price: "79 €",
-    priceSuffix: "/ mois",
-    originalPrice: "145 €",
     features: [
       "Analyses IA illimitées",
       "Portefeuilles suivis illimités",
       "Copy trading illimité",
       "Messages Coach IA illimités",
       "Sélections IA illimitées",
-      "Support prioritaire",
+      "Statistiques avancées",
     ],
-    cta: "Choisir Pro+",
+    cta: "Choisir Pro",
   },
 ];
 
@@ -121,9 +103,3 @@ export function getMaxActiveCopyTradingStrategies(plan: PricingPlan): number | n
   return null;
 }
 
-/** Communauté is Pro/Pro+ only — unlike most other dashboard features,
- * l'offre découverte (the 0,99€ trial-priced entry plan) does not unlock
- * it, so this can't reuse the usual hasActiveAccess() gate. */
-export function hasCommunityAccess(plan: PricingPlan): boolean {
-  return plan.id === "pro" || plan.id === "pro-plus";
-}

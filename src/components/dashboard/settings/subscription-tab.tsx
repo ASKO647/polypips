@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { PricingPlan } from "@/lib/data/pricing";
-import type { PayingPlanId } from "@/lib/stripe/plans";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
@@ -19,19 +18,13 @@ export function SubscriptionTab({
   subscription,
   plan,
   periodEndLabel,
-  changeablePlans,
-  changingPlan,
   actionError,
-  onChangePlan,
   onOpenCancelModal,
 }: {
   subscription: SubscriptionRow | null;
   plan: PricingPlan | null;
   periodEndLabel: string | null;
-  changeablePlans: { id: PayingPlanId; target: PricingPlan }[];
-  changingPlan: PayingPlanId | null;
   actionError: string | null;
-  onChangePlan: (id: PayingPlanId) => void;
   onOpenCancelModal: () => void;
 }) {
   const badge = subscription ? STATUS_BADGE[subscription.status] : null;
@@ -103,29 +96,6 @@ export function SubscriptionTab({
         <p className="mt-3 text-xs font-medium text-rose-400">
           {actionError}
         </p>
-      )}
-
-      {hasAccess && changeablePlans.length > 0 && (
-        <div className="mt-5 flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-            Changer de plan
-          </p>
-          <div className="flex flex-col gap-2.5 sm:flex-row">
-            {changeablePlans.map(({ id, target }) => (
-              <button
-                key={id}
-                type="button"
-                disabled={changingPlan !== null}
-                onClick={() => onChangePlan(id)}
-                className="flex h-11 flex-1 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] px-4 text-sm font-semibold text-white transition-colors duration-150 hover:border-white/25 hover:bg-white/[0.08] disabled:opacity-60"
-              >
-                {changingPlan === id
-                  ? "Changement en cours..."
-                  : `Passer à ${target.name} (${target.price}${target.priceSuffix})`}
-              </button>
-            ))}
-          </div>
-        </div>
       )}
 
       {hasAccess && !subscription.cancelAtPeriodEnd && (

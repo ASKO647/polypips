@@ -25,16 +25,13 @@ type AnalysisRow = {
   created_at: string;
 };
 
-/** Mirrors getWeeklyCoachMessageLimit(PRICING_PLANS) in
- * src/lib/data/pricing.ts — duplicated here because this Edge Function runs
- * on Deno and can't import from the Next.js app's src tree. Keep these two
- * in sync by hand. A user with no row in `subscriptions` (or a lapsed one)
- * is treated as the "decouverte" free-tier ceiling, same policy as the
- * daily analysis limit in analyze-market/index.ts. */
+/** Both real plans (decouverte and pro) are full-access, unlimited tiers —
+ * mirrors PRICING_PLANS in src/lib/data/pricing.ts, duplicated here because
+ * this Edge Function runs on Deno and can't import from the Next.js app's
+ * src tree. Keep these two in sync by hand. */
 const WEEKLY_MESSAGE_LIMITS: Record<string, number | null> = {
-  decouverte: 50,
-  pro: 50,
-  "pro-plus": null,
+  decouverte: null,
+  pro: null,
 };
 
 const SYSTEM_PROMPT_BASE = `Tu es le Coach IA de Polypips, un assistant qui aide les utilisateurs à comprendre les analyses de marchés de prédiction (Polymarket) déjà produites par Polypips, à comparer des marchés entre eux et à discuter des risques.
@@ -187,7 +184,7 @@ Deno.serve(async (req) => {
       }
 
       const effectivePlan = subscriptionRow!.plan;
-      const weeklyLimit = WEEKLY_MESSAGE_LIMITS[effectivePlan] ?? 50;
+      const weeklyLimit = WEEKLY_MESSAGE_LIMITS[effectivePlan] ?? null;
 
       if (weeklyLimit !== null) {
         const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -201,7 +198,7 @@ Deno.serve(async (req) => {
         if ((count ?? 0) >= weeklyLimit) {
           emitErrorAndClose(
             "limit_reached",
-            `Vous avez atteint votre limite de ${weeklyLimit} messages Coach IA cette semaine. Passez à Pro+ pour des messages illimités.`
+            `Vous avez atteint votre limite de ${weeklyLimit} messages Coach IA cette semaine.`
           );
           return;
         }

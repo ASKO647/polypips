@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GroupDetailFlow } from "@/components/dashboard/community/group-detail-flow";
 import { createClient } from "@/lib/supabase/server";
-import { getEffectivePlan } from "@/lib/supabase/subscriptions";
-import { hasCommunityAccess } from "@/lib/data/pricing";
+import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
 import {
   fetchGroupById,
   fetchGroupMembers,
@@ -45,9 +44,8 @@ export default async function GroupDetailPage({
     );
   }
 
-  const plan = await getEffectivePlan(supabase, user.id);
-
-  const [ownMembership, messages, members] = await Promise.all([
+  const [subscription, ownMembership, messages, members] = await Promise.all([
+    fetchSubscription(supabase),
     fetchOwnMembership(supabase, groupId, user.id),
     fetchGroupMessages(supabase, groupId),
     fetchGroupMembers(supabase, groupId),
@@ -60,7 +58,7 @@ export default async function GroupDetailPage({
       ownMembership={ownMembership}
       initialMessages={messages}
       initialMembers={members}
-      hasCommunityAccess={hasCommunityAccess(plan)}
+      hasCommunityAccess={hasActiveAccess(subscription)}
     />
   );
 }

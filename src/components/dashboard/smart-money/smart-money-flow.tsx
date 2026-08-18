@@ -32,7 +32,8 @@ export function SmartMoneyFlow({
   /** True once the user has followed maxTrackedWallets wallets in the
    * current billing cycle — follow AND unfollow are both blocked until
    * the subscription renews (see lib/supabase/quota-cycles.ts). Always
-   * false for Pro+ (maxTrackedWallets === null). */
+   * false now: both plans are unlimited on this quota
+   * (maxTrackedWallets === null). */
   quotaLocked: boolean;
   quotaResetDate: string | null;
 }) {

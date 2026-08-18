@@ -15,7 +15,6 @@ import type { NotificationItem } from "@/lib/data/notifications";
 export function DashboardOverviewFlow({
   hasActiveSubscription,
   trialDaysRemaining,
-  isTopPlan,
   analysesToday,
   dailyAnalysisLimit,
   selectedMarketsCount,
@@ -29,7 +28,6 @@ export function DashboardOverviewFlow({
 }: {
   hasActiveSubscription: boolean;
   trialDaysRemaining: number | null;
-  isTopPlan: boolean;
   analysesToday: number;
   dailyAnalysisLimit: number | null;
   selectedMarketsCount: number;
@@ -135,7 +133,6 @@ export function DashboardOverviewFlow({
             walletsFollowed={String(walletsFollowed)}
             walletsMax={walletsMax !== null ? String(walletsMax) : "∞"}
             coachMessagesRemaining={coachMessagesRemaining}
-            isTopPlan={isTopPlan}
           />
         </div>
       </LockedOverlay>

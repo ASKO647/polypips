@@ -1,4 +1,4 @@
-import { Crown, Gem, Rocket } from "lucide-react";
+import { Crown, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getDailyAnalysisLimit, PRICING_PLANS } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
@@ -6,7 +6,6 @@ import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 export const PLAN_ICONS: Record<string, typeof Crown> = {
   decouverte: Rocket,
   pro: Crown,
-  "pro-plus": Gem,
 };
 
 export function AccountStatusCard({
