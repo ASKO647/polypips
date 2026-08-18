@@ -6,6 +6,7 @@ import { FeatureSection } from "@/components/marketing/feature-section";
 import { ProofShowcase } from "@/components/marketing/proof-showcase";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { ProductDemo } from "@/components/marketing/product-demo";
+import { PotentialCalculator } from "@/components/marketing/potential-calculator";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
 import { FinalCTA } from "@/components/marketing/final-cta";
@@ -22,6 +23,7 @@ export default function Home() {
         <ProofShowcase />
         <HowItWorks />
         <ProductDemo />
+        <PotentialCalculator />
         <Pricing />
         <FAQ />
         <FinalCTA />
