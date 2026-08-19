@@ -6,7 +6,7 @@ import { fetchNotifications } from "@/lib/supabase/notifications";
 
 export default async function DashboardLayout({
   children,
-}: LayoutProps<"/dashboard">) {
+}: LayoutProps<"/[locale]/dashboard">) {
   const supabase = await createClient();
   const user = await getAuthUser();
 

@@ -1,0 +1,467 @@
+{
+  "Metadata": {
+    "title": "Polypips — AI analyzes. You decide. The market follows.",
+    "description": "Polypips digs deep into Polymarket markets, tells you which position has the strongest signal, and explains why."
+  },
+  "Nav": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "faq": "FAQ"
+  },
+  "Header": {
+    "login": "Log in",
+    "cta": "Start for $0.99",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "Footer": {
+    "tagline": "AI that digs deep into Polymarket markets and gives you the edge to decide better.",
+    "copyright": "© {year} Polypips. All rights reserved.",
+    "columns": {
+      "product": {
+        "title": "Product",
+        "features": "Features",
+        "pricing": "Pricing",
+        "howItWorks": "How it works",
+        "changelog": "Changelog"
+      },
+      "resources": {
+        "title": "Resources",
+        "blog": "Blog",
+        "guides": "Guides",
+        "api": "API",
+        "support": "Support"
+      },
+      "legal": {
+        "title": "Legal",
+        "terms": "Terms of use",
+        "privacy": "Privacy policy",
+        "legal": "Legal notice"
+      },
+      "company": {
+        "title": "Company",
+        "about": "About",
+        "contact": "Contact",
+        "partners": "Partners"
+      }
+    }
+  },
+  "AuthHeader": {
+    "noAccount": "No account yet?",
+    "createAccount": "Create an account",
+    "hasAccount": "Already have an account?",
+    "login": "Log in"
+  },
+  "ChatButton": {
+    "title": "Need help?",
+    "description": "Our support team is here to answer your questions about Polypips.",
+    "open": "Open support",
+    "close": "Close support"
+  },
+  "AnnouncementBar": {
+    "badge": "Limited offer",
+    "text": "The $0.99 offer ends in"
+  },
+  "Hero": {
+    "title1": "AI analyzes.",
+    "title2": "You decide.",
+    "title3": "The market follows.",
+    "description": "Polypips digs deep into Polymarket markets, tells you which position has the strongest signal, and explains why.",
+    "tagline": "Less research. Less hesitation. Just the edge you're looking for.",
+    "ctaTrial": "Start for $0.99",
+    "ctaDemo": "Watch the demo",
+    "trust1": "Full access for 3 days",
+    "trust2": "No card required",
+    "trust3": "Cancel anytime",
+    "trust4": "Instant access"
+  },
+  "Features": {
+    "eyebrow": "Features",
+    "title": "Everything you need to get the edge",
+    "description": "A complete platform to analyze, track and decide — without juggling ten different tools.",
+    "items": {
+      "aiAnalysis": {
+        "title": "Deep AI analysis",
+        "description": "AI digs into every market and tells you what to bet and why."
+      },
+      "smartMoney": {
+        "title": "Smart Money tracking",
+        "description": "Follow the top Polymarket wallets' moves in real time."
+      },
+      "copyTrading": {
+        "title": "Copy Trading",
+        "description": "Let our AI bet for you, automatically, on the best markets."
+      },
+      "aiSelected": {
+        "title": "Selected bets",
+        "description": "Discover the best bets picked by our AI every day."
+      },
+      "aiCoach": {
+        "title": "Personal AI Coach",
+        "description": "Ask any question and get clear answers from our AI."
+      },
+      "stats": {
+        "title": "Advanced statistics",
+        "description": "Track your performance, your gains and all your key stats."
+      }
+    }
+  },
+  "Proof": {
+    "eyebrow": "Proof & results",
+    "title1": "Polypips in action:",
+    "title2": "analyses that make the difference",
+    "description": "See how our users make better decisions and maximize their gains with our AI analyses.",
+    "prev": "Previous",
+    "next": "Next",
+    "watchTestimonial": "Read {handle}'s testimonial",
+    "videoComingSoon": "Video coming soon",
+    "stats": {
+      "precision": "Average accuracy",
+      "markets": "Markets analyzed",
+      "users": "Active users",
+      "analyses": "Analyses run"
+    },
+    "pills": {
+      "ai": "Specialized market AI",
+      "realtime": "Real-time data",
+      "accuracy": "Ultra-precise analyses",
+      "proven": "Proven results",
+      "satisfaction": "Satisfied users"
+    },
+    "phones": {
+      "marketAnalysis": {
+        "appTitle": "Market analysis",
+        "tabAi": "AI analysis",
+        "tabSmartMoney": "Smart Money",
+        "questionLabel": "Question analyzed",
+        "question": "Will Real Madrid win the next Clasico?",
+        "tag": "LaLiga",
+        "decisionLabel": "AI decision",
+        "probabilityLabel": "Probability",
+        "scoreLabel": "Opportunity score",
+        "confidenceLabel": "High confidence",
+        "cta": "View full analysis",
+        "resultHeadline": "Winning prediction ✅",
+        "resultGain": "+$2,890",
+        "resultContext": "in 5 days",
+        "handle": "@alex_trader"
+      },
+      "history": {
+        "appTitle": "Analysis history",
+        "tabAll": "All",
+        "tabWinning": "Winning",
+        "item1Match": "Real Madrid vs FC Barcelona",
+        "item1Date": "04/12/2024",
+        "item2Match": "PSG vs OM",
+        "item2Date": "04/10/2024",
+        "item3Match": "Man City vs Arsenal",
+        "item3Date": "04/09/2024",
+        "item4Match": "Bayern vs Dortmund",
+        "item4Date": "04/07/2024",
+        "resultHeadline": "Outstanding consistency 🔥",
+        "resultGain": "+$3,436",
+        "resultContext": "this week",
+        "handle": "@max_prono"
+      },
+      "performance": {
+        "appTitle": "Overall performance",
+        "period": "Last 7 days",
+        "totalGainLabel": "Total gain",
+        "totalGain": "+$8,920",
+        "statAnalyses": "Analyses",
+        "statPrecision": "Accuracy",
+        "statRoi": "Avg. ROI",
+        "statMarkets": "Markets analyzed",
+        "resultHeadline": "Thanks to Polypips AI",
+        "resultGain": "+$4,120",
+        "resultContext": "in 1 week",
+        "handle": "@sarah_trade"
+      },
+      "matchDetail": {
+        "appTitle": "Analysis detail",
+        "teamA": "Real Madrid",
+        "teamB": "FC Barcelona",
+        "tabSummary": "Summary",
+        "tabProbabilities": "Probabilities",
+        "tabContext": "Context",
+        "analysisText": "Real Madrid has the stronger chance of winning thanks to their defensive solidity and current form.",
+        "probTeamA": "Real Madrid",
+        "probDraw": "Draw",
+        "probTeamB": "FC Barcelona",
+        "resultHeadline": "Picks validated 🎯",
+        "resultGain": "+$5,610",
+        "resultContext": "automatically",
+        "handle": "@football_invest"
+      },
+      "portfolio": {
+        "appTitle": "Smart Money portfolio",
+        "allocationLabel": "Detected allocation",
+        "allocationValue": "+12.4%",
+        "allocationContext": "over the last 7 days",
+        "movementsLabel": "Key moves",
+        "move1": "Massive Real Madrid buy",
+        "move2": "PSG buy",
+        "move3": "Man City sell",
+        "move4": "Bayern buy",
+        "resultHeadline": "Steady growth",
+        "resultGain": "+$8,920",
+        "resultContext": "this month",
+        "handle": "@anto_gagne"
+      }
+    }
+  },
+  "HowItWorks": {
+    "eyebrow": "Process",
+    "title": "How does it work?",
+    "description": "From the market question to the decision, in five clear steps.",
+    "steps": {
+      "import": {
+        "title": "Import a market",
+        "description": "Drop a screenshot or paste the link of a Polymarket market."
+      },
+      "analyze": {
+        "title": "AI analyzes everything",
+        "description": "Question, rules, probabilities, data and external sources are all scrutinized."
+      },
+      "decide": {
+        "title": "Get the decision",
+        "description": "YES or NO, probability, edge, opportunity score and a detailed explanation."
+      },
+      "track": {
+        "title": "Track the best opportunities",
+        "description": "AI-selected markets and Smart Money wallets, continuously updated."
+      },
+      "act": {
+        "title": "Make your decisions",
+        "description": "Act with a clear informational edge, at your own pace."
+      }
+    }
+  },
+  "ProductDemo": {
+    "eyebrow": "See Polypips in action",
+    "title": "Discover Polypips in 2 minutes",
+    "description": "See how Polypips turns a complex market into a clear analysis.",
+    "items": {
+      "analysis": "Market analysis",
+      "decision": "AI decision",
+      "probability": "Probability & Edge",
+      "explanation": "Detailed explanation",
+      "smartMoney": "Smart Money",
+      "coach": "AI Coach"
+    },
+    "ctaLabel": "Watch the demo (2:15)",
+    "launchAria": "Launch the demo",
+    "videoComingSoon": "Video coming soon",
+    "marketAnalysisLabel": "Market analysis",
+    "live": "Live",
+    "question": "\"Will BTC's price top $120,000 before December 31?\"",
+    "aiDecisionLabel": "AI decision",
+    "aiProbLabel": "AI probability",
+    "marketProbLabel": "Market probability",
+    "edgeLabel": "Edge",
+    "scoreLabel": "Score",
+    "favorableFactorsLabel": "Favorable factors",
+    "favorableFactor1": "Sustained on-chain accumulation",
+    "favorableFactor2": "Bullish institutional momentum",
+    "mainRisksLabel": "Main risks",
+    "mainRisk1": "Regulatory uncertainty",
+    "mainRisk2": "Short-term macro volatility"
+  },
+  "Calculator": {
+    "eyebrow": "Simulator",
+    "title": "Discover your potential with Polypips",
+    "description": "Adjust your parameters and visualize your monthly potential.",
+    "stakeLabel": "Average stake per opportunity",
+    "opportunitiesLabel": "Opportunities analyzed per month",
+    "resultLabel": "Your monthly potential",
+    "disclaimer": "Indicative simulation based on the selected parameters. Actual performance may vary.",
+    "cta": "Get the Polypips edge",
+    "stakeTicks": ["$10", "$25", "$50", "$100", "$250", "$500 and up"],
+    "opportunitiesTicks": ["10", "25", "50", "100", "200", "Over 500"]
+  },
+  "Pricing": {
+    "eyebrow": "Pricing",
+    "title": "One plan, every feature",
+    "description": "No tiers, no features locked behind a higher plan: one Polypips Pro subscription, with a discounted trial to get started.",
+    "offerLimited": "Limited offer",
+    "cardTitle": "Full Polypips access",
+    "cardDescription": "Unlock every feature: AI Analysis, Selected Markets, Smart Money, Copy Trading, AI Coach, Statistics.",
+    "thenPrefix": "Then",
+    "thenSuffix": "— cancel anytime before the trial ends to pay nothing more.",
+    "ctaPrefix": "Start for",
+    "guarantee1": "Instant access",
+    "guarantee2": "Cancel anytime",
+    "guarantee3": "Secure payment",
+    "features": {
+      "analyses": "Unlimited AI analyses",
+      "selectedMarkets": "AI-selected markets",
+      "smartMoney": "Real-time Smart Money tracking",
+      "copyTrading": "Smart Copy Trading",
+      "coach": "Personal AI Coach",
+      "stats": "Advanced statistics"
+    }
+  },
+  "FAQ": {
+    "eyebrow": "FAQ",
+    "title": "Frequently asked questions",
+    "description": "Everything you need to know before getting started.",
+    "items": {
+      "howAiWorks": {
+        "question": "How does the AI analysis work?",
+        "answer": "Drop a screenshot of a Polymarket market or paste its link. Polypips analyzes the question, the resolution rules, current probabilities and relevant external sources, then gives you a decision (YES or NO), an estimated probability, the edge, an opportunity score and a detailed explanation."
+      },
+      "updateFrequency": {
+        "question": "How often are analyses updated?",
+        "answer": "Markets move constantly: our analyses factor in the latest data available at the time of the request, and AI-selected markets refresh several times a day."
+      },
+      "cancelAnytime": {
+        "question": "Can I cancel anytime?",
+        "answer": "Yes. You can manage your subscription in one click from your account, with no commitment or minimum term."
+      },
+      "beginners": {
+        "question": "Is the AI suited to beginners?",
+        "answer": "Yes. Every analysis is explained in plain language: favorable factors, risks, and what could change the decision. The AI Coach is there to answer any question you have."
+      },
+      "markets": {
+        "question": "Which markets are covered?",
+        "answer": "Polypips V1 is mainly focused on Polymarket markets. Other prediction market platforms will be added progressively."
+      },
+      "copyTrading": {
+        "question": "Does Polypips touch my portfolio? How does Copy Trading work?",
+        "answer": "No, unless you explicitly enable Copy Trading. You then choose a strategy and set your own risk parameters (maximum amount per position, maximum exposure, number of positions): no return is guaranteed, it's an automation of your rules, not a promise of gains. You stay in control at all times."
+      }
+    }
+  },
+  "FinalCTA": {
+    "title1": "Ready to get the edge",
+    "title2": "on Polymarket?",
+    "arg1": "$0.99 for 3 days",
+    "arg2": "Instant access",
+    "arg3": "Cancel anytime",
+    "cta": "Start for $0.99"
+  },
+  "SmartMoneyPopup": {
+    "label": "Smart Money activity",
+    "close": "Hide activity notifications"
+  },
+  "ComingSoon": {
+    "badge": "Coming soon",
+    "backHome": "Back to home"
+  },
+  "LanguageSelector": {
+    "fr": "Français",
+    "en": "English"
+  },
+  "Auth": {
+    "or": "or",
+    "terms": "Terms of use",
+    "privacy": "Privacy policy",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "oauthError": "Google sign-in failed. Please try again.",
+    "GoogleButton": {
+      "redirecting": "Redirecting to Google...",
+      "cta": "Continue with Google"
+    },
+    "Signup": {
+      "metaTitle": "Create an account — Polypips",
+      "metaDescription": "Create your Polypips account and get the edge on the market.",
+      "heroTitle1": "Create your account",
+      "heroTitle2": "and get the edge",
+      "heroTitle3": "on the market.",
+      "heroDescription": "Join the users using AI to analyze, understand and make better decisions on the markets.",
+      "cardTitle": "Create an account",
+      "cardSubtitle": "Instant access to every feature",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••••••",
+      "passwordStrengthPrefix": "Password",
+      "termsPrefix": "I agree to the",
+      "termsAnd": "and the",
+      "termsSuffix": "of Polypips.",
+      "submit": "Create my account",
+      "emailNotice": "By creating an account, you agree to receive emails from Polypips.",
+      "alreadyHaveAccount": "An account already exists with this email.",
+      "loginInstead": "Log in instead.",
+      "weakPasswordPrefix": "Password too weak:",
+      "successMessage": "Account created! Check your inbox to confirm your address before logging in."
+    },
+    "Login": {
+      "metaTitle": "Log in — Polypips",
+      "metaDescription": "Log in to your Polypips account.",
+      "cardTitle": "Log in to your account",
+      "cardSubtitle": "Access your AI analyses, Smart Money and selected bets.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@email.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••••••",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Log in →",
+      "noAccount": "No account yet?",
+      "createAccount": "Create an account",
+      "invalidCredentials": "Incorrect email or password.",
+      "termsPrefix": "By continuing, you agree to the",
+      "termsAnd": "and the",
+      "termsSuffix": "."
+    },
+    "ForgotPassword": {
+      "metaTitle": "Forgot password — Polypips",
+      "metaDescription": "Reset your Polypips account password.",
+      "titleIdle": "Forgot your password?",
+      "titleSuccess": "Email sent!",
+      "descriptionIdle": "No worries. Enter your email address and we'll send you a link to reset your password.",
+      "descriptionSuccess": "Check your inbox (and spam folder) to reset your password.",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "you@email.com",
+      "submit": "Send reset link →",
+      "backToLogin": "Back to login",
+      "otherIssues": "Having other issues?",
+      "contactSupport": "Contact our support",
+      "invalidEmail": "Invalid email address.",
+      "rateLimited": "Too many attempts. Please try again in a few minutes."
+    },
+    "SignupBenefits": {
+      "precision": {
+        "title": "Ultra-precise analyses",
+        "description": "AI that digs deep into every market for a reliable signal."
+      },
+      "time": {
+        "title": "Save time",
+        "description": "No more hours of research: a clear, explained decision."
+      },
+      "secure": {
+        "title": "100% secure",
+        "description": "Your data and access are protected at every step."
+      },
+      "support": {
+        "title": "Dedicated support",
+        "description": "A team available to help you at any time."
+      }
+    },
+    "LoginTrustRow": {
+      "secure": { "label": "Secure", "sublabel": "Protected data" },
+      "instant": { "label": "Instant access", "sublabel": "In a few seconds" },
+      "analyses": { "label": "Advanced analyses", "sublabel": "AI & Smart Money" },
+      "support": { "label": "Responsive support", "sublabel": "7 days a week" }
+    },
+    "TrustStrip": {
+      "noCard": "No card required",
+      "cancelAnytime": "Cancel anytime",
+      "instant": "Instant access"
+    },
+    "LaunchOfferCard": {
+      "badge": "Launch offer",
+      "duration": "for 3 days",
+      "afterOffer": "Then $29.99/month for 30 days"
+    },
+    "PasswordStrength": {
+      "veryWeak": "very weak",
+      "weak": "weak",
+      "medium": "medium",
+      "strong": "strong",
+      "veryStrong": "very strong"
+    }
+  }
+}

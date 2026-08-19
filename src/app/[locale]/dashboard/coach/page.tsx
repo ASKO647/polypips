@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function CoachPage({
   searchParams,
-}: PageProps<"/dashboard/coach">) {
+}: PageProps<"/[locale]/dashboard/coach">) {
   const { analysisId } = await searchParams;
   const supabase = await createClient();
 

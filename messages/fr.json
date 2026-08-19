@@ -1,0 +1,467 @@
+{
+  "Metadata": {
+    "title": "Polypips — L'IA qui analyse. Vous décidez. Le marché suit.",
+    "description": "Polypips analyse les marchés Polymarket en profondeur, vous indique quelle position présente le meilleur signal et vous explique pourquoi."
+  },
+  "Nav": {
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "about": "À propos",
+    "faq": "FAQ"
+  },
+  "Header": {
+    "login": "Se connecter",
+    "cta": "Débutez pour 0,99 €",
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
+  },
+  "Footer": {
+    "tagline": "L'IA qui analyse les marchés Polymarket en profondeur et vous donne l'avantage pour décider mieux.",
+    "copyright": "© {year} Polypips. Tous droits réservés.",
+    "columns": {
+      "product": {
+        "title": "Produit",
+        "features": "Fonctionnalités",
+        "pricing": "Tarifs",
+        "howItWorks": "Comment ça marche",
+        "changelog": "Mises à jour"
+      },
+      "resources": {
+        "title": "Ressources",
+        "blog": "Blog",
+        "guides": "Guides",
+        "api": "API",
+        "support": "Support"
+      },
+      "legal": {
+        "title": "Légal",
+        "terms": "Conditions d'utilisation",
+        "privacy": "Politique de confidentialité",
+        "legal": "Mentions légales"
+      },
+      "company": {
+        "title": "Entreprise",
+        "about": "À propos",
+        "contact": "Contact",
+        "partners": "Partenaires"
+      }
+    }
+  },
+  "AuthHeader": {
+    "noAccount": "Pas encore de compte ?",
+    "createAccount": "Créer un compte",
+    "hasAccount": "Déjà un compte ?",
+    "login": "Se connecter"
+  },
+  "ChatButton": {
+    "title": "Besoin d'aide ?",
+    "description": "Notre équipe support est disponible pour répondre à vos questions sur Polypips.",
+    "open": "Ouvrir le support",
+    "close": "Fermer le support"
+  },
+  "AnnouncementBar": {
+    "badge": "Offre limitée",
+    "text": "L'offre à 0,99 € se termine dans"
+  },
+  "Hero": {
+    "title1": "L'IA qui analyse.",
+    "title2": "Vous décidez.",
+    "title3": "Le marché suit.",
+    "description": "Polypips analyse les marchés Polymarket en profondeur, vous indique quelle position présente le meilleur signal et vous explique pourquoi.",
+    "tagline": "Plus de recherches. Plus d'hésitations. Juste l'avantage que vous cherchez.",
+    "ctaTrial": "Débutez pour 0,99 €",
+    "ctaDemo": "Voir la démo",
+    "trust1": "Accès complet pendant 3 jours",
+    "trust2": "Aucune carte requise",
+    "trust3": "Annulation à tout moment",
+    "trust4": "Accès instantané"
+  },
+  "Features": {
+    "eyebrow": "Fonctionnalités",
+    "title": "Tout ce dont vous avez besoin pour prendre l'avantage",
+    "description": "Une plateforme complète pour analyser, suivre et décider — sans jongler entre dix outils.",
+    "items": {
+      "aiAnalysis": {
+        "title": "Analyse IA profonde",
+        "description": "L'IA analyse chaque marché en profondeur et vous dit quoi parier et pourquoi."
+      },
+      "smartMoney": {
+        "title": "Suivi Smart Money",
+        "description": "Suivez en temps réel les achats des meilleurs portefeuilles de Polymarket."
+      },
+      "copyTrading": {
+        "title": "Copy Trading",
+        "description": "Laissez notre IA parier pour vous, automatiquement, sur les meilleurs marchés."
+      },
+      "aiSelected": {
+        "title": "Paris sélectionnés",
+        "description": "Découvrez chaque jour les meilleurs paris sélectionnés par notre IA."
+      },
+      "aiCoach": {
+        "title": "Coach IA personnel",
+        "description": "Posez toutes vos questions et obtenez des réponses claires de notre IA."
+      },
+      "stats": {
+        "title": "Statistiques avancées",
+        "description": "Suivez vos performances, vos gains et toutes vos statistiques clés."
+      }
+    }
+  },
+  "Proof": {
+    "eyebrow": "Preuves & résultats",
+    "title1": "Polypips en action :",
+    "title2": "des analyses qui font la différence",
+    "description": "Découvrez comment nos utilisateurs prennent de meilleures décisions et maximisent leurs gains grâce à nos analyses IA.",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "watchTestimonial": "Lire le témoignage de {handle}",
+    "videoComingSoon": "Vidéo bientôt disponible",
+    "stats": {
+      "precision": "Précision moyenne",
+      "markets": "Marchés analysés",
+      "users": "Utilisateurs actifs",
+      "analyses": "Analyses réalisées"
+    },
+    "pills": {
+      "ai": "IA spécialisée marchés",
+      "realtime": "Données en temps réel",
+      "accuracy": "Analyses ultra précises",
+      "proven": "Résultats prouvés",
+      "satisfaction": "Utilisateurs satisfaits"
+    },
+    "phones": {
+      "marketAnalysis": {
+        "appTitle": "Analyse de marché",
+        "tabAi": "Analyse IA",
+        "tabSmartMoney": "Smart Money",
+        "questionLabel": "Question analysée",
+        "question": "Le Real Madrid remportera-t-il le prochain clasico ?",
+        "tag": "LaLiga",
+        "decisionLabel": "Décision IA",
+        "probabilityLabel": "Probabilité",
+        "scoreLabel": "Score d'opportunité",
+        "confidenceLabel": "Confiance élevée",
+        "cta": "Voir l'analyse complète",
+        "resultHeadline": "Prédiction gagnante ✅",
+        "resultGain": "+2 890 €",
+        "resultContext": "en 5 jours",
+        "handle": "@alex_trader"
+      },
+      "history": {
+        "appTitle": "Historique des analyses",
+        "tabAll": "Tous",
+        "tabWinning": "Gagnantes",
+        "item1Match": "Real Madrid vs FC Barcelone",
+        "item1Date": "12/04/2024",
+        "item2Match": "PSG vs OM",
+        "item2Date": "10/04/2024",
+        "item3Match": "Man City vs Arsenal",
+        "item3Date": "09/04/2024",
+        "item4Match": "Bayern vs Dortmund",
+        "item4Date": "07/04/2024",
+        "resultHeadline": "Régularité exceptionnelle 🔥",
+        "resultGain": "+3 436 €",
+        "resultContext": "cette semaine",
+        "handle": "@max_prono"
+      },
+      "performance": {
+        "appTitle": "Performance globale",
+        "period": "7 derniers jours",
+        "totalGainLabel": "Gain total",
+        "totalGain": "+8 920 €",
+        "statAnalyses": "Analyses",
+        "statPrecision": "Précision",
+        "statRoi": "ROI moyen",
+        "statMarkets": "Marchés analysés",
+        "resultHeadline": "Grâce à l'IA Polypips",
+        "resultGain": "+4 120 €",
+        "resultContext": "en 1 semaine",
+        "handle": "@sarah_trade"
+      },
+      "matchDetail": {
+        "appTitle": "Détail d'une analyse",
+        "teamA": "Real Madrid",
+        "teamB": "FC Barcelone",
+        "tabSummary": "Résumé",
+        "tabProbabilities": "Probabilités",
+        "tabContext": "Contexte",
+        "analysisText": "Le Real Madrid présente plus de chances de victoire grâce à sa solidité défensive et sa forme actuelle.",
+        "probTeamA": "Real Madrid",
+        "probDraw": "Match nul",
+        "probTeamB": "FC Barcelone",
+        "resultHeadline": "Pronostics validés 🎯",
+        "resultGain": "+5 610 €",
+        "resultContext": "en automatique",
+        "handle": "@football_invest"
+      },
+      "portfolio": {
+        "appTitle": "Portefeuille Smart Money",
+        "allocationLabel": "Allocation détectée",
+        "allocationValue": "+12.4%",
+        "allocationContext": "sur les 7 derniers jours",
+        "movementsLabel": "Mouvements clés",
+        "move1": "Achat massif Real Madrid",
+        "move2": "Achat PSG",
+        "move3": "Vente Man City",
+        "move4": "Achat Bayern",
+        "resultHeadline": "Une croissance constante",
+        "resultGain": "+8 920 €",
+        "resultContext": "ce mois-ci",
+        "handle": "@anto_gagne"
+      }
+    }
+  },
+  "HowItWorks": {
+    "eyebrow": "Processus",
+    "title": "Comment ça marche ?",
+    "description": "De la question au marché jusqu'à la décision, en cinq étapes claires.",
+    "steps": {
+      "import": {
+        "title": "Importez un marché",
+        "description": "Déposez une capture d'écran ou collez le lien d'un marché Polymarket."
+      },
+      "analyze": {
+        "title": "L'IA analyse tout",
+        "description": "Question, règles, probabilités, données et sources externes sont passées au crible."
+      },
+      "decide": {
+        "title": "Obtenez la décision",
+        "description": "YES ou NO, probabilité, edge, score d'opportunité et explication détaillée."
+      },
+      "track": {
+        "title": "Suivez les meilleures opportunités",
+        "description": "Marchés sélectionnés par l'IA et portefeuilles Smart Money, en continu."
+      },
+      "act": {
+        "title": "Prenez vos décisions",
+        "description": "Agissez avec un avantage informationnel clair, à votre rythme."
+      }
+    }
+  },
+  "ProductDemo": {
+    "eyebrow": "Voir Polypips en action",
+    "title": "Découvrez Polypips en 2 minutes",
+    "description": "Voyez comment Polypips transforme un marché complexe en une analyse claire.",
+    "items": {
+      "analysis": "Analyse d'un marché",
+      "decision": "Décision IA",
+      "probability": "Probabilité & Edge",
+      "explanation": "Explication détaillée",
+      "smartMoney": "Smart Money",
+      "coach": "Coach IA"
+    },
+    "ctaLabel": "Voir la démo (2:15)",
+    "launchAria": "Lancer la démonstration",
+    "videoComingSoon": "Vidéo bientôt disponible",
+    "marketAnalysisLabel": "Analyse de marché",
+    "live": "En direct",
+    "question": "« Le prix du BTC dépassera-t-il 120 000 $ avant le 31 décembre ? »",
+    "aiDecisionLabel": "Décision IA",
+    "aiProbLabel": "Probabilité IA",
+    "marketProbLabel": "Probabilité marché",
+    "edgeLabel": "Edge",
+    "scoreLabel": "Score",
+    "favorableFactorsLabel": "Facteurs favorables",
+    "favorableFactor1": "Accumulation on-chain soutenue",
+    "favorableFactor2": "Momentum institutionnel haussier",
+    "mainRisksLabel": "Risques principaux",
+    "mainRisk1": "Réglementation incertaine",
+    "mainRisk2": "Volatilité macro à court terme"
+  },
+  "Calculator": {
+    "eyebrow": "Simulateur",
+    "title": "Découvrez votre potentiel avec Polypips",
+    "description": "Ajustez vos paramètres et visualisez votre potentiel mensuel.",
+    "stakeLabel": "Mise moyenne par opportunité",
+    "opportunitiesLabel": "Opportunités analysées par mois",
+    "resultLabel": "Votre potentiel mensuel",
+    "disclaimer": "Simulation indicative basée sur les paramètres sélectionnés. Les performances réelles peuvent varier.",
+    "cta": "Bénéficiez de l'avantage Polypips",
+    "stakeTicks": ["10 €", "25 €", "50 €", "100 €", "250 €", "500 € et plus"],
+    "opportunitiesTicks": ["10", "25", "50", "100", "200", "Plus de 500"]
+  },
+  "Pricing": {
+    "eyebrow": "Tarifs",
+    "title": "Un seul accès, toutes les fonctionnalités",
+    "description": "Pas de paliers, pas de fonctionnalités verrouillées derrière un plan supérieur : un abonnement Polypips Pro, avec un essai à prix réduit pour commencer.",
+    "offerLimited": "Offre limitée",
+    "cardTitle": "Accès complet Polypips",
+    "cardDescription": "Débloquez toutes les fonctionnalités : Analyse IA, Marchés sélectionnés, Smart Money, Copy Trading, Coach IA, Statistiques.",
+    "thenPrefix": "Puis",
+    "thenSuffix": "— annulez à tout moment avant la fin de l'essai pour ne rien payer de plus.",
+    "ctaPrefix": "Débuter pour",
+    "guarantee1": "Accès instantané",
+    "guarantee2": "Annulez à tout moment",
+    "guarantee3": "Paiement sécurisé",
+    "features": {
+      "analyses": "Analyses IA illimitées",
+      "selectedMarkets": "Marchés sélectionnés par l'IA",
+      "smartMoney": "Suivi Smart Money en temps réel",
+      "copyTrading": "Copy Trading intelligent",
+      "coach": "Coach IA personnel",
+      "stats": "Statistiques avancées"
+    }
+  },
+  "FAQ": {
+    "eyebrow": "FAQ",
+    "title": "Questions fréquentes",
+    "description": "Tout ce qu'il faut savoir avant de commencer.",
+    "items": {
+      "howAiWorks": {
+        "question": "Comment fonctionne l'analyse IA ?",
+        "answer": "Vous déposez une capture d'écran d'un marché Polymarket ou collez son lien. Polypips analyse la question, les règles de résolution, les probabilités actuelles et les sources externes pertinentes, puis vous propose une décision (YES ou NO), une probabilité estimée, l'edge, un score d'opportunité et une explication détaillée."
+      },
+      "updateFrequency": {
+        "question": "À quelle fréquence les analyses sont-elles mises à jour ?",
+        "answer": "Les marchés évoluent en continu : nos analyses intègrent les dernières données disponibles au moment de la demande, et les marchés sélectionnés par l'IA sont actualisés plusieurs fois par jour."
+      },
+      "cancelAnytime": {
+        "question": "Puis-je annuler à tout moment ?",
+        "answer": "Oui. Votre abonnement se gère en un clic depuis votre compte, sans engagement ni durée minimale."
+      },
+      "beginners": {
+        "question": "L'IA est-elle adaptée aux débutants ?",
+        "answer": "Oui. Chaque analyse est expliquée en langage clair : facteurs favorables, risques, et ce qui pourrait faire changer la décision. Le Coach IA est là pour répondre à toutes vos questions."
+      },
+      "markets": {
+        "question": "Quels marchés sont couverts ?",
+        "answer": "La V1 de Polypips est principalement orientée vers les marchés Polymarket. D'autres plateformes de prediction markets seront intégrées progressivement."
+      },
+      "copyTrading": {
+        "question": "Polypips touche-t-il à mon portefeuille ? Comment fonctionne le Copy Trading ?",
+        "answer": "Non, sauf si vous activez explicitement le Copy Trading. Vous choisissez alors une stratégie et définissez vos propres paramètres de risque (montant maximum par position, exposition maximale, nombre de positions) : aucun rendement n'est garanti, il s'agit d'une automatisation de vos règles, pas d'une promesse de gain. Vous gardez le contrôle à tout moment."
+      }
+    }
+  },
+  "FinalCTA": {
+    "title1": "Prêt à prendre l'avantage",
+    "title2": "sur Polymarket ?",
+    "arg1": "0,99 € pendant 3 jours",
+    "arg2": "Accès immédiat",
+    "arg3": "Annulation à tout moment",
+    "cta": "Débutez pour 0,99 €"
+  },
+  "SmartMoneyPopup": {
+    "label": "Activité Smart Money",
+    "close": "Masquer les notifications d'activité"
+  },
+  "ComingSoon": {
+    "badge": "Bientôt disponible",
+    "backHome": "Retour à l'accueil"
+  },
+  "LanguageSelector": {
+    "fr": "Français",
+    "en": "English"
+  },
+  "Auth": {
+    "or": "ou",
+    "terms": "Conditions d'utilisation",
+    "privacy": "Politique de confidentialité",
+    "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
+    "oauthError": "La connexion avec Google a échoué. Merci de réessayer.",
+    "GoogleButton": {
+      "redirecting": "Redirection vers Google...",
+      "cta": "Continuer avec Google"
+    },
+    "Signup": {
+      "metaTitle": "Créer un compte — Polypips",
+      "metaDescription": "Créez votre compte Polypips et prenez l'avantage sur le marché.",
+      "heroTitle1": "Créez votre compte",
+      "heroTitle2": "et prenez l'avantage",
+      "heroTitle3": "sur le marché.",
+      "heroDescription": "Rejoignez les utilisateurs qui utilisent l'IA pour analyser, comprendre et prendre de meilleures décisions sur les marchés.",
+      "cardTitle": "Créer un compte",
+      "cardSubtitle": "Accès immédiat à toutes les fonctionnalités",
+      "emailLabel": "Adresse email",
+      "emailPlaceholder": "votre@email.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "••••••••••••",
+      "passwordStrengthPrefix": "Mot de passe",
+      "termsPrefix": "J'accepte les",
+      "termsAnd": "et la",
+      "termsSuffix": "de Polypips.",
+      "submit": "Créer mon compte",
+      "emailNotice": "En créant un compte, vous acceptez de recevoir des emails de la part de Polypips.",
+      "alreadyHaveAccount": "Un compte existe déjà avec cet email.",
+      "loginInstead": "Connectez-vous plutôt.",
+      "weakPasswordPrefix": "Mot de passe trop faible :",
+      "successMessage": "Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter."
+    },
+    "Login": {
+      "metaTitle": "Connexion — Polypips",
+      "metaDescription": "Connectez-vous à votre compte Polypips.",
+      "cardTitle": "Connexion à votre compte",
+      "cardSubtitle": "Accédez à vos analyses IA, Smart Money et paris sélectionnés.",
+      "emailLabel": "Adresse e-mail",
+      "emailPlaceholder": "vous@email.com",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "••••••••••••",
+      "rememberMe": "Se souvenir de moi",
+      "forgotPassword": "Mot de passe oublié ?",
+      "submit": "Se connecter →",
+      "noAccount": "Pas encore de compte ?",
+      "createAccount": "Créer un compte",
+      "invalidCredentials": "Email ou mot de passe incorrect.",
+      "termsPrefix": "En continuant, vous acceptez les",
+      "termsAnd": "et la",
+      "termsSuffix": "."
+    },
+    "ForgotPassword": {
+      "metaTitle": "Mot de passe oublié — Polypips",
+      "metaDescription": "Réinitialisez le mot de passe de votre compte Polypips.",
+      "titleIdle": "Mot de passe oublié ?",
+      "titleSuccess": "Email envoyé !",
+      "descriptionIdle": "Pas de souci. Entrez votre adresse e-mail, on vous envoie un lien pour réinitialiser votre mot de passe.",
+      "descriptionSuccess": "Vérifiez votre boîte de réception (et vos spams) pour réinitialiser votre mot de passe.",
+      "emailLabel": "Adresse e-mail",
+      "emailPlaceholder": "vous@email.com",
+      "submit": "Envoyer le lien de réinitialisation →",
+      "backToLogin": "Retour à la connexion",
+      "otherIssues": "Vous avez d'autres problèmes ?",
+      "contactSupport": "Contactez notre support",
+      "invalidEmail": "Adresse email invalide.",
+      "rateLimited": "Trop de tentatives. Merci de réessayer dans quelques minutes."
+    },
+    "SignupBenefits": {
+      "precision": {
+        "title": "Analyses ultra-précises",
+        "description": "Une IA qui décortique chaque marché en profondeur pour un signal fiable."
+      },
+      "time": {
+        "title": "Gagnez du temps",
+        "description": "Fini les heures de recherche : une décision claire, expliquée."
+      },
+      "secure": {
+        "title": "100% sécurisé",
+        "description": "Vos données et vos accès sont protégés à chaque étape."
+      },
+      "support": {
+        "title": "Support dédié",
+        "description": "Une équipe disponible pour vous accompagner à tout moment."
+      }
+    },
+    "LoginTrustRow": {
+      "secure": { "label": "Sécurisé", "sublabel": "Données protégées" },
+      "instant": { "label": "Accès instantané", "sublabel": "En quelques secondes" },
+      "analyses": { "label": "Analyses avancées", "sublabel": "IA & Smart Money" },
+      "support": { "label": "Support réactif", "sublabel": "7j/7" }
+    },
+    "TrustStrip": {
+      "noCard": "Aucune carte requise",
+      "cancelAnytime": "Annulation à tout moment",
+      "instant": "Accès instantané"
+    },
+    "LaunchOfferCard": {
+      "badge": "Offre de lancement",
+      "duration": "pendant 3 jours",
+      "afterOffer": "Puis 29,99 € / mois pendant 30 jours"
+    },
+    "PasswordStrength": {
+      "veryWeak": "très faible",
+      "weak": "faible",
+      "medium": "moyen",
+      "strong": "fort",
+      "veryStrong": "très fort"
+    }
+  }
+}

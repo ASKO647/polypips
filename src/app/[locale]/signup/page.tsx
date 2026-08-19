@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "Créez votre compte Polypips et prenez l'avantage sur le marché.",
 };
 
-export default async function SignupPage(props: PageProps<"/signup">) {
+export default async function SignupPage(props: PageProps<"/[locale]/signup">) {
   const supabase = await createClient();
   const {
     data: { user },

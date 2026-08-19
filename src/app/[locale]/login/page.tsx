@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   description: "Connectez-vous à votre compte Polypips.",
 };
 
-export default async function LoginPage(props: PageProps<"/login">) {
+export default async function LoginPage(props: PageProps<"/[locale]/login">) {
   const supabase = await createClient();
   const {
     data: { user },

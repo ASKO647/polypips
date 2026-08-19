@@ -47,7 +47,8 @@ async function upsertSubscription(
   supabase: SupabaseClient,
   userId: string,
   customerId: string,
-  subscription: Stripe.Subscription
+  subscription: Stripe.Subscription,
+  justConverted = false
 ) {
   const status = mapStatus(subscription.status);
   if (!status) return;
@@ -62,6 +63,12 @@ async function upsertSubscription(
       current_period_end: periodEndIso(subscription),
       cancel_at_period_end: subscription.cancel_at_period_end,
       updated_at: new Date().toISOString(),
+      // Omitted (not overwritten) on every non-conversion update, same as
+      // created_at above it — only the exact event that flips a Découverte
+      // trial into a real Pro charge should ever set these.
+      ...(justConverted
+        ? { converted_from_trial: true, converted_at: new Date().toISOString() }
+        : {}),
     },
     { onConflict: "user_id" }
   );
@@ -119,7 +126,8 @@ async function handleSubscriptionUpdated(
   let effective = subscription;
   const justConvertedFromTrial =
     previousStatus === "trialing" && subscription.status === "active";
-  if (justConvertedFromTrial && subscription.metadata?.plan === "decouverte") {
+  const isConversion = justConvertedFromTrial && subscription.metadata?.plan === "decouverte";
+  if (isConversion) {
     // The 3-day discovery trial just converted to a full-price charge on
     // the exact same Pro price — from here on it IS the Pro plan, so
     // persist that transition on the Stripe object itself rather than
@@ -129,7 +137,7 @@ async function handleSubscriptionUpdated(
     });
   }
 
-  await upsertSubscription(supabase, userId, customerId, effective);
+  await upsertSubscription(supabase, userId, customerId, effective, isConversion);
 }
 
 async function handleSubscriptionDeleted(

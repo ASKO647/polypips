@@ -16,7 +16,7 @@ import {
 
 export async function generateMetadata({
   params,
-}: PageProps<"/dashboard/community/[groupId]">): Promise<Metadata> {
+}: PageProps<"/[locale]/dashboard/community/[groupId]">): Promise<Metadata> {
   const { groupId } = await params;
   const supabase = await createClient();
   const group = await fetchGroupById(supabase, groupId);
@@ -25,7 +25,7 @@ export async function generateMetadata({
 
 export default async function GroupDetailPage({
   params,
-}: PageProps<"/dashboard/community/[groupId]">) {
+}: PageProps<"/[locale]/dashboard/community/[groupId]">) {
   const { groupId } = await params;
   const supabase = await createClient();
   const user = await getAuthUser();
