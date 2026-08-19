@@ -89,7 +89,15 @@ export async function fetchSmartMoneyData(
     .order("total_value", { ascending: false })
     .limit(60);
 
-  if (error || !walletRows) return { wallets: [], followedWalletIds: new Set() };
+  if (error || !walletRows) {
+    // Never swallow this silently — an empty return here is
+    // indistinguishable from "genuinely zero tracked wallets" in the UI,
+    // which is exactly what made a real query failure (e.g. a column this
+    // select references missing on the live schema) look like an honest
+    // empty state instead of a bug.
+    if (error) console.error("[smart-money] fetchSmartMoneyData: tracked_wallets query failed", error);
+    return { wallets: [], followedWalletIds: new Set() };
+  }
 
   const walletIds = (walletRows as TrackedWalletRow[]).map((w) => w.id);
 
