@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Inter } from "next/font/google";
 import { requireOwnerUser } from "@/lib/supabase/owner";
 import { logOwnerEvent } from "@/lib/supabase/owner-audit";
 import { getAuthUser } from "@/lib/supabase/server";
+import "../globals.css";
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
 
 /** noindex/nofollow at the root of the whole console — there's no
  * sitemap.ts in this app to exclude it from either, so this metadata is
@@ -22,6 +30,12 @@ export const metadata: Metadata = {
  * rather than a 403 or a login redirect — a normal user, or an anonymous
  * visitor, hitting this URL should see nothing that confirms the route
  * even means anything.
+ *
+ * This segment sits outside [locale] (the owner console isn't translated),
+ * so with no src/app/layout.tsx it's its own root layout, not a child of
+ * [locale]/layout.tsx — it doesn't inherit that layout's <html>/<body> or
+ * its globals.css import. It must define both itself, or every owner page
+ * renders as unstyled markup despite Tailwind having generated the CSS.
  */
 export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthUser();
@@ -43,5 +57,9 @@ export default async function OwnerLayout({ children }: { children: React.ReactN
     notFound();
   }
 
-  return <>{children}</>;
+  return (
+    <html lang="fr" className={`${inter.variable} h-full antialiased`}>
+      <body className="min-h-full bg-[#0b0d10] text-slate-100">{children}</body>
+    </html>
+  );
 }
