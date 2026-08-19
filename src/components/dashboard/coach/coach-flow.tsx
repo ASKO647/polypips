@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { History as HistoryIcon, Loader2, X } from "lucide-react";
 import { ChatInput } from "@/components/dashboard/coach/chat-input";
 import { ChatMessage } from "@/components/dashboard/coach/chat-message";

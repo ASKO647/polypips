@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
-import Link from "next/link";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { getPasswordStrength } from "@/lib/password-strength";
@@ -33,6 +33,7 @@ export function SignupForm({
   plan?: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const next = plan && isPlanId(plan) ? `/dashboard?checkout=${plan}` : undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,8 +63,8 @@ export function SignupForm({
         password,
         options: {
           emailRedirectTo: next
-            ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
-            : `${window.location.origin}/auth/callback`,
+            ? `${window.location.origin}/auth/callback?locale=${locale}&next=${encodeURIComponent(next)}`
+            : `${window.location.origin}/auth/callback?locale=${locale}`,
         },
       });
 

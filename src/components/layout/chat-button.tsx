@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 

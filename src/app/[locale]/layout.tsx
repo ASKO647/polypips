@@ -38,9 +38,7 @@ export default async function LocaleLayout({
   params,
 }: LayoutProps<"/[locale]">) {
   const { locale } = await params;
-  console.error("[DIAG] [locale]/layout.tsx REACHED, locale param =", JSON.stringify(locale));
   if (!hasLocale(routing.locales, locale)) {
-    console.error("[DIAG] [locale]/layout.tsx invalid locale -> notFound()");
     notFound();
   }
   // Renders per-request on the server (never cached across locales) — see

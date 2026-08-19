@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { SidebarNavContent } from "@/components/dashboard/sidebar-nav-content";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
 import { AuthHeader } from "@/components/layout/auth-header";
 import { MinimalFooter } from "@/components/layout/minimal-footer";
 import { TrustStrip } from "@/components/ui/trust-strip";
@@ -17,13 +17,14 @@ export const metadata: Metadata = {
 };
 
 export default async function SignupPage(props: PageProps<"/[locale]/signup">) {
+  const { locale } = await props.params;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect("/dashboard");
+    redirect({ href: "/dashboard", locale });
   }
 
   const { error, plan } = await props.searchParams;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { AnalysisInput } from "@/components/dashboard/analyse-ia/analysis-input";
 import { AnalysisLoading } from "@/components/dashboard/analyse-ia/analysis-loading";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";

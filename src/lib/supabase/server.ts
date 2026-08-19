@@ -47,17 +47,9 @@ export const createClient = cache(async () => {
  * keeps that security property while only paying its network cost once per
  * request. */
 export const getAuthUser = cache(async () => {
-  const cookieStore = await cookies();
-  const sbCookieNames = cookieStore.getAll().map((c) => c.name).filter((n) => n.startsWith("sb-"));
-  console.error("[DIAG] getAuthUser: sb-* cookies present =", JSON.stringify(sbCookieNames));
-
   const supabase = await createClient();
   const {
     data: { user },
-    error,
   } = await supabase.auth.getUser();
-  if (error) {
-    console.error("[DIAG] getAuthUser: supabase.auth.getUser() error =", error.message, "| status =", error.status);
-  }
   return user;
 });

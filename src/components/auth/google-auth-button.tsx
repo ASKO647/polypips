@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { createClient } from "@/lib/supabase/client";
@@ -27,6 +28,7 @@ export function GoogleAuthButton({
   next?: string;
 }) {
   const [loading, setLoading] = useState(false);
+  const locale = useLocale();
 
   const handleClick = async () => {
     onError(null);
@@ -36,6 +38,7 @@ export function GoogleAuthButton({
       const supabase = createClient();
       const callbackParams = new URLSearchParams({
         error_redirect: errorRedirectPath,
+        locale,
       });
       if (next) callbackParams.set("next", next);
 

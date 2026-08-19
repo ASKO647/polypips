@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Sparkles, Wallet } from "lucide-react";
 import { PLAN_ICONS } from "@/components/dashboard/account-status-card";
 import { StatusBadge } from "@/components/dashboard/settings/status-badge";

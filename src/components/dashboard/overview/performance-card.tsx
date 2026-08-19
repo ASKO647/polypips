@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { TrendingUp } from "lucide-react";
 import type { PerformanceStats } from "@/lib/supabase/performance";
 import { cn, formatSignedEUR } from "@/lib/utils";

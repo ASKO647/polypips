@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { HelpCircle, Users } from "lucide-react";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";

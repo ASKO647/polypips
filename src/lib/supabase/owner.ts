@@ -24,19 +24,6 @@ export function isOwnerUserId(userId: string | null | undefined): boolean {
  * JWT against Supabase, not a trusted cookie). */
 export async function requireOwnerUser(): Promise<User | null> {
   const user = await getAuthUser();
-  const owner = ownerUserId();
-  console.error(
-    "[DIAG] requireOwnerUser: OWNER_USER_ID defined =",
-    owner !== null,
-    "| user present =",
-    !!user,
-    "| user.id === OWNER_USER_ID =",
-    !!user && !!owner && user.id === owner,
-    "| user.id length =",
-    user?.id?.length ?? 0,
-    "| OWNER_USER_ID length =",
-    owner?.length ?? 0
-  );
   if (!user || !isOwnerUserId(user.id)) return null;
   return user;
 }

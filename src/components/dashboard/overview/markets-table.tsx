@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Sparkles } from "lucide-react";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";

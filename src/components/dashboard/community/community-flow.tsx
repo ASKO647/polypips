@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useRouter } from "@/i18n/navigation";
 import { Plus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
