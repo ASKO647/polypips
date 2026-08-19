@@ -6,11 +6,9 @@ import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 export function DashboardSidebar({
   userEmail,
   subscription,
-  analysesToday,
 }: {
   userEmail: string;
   subscription: SubscriptionRow | null;
-  analysesToday: number;
 }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col overflow-y-auto border-r border-white/10 bg-[#160b0c] lg:flex">
@@ -31,11 +29,7 @@ export function DashboardSidebar({
         </span>
       </Link>
 
-      <SidebarNavContent
-        userEmail={userEmail}
-        subscription={subscription}
-        analysesToday={analysesToday}
-      />
+      <SidebarNavContent userEmail={userEmail} subscription={subscription} />
     </aside>
   );
 }

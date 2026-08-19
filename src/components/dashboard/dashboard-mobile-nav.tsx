@@ -9,13 +9,11 @@ export function DashboardMobileNav({
   onClose,
   userEmail,
   subscription,
-  analysesToday,
 }: {
   open: boolean;
   onClose: () => void;
   userEmail: string;
   subscription: SubscriptionRow | null;
-  analysesToday: number;
 }) {
   if (!open) return null;
 
@@ -43,7 +41,6 @@ export function DashboardMobileNav({
           userEmail={userEmail}
           onNavigate={onClose}
           subscription={subscription}
-          analysesToday={analysesToday}
         />
       </div>
     </div>

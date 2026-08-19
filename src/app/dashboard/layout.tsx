@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
-import { countAnalysesToday } from "@/lib/supabase/analyses";
 import { fetchSubscription, getTrialEndsAt } from "@/lib/supabase/subscriptions";
 import { fetchNotifications } from "@/lib/supabase/notifications";
 
@@ -15,9 +14,8 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const [subscription, analysesToday, notifications] = await Promise.all([
+  const [subscription, notifications] = await Promise.all([
     fetchSubscription(supabase),
-    countAnalysesToday(supabase, user.id),
     fetchNotifications(supabase),
   ]);
 
@@ -26,7 +24,6 @@ export default async function DashboardLayout({
       userEmail={user.email ?? ""}
       subscription={subscription}
       trialEndsAt={getTrialEndsAt(subscription)}
-      analysesToday={analysesToday}
       notifications={notifications}
     >
       {children}

@@ -11,14 +11,12 @@ export function DashboardShell({
   userEmail,
   subscription,
   trialEndsAt,
-  analysesToday,
   notifications,
   children,
 }: {
   userEmail: string;
   subscription: SubscriptionRow | null;
   trialEndsAt: string | null;
-  analysesToday: number;
   notifications: NotificationItem[];
   children: React.ReactNode;
 }) {
@@ -26,11 +24,7 @@ export function DashboardShell({
 
   return (
     <div className="flex min-h-screen bg-[#160b0c]">
-      <DashboardSidebar
-        userEmail={userEmail}
-        subscription={subscription}
-        analysesToday={analysesToday}
-      />
+      <DashboardSidebar userEmail={userEmail} subscription={subscription} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
@@ -49,7 +43,6 @@ export function DashboardShell({
         onClose={() => setMobileMenuOpen(false)}
         userEmail={userEmail}
         subscription={subscription}
-        analysesToday={analysesToday}
       />
     </div>
   );
