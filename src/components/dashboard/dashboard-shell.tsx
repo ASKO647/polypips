@@ -10,12 +10,14 @@ import type { NotificationItem } from "@/lib/data/notifications";
 export function DashboardShell({
   userEmail,
   subscription,
+  trialEndsAt,
   analysesToday,
   notifications,
   children,
 }: {
   userEmail: string;
   subscription: SubscriptionRow | null;
+  trialEndsAt: string | null;
   analysesToday: number;
   notifications: NotificationItem[];
   children: React.ReactNode;
@@ -37,6 +39,7 @@ export function DashboardShell({
           notifications={notifications}
           subscription={subscription}
           cancelled={isCancelledSubscription(subscription)}
+          trialEndsAt={trialEndsAt}
         />
         <main className="flex-1 px-5 py-6 lg:px-8 lg:py-8">{children}</main>
       </div>

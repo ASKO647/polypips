@@ -4,7 +4,6 @@ import { useState } from "react";
 import { GraduationCap, Sparkles, Wallet } from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
-import { TrialBanner } from "@/components/dashboard/overview/trial-banner";
 import { QuickAccessCard } from "@/components/dashboard/overview/quick-access-card";
 import { SubscriptionQuickCard } from "@/components/dashboard/overview/subscription-quick-card";
 import { MarketsTable } from "@/components/dashboard/overview/markets-table";
@@ -14,7 +13,6 @@ import {
   type ActivityPeriodCounts,
   type ActivityPeriodKey,
 } from "@/components/dashboard/overview/activity-donut";
-import { UpgradeToProCard } from "@/components/dashboard/overview/upgrade-to-pro-card";
 import { PerformanceCard } from "@/components/dashboard/overview/performance-card";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { NotificationItem } from "@/lib/data/notifications";
@@ -26,7 +24,6 @@ export function DashboardOverviewFlow({
   firstName,
   hasActiveSubscription,
   cancelled,
-  trialEndsAt,
   subscription,
   plan,
   analysesToday,
@@ -49,10 +46,6 @@ export function DashboardOverviewFlow({
   /** True when access is blocked because the user cancelled — swaps the
    * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
   cancelled: boolean;
-  /** ISO end-of-trial date, only while genuinely still trialing (not
-   * cancelled) — TrialBanner recomputes the days-remaining count itself
-   * client-side so it keeps ticking down without a page reload. */
-  trialEndsAt: string | null;
   subscription: SubscriptionRow | null;
   plan: PricingPlan;
   analysesToday: number;
@@ -88,37 +81,22 @@ export function DashboardOverviewFlow({
     );
   }
 
-  const isPro =
-    hasActiveSubscription && subscription?.plan === "pro" && !cancelled;
+  const lockedMessage = cancelled
+    ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le tableau de bord."
+    : "Débloquez le tableau de bord complet — Débutez pour 0,99 €";
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            {firstName ? `Bonjour, ${firstName} 👋` : "Bonjour 👋"}
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-            Vue d&apos;ensemble de votre activité et de vos accès rapides.
-          </p>
-        </div>
-
-        {trialEndsAt !== null && !cancelled && (
-          <div className="lg:max-w-xl lg:flex-1">
-            <TrialBanner trialEndsAt={trialEndsAt} />
-          </div>
-        )}
+      <div>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          {firstName ? `Bonjour, ${firstName} 👋` : "Bonjour 👋"}
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
+          Vue d&apos;ensemble de votre activité et de vos accès rapides.
+        </p>
       </div>
 
-      <LockedOverlay
-        locked={!hasActiveSubscription}
-        cancelled={cancelled}
-        message={
-          cancelled
-            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le tableau de bord."
-            : "Débloquez le tableau de bord complet — Débutez pour 0,99 €"
-        }
-      >
+      <LockedOverlay locked={!hasActiveSubscription} cancelled={cancelled} message={lockedMessage}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <QuickAccessCard
             href="/dashboard/analyse-ia"
@@ -154,29 +132,35 @@ export function DashboardOverviewFlow({
           />
           <SubscriptionQuickCard subscription={subscription} plan={plan} />
         </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-start">
-          <div className="lg:col-span-2">
-            <MarketsTable markets={recentMarkets} onSelect={setSelectedMarket} />
-          </div>
-          <div className="flex flex-col gap-4">
-            <ActivityDonut periods={activityPeriods} />
-            {!isPro && <UpgradeToProCard />}
-            <PerformanceCard stats={performanceStats} />
-          </div>
-        </div>
       </LockedOverlay>
 
-      {/* Deliberately outside LockedOverlay — notifications stay visible
-       * even without an active subscription (see the "Fix subscription
-       * gating gaps" audit, which gated everything else here but left this
-       * alone). lg:items-start above keeps the locked grid's left column
-       * from stretching to the taller right column, so this sits flush
-       * under MarketsTable instead of leaving a gap. */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      {/* Left and right are independent flex-col stacks, not cells of a
+       * single CSS Grid row — a shared row's auto-height always equals its
+       * tallest cell, which previously left dead space below whichever
+       * column (MarketsTable vs. the right stack) happened to be shorter,
+       * before RecentActivitySection appeared. Each column now grows to
+       * its own real content height. MarketsTable and the right column
+       * each get their own LockedOverlay (instead of one overlay spanning
+       * the whole left column) so RecentActivitySection — deliberately
+       * ungated, see the "Fix subscription gating gaps" audit — can sit
+       * right below MarketsTable without also being blurred. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-start">
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <LockedOverlay locked={!hasActiveSubscription} cancelled={cancelled} message={lockedMessage}>
+            <MarketsTable markets={recentMarkets} onSelect={setSelectedMarket} />
+          </LockedOverlay>
           <RecentActivitySection notifications={notifications} />
         </div>
+
+        <LockedOverlay
+          locked={!hasActiveSubscription}
+          cancelled={cancelled}
+          message={lockedMessage}
+          contentClassName="flex flex-col gap-4"
+        >
+          <ActivityDonut periods={activityPeriods} />
+          <PerformanceCard stats={performanceStats} />
+        </LockedOverlay>
       </div>
     </div>
   );

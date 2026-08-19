@@ -135,10 +135,10 @@ export function getTrialDaysRemaining(
   return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
 }
 
-/** Raw ISO trial-end date, for callers (TrialBanner) that recompute the
- * days-remaining count themselves on the client so the display keeps
- * ticking down without needing a page reload every 24h. Same "trialing
- * only" condition as getTrialDaysRemaining. */
+/** Raw ISO trial-end date, for callers (DashboardHeader's plan pill) that
+ * recompute the days-remaining count themselves on the client so the
+ * display keeps ticking down without needing a page reload every 24h. Same
+ * "trialing only" condition as getTrialDaysRemaining. */
 export function getTrialEndsAt(subscription: SubscriptionRow | null): string | null {
   if (subscription?.status !== "trialing" || !subscription.currentPeriodEnd) {
     return null;

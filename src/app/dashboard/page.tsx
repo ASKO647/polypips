@@ -6,7 +6,6 @@ import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   fetchSubscription,
   getEffectivePlan,
-  getTrialEndsAt,
   hasActiveAccess,
   isCancelledSubscription,
 } from "@/lib/supabase/subscriptions";
@@ -124,7 +123,6 @@ export default async function DashboardPage() {
         firstName={getFirstNameFromUser(user)}
         hasActiveSubscription={hasActiveAccess(subscription)}
         cancelled={isCancelledSubscription(subscription)}
-        trialEndsAt={getTrialEndsAt(subscription)}
         subscription={subscription}
         plan={plan}
         analysesToday={analysesToday}
