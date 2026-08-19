@@ -9,8 +9,8 @@ import { DASHBOARD_NAV_ITEMS, DASHBOARD_RESOURCE_ITEMS } from "@/lib/data/dashbo
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
-/** Longest-prefix match so a sub-route like /dashboard/community/abc123
- * still resolves to "Communauté" rather than falling through to null. */
+/** Longest-prefix match so a sub-route like /dashboard/markets/abc123
+ * still resolves to "Marchés sélectionnés" rather than falling through to null. */
 function pageTitleFor(pathname: string): string | null {
   const items = [...DASHBOARD_NAV_ITEMS, ...DASHBOARD_RESOURCE_ITEMS];
   const match = items
