@@ -3,24 +3,33 @@
 import { useMemo, useState } from "react";
 import { Clock } from "lucide-react";
 import { useCountdown } from "@/lib/hooks/use-countdown";
-import { SYNC_SMART_MONEY_INTERVAL_MINUTES } from "@/lib/data/smart-money";
 
 function pad(n: number): string {
   return n.toString().padStart(2, "0");
 }
 
 /**
- * Live-ticking "next refresh" indicator for the Smart Money page. The
- * deadline is derived client-side from the most recent lastSyncedAt across
- * all tracked wallets (passed down from the server) plus the assumed cron
- * interval — there's no push channel telling the browser when the next run
- * actually lands, so once the countdown hits zero it just reads "imminente"
- * until the next full page load picks up a fresher lastSyncedAt.
+ * Live-ticking "next refresh" indicator, shared by every dashboard page
+ * backed by a periodic Edge Function scan (Smart Money's sync-smart-money,
+ * Markets' scan-markets, ...). The deadline is derived client-side from the
+ * most recent real sync timestamp (passed down from the server) plus the
+ * caller's own assumed cron interval — there's no push channel telling the
+ * browser when the next run actually lands, so once the countdown hits zero
+ * it just reads "imminente" until the next full page load picks up a
+ * fresher lastSyncedAt.
  */
-export function SmartMoneySyncCountdown({
+export function SyncCountdown({
   lastSyncedAt,
+  intervalMinutes,
+  label = "Prochains marchés dans",
 }: {
   lastSyncedAt: string | null;
+  /** How often the backing cron actually runs, in minutes — kept in sync
+   * by hand with whatever schedule is configured for the Edge Function
+   * (see each caller's own constant for the current value + why it can't
+   * be read back from the database). */
+  intervalMinutes: number;
+  label?: string;
 }) {
   // Lazy initializer so the "never synced yet" fallback reads Date.now()
   // exactly once (on mount), not on every render.
@@ -31,8 +40,8 @@ export function SmartMoneySyncCountdown({
   // infinite loop, not just a wasted allocation.
   const deadline = useMemo(() => {
     const baseTime = lastSyncedAt ? new Date(lastSyncedAt).getTime() : fallbackNow;
-    return new Date(baseTime + SYNC_SMART_MONEY_INTERVAL_MINUTES * 60_000);
-  }, [lastSyncedAt, fallbackNow]);
+    return new Date(baseTime + intervalMinutes * 60_000);
+  }, [lastSyncedAt, fallbackNow, intervalMinutes]);
   const { hours, minutes, seconds } = useCountdown(deadline);
 
   const isImminent = hours === 0 && minutes === 0 && seconds === 0;
@@ -44,7 +53,7 @@ export function SmartMoneySyncCountdown({
         <span>Actualisation imminente…</span>
       ) : (
         <span className="tabular-nums">
-          Prochains marchés dans : {hours > 0 ? `${pad(hours)}:` : ""}
+          {label} : {hours > 0 ? `${pad(hours)}:` : ""}
           {pad(minutes)}:{pad(seconds)}
         </span>
       )}

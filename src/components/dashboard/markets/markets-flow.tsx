@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
 import { MarketCard } from "@/components/dashboard/markets/market-card";
+import { SyncCountdown } from "@/components/dashboard/sync-countdown";
 import type { MarketAnalysis } from "@/lib/data/analysis";
+import { SYNC_MARKETS_INTERVAL_MINUTES } from "@/lib/data/markets";
 import { cn } from "@/lib/utils";
 
 type SortKey = "opportunityScore" | "edge" | "aiProbability";
@@ -20,9 +22,11 @@ const ALL_CATEGORIES = "Tous";
 export function MarketsFlow({
   markets: allMarkets,
   hasActiveSubscription,
+  lastSyncedAt,
 }: {
   markets: MarketAnalysis[];
   hasActiveSubscription: boolean;
+  lastSyncedAt: string | null;
 }) {
   const [selected, setSelected] = useState<MarketAnalysis | null>(null);
   const [category, setCategory] = useState<string>(ALL_CATEGORIES);
@@ -62,13 +66,19 @@ export function MarketsFlow({
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Marchés sélectionnés par l&apos;IA
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          Les opportunités identifiées par notre système aujourd&apos;hui.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Marchés sélectionnés par l&apos;IA
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
+            Les opportunités identifiées par notre système aujourd&apos;hui.
+          </p>
+        </div>
+        <SyncCountdown
+          lastSyncedAt={lastSyncedAt}
+          intervalMinutes={SYNC_MARKETS_INTERVAL_MINUTES}
+        />
       </div>
 
       {allMarkets.length === 0 ? (

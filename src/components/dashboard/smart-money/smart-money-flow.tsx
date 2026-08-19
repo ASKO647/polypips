@@ -6,8 +6,8 @@ import { AddWalletForm } from "@/components/dashboard/smart-money/add-wallet-for
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { WalletCard } from "@/components/dashboard/smart-money/wallet-card";
 import { WalletDetail } from "@/components/dashboard/smart-money/wallet-detail";
-import { SmartMoneySyncCountdown } from "@/components/dashboard/smart-money/sync-countdown";
-import type { Wallet } from "@/lib/data/smart-money";
+import { SyncCountdown } from "@/components/dashboard/sync-countdown";
+import { SYNC_SMART_MONEY_INTERVAL_MINUTES, type Wallet } from "@/lib/data/smart-money";
 import { cn, formatResetDate } from "@/lib/utils";
 
 type SortKey = "totalValue" | "changePercent" | "activePositionsCount";
@@ -179,7 +179,10 @@ export function SmartMoneyFlow({
             on-chain.
           </p>
         </div>
-        <SmartMoneySyncCountdown lastSyncedAt={lastSyncedAt} />
+        <SyncCountdown
+          lastSyncedAt={lastSyncedAt}
+          intervalMinutes={SYNC_SMART_MONEY_INTERVAL_MINUTES}
+        />
       </div>
 
       <LockedOverlay

@@ -64,3 +64,18 @@ export async function countSelectedMarkets(supabase: SupabaseClient): Promise<nu
     .select("id", { count: "exact", head: true });
   return count ?? 0;
 }
+
+/** Raw ISO timestamp of the most recent scan-markets write, for the
+ * "Prochains marchés dans" countdown — null until the very first scan has
+ * ever run. Shared across all users, same as fetchSelectedMarkets. */
+export async function fetchLastMarketsSyncedAt(
+  supabase: SupabaseClient
+): Promise<string | null> {
+  const { data } = await supabase
+    .from("selected_markets")
+    .select("scanned_at")
+    .order("scanned_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data?.scanned_at ?? null;
+}
