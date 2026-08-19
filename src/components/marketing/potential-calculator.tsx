@@ -1,39 +1,94 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { cn, formatEUR, formatSignedEUR } from "@/lib/utils";
 
-const STAKE_MIN = 10;
-const STAKE_MAX = 500;
-const STAKE_STEP = 5;
-const STAKE_DEFAULT = 50;
-const STAKE_TICKS = ["10 €", "25 €", "50 €", "100 €", "250 €", "500 € et plus"];
+/**
+ * The tick labels under each slider ("10 € — 25 € — 50 € — 100 € — 250 € —
+ * 500 €") are rendered evenly spaced (`justify-between`), but those values
+ * themselves are NOT evenly spaced numerically (25→50 is a 25-wide gap,
+ * 250→500 is a 250-wide gap). A plain linear `<input type="range" min max>`
+ * has no notion of that — it places the thumb at (value-min)/(max-min), so
+ * the default value 50 landed near the far-left edge instead of under its
+ * own "50 €" label. RESOLUTION_PER_SEGMENT below builds a lookup table that
+ * treats each tick-to-tick gap as an equal-width segment of the track
+ * (matching the visual `justify-between` layout exactly), so the native
+ * range input's index-based value always lines up with the label it's
+ * nearest to, at every position along the track — not just at the default.
+ */
+const RESOLUTION_PER_SEGMENT = 20;
 
-const OPPORTUNITIES_MIN = 10;
-const OPPORTUNITIES_MAX = 500;
-const OPPORTUNITIES_STEP = 5;
+function buildScale(tickValues: number[], roundTo: number): number[] {
+  const segments = tickValues.length - 1;
+  const scale: number[] = [];
+  for (let i = 0; i < segments; i++) {
+    const start = tickValues[i];
+    const end = tickValues[i + 1];
+    for (let s = 0; s < RESOLUTION_PER_SEGMENT; s++) {
+      const fraction = s / RESOLUTION_PER_SEGMENT;
+      const raw = start + fraction * (end - start);
+      scale.push(Math.round(raw / roundTo) * roundTo);
+    }
+  }
+  scale.push(tickValues[segments]);
+  // Rounding each point independently can't actually produce a decrease
+  // given tickValues is itself non-decreasing, but guard it explicitly
+  // anyway so the slider can never visually move backwards as it's dragged
+  // forward.
+  for (let i = 1; i < scale.length; i++) {
+    if (scale[i] < scale[i - 1]) scale[i] = scale[i - 1];
+  }
+  return scale;
+}
+
+/**
+ * Analytically inverts buildScale's segment/fraction math for a known
+ * target value, instead of scanning the (rounded) scale array for the
+ * first entry that happens to display the same number — scanning can land
+ * a few indices before the value's true position, since RESOLUTION_PER_SEGMENT
+ * combined with rounding to the nearest STAKE_ROUND_TO/OPPORTUNITIES_ROUND_TO
+ * means several consecutive raw positions can round to an identical
+ * displayed number. This is what makes the default values line up exactly
+ * under their tick label instead of merely "close enough".
+ */
+function indexForValue(tickValues: number[], value: number): number {
+  const segments = tickValues.length - 1;
+  for (let i = 0; i < segments; i++) {
+    const start = tickValues[i];
+    const end = tickValues[i + 1];
+    if (value <= end || i === segments - 1) {
+      const fraction = (value - start) / (end - start);
+      return Math.round((i + fraction) * RESOLUTION_PER_SEGMENT);
+    }
+  }
+  return segments * RESOLUTION_PER_SEGMENT;
+}
+
+const STAKE_TICK_VALUES = [10, 25, 50, 100, 250, 500];
+const STAKE_TICK_LABELS = ["10 €", "25 €", "50 €", "100 €", "250 €", "500 € et plus"];
+const STAKE_ROUND_TO = 5;
+const STAKE_DEFAULT = 50;
+
+const OPPORTUNITIES_TICK_VALUES = [10, 25, 50, 100, 200, 500];
+const OPPORTUNITIES_TICK_LABELS = ["10", "25", "50", "100", "200", "Plus de 500"];
+const OPPORTUNITIES_ROUND_TO = 5;
 const OPPORTUNITIES_DEFAULT = 80;
-const OPPORTUNITIES_TICKS = ["10", "25", "50", "100", "200", "Plus de 500"];
 
 function AmountSlider({
   label,
-  value,
-  onChange,
-  min,
-  max,
-  step,
+  scale,
+  index,
+  onIndexChange,
   ticks,
   valueLabel,
 }: {
   label: string;
-  value: number;
-  onChange: (value: number) => void;
-  min: number;
-  max: number;
-  step: number;
+  scale: number[];
+  index: number;
+  onIndexChange: (index: number) => void;
   ticks: string[];
   valueLabel: string;
 }) {
@@ -47,12 +102,13 @@ function AmountSlider({
       </div>
       <input
         type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        min={0}
+        max={scale.length - 1}
+        step={1}
+        value={index}
+        onChange={(e) => onIndexChange(Number(e.target.value))}
         aria-label={label}
+        aria-valuetext={valueLabel}
         className="mt-4 h-2 w-full cursor-pointer accent-brand-500"
       />
       <div className="mt-2 flex justify-between text-[11px] font-medium text-body-soft sm:text-xs">
@@ -65,8 +121,24 @@ function AmountSlider({
 }
 
 export function PotentialCalculator() {
-  const [stake, setStake] = useState(STAKE_DEFAULT);
-  const [opportunities, setOpportunities] = useState(OPPORTUNITIES_DEFAULT);
+  const stakeScale = useMemo(
+    () => buildScale(STAKE_TICK_VALUES, STAKE_ROUND_TO),
+    []
+  );
+  const opportunitiesScale = useMemo(
+    () => buildScale(OPPORTUNITIES_TICK_VALUES, OPPORTUNITIES_ROUND_TO),
+    []
+  );
+
+  const [stakeIndex, setStakeIndex] = useState(() =>
+    indexForValue(STAKE_TICK_VALUES, STAKE_DEFAULT)
+  );
+  const [opportunitiesIndex, setOpportunitiesIndex] = useState(() =>
+    indexForValue(OPPORTUNITIES_TICK_VALUES, OPPORTUNITIES_DEFAULT)
+  );
+
+  const stake = stakeScale[stakeIndex];
+  const opportunities = opportunitiesScale[opportunitiesIndex];
   const potential = stake * opportunities;
 
   // Brief pulse on the result whenever it changes — the only "animation" on
@@ -97,22 +169,18 @@ export function PotentialCalculator() {
           <div className="flex flex-col gap-8">
             <AmountSlider
               label="Mise moyenne par opportunité"
-              value={stake}
-              onChange={setStake}
-              min={STAKE_MIN}
-              max={STAKE_MAX}
-              step={STAKE_STEP}
-              ticks={STAKE_TICKS}
+              scale={stakeScale}
+              index={stakeIndex}
+              onIndexChange={setStakeIndex}
+              ticks={STAKE_TICK_LABELS}
               valueLabel={formatEUR(stake)}
             />
             <AmountSlider
               label="Opportunités analysées par mois"
-              value={opportunities}
-              onChange={setOpportunities}
-              min={OPPORTUNITIES_MIN}
-              max={OPPORTUNITIES_MAX}
-              step={OPPORTUNITIES_STEP}
-              ticks={OPPORTUNITIES_TICKS}
+              scale={opportunitiesScale}
+              index={opportunitiesIndex}
+              onIndexChange={setOpportunitiesIndex}
+              ticks={OPPORTUNITIES_TICK_LABELS}
               valueLabel={String(opportunities)}
             />
           </div>
