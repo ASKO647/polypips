@@ -26,6 +26,10 @@ import {
   countFollowedWallets,
   fetchWalletFollowTimestamps,
 } from "@/lib/supabase/wallets";
+import {
+  fetchResolvedAnalyses,
+  computePerformanceStats,
+} from "@/lib/supabase/performance";
 import { getDailyAnalysisLimit, getMaxTrackedWallets } from "@/lib/data/pricing";
 import { bucketCountsByDay, getFirstNameFromUser } from "@/lib/utils";
 import type { ActivityPeriodKey, ActivityPeriodCounts } from "@/components/dashboard/overview/activity-donut";
@@ -74,6 +78,7 @@ export default async function DashboardPage() {
     walletsFollowedTotal,
     coachMessageTimestamps,
     coachMessagesAllTime,
+    resolvedAnalyses,
   ] = await Promise.all([
     countAnalysesToday(supabase, user.id),
     fetchSelectedMarkets(supabase, 5),
@@ -85,6 +90,7 @@ export default async function DashboardPage() {
     countFollowedWallets(supabase, user.id),
     fetchCoachMessageTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
     countCoachMessagesAllTime(supabase, user.id),
+    fetchResolvedAnalyses(supabase, user.id),
   ]);
 
   const analysesSparkline = bucketCountsByDay(analysisTimestamps, SPARKLINE_DAYS);
@@ -132,6 +138,7 @@ export default async function DashboardPage() {
         smartMoneySparkline={smartMoneySparkline}
         coachSparkline={coachSparkline}
         activityPeriods={activityPeriods}
+        performanceStats={computePerformanceStats(resolvedAnalyses)}
       />
     </>
   );

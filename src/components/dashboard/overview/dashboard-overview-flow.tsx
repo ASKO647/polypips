@@ -20,6 +20,7 @@ import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
+import type { PerformanceStats } from "@/lib/supabase/performance";
 
 export function DashboardOverviewFlow({
   firstName,
@@ -39,6 +40,7 @@ export function DashboardOverviewFlow({
   smartMoneySparkline,
   coachSparkline,
   activityPeriods,
+  performanceStats,
 }: {
   /** Real first name from user_metadata (Google OAuth only) — null for
    * plain email/password accounts, which never collect a name. */
@@ -66,6 +68,10 @@ export function DashboardOverviewFlow({
   smartMoneySparkline: number[];
   coachSparkline: number[];
   activityPeriods: Record<ActivityPeriodKey, ActivityPeriodCounts>;
+  /** null (or resolvedCount === 0) until resolve-markets has confirmed at
+   * least one real market outcome for this user — PerformanceCard renders
+   * its honest empty state in that case. */
+  performanceStats: PerformanceStats | null;
 }) {
   const [selectedMarket, setSelectedMarket] = useState<MarketAnalysis | null>(
     null
@@ -156,7 +162,7 @@ export function DashboardOverviewFlow({
           <div className="flex flex-col gap-4">
             <ActivityDonut periods={activityPeriods} />
             {!isPro && <UpgradeToProCard />}
-            <PerformanceCard />
+            <PerformanceCard stats={performanceStats} />
           </div>
         </div>
       </LockedOverlay>

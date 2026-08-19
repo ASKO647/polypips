@@ -1,4 +1,5 @@
 import type { CategoryStat } from "@/lib/data/stats";
+import { cn } from "@/lib/utils";
 
 export function CategoryTable({ rows }: { rows: CategoryStat[] }) {
   return (
@@ -23,8 +24,14 @@ export function CategoryTable({ rows }: { rows: CategoryStat[] }) {
               </td>
               <td className="px-4 py-3 text-white/70">{row.analysesCount}</td>
               <td className="px-4 py-3 text-white/70">{row.accuracy}%</td>
-              <td className="px-4 py-3 text-emerald-400">
-                +{row.averageEdge}%
+              <td
+                className={cn(
+                  "px-4 py-3",
+                  row.averageEdge >= 0 ? "text-emerald-400" : "text-rose-400"
+                )}
+              >
+                {row.averageEdge >= 0 ? "+" : ""}
+                {row.averageEdge}%
               </td>
             </tr>
           ))}

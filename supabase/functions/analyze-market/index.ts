@@ -334,6 +334,11 @@ Deno.serve(async (req) => {
         question: analysis.question,
         category: analysis.category,
         market_url: marketUrl,
+        // Stored regardless of which flow found the market (link or
+        // screenshot) — resolve-markets uses this to re-check the market
+        // later without needing to re-parse a URL. Previously only
+        // marketUrl was kept, which stays null for the screenshot flow.
+        market_slug: market.slug || null,
         decision: analysis.decision,
         ai_probability: analysis.aiProbability,
         market_probability: analysis.marketProbability,

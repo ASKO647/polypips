@@ -7,19 +7,21 @@ import { DecisionSplit } from "@/components/dashboard/stats/decision-split";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { StatCard } from "@/components/dashboard/stats/stat-card";
 import { StatsEmptyState } from "@/components/dashboard/stats/stats-empty-state";
-import { IS_DEMO_MODE } from "@/lib/config/demo-mode";
-import {
-  CATEGORY_STATS,
-  DECISION_SPLIT,
-  KEY_STATS,
-  RESOLVED_ANALYSES,
-} from "@/lib/data/stats";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   fetchSubscription,
   hasActiveAccess,
   isCancelledSubscription,
 } from "@/lib/supabase/subscriptions";
+import {
+  fetchResolvedAnalyses,
+  countUnresolvedAnalyses,
+  computeKeyStats,
+  computeDecisionSplit,
+  computeCategoryStats,
+  computeAccuracyEvolutionPeriods,
+  toResolvedAnalysisHistory,
+} from "@/lib/supabase/performance";
 
 export const metadata: Metadata = {
   title: "Statistiques — Polypips",
@@ -27,9 +29,25 @@ export const metadata: Metadata = {
 
 export default async function StatsPage() {
   const supabase = await createClient();
-  const subscription = await fetchSubscription(supabase);
+  const [subscription, user] = await Promise.all([
+    fetchSubscription(supabase),
+    getAuthUser(),
+  ]);
   const locked = !hasActiveAccess(subscription);
   const cancelled = isCancelledSubscription(subscription);
+
+  const [resolvedAnalyses, unresolvedCount] = user
+    ? await Promise.all([
+        fetchResolvedAnalyses(supabase, user.id),
+        countUnresolvedAnalyses(supabase, user.id),
+      ])
+    : [[], 0];
+
+  const keyStats = computeKeyStats(resolvedAnalyses);
+  const decisionSplit = computeDecisionSplit(resolvedAnalyses);
+  const categoryStats = computeCategoryStats(resolvedAnalyses);
+  const evolutionPeriods = computeAccuracyEvolutionPeriods(resolvedAnalyses);
+  const history = toResolvedAnalysisHistory(resolvedAnalyses);
 
   return (
     <div className="flex flex-col gap-8">
@@ -44,7 +62,7 @@ export default async function StatsPage() {
 
       {/* "Pas d'abonnement" (locked, this overlay) is distinct from "abonné
        * mais historique encore vide" (StatsEmptyState rendered unblurred
-       * below when not in demo mode) — the two must never look the same. */}
+       * below) — the two must never look the same. */}
       <LockedOverlay
         locked={locked}
         cancelled={cancelled}
@@ -54,51 +72,61 @@ export default async function StatsPage() {
             : "Débloquez les statistiques détaillées — Débutez pour 0,99 €"
         }
       >
-        {IS_DEMO_MODE ? (
+        {resolvedAnalyses.length === 0 ? (
+          <StatsEmptyState />
+        ) : (
           <>
+            <p className="text-xs leading-relaxed text-white/35">
+              Précision réelle des décisions de l&apos;IA sur vos analyses
+              dont le marché s&apos;est résolu — indépendamment de si vous
+              avez réellement parié.
+              {unresolvedCount > 0 &&
+                ` ${unresolvedCount} analyse${unresolvedCount > 1 ? "s" : ""} en attente de résolution du marché.`}
+            </p>
+
             <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               <StatCard
                 icon={BarChart3}
-                value={String(KEY_STATS.totalAnalyses)}
-                label="Analyses réalisées"
+                value={String(keyStats.totalAnalyses)}
+                label="Analyses résolues"
               />
               <StatCard
                 icon={Target}
-                value={`${KEY_STATS.precision}%`}
-                label="Précision historique"
+                value={`${keyStats.precision}%`}
+                label="Précision réelle"
               />
               <StatCard
                 icon={TrendingUp}
-                value={`+${KEY_STATS.averageEdge}%`}
+                value={`${keyStats.averageEdge >= 0 ? "+" : ""}${keyStats.averageEdge}%`}
                 label="Edge moyen"
               />
               <StatCard
                 icon={Gauge}
-                value={`${KEY_STATS.averageOpportunityScore}/100`}
+                value={`${keyStats.averageOpportunityScore}/100`}
                 label="Score moyen d'opportunité"
               />
             </div>
 
-            <AccuracyEvolutionChart />
+            <AccuracyEvolutionChart periods={evolutionPeriods} />
 
-            <DecisionSplit split={DECISION_SPLIT} />
+            {decisionSplit && <DecisionSplit split={decisionSplit} />}
+
+            {categoryStats.length > 0 && (
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+                  Statistiques par catégorie
+                </p>
+                <CategoryTable rows={categoryStats} />
+              </div>
+            )}
 
             <div className="flex flex-col gap-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                Statistiques par catégorie
+                Historique des analyses résolues
               </p>
-              <CategoryTable rows={CATEGORY_STATS} />
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                Historique des analyses
-              </p>
-              <AnalysisHistoryList items={RESOLVED_ANALYSES} />
+              <AnalysisHistoryList items={history} />
             </div>
           </>
-        ) : (
-          <StatsEmptyState />
         )}
       </LockedOverlay>
     </div>
