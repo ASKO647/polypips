@@ -24,6 +24,7 @@ export const metadata: Metadata = {
  * even means anything.
  */
 export default async function OwnerLayout({ children }: { children: React.ReactNode }) {
+  console.error("[DIAG] ctrl-9f4k2q7x/layout.tsx REACHED");
   const user = await getAuthUser();
 
   if (!user) {
