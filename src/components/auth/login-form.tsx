@@ -39,10 +39,32 @@ export function LoginForm({ oauthError }: { oauthError?: string }) {
       });
 
       if (signInError) {
-        if (signInError.code === "invalid_credentials") {
-          setError("Email ou mot de passe incorrect.");
-        } else {
-          setError("Une erreur est survenue. Merci de réessayer.");
+        console.error("[login] signInWithPassword failed", {
+          code: signInError.code,
+          status: signInError.status,
+          message: signInError.message,
+        });
+        switch (signInError.code) {
+          case "invalid_credentials":
+            setError("Email ou mot de passe incorrect.");
+            break;
+          case "email_not_confirmed":
+            setError(
+              "Cette adresse email n'a pas encore été confirmée. Vérifiez votre boîte mail pour le lien de confirmation."
+            );
+            break;
+          case "over_request_rate_limit":
+          case "over_email_send_rate_limit":
+            setError("Trop de tentatives. Merci de réessayer dans quelques minutes.");
+            break;
+          case "user_banned":
+            setError("Ce compte est suspendu. Contactez le support.");
+            break;
+          default:
+            // Falls back to Supabase's own message rather than a generic
+            // string — that message is what actually tells us (and the
+            // user) what's really wrong, instead of hiding it.
+            setError(signInError.message || "Une erreur est survenue. Merci de réessayer.");
         }
         return;
       }

@@ -87,7 +87,12 @@ export function SignupForm({
         } else if (signUpError.code === "weak_password") {
           setError(`Mot de passe trop faible : ${signUpError.message}`);
         } else {
-          setError("Une erreur est survenue. Merci de réessayer.");
+          console.error("[signup] signUp failed", {
+            code: signUpError.code,
+            status: signUpError.status,
+            message: signUpError.message,
+          });
+          setError(signUpError.message || "Une erreur est survenue. Merci de réessayer.");
         }
         return;
       }
