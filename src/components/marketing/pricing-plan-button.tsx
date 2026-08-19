@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import type { PlanId } from "@/lib/stripe/plans";
@@ -18,6 +19,7 @@ export function PricingPlanButton({
   className?: string;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +42,7 @@ export function PricingPlanButton({
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planId }),
+        body: JSON.stringify({ plan: planId, locale }),
       });
       const data = await response.json();
       if (!response.ok || !data.url) {

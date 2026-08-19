@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 import { isPlanId } from "@/lib/stripe/plans";
@@ -15,6 +16,7 @@ import { isPlanId } from "@/lib/stripe/plans";
 export function CheckoutIntentRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const locale = useLocale();
   const planParam = searchParams.get("checkout");
   const plan = planParam && isPlanId(planParam) ? planParam : null;
 
@@ -24,7 +26,7 @@ export function CheckoutIntentRedirect() {
     fetch("/api/stripe/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, locale }),
     })
       .then(async (response) => {
         const data = await response.json();

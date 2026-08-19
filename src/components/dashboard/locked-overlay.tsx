@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import { Lock, RefreshCw } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ export function LockedOverlay({
   cancelled?: boolean;
 }) {
   const [unlocking, setUnlocking] = useState(false);
+  const locale = useLocale();
 
   const handleUnlock = async () => {
     if (unlocking) return;
@@ -45,7 +47,7 @@ export function LockedOverlay({
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: cancelled ? "pro" : "decouverte" }),
+        body: JSON.stringify({ plan: cancelled ? "pro" : "decouverte", locale }),
       });
       const data = await response.json();
       if (!response.ok || !data.url) {

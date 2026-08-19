@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe/server";
 import { isPlanId, PLAN_PRICE_IDS, type PlanId } from "@/lib/stripe/plans";
 import { createClient } from "@/lib/supabase/server";
+import { routing } from "@/i18n/routing";
+
+/** This route lives outside [locale] (route handlers have no [locale]
+ * param), so the caller passes its own current locale explicitly in the
+ * request body — same reasoning as /auth/callback's `locale` query param.
+ * Falls back to the app's default locale for any missing/invalid value
+ * rather than ever building an unprefixed redirect URL, which would 404
+ * now that every real page lives under /fr or /en. */
+function resolveLocale(value: unknown): string {
+  return typeof value === "string" && routing.locales.includes(value as (typeof routing.locales)[number])
+    ? value
+    : routing.defaultLocale;
+}
 
 /** 0,99 € — the "decouverte" plan's upfront charge, in cents. Not a Stripe
  * Price object: created inline per session via price_data since it's a
@@ -27,7 +40,7 @@ const DISCOVERY_SUBMIT_MESSAGE =
   "**0,99 € facturés aujourd'hui** pour votre période découverte de 3 jours — ce n'est pas un essai gratuit. Puis 29,99 €/mois, résiliable à tout moment avant la fin des 3 jours pour ne rien payer de plus.";
 
 export async function POST(request: Request) {
-  let body: { plan?: string };
+  let body: { plan?: string; locale?: string };
   try {
     body = await request.json();
   } catch {
@@ -36,6 +49,8 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+
+  const locale = resolveLocale(body.locale);
 
   if (!body.plan || !isPlanId(body.plan)) {
     return NextResponse.json(
@@ -102,8 +117,8 @@ export async function POST(request: Request) {
       ...(existingCustomerId
         ? { customer: existingCustomerId }
         : { customer_email: user.email }),
-      success_url: `${origin}/dashboard/settings?checkout=success`,
-      cancel_url: `${origin}/#tarifs?checkout=cancelled`,
+      success_url: `${origin}/${locale}/dashboard/settings?checkout=success`,
+      cancel_url: `${origin}/${locale}/#tarifs?checkout=cancelled`,
     });
 
     if (!session.url) {

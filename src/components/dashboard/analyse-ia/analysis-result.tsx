@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "next-intl";
 import {
   ArrowRight,
   Check,
@@ -31,6 +32,7 @@ export function AnalysisResult({
   locked?: boolean;
 }) {
   const [unlocking, setUnlocking] = useState(false);
+  const locale = useLocale();
   const isYes = analysis.decision === "YES";
   const decisionTone = isYes ? "text-emerald-400" : "text-rose-400";
 
@@ -41,7 +43,7 @@ export function AnalysisResult({
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: "decouverte" }),
+        body: JSON.stringify({ plan: "decouverte", locale }),
       });
       const data = await response.json();
       if (!response.ok || !data.url) {
