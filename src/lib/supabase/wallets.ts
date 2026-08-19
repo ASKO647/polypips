@@ -136,6 +136,25 @@ export async function fetchUserFollowedWalletIds(
   return new Set(data.map((r) => r.wallet_id as string));
 }
 
+/** Real follow timestamps for this user in the last `days` days — powers
+ * the "Smart Money" dashboard sparkline the same way analysis timestamps
+ * do, and windowed activity counts for the activity donut. */
+export async function fetchWalletFollowTimestamps(
+  supabase: SupabaseClient,
+  userId: string,
+  days: number
+): Promise<string[]> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("user_wallet_follows")
+    .select("created_at")
+    .eq("user_id", userId)
+    .gte("created_at", since);
+
+  if (error || !data) return [];
+  return data.map((row) => row.created_at as string);
+}
+
 export async function countFollowedWallets(
   supabase: SupabaseClient,
   userId: string

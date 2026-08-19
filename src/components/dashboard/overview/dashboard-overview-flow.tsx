@@ -1,32 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, LineChart, Sparkles, Wallet } from "lucide-react";
+import { GraduationCap, Sparkles, Wallet } from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { TrialBanner } from "@/components/dashboard/overview/trial-banner";
 import { QuickAccessCard } from "@/components/dashboard/overview/quick-access-card";
-import { RecentMarketsSection } from "@/components/dashboard/overview/recent-markets-section";
-import { UsageWidget } from "@/components/dashboard/overview/usage-widget";
+import { SubscriptionQuickCard } from "@/components/dashboard/overview/subscription-quick-card";
+import { MarketsTable } from "@/components/dashboard/overview/markets-table";
 import { RecentActivitySection } from "@/components/dashboard/overview/recent-activity-section";
+import {
+  ActivityDonut,
+  type ActivityPeriodCounts,
+  type ActivityPeriodKey,
+} from "@/components/dashboard/overview/activity-donut";
+import { UpgradeToProCard } from "@/components/dashboard/overview/upgrade-to-pro-card";
+import { PerformanceCard } from "@/components/dashboard/overview/performance-card";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { NotificationItem } from "@/lib/data/notifications";
+import type { PricingPlan } from "@/lib/data/pricing";
+import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 export function DashboardOverviewFlow({
+  firstName,
   hasActiveSubscription,
   cancelled,
   trialEndsAt,
+  subscription,
+  plan,
   analysesToday,
   dailyAnalysisLimit,
-  selectedMarketsCount,
   walletsFollowed,
   walletsMax,
   conversationCount,
-  coachMessagesThisWeek,
-  weeklyCoachLimit,
   recentMarkets,
   notifications,
+  analysesSparkline,
+  smartMoneySparkline,
+  coachSparkline,
+  activityPeriods,
 }: {
+  /** Real first name from user_metadata (Google OAuth only) — null for
+   * plain email/password accounts, which never collect a name. */
+  firstName: string | null;
   hasActiveSubscription: boolean;
   /** True when access is blocked because the user cancelled — swaps the
    * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
@@ -35,16 +51,21 @@ export function DashboardOverviewFlow({
    * cancelled) — TrialBanner recomputes the days-remaining count itself
    * client-side so it keeps ticking down without a page reload. */
   trialEndsAt: string | null;
+  subscription: SubscriptionRow | null;
+  plan: PricingPlan;
   analysesToday: number;
   dailyAnalysisLimit: number | null;
-  selectedMarketsCount: number;
   walletsFollowed: number;
   walletsMax: number | null;
   conversationCount: number;
-  coachMessagesThisWeek: number;
-  weeklyCoachLimit: number | null;
   recentMarkets: MarketAnalysis[];
   notifications: NotificationItem[];
+  /** Real daily counts (oldest→newest, 7 days) for each quick-access
+   * card's sparkline — all-zero when there's no real activity. */
+  analysesSparkline: number[];
+  smartMoneySparkline: number[];
+  coachSparkline: number[];
+  activityPeriods: Record<ActivityPeriodKey, ActivityPeriodCounts>;
 }) {
   const [selectedMarket, setSelectedMarket] = useState<MarketAnalysis | null>(
     null
@@ -61,27 +82,27 @@ export function DashboardOverviewFlow({
     );
   }
 
-  const analysesRemaining =
-    dailyAnalysisLimit !== null
-      ? `${Math.max(dailyAnalysisLimit - analysesToday, 0)}`
-      : "∞";
-  const coachMessagesRemaining =
-    weeklyCoachLimit !== null
-      ? `${Math.max(weeklyCoachLimit - coachMessagesThisWeek, 0)}`
-      : "∞";
+  const isPro =
+    hasActiveSubscription && subscription?.plan === "pro" && !cancelled;
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Tableau de bord
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          Vue d&apos;ensemble de votre activité et de vos accès rapides.
-        </p>
-      </div>
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            {firstName ? `Bonjour, ${firstName} 👋` : "Bonjour 👋"}
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
+            Vue d&apos;ensemble de votre activité et de vos accès rapides.
+          </p>
+        </div>
 
-      {trialEndsAt !== null && !cancelled && <TrialBanner trialEndsAt={trialEndsAt} />}
+        {trialEndsAt !== null && !cancelled && (
+          <div className="lg:max-w-xl lg:flex-1">
+            <TrialBanner trialEndsAt={trialEndsAt} />
+          </div>
+        )}
+      </div>
 
       <LockedOverlay
         locked={!hasActiveSubscription}
@@ -103,13 +124,7 @@ export function DashboardOverviewFlow({
                 : "Analyses illimitées"
             }
             tone="brand"
-          />
-          <QuickAccessCard
-            href="/dashboard/markets"
-            icon={LineChart}
-            title="Marchés sélectionnés"
-            stat={`${selectedMarketsCount} marché${selectedMarketsCount > 1 ? "s" : ""} sélectionné${selectedMarketsCount > 1 ? "s" : ""}`}
-            tone="emerald"
+            sparklinePoints={analysesSparkline}
           />
           <QuickAccessCard
             href="/dashboard/smart-money"
@@ -120,34 +135,43 @@ export function DashboardOverviewFlow({
                 ? `${walletsFollowed}/${walletsMax} wallets suivis`
                 : `${walletsFollowed} wallet${walletsFollowed > 1 ? "s" : ""} suivi${walletsFollowed > 1 ? "s" : ""}`
             }
-            tone="amber"
+            tone="emerald"
+            sparklinePoints={smartMoneySparkline}
           />
           <QuickAccessCard
             href="/dashboard/coach"
             icon={GraduationCap}
             title="Coach IA"
             stat={`${conversationCount} conversation${conversationCount > 1 ? "s" : ""}`}
-            tone="neutral"
+            tone="amber"
+            sparklinePoints={coachSparkline}
           />
+          <SubscriptionQuickCard subscription={subscription} plan={plan} />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-start">
           <div className="lg:col-span-2">
-            <RecentMarketsSection
-              markets={recentMarkets}
-              onSelect={setSelectedMarket}
-            />
+            <MarketsTable markets={recentMarkets} onSelect={setSelectedMarket} />
           </div>
-          <UsageWidget
-            analysesRemaining={analysesRemaining}
-            walletsFollowed={String(walletsFollowed)}
-            walletsMax={walletsMax !== null ? String(walletsMax) : "∞"}
-            coachMessagesRemaining={coachMessagesRemaining}
-          />
+          <div className="flex flex-col gap-4">
+            <ActivityDonut periods={activityPeriods} />
+            {!isPro && <UpgradeToProCard />}
+            <PerformanceCard />
+          </div>
         </div>
       </LockedOverlay>
 
-      <RecentActivitySection notifications={notifications} />
+      {/* Deliberately outside LockedOverlay — notifications stay visible
+       * even without an active subscription (see the "Fix subscription
+       * gating gaps" audit, which gated everything else here but left this
+       * alone). lg:items-start above keeps the locked grid's left column
+       * from stretching to the taller right column, so this sits flush
+       * under MarketsTable instead of leaving a gap. */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RecentActivitySection notifications={notifications} />
+        </div>
+      </div>
     </div>
   );
 }

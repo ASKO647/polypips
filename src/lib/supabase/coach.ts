@@ -44,6 +44,42 @@ export async function countCoachMessagesThisWeek(
   return count ?? 0;
 }
 
+/** Real message timestamps for this user's own (role='user') messages in
+ * the last `days` days — powers the "Coach IA" dashboard sparkline and
+ * windowed activity counts. Explicitly scoped by user_id (coach_messages
+ * has the column directly) rather than relying on RLS alone, matching the
+ * convention in lib/supabase/analyses.ts. */
+export async function fetchCoachMessageTimestamps(
+  supabase: SupabaseClient,
+  userId: string,
+  days: number
+): Promise<string[]> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("coach_messages")
+    .select("created_at")
+    .eq("user_id", userId)
+    .eq("role", "user")
+    .gte("created_at", since);
+
+  if (error || !data) return [];
+  return data.map((row) => row.created_at as string);
+}
+
+export async function countCoachMessagesAllTime(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("coach_messages")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("role", "user");
+
+  if (error) return 0;
+  return count ?? 0;
+}
+
 type MessageRow = { id: string; role: "user" | "assistant"; content: string };
 
 export async function fetchConversationMessages(

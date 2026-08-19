@@ -74,6 +74,39 @@ export async function countAnalysesToday(
   return count ?? 0;
 }
 
+/** Real timestamps for this user's analyses in the last `days` days — the
+ * raw material for the dashboard's "Analyses IA" sparkline (bucketed by
+ * bucketCountsByDay) and for windowed activity counts, never a fabricated
+ * trend. */
+export async function fetchAnalysisTimestamps(
+  supabase: SupabaseClient,
+  userId: string,
+  days: number
+): Promise<string[]> {
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from("analyses")
+    .select("created_at")
+    .eq("user_id", userId)
+    .gte("created_at", since);
+
+  if (error || !data) return [];
+  return data.map((row) => row.created_at as string);
+}
+
+export async function countAnalysesAllTime(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("analyses")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId);
+
+  if (error) return 0;
+  return count ?? 0;
+}
+
 export async function fetchAnalysisById(
   supabase: SupabaseClient,
   id: string
