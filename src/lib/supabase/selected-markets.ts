@@ -7,6 +7,7 @@ type SelectedMarketRow = {
   question: string;
   category: string;
   scanned_at: string;
+  slug: string;
   decision: "YES" | "NO";
   ai_probability: number;
   market_probability: number;
@@ -37,6 +38,7 @@ function mapRow(row: SelectedMarketRow): MarketAnalysis {
     risks: row.risks,
     whatCouldChange: row.what_could_change,
     sources: row.sources,
+    marketSlug: row.slug,
   };
 }
 
@@ -49,7 +51,7 @@ export async function fetchSelectedMarkets(
   const { data, error } = await supabase
     .from("selected_markets")
     .select(
-      "id, question, category, scanned_at, decision, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
+      "id, question, category, scanned_at, slug, decision, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
     )
     .order("scanned_at", { ascending: false })
     .limit(limit);

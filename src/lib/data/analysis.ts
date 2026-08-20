@@ -27,7 +27,18 @@ export type MarketAnalysis = {
   risks: string[];
   whatCouldChange: string;
   sources: AnalysisSource[];
+  /** Polymarket's own identifier for this market — null for analyses
+   * created from a screenshot before market_slug existed, or where the
+   * market genuinely didn't resolve to one. Never fall back to guessing a
+   * URL when this is null; just don't render the Polymarket link. */
+  marketSlug: string | null;
 };
+
+/** The real, canonical market page on Polymarket — same slug the
+ * resolve-markets Edge Function already keys off of. */
+export function polymarketEventUrl(slug: string): string {
+  return `https://polymarket.com/event/${slug}`;
+}
 
 export type AnalysisProgressStep =
   | "fetching_market"

@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import type { MarketAnalysis } from "@/lib/data/analysis";
+import { polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function AnalysisResult({
@@ -67,6 +67,17 @@ export function AnalysisResult({
         <h1 className="font-display text-xl font-bold leading-snug text-white sm:text-2xl">
           {analysis.question}
         </h1>
+        {analysis.marketSlug && (
+          <a
+            href={polymarketEventUrl(analysis.marketSlug)}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex w-fit items-center gap-1 text-xs font-medium text-white/40 transition-colors hover:text-white/70"
+          >
+            Voir sur Polymarket
+            <ExternalLink className="h-3 w-3" strokeWidth={2.25} />
+          </a>
+        )}
       </div>
 
       <div className="relative">

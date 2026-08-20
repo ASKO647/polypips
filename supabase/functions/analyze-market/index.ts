@@ -315,6 +315,7 @@ Deno.serve(async (req) => {
         question: market.question,
         category: market.category || "Marché",
         analyzedAt: new Date().toISOString(),
+        marketSlug: market.slug || null,
         decision: verdict.decision,
         aiProbability,
         marketProbability: marketProbabilityPct,
@@ -338,7 +339,7 @@ Deno.serve(async (req) => {
         // screenshot) — resolve-markets uses this to re-check the market
         // later without needing to re-parse a URL. Previously only
         // marketUrl was kept, which stays null for the screenshot flow.
-        market_slug: market.slug || null,
+        market_slug: analysis.marketSlug,
         decision: analysis.decision,
         ai_probability: analysis.aiProbability,
         market_probability: analysis.marketProbability,

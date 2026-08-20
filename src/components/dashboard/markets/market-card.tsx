@@ -1,7 +1,7 @@
-import { ArrowRight, Lock } from "lucide-react";
+import { ArrowRight, ExternalLink, Lock } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import type { MarketAnalysis } from "@/lib/data/analysis";
+import { polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function MarketCard({
@@ -47,6 +47,18 @@ export function MarketCard({
       <p className="line-clamp-2 text-sm font-semibold leading-snug text-white">
         {market.question}
       </p>
+
+      {market.marketSlug && (
+        <a
+          href={polymarketEventUrl(market.marketSlug)}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex w-fit items-center gap-1 text-xs font-medium text-white/40 transition-colors hover:text-white/70"
+        >
+          Voir sur Polymarket
+          <ExternalLink className="h-3 w-3" strokeWidth={2.25} />
+        </a>
+      )}
 
       <div
         className={cn("flex flex-col gap-4", locked && "pointer-events-none select-none blur-sm")}
