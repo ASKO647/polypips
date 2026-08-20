@@ -36,17 +36,28 @@ const TRACKED_WALLET_COUNT = 10;
 /** Over-fetch beyond TRACKED_WALLET_COUNT so the recent-activity filter
  * below still has enough leaderboard entries left after rejecting anyone
  * who ranks well this month but isn't trading recently. */
-const LEADERBOARD_FETCH_LIMIT = 25;
-/** A leaderboard entry only counts as "actually still active" — not just
- * coasting on one or two big wins earlier in the month — if it traded on
- * at least this many distinct days within RECENT_ACTIVITY_LOOKBACK_DAYS.
- * The leaderboard response itself carries no trade-count/frequency field
- * to filter on directly, so this reuses distinctTradingDays() (below)
- * against the wallet's real recent activity (already fetched via the
- * existing Data API /activity endpoint) as a pass/fail gate — not a new
- * locally computed ranking, just a recency check layered on top of
- * Polymarket's own rank order. */
-const MIN_RECENT_TRADING_DAYS = 3;
+const LEADERBOARD_FETCH_LIMIT = 30;
+/** A leaderboard entry only counts as "actually still active" — not
+ * dormant since an early-month win — if it traded on at least this many
+ * distinct days within RECENT_ACTIVITY_LOOKBACK_DAYS. The leaderboard
+ * response itself carries no trade-count/frequency field to filter on
+ * directly, so this reuses distinctTradingDays() (below) against the
+ * wallet's real recent activity (already fetched via the existing Data
+ * API /activity endpoint) as a pass/fail gate — not a new locally
+ * computed ranking, just a recency check layered on top of Polymarket's
+ * own rank order.
+ *
+ * Was 3 — dropped to 1 after a real resync's logs showed 24 of the top 25
+ * monthly leaderboard entries (by volume/PnL, not trade frequency) had
+ * exactly 1 distinct trading day in the lookback window, so a >=3 bar
+ * rejected 96% of the pool and left only 3 of the 10 tracked_wallets
+ * slots filled. A high monthly rank driven by a few large positions
+ * doesn't imply daily trading, so requiring 3 active days was measuring
+ * the wrong thing. >=1 keeps the gate's actual purpose — reject dormant
+ * entries with zero activity in the window — without punishing
+ * infrequent-but-legitimate top traders for the behavior that got them
+ * ranked in the first place. */
+const MIN_RECENT_TRADING_DAYS = 1;
 const RECENT_ACTIVITY_LOOKBACK_DAYS = 14;
 /**
  * The leaderboard-based pool is only re-synced this often, not on every
