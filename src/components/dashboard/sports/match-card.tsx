@@ -14,7 +14,7 @@ const KICKOFF_FORMAT = new Intl.DateTimeFormat("fr-FR", {
 export function MatchCard({ match }: { match: Match }) {
   return (
     <Link
-      href={`/dashboard/sports/${match.id}`}
+      href={`/dashboard/sports/match/${match.id}`}
       className="group flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-150 hover:border-white/20"
     >
       <div className="flex items-center justify-between gap-2">

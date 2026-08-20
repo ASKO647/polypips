@@ -1,16 +1,21 @@
 import type { Metadata } from "next";
-import { SportsFlow } from "@/components/dashboard/sports/sports-flow";
-import { listCompetitions, listUpcomingMatches } from "@/lib/sports/service";
+import { OverviewFlow } from "@/components/dashboard/sports/overview-flow";
+import { getAuthUser } from "@/lib/supabase/server";
+import { getOverviewStats, listUpcomingMatches } from "@/lib/sports/service";
+import { getFirstNameFromUser } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Sports — Polypips",
 };
 
-export default async function SportsPage() {
-  const [matches, competitions] = await Promise.all([
+export default async function SportsOverviewPage() {
+  const [user, stats, matches] = await Promise.all([
+    getAuthUser(),
+    getOverviewStats(),
     listUpcomingMatches(),
-    listCompetitions(),
   ]);
 
-  return <SportsFlow matches={matches} competitions={competitions} />;
+  return (
+    <OverviewFlow firstName={getFirstNameFromUser(user)} stats={stats} matches={matches} />
+  );
 }

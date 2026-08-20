@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MatchAnalysisView } from "@/components/dashboard/sports/match-analysis-view";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import { fetchFollowedMatchIds, fetchFollowedTeamIds } from "@/lib/supabase/sports-follows";
 import { getMatchAnalysis } from "@/lib/sports/service";
 
 export async function generateMetadata({
@@ -25,14 +26,26 @@ export default async function SportsMatchPage({
 }) {
   const { matchId } = await params;
   const supabase = await createClient();
-  const [analysis, subscription] = await Promise.all([
+  const [analysis, subscription, user] = await Promise.all([
     getMatchAnalysis(matchId),
     fetchSubscription(supabase),
+    getAuthUser(),
   ]);
 
   if (!analysis) notFound();
 
+  const [followedMatchIds, followedTeamIds] = await Promise.all([
+    fetchFollowedMatchIds(supabase, user?.id ?? null),
+    fetchFollowedTeamIds(supabase, user?.id ?? null),
+  ]);
+
   return (
-    <MatchAnalysisView analysis={analysis} hasActiveSubscription={hasActiveAccess(subscription)} />
+    <MatchAnalysisView
+      analysis={analysis}
+      hasActiveSubscription={hasActiveAccess(subscription)}
+      matchFollowed={followedMatchIds.has(matchId)}
+      homeTeamFollowed={followedTeamIds.has(analysis.match.homeTeam.id)}
+      awayTeamFollowed={followedTeamIds.has(analysis.match.awayTeam.id)}
+    />
   );
 }

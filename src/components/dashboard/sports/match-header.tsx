@@ -1,7 +1,4 @@
-"use client";
-
-import { useState } from "react";
-import { Star } from "lucide-react";
+import { FollowTeamButton } from "@/components/dashboard/sports/follow-team-button";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import type { Match } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
@@ -14,33 +11,21 @@ const KICKOFF_FORMAT = new Intl.DateTimeFormat("fr-FR", {
   minute: "2-digit",
 });
 
-function TeamFavoriteStar({ label }: { label: string }) {
-  const [active, setActive] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={() => setActive((v) => !v)}
-      aria-label={label}
-      aria-pressed={active}
-      className={cn(
-        "flex h-8 w-8 items-center justify-center rounded-full border transition-colors",
-        active
-          ? "border-brand-400/50 bg-brand-500/15 text-brand-400"
-          : "border-white/10 bg-white/[0.04] text-white/40 hover:text-white"
-      )}
-    >
-      <Star className={cn("h-4 w-4", active && "fill-current")} strokeWidth={2} />
-    </button>
-  );
-}
-
 const STATUS_LABEL: Record<Match["status"], string> = {
   scheduled: "À venir",
   live: "En direct",
   finished: "Terminé",
 };
 
-export function MatchHeader({ match }: { match: Match }) {
+export function MatchHeader({
+  match,
+  homeFollowed,
+  awayFollowed,
+}: {
+  match: Match;
+  homeFollowed: boolean;
+  awayFollowed: boolean;
+}) {
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center sm:p-8">
       <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/60">
@@ -49,7 +34,11 @@ export function MatchHeader({ match }: { match: Match }) {
 
       <div className="flex w-full items-center justify-center gap-4 sm:gap-10">
         <div className="flex flex-1 flex-col items-center gap-3 sm:flex-row sm:justify-end">
-          <TeamFavoriteStar label={`Ajouter ${match.homeTeam.shortName} aux favoris`} />
+          <FollowTeamButton
+            teamId={match.homeTeam.id}
+            teamName={match.homeTeam.name}
+            initialFollowed={homeFollowed}
+          />
           <TeamBadge team={match.homeTeam} size="lg" />
         </div>
 
@@ -63,7 +52,11 @@ export function MatchHeader({ match }: { match: Match }) {
 
         <div className="flex flex-1 flex-col items-center gap-3 sm:flex-row sm:justify-start">
           <TeamBadge team={match.awayTeam} size="lg" />
-          <TeamFavoriteStar label={`Ajouter ${match.awayTeam.shortName} aux favoris`} />
+          <FollowTeamButton
+            teamId={match.awayTeam.id}
+            teamName={match.awayTeam.name}
+            initialFollowed={awayFollowed}
+          />
         </div>
       </div>
 
