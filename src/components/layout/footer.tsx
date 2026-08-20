@@ -1,6 +1,7 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/ui/logo";
 import { Container } from "@/components/ui/container";
+import { ManageCookiesLink } from "@/components/cookies/manage-cookies-link";
 import { FOOTER_COLUMNS, SOCIAL_LINKS } from "@/lib/data/nav";
 
 export function Footer() {
@@ -41,6 +42,11 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+              {col.title === "Légal" && (
+                <li>
+                  <ManageCookiesLink className="text-[15px] text-body transition-colors hover:text-brand-600" />
+                </li>
+              )}
             </ul>
           </div>
         ))}

@@ -5,6 +5,8 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { CookieConsentProvider } from "@/providers/cookie-consent-provider";
+import { CookieConsentBanner } from "@/components/cookies/cookie-consent-banner";
 import { ChatButton } from "@/components/layout/chat-button";
 import { ScrollRevealObserver } from "@/components/scroll-reveal-observer";
 import { TouchActiveEnabler } from "@/components/touch-active-enabler";
@@ -54,10 +56,13 @@ export default async function LocaleLayout({
       <body className="min-h-full flex flex-col bg-page-bg text-ink">
         <NextIntlClientProvider>
           <ThemeProvider>
-            {children}
-            <ChatButton />
-            <ScrollRevealObserver />
-            <TouchActiveEnabler />
+            <CookieConsentProvider>
+              {children}
+              <ChatButton />
+              <ScrollRevealObserver />
+              <TouchActiveEnabler />
+              <CookieConsentBanner />
+            </CookieConsentProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
