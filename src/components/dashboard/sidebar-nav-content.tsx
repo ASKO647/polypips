@@ -43,7 +43,12 @@ export function SidebarNavContent({
           className={cn("h-[18px] w-[18px] shrink-0", active && "text-brand-400")}
           strokeWidth={2}
         />
-        {item.label}
+        <span className="flex-1">{item.label}</span>
+        {item.badge && (
+          <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+            {item.badge}
+          </span>
+        )}
       </Link>
     );
   };
