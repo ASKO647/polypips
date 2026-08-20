@@ -36,7 +36,7 @@ export async function streamCoachReply(
   onDelta: (text: string) => void
 ): Promise<string> {
   const stream = client.messages.stream({
-    model: "claude-opus-5",
+    model: "claude-haiku-4-5",
     max_tokens: 1536,
     system: systemPrompt,
     messages,

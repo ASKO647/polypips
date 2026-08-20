@@ -169,17 +169,22 @@ async function requestVerdictOnce(
   let response;
   try {
     response = await client.messages.create({
-      model: "claude-opus-5",
-      // Was 4096 — too tight for opus-5 with adaptive thinking + high-effort
+      model: "claude-haiku-4-5",
+      // Was 4096 — too tight for the previous model with high-effort
       // json_schema output on this schema (explanation + 3-5 factors + 2-4
       // risks + whatCouldChange): a response that runs long can hit the cap
       // mid-string, which is indistinguishable from a truncated/malformed
       // response by the time it reaches JSON.parse. 8192 gives real headroom
       // without materially changing latency/cost for the common case.
       max_tokens: 8192,
-      thinking: { type: "adaptive" },
+      // No `thinking` field: Haiku 4.5 runs with no extended thinking when
+      // the field is omitted (thinking is opt-in on this model tier, not
+      // on-by-default like the Opus-tier models this used to run on) — this
+      // is also the single biggest cost driver being removed by this
+      // switch. No `effort` either: output_config.effort errors on Haiku
+      // 4.5 (it's an Opus-tier-and-newer control), so the json_schema
+      // format is the only output_config field left here.
       output_config: {
-        effort: "high",
         format: {
           type: "json_schema",
           schema: VERDICT_SCHEMA,
@@ -269,12 +274,11 @@ export async function analyzeMarket(
 
 /** Cropped screenshots, multi-market event pages, and busy Polymarket chrome
  * (nav bar, price ticker, chart, other cards in a feed) make this a real
- * OCR-and-disambiguation task, not a trivial read — low effort + no
- * thinking was producing paraphrased or wrong-card extractions far more
- * often than outright "unreadable" results. Medium effort + adaptive
- * thinking lets the model actually look before answering; the prompt itself
- * now spells out verbatim-copy and multi-market disambiguation rules that
- * were previously left implicit. */
+ * OCR-and-disambiguation task, not a trivial read — the prompt spells out
+ * verbatim-copy and multi-market disambiguation rules explicitly (rather
+ * than relying on thinking to work it out) precisely because this now runs
+ * on Haiku 4.5, which doesn't support output_config.effort or extended
+ * thinking the way the Opus-tier model this used to run on did. */
 const IMAGE_EXTRACTION_PROMPT = `Cette image est une capture d'écran de l'application ou du site Polymarket.
 
 Ta tâche : identifier la question du marché de prédiction affichée, et la recopier EXACTEMENT telle qu'elle apparaît à l'écran.
@@ -300,10 +304,8 @@ export async function extractMarketQuestionFromImage(
   let response;
   try {
     response = await client.messages.create({
-      model: "claude-opus-5",
+      model: "claude-haiku-4-5",
       max_tokens: 512,
-      thinking: { type: "adaptive" },
-      output_config: { effort: "medium" },
       messages: [
         {
           role: "user",
