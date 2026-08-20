@@ -12,18 +12,38 @@ import { analyzeMarket, AiServiceError } from "../analyze-market/anthropic-analy
  * every run, independent of actual user traffic. Keep this bounded rather
  * than scanning everything Gamma returns — see the task summary for the
  * cost/freshness discussion behind the default cron interval.
+ *
+ * Brought down from 45 to 30 after runs at 45/CONCURRENCY=9 started
+ * failing every single candidate with WORKER_RESOURCE_LIMIT (546) — the
+ * "all 45 failed at once" shape is the signature of the isolate itself
+ * getting killed for exceeding its CPU/memory budget mid-run, not of
+ * individual analyses failing independently. Supabase documents a 2000ms
+ * *actual CPU time* budget per isolate (not wall-clock — awaiting the
+ * Anthropic call doesn't count) and a 400s wall-clock ceiling; the
+ * concurrency drop below is the main lever against the memory spike (many
+ * large extended-thinking responses parsed/held at once), and this drop
+ * shortens the run and its cumulative CPU/memory footprint on top of that.
+ * (Sources: https://supabase.com/docs/guides/functions/limits,
+ * https://supabase.com/docs/guides/troubleshooting/edge-function-546-error-response
+ * — exact per-isolate memory ceiling in MB isn't published, so this is
+ * still a calibrated guess, not a value read off a documented number.)
  */
-const MAX_CANDIDATES_PER_RUN = 45;
+const MAX_CANDIDATES_PER_RUN = 30;
 /** Over-fetch before filtering/sorting so the volume/liquidity floor in
- * listCandidateMarkets still leaves enough candidates to pick from. Scales
- * with MAX_CANDIDATES_PER_RUN to keep the same ~2.4x margin as before. */
-const CANDIDATE_FETCH_POOL = 110;
-/** How many Anthropic calls run at once — bounded so a single run doesn't
- * hammer the API, while still finishing well inside an Edge Function's
- * execution time budget. Raised alongside MAX_CANDIDATES_PER_RUN (25→45)
- * so the run still does 5 sequential thinking-enabled rounds, same as
- * before, instead of nearly doubling to 9. */
-const CONCURRENCY = 9;
+ * listCandidateMarkets still leaves enough candidates to pick from. Keeps
+ * the original ~2.4x margin over MAX_CANDIDATES_PER_RUN (60 candidates for
+ * a run of 25, before that number was ever raised). */
+const CANDIDATE_FETCH_POOL = 72;
+/** How many Anthropic calls run at once. Reverted from 9 back to 5 — the
+ * value that ran reliably before a prior change raised it alongside
+ * MAX_CANDIDATES_PER_RUN. 9 concurrent extended-thinking calls means 9
+ * large responses being parsed/held in memory at the same instant, which
+ * lines up with Supabase's own description of a 546/WORKER_RESOURCE_LIMIT
+ * error: once an isolate crosses its resource budget it's killed outright,
+ * failing every in-flight request at once — exactly the "45 scanned, 45
+ * failed" shape reported. 5 keeps that peak concurrent memory footprint at
+ * the level that was already proven to work. */
+const CONCURRENCY = 5;
 
 /** A market only qualifies as a candidate for selection if it clears one of
  * these bars — either the model's own confidence in the opportunity, or a
