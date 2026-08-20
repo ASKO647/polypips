@@ -33,12 +33,13 @@ const CONCURRENCY = 9;
 const OPPORTUNITY_THRESHOLD = 55;
 const MIN_ABS_EDGE = 8;
 
-/** Every run keeps exactly this many markets — the current run's top N by
- * opportunity score, ranked among whatever cleared the quality bar above.
- * If fewer than N qualify this run, the table ends up with fewer than N
- * rows rather than padding it out with sub-threshold picks just to hit the
- * round number. */
-const SELECTION_SIZE = 9;
+/** Every run keeps exactly this many markets, picked for category
+ * diversity (see selectDiverseAcrossCategories below) rather than a raw
+ * top-N by opportunity score — that used to let one high-scoring category
+ * (e.g. Politique) monopolize every slot. If fewer than N qualify this
+ * run in total, the table ends up with fewer than N rows rather than
+ * padding it out with sub-threshold picks just to hit the round number. */
+const SELECTION_SIZE = 10;
 
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
   if (value === "Faible" || value === "Moyenne" || value === "Élevée") {
@@ -89,6 +90,63 @@ type ScanOutcome =
   | { status: "qualified"; row: SelectedMarketRow }
   | { status: "rejected"; slug: string }
   | { status: "failed"; slug: string };
+
+/**
+ * Picks `size` markets out of the qualified pool with guaranteed category
+ * diversity, instead of a raw top-N by opportunity score (which let one
+ * high-scoring category monopolize every slot).
+ *
+ * Round-robin, fixed alphabetical category order: group qualified rows by
+ * category, sort each category's rows by opportunity_score descending,
+ * then repeatedly sweep the categories in alphabetical order taking one
+ * (the next-best remaining) row from each category that still has one,
+ * until `size` rows are picked or a full sweep picks nothing (every
+ * category exhausted — fewer than `size` qualified in total this run, so
+ * the result is left short rather than padded).
+ *
+ * Alphabetical order is deliberate, not "most candidates first": giving
+ * leftover slots to whichever category has the deepest bench would just
+ * recreate — more slowly — the same imbalance this function exists to
+ * fix. Alphabetical order is stable across runs and gives every category
+ * an equal shot at the remainder over time.
+ */
+function selectDiverseAcrossCategories(
+  rows: SelectedMarketRow[],
+  size: number
+): SelectedMarketRow[] {
+  const byCategory = new Map<string, SelectedMarketRow[]>();
+  for (const row of rows) {
+    const list = byCategory.get(row.category);
+    if (list) {
+      list.push(row);
+    } else {
+      byCategory.set(row.category, [row]);
+    }
+  }
+  for (const list of byCategory.values()) {
+    list.sort((a, b) => b.opportunity_score - a.opportunity_score);
+  }
+
+  const categories = Array.from(byCategory.keys()).sort((a, b) => a.localeCompare(b));
+  const nextIndex = new Map(categories.map((category) => [category, 0]));
+
+  const selected: SelectedMarketRow[] = [];
+  while (selected.length < size) {
+    let pickedThisSweep = false;
+    for (const category of categories) {
+      if (selected.length >= size) break;
+      const list = byCategory.get(category)!;
+      const index = nextIndex.get(category)!;
+      if (index >= list.length) continue;
+      selected.push(list[index]);
+      nextIndex.set(category, index + 1);
+      pickedThisSweep = true;
+    }
+    if (!pickedThisSweep) break;
+  }
+
+  return selected.sort((a, b) => b.opportunity_score - a.opportunity_score);
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -187,11 +245,11 @@ Deno.serve(async (req) => {
     } satisfies ScanOutcome;
   });
 
-  const top = outcomes
+  const qualifiedRows = outcomes
     .filter((o): o is { status: "qualified"; row: SelectedMarketRow } => o.status === "qualified")
-    .map((o) => o.row)
-    .sort((a, b) => b.opportunity_score - a.opportunity_score)
-    .slice(0, SELECTION_SIZE);
+    .map((o) => o.row);
+
+  const top = selectDiverseAcrossCategories(qualifiedRows, SELECTION_SIZE);
 
   // Full replace, not a cumulative upsert: this run's selection becomes the
   // *entire* table, so a market that qualified last run but isn't in this
@@ -215,10 +273,16 @@ Deno.serve(async (req) => {
     }
   }
 
+  const selectedByCategory: Record<string, number> = {};
+  for (const row of top) {
+    selectedByCategory[row.category] = (selectedByCategory[row.category] ?? 0) + 1;
+  }
+
   const summary = {
     scanned: outcomes.length,
     qualified: outcomes.filter((o) => o.status === "qualified").length,
     selected: top.length,
+    selectedByCategory,
     rejected: outcomes.filter((o) => o.status === "rejected").length,
     failed: outcomes.filter((o) => o.status === "failed").length,
   };
