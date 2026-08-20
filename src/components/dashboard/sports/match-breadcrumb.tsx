@@ -1,14 +1,16 @@
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { getSportCategory } from "@/lib/sports/nav";
+import { getCountryFlag } from "@/lib/sports/service";
 import type { Match } from "@/lib/sports/types";
 
 export function MatchBreadcrumb({ match }: { match: Match }) {
   const sportLabel = getSportCategory(match.sport)?.label ?? match.sport;
+  const countryFlag = getCountryFlag(match.competition.country);
   const crumbs = [
     { label: "Sports", href: "/dashboard/sports" },
     { label: sportLabel, href: `/dashboard/sports/${match.sport}` },
-    { label: match.competition.country },
+    { label: `${countryFlag ? `${countryFlag} ` : ""}${match.competition.country}` },
     { label: match.competition.name, href: `/dashboard/sports/${match.sport}/${match.competition.id}` },
     { label: `${match.homeTeam.shortName} vs ${match.awayTeam.shortName}` },
   ];

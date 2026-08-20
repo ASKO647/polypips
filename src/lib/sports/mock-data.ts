@@ -25,28 +25,55 @@ export const POPULAR_COUNTRIES: Country[] = [
 
 const LIGUE_1: Competition = { id: "ligue-1", name: "Ligue 1", country: "France", sport: "football" };
 const LIGUE_2: Competition = { id: "ligue-2", name: "Ligue 2", country: "France", sport: "football" };
+const COUPE_DE_FRANCE: Competition = {
+  id: "coupe-de-france",
+  name: "Coupe de France",
+  country: "France",
+  sport: "football",
+};
 const PREMIER_LEAGUE: Competition = {
   id: "premier-league",
   name: "Premier League",
   country: "Angleterre",
   sport: "football",
 };
+const FA_CUP: Competition = { id: "fa-cup", name: "FA Cup", country: "Angleterre", sport: "football" };
+const EFL_CHAMPIONSHIP: Competition = {
+  id: "efl-championship",
+  name: "EFL Championship",
+  country: "Angleterre",
+  sport: "football",
+};
 const LA_LIGA: Competition = { id: "la-liga", name: "La Liga", country: "Espagne", sport: "football" };
+const COPA_DEL_REY: Competition = { id: "copa-del-rey", name: "Copa del Rey", country: "Espagne", sport: "football" };
 const SERIE_A: Competition = { id: "serie-a", name: "Serie A", country: "Italie", sport: "football" };
+const COPPA_ITALIA: Competition = { id: "coppa-italia", name: "Coppa Italia", country: "Italie", sport: "football" };
 const BUNDESLIGA: Competition = { id: "bundesliga", name: "Bundesliga", country: "Allemagne", sport: "football" };
+const DFB_POKAL: Competition = { id: "dfb-pokal", name: "DFB-Pokal", country: "Allemagne", sport: "football" };
 const UCL: Competition = { id: "ucl", name: "UEFA Champions League", country: "Europe", sport: "football" };
+const UEL: Competition = { id: "uel", name: "UEFA Europa League", country: "Europe", sport: "football" };
 
-/** Ligue 2 deliberately has no matches in MOCK_MATCHES below — it's the
- * fixture used to demonstrate the "Aucun match disponible" empty state on
- * the competition-browser screen, matching the reference mockup. */
+/** Ligue 2 and several cup/second-tier competitions deliberately have no
+ * matches in MOCK_MATCHES below — that's the fixture used to demonstrate
+ * the "Aucun match disponible" empty state on the competition-browser
+ * screen, matching the reference mockup, and to keep this list realistic
+ * (a country's full competition list without every single one having a
+ * fixture this week). */
 export const MOCK_COMPETITIONS: Competition[] = [
   LIGUE_1,
   LIGUE_2,
+  COUPE_DE_FRANCE,
   PREMIER_LEAGUE,
+  FA_CUP,
+  EFL_CHAMPIONSHIP,
   LA_LIGA,
+  COPA_DEL_REY,
   SERIE_A,
+  COPPA_ITALIA,
   BUNDESLIGA,
+  DFB_POKAL,
   UCL,
+  UEL,
 ];
 
 const PSG: Team = {
@@ -177,4 +204,30 @@ export const MOCK_MATCHES: Match[] = [
     kickoffAt: daysFromNow(4, 14),
     status: "scheduled",
   },
+  {
+    id: "monaco-nice-cdf-2026",
+    sport: "football",
+    competition: COUPE_DE_FRANCE,
+    homeTeam: MONACO,
+    awayTeam: NICE,
+    kickoffAt: daysFromNow(5, 20, 45),
+    status: "scheduled",
+  },
+  {
+    id: "manutd-tottenham-facup-2026",
+    sport: "football",
+    competition: FA_CUP,
+    homeTeam: MANUTD,
+    awayTeam: TOTTENHAM,
+    kickoffAt: daysFromNow(6, 16),
+    status: "scheduled",
+  },
 ];
+
+/** Country display name -> flag emoji, keyed the same as
+ * Competition.country / Team.country strings used throughout this file so
+ * any component can look up a flag from plain country text without a
+ * second lookup table drifting out of sync with POPULAR_COUNTRIES. */
+export function getCountryFlag(countryName: string): string | null {
+  return POPULAR_COUNTRIES.find((c) => c.name === countryName)?.flagEmoji ?? null;
+}

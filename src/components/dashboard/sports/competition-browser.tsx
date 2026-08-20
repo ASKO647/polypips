@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ChevronRight, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { getCountryFlag } from "@/lib/sports/service";
 import type { Competition, Country, SportKey } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -83,7 +84,10 @@ export function CompetitionBrowser({
               >
                 <div>
                   <p className="text-sm font-semibold text-white">{comp.name}</p>
-                  <p className="text-xs text-white/40">{comp.country}</p>
+                  <p className="flex items-center gap-1.5 text-xs text-white/40">
+                    <span aria-hidden>{getCountryFlag(comp.country)}</span>
+                    {comp.country}
+                  </p>
                 </div>
                 <ChevronRight className="h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
               </Link>

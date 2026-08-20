@@ -24,12 +24,11 @@ export default function SportsMatchesPage() {
           return (
             <Link
               key={sport.key}
-              href={sport.active ? `/dashboard/sports/${sport.key}` : "/dashboard/sports/matches"}
-              aria-disabled={!sport.active}
+              href={`/dashboard/sports/${sport.key}`}
               className={`flex flex-col items-center gap-3 rounded-2xl border p-6 text-center transition-colors duration-150 ${
                 sport.active
                   ? "border-white/10 bg-white/[0.03] hover:border-brand-400/50"
-                  : "cursor-default border-white/5 bg-white/[0.015] opacity-50"
+                  : "border-white/5 bg-white/[0.015] opacity-60 hover:border-white/15 hover:opacity-90"
               }`}
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">

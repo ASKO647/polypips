@@ -4,6 +4,7 @@ import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SPORT_CATEGORIES, SPORT_ICONS } from "@/lib/sports/nav";
+import { getCountryFlag } from "@/lib/sports/service";
 import type { Competition } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +81,7 @@ export function FiltersDrawer({
               <option value="all">Toutes compétitions</option>
               {competitions.map((c) => (
                 <option key={c.id} value={c.id}>
+                  {getCountryFlag(c.country) ? `${getCountryFlag(c.country)} ` : ""}
                   {c.name}
                 </option>
               ))}

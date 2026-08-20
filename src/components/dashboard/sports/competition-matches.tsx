@@ -5,6 +5,7 @@ import { ArrowLeft, CalendarX } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import { Button } from "@/components/ui/button";
+import { getCountryFlag } from "@/lib/sports/service";
 import type { Competition, Match, SportKey } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -82,7 +83,10 @@ export function CompetitionMatches({
         <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
           {competition.name}
         </h1>
-        <p className="mt-1 text-sm text-white/45">{competition.country}</p>
+        <p className="mt-1 flex items-center gap-1.5 text-sm text-white/45">
+          <span aria-hidden>{getCountryFlag(competition.country)}</span>
+          {competition.country}
+        </p>
       </div>
 
       <div className="flex flex-wrap gap-2">

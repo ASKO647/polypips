@@ -5,7 +5,7 @@ import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-sta
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchFollowedTeamIds } from "@/lib/supabase/sports-follows";
-import { listTeams } from "@/lib/sports/service";
+import { getCountryFlag, listTeams } from "@/lib/sports/service";
 
 export const metadata: Metadata = {
   title: "Mes équipes — Sports — Polypips",
@@ -49,7 +49,10 @@ export default async function MesEquipesPage() {
                 <TeamBadge team={team} size="sm" />
                 <div>
                   <p className="text-sm font-semibold text-white">{team.name}</p>
-                  <p className="text-xs text-white/40">{team.country}</p>
+                  <p className="flex items-center gap-1.5 text-xs text-white/40">
+                    <span aria-hidden>{getCountryFlag(team.country)}</span>
+                    {team.country}
+                  </p>
                 </div>
               </div>
               <FollowTeamButton

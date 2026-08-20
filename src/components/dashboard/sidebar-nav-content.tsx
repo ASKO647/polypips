@@ -86,18 +86,14 @@ export function SidebarNavContent({
               return (
                 <Link
                   key={sport.key}
-                  href={sport.active ? href : "#"}
-                  prefetch={sport.active}
-                  onClick={sport.active ? onNavigate : (e) => e.preventDefault()}
-                  aria-disabled={!sport.active}
+                  href={href}
+                  prefetch
+                  onClick={onNavigate}
                   className={cn(
                     "flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150",
-                    !sport.active && "cursor-default opacity-40",
                     subActive
                       ? "bg-brand-500/10 text-brand-400"
-                      : sport.active
-                        ? "text-white/45 hover:bg-white/[0.05] hover:text-white"
-                        : "text-white/45"
+                      : "text-white/45 hover:bg-white/[0.05] hover:text-white"
                   )}
                 >
                   {sport.label}
