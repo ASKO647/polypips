@@ -9,6 +9,8 @@ import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { getPasswordStrength } from "@/lib/password-strength";
 import { createClient } from "@/lib/supabase/client";
 import { isPlanId } from "@/lib/stripe/plans";
+import { readStoredAttribution } from "@/lib/attribution/capture";
+import { recordSignupSource } from "@/lib/supabase/signup-sources";
 import { cn } from "@/lib/utils";
 
 const STRENGTH_COLORS = [
@@ -115,6 +117,14 @@ export function SignupForm({
       }
 
       if (data.session) {
+        // Only reached when email confirmation is disabled — the user is
+        // already authenticated, so this is the one signup path that
+        // never touches /auth/callback and has to record attribution
+        // itself instead.
+        const attribution = readStoredAttribution();
+        if (attribution && data.user) {
+          await recordSignupSource(supabase, data.user.id, attribution);
+        }
         router.push(next ?? "/dashboard");
         router.refresh();
         return;

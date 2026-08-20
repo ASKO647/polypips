@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { routing } from "@/i18n/routing";
+import { readStoredAttributionFromHeader } from "@/lib/attribution/capture";
+import { recordSignupSource } from "@/lib/supabase/signup-sources";
 
 const ALLOWED_ERROR_REDIRECTS = ["/signup", "/login"];
 
@@ -47,8 +49,16 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Covers Google OAuth signups and email/password signups that
+      // required confirmation — both land here. A no-op for an existing
+      // user simply logging back in via Google, since recordSignupSource
+      // ignores the duplicate rather than overwriting the original source.
+      const attribution = readStoredAttributionFromHeader(request.headers.get("cookie") ?? "");
+      if (attribution && data.user) {
+        await recordSignupSource(supabase, data.user.id, attribution);
+      }
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

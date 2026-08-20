@@ -10,6 +10,8 @@ import { CookieConsentBanner } from "@/components/cookies/cookie-consent-banner"
 import { ChatButton } from "@/components/layout/chat-button";
 import { ScrollRevealObserver } from "@/components/scroll-reveal-observer";
 import { TouchActiveEnabler } from "@/components/touch-active-enabler";
+import { VercelAnalyticsGate } from "@/components/analytics/vercel-analytics";
+import { AttributionCapture } from "@/components/attribution/attribution-capture";
 import "../globals.css";
 
 const inter = Inter({
@@ -61,6 +63,8 @@ export default async function LocaleLayout({
               <ChatButton />
               <ScrollRevealObserver />
               <TouchActiveEnabler />
+              <AttributionCapture />
+              <VercelAnalyticsGate />
               <CookieConsentBanner />
             </CookieConsentProvider>
           </ThemeProvider>
