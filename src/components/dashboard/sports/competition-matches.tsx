@@ -3,9 +3,10 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, CalendarX } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import { Button } from "@/components/ui/button";
-import { getCountryFlag } from "@/lib/sports/service";
+import { getCountryCode } from "@/lib/sports/service";
 import type { Competition, Match, SportKey } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -84,7 +85,7 @@ export function CompetitionMatches({
           {competition.name}
         </h1>
         <p className="mt-1 flex items-center gap-1.5 text-sm text-white/45">
-          <span aria-hidden>{getCountryFlag(competition.country)}</span>
+          <FlagIcon code={getCountryCode(competition.country)} className="h-3.5 w-5" />
           {competition.country}
         </p>
       </div>

@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { ChevronRight, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { getCountryFlag } from "@/lib/sports/service";
+import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
+import { getCountryCode } from "@/lib/sports/service";
 import type { Competition, Country, SportKey } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +60,7 @@ export function CompetitionBrowser({
                   : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white"
               )}
             >
-              <span aria-hidden>{country.flagEmoji}</span>
+              <FlagIcon code={country.code} className="h-3.5 w-5" />
               {country.name}
             </button>
           ))}
@@ -85,7 +86,7 @@ export function CompetitionBrowser({
                 <div>
                   <p className="text-sm font-semibold text-white">{comp.name}</p>
                   <p className="flex items-center gap-1.5 text-xs text-white/40">
-                    <span aria-hidden>{getCountryFlag(comp.country)}</span>
+                    <FlagIcon code={getCountryCode(comp.country)} className="h-3 w-[18px]" />
                     {comp.country}
                   </p>
                 </div>

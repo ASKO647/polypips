@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { getCountryFlag, listCompetitions } from "@/lib/sports/service";
+import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
+import { getCountryCode, listCompetitions } from "@/lib/sports/service";
 
 export const metadata: Metadata = {
   title: "Compétitions — Sports — Polypips",
@@ -31,7 +32,7 @@ export default async function SportsCompetitionsPage() {
             <div>
               <p className="text-sm font-semibold text-white">{comp.name}</p>
               <p className="flex items-center gap-1.5 text-xs text-white/40">
-                <span aria-hidden>{getCountryFlag(comp.country)}</span>
+                <FlagIcon code={getCountryCode(comp.country)} className="h-3 w-[18px]" />
                 {comp.country}
               </p>
             </div>

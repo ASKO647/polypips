@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Hand } from "lucide-react";
+import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
 import { FollowTeamButton } from "@/components/dashboard/sports/follow-team-button";
 import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchFollowedTeamIds } from "@/lib/supabase/sports-follows";
-import { getCountryFlag, listTeams } from "@/lib/sports/service";
+import { getCountryCode, listTeams } from "@/lib/sports/service";
 
 export const metadata: Metadata = {
   title: "Mes équipes — Sports — Polypips",
@@ -50,7 +51,7 @@ export default async function MesEquipesPage() {
                 <div>
                   <p className="text-sm font-semibold text-white">{team.name}</p>
                   <p className="flex items-center gap-1.5 text-xs text-white/40">
-                    <span aria-hidden>{getCountryFlag(team.country)}</span>
+                    <FlagIcon code={getCountryCode(team.country)} className="h-3 w-[18px]" />
                     {team.country}
                   </p>
                 </div>

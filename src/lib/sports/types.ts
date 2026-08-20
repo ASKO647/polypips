@@ -49,12 +49,19 @@ export type Team = {
    * form indicators — falls back to the app's own brand red when a team
    * has no defined color. */
   accentColor?: string;
+  /** Real crest URL, only ever populated once a genuine sports-data API is
+   * connected — never fabricated or scraped as a placeholder. Undefined
+   * until then, in which case TeamBadge falls back to the initials/color
+   * ring rendering. */
+  logoUrl?: string;
 };
 
 export type Country = {
+  /** Lowercase ISO 3166-1 alpha-2-ish code, keyed against FlagIcon's known
+   * flag set — "eu" is the one non-ISO exception, used for pan-European
+   * competitions. */
   code: string;
   name: string;
-  flagEmoji: string;
 };
 
 export type Competition = {

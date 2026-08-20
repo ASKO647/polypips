@@ -15,7 +15,7 @@
  * matter of populating that bundle for real instead of leaving it null.
  */
 import {
-  getCountryFlag,
+  getCountryCode,
   MOCK_COMPETITIONS,
   MOCK_MATCHES,
   MOCK_TEAMS,
@@ -45,7 +45,7 @@ export async function listCountries(): Promise<Country[]> {
 /** Pure lookup, not a network-backed fetch — re-exported here (rather than
  * imported from mock-data.ts directly) purely to keep the module's "go
  * through service.ts" convention consistent for every component. */
-export { getCountryFlag };
+export { getCountryCode };
 
 /** Competitions for a given sport, grouped by country — the shape the
  * "Football" drilldown screen's country/competition picker needs. */

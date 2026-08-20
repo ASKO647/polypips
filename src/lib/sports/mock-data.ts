@@ -15,12 +15,12 @@
 import type { Competition, Country, Match, Team } from "./types";
 
 export const POPULAR_COUNTRIES: Country[] = [
-  { code: "fr", name: "France", flagEmoji: "🇫🇷" },
-  { code: "gb", name: "Angleterre", flagEmoji: "🏴" },
-  { code: "es", name: "Espagne", flagEmoji: "🇪🇸" },
-  { code: "it", name: "Italie", flagEmoji: "🇮🇹" },
-  { code: "de", name: "Allemagne", flagEmoji: "🇩🇪" },
-  { code: "eu", name: "Europe", flagEmoji: "🇪🇺" },
+  { code: "fr", name: "France" },
+  { code: "gb", name: "Angleterre" },
+  { code: "es", name: "Espagne" },
+  { code: "it", name: "Italie" },
+  { code: "de", name: "Allemagne" },
+  { code: "eu", name: "Europe" },
 ];
 
 const LIGUE_1: Competition = { id: "ligue-1", name: "Ligue 1", country: "France", sport: "football" };
@@ -224,10 +224,10 @@ export const MOCK_MATCHES: Match[] = [
   },
 ];
 
-/** Country display name -> flag emoji, keyed the same as
+/** Country display name -> ISO-ish code (see FlagIcon), keyed the same as
  * Competition.country / Team.country strings used throughout this file so
- * any component can look up a flag from plain country text without a
+ * any component can resolve a <FlagIcon> from plain country text without a
  * second lookup table drifting out of sync with POPULAR_COUNTRIES. */
-export function getCountryFlag(countryName: string): string | null {
-  return POPULAR_COUNTRIES.find((c) => c.name === countryName)?.flagEmoji ?? null;
+export function getCountryCode(countryName: string): string | null {
+  return POPULAR_COUNTRIES.find((c) => c.name === countryName)?.code ?? null;
 }

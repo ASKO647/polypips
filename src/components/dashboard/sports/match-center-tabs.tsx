@@ -48,22 +48,31 @@ export function MatchCenterTabs({ analysis }: { analysis: MatchAnalysis }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            className={cn(
-              "shrink-0 snap-start rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
-              tab === t.key
-                ? "border-brand-400 bg-brand-500/15 text-brand-400"
-                : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+      {/* 7 tabs regularly overflow on narrow viewports (unlike the 4-tab
+          rows elsewhere in the dashboard) — the fade hints there's more to
+          scroll to, since nothing else here signals it. */}
+      <div className="relative -mx-1">
+        <div className="flex snap-x gap-1.5 overflow-x-auto px-1 pb-1">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "shrink-0 snap-start rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
+                tab === t.key
+                  ? "border-brand-400 bg-brand-500/15 text-brand-400"
+                  : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[#160b0c] to-transparent"
+        />
       </div>
 
       {tab === "overview" && (
