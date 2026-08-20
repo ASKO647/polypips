@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { routing } from "@/i18n/routing";
 import { readStoredAttributionFromHeader } from "@/lib/attribution/capture";
 import { recordSignupSource } from "@/lib/supabase/signup-sources";
+import { readInfluencerAttributionFromHeader } from "@/lib/influencers/attribution";
+import { recordInfluencerReferral } from "@/lib/supabase/influencer-referrals";
 
 const ALLOWED_ERROR_REDIRECTS = ["/signup", "/login"];
 
@@ -55,9 +57,14 @@ export async function GET(request: Request) {
       // required confirmation — both land here. A no-op for an existing
       // user simply logging back in via Google, since recordSignupSource
       // ignores the duplicate rather than overwriting the original source.
-      const attribution = readStoredAttributionFromHeader(request.headers.get("cookie") ?? "");
+      const cookieHeader = request.headers.get("cookie") ?? "";
+      const attribution = readStoredAttributionFromHeader(cookieHeader);
       if (attribution && data.user) {
         await recordSignupSource(supabase, data.user.id, attribution);
+      }
+      const influencerAttribution = readInfluencerAttributionFromHeader(cookieHeader);
+      if (influencerAttribution && data.user) {
+        await recordInfluencerReferral(supabase, data.user.id, influencerAttribution);
       }
       return NextResponse.redirect(`${origin}${next}`);
     }

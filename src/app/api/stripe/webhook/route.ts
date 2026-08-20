@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPlanId, planForPriceId, type PlanId } from "@/lib/stripe/plans";
+import { recordInfluencerConversion } from "@/lib/supabase/influencer-commissions";
 
 type DbStatus = "trialing" | "active" | "canceled" | "past_due";
 
@@ -101,6 +102,10 @@ async function handleCheckoutCompleted(
 
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   await upsertSubscription(supabase, userId, customerId, subscription);
+  // session.amount_total is the real amount charged this Checkout session
+  // (in cents) — exactly "le montant du premier paiement" the commission
+  // is computed from, no separate invoice fetch needed.
+  await recordInfluencerConversion(supabase, userId, session.amount_total);
 }
 
 async function handleSubscriptionUpdated(

@@ -20,7 +20,11 @@ import { routing } from "@/i18n/routing";
  * tool outside [locale], not a page next-intl should ever redirect or
  * localize — and letting it through here would also mean an unauthorized
  * visitor's request to that path gets touched (and its shape logged) by
- * this middleware before ever reaching the route's own auth check.
+ * this middleware before ever reaching the route's own auth check. /i is
+ * excluded for the same "no [locale] segment, must resolve its own
+ * redirect" reason as /auth/callback — see src/app/i/[slug]/route.ts —
+ * it's the short link handed to influencers and needs to stay short
+ * (/i/slug, never /fr/i/slug).
  *
  * The matcher below must be a statically-analyzable literal (Next.js
  * parses it at build time, a computed string fails the build) — so the
@@ -31,5 +35,5 @@ import { routing } from "@/i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  matcher: ["/((?!api|auth/callback|ctrl-9f4k2q7x|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/((?!api|auth/callback|ctrl-9f4k2q7x|i/|_next|_vercel|.*\\..*).*)"],
 };

@@ -2,7 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+  Tag,
+} from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
@@ -11,6 +20,9 @@ import { createClient } from "@/lib/supabase/client";
 import { isPlanId } from "@/lib/stripe/plans";
 import { readStoredAttribution } from "@/lib/attribution/capture";
 import { recordSignupSource } from "@/lib/supabase/signup-sources";
+import { applyInfluencerCode } from "@/lib/influencers/check-code-action";
+import { readInfluencerAttribution } from "@/lib/influencers/attribution";
+import { recordInfluencerReferral } from "@/lib/supabase/influencer-referrals";
 import { cn } from "@/lib/utils";
 
 const STRENGTH_COLORS = [
@@ -42,6 +54,10 @@ export function SignupForm({
   const [showPassword, setShowPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoCodeStatus, setPromoCodeStatus] = useState<
+    "idle" | "checking" | "valid" | "invalid"
+  >("idle");
   const [error, setError] = useState<React.ReactNode>(
     oauthError ? OAUTH_ERROR_MESSAGE : null
   );
@@ -49,6 +65,23 @@ export function SignupForm({
 
   const strength = useMemo(() => getPasswordStrength(password), [password]);
   const canSubmit = email.trim().length > 3 && password.length > 0 && agreed;
+
+  // Sets the influencer attribution cookie the moment a valid code is
+  // confirmed — well before signUp() runs, so it's already there by
+  // recordInfluencerReferral time in either branch below (immediate
+  // session, or /auth/callback after email confirmation). Also runs once
+  // more at submit time if the field still hasn't resolved (e.g. no blur
+  // event, browser autofill) so a valid code is never silently dropped.
+  const checkPromoCode = async (code: string) => {
+    const trimmed = code.trim();
+    if (!trimmed) {
+      setPromoCodeStatus("idle");
+      return;
+    }
+    setPromoCodeStatus("checking");
+    const { valid } = await applyInfluencerCode(trimmed);
+    setPromoCodeStatus(valid ? "valid" : "invalid");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +92,10 @@ export function SignupForm({
     setSubmitting(true);
 
     try {
+      if (promoCode.trim() && promoCodeStatus !== "valid" && promoCodeStatus !== "invalid") {
+        await checkPromoCode(promoCode);
+      }
+
       const supabase = createClient();
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
@@ -124,6 +161,10 @@ export function SignupForm({
         const attribution = readStoredAttribution();
         if (attribution && data.user) {
           await recordSignupSource(supabase, data.user.id, attribution);
+        }
+        const influencerAttribution = readInfluencerAttribution();
+        if (influencerAttribution && data.user) {
+          await recordInfluencerReferral(supabase, data.user.id, influencerAttribution);
         }
         router.push(next ?? "/dashboard");
         router.refresh();
@@ -255,6 +296,39 @@ export function SignupForm({
                 Mot de passe {strength.label.toLowerCase()}
               </span>
             </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="promo-code" className="text-sm font-semibold text-ink">
+            Code promo{" "}
+            <span className="font-normal text-body-soft">(optionnel)</span>
+          </label>
+          <div className="relative">
+            <Tag className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-body-soft" />
+            <input
+              id="promo-code"
+              type="text"
+              autoComplete="off"
+              placeholder="Ex : SARAH20"
+              value={promoCode}
+              onChange={(e) => {
+                setPromoCode(e.target.value);
+                setPromoCodeStatus("idle");
+              }}
+              onBlur={(e) => checkPromoCode(e.target.value)}
+              className="h-12 w-full rounded-xl border border-border-strong bg-surface pl-11 pr-4 text-sm text-ink placeholder:text-body-soft/70 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            />
+          </div>
+          {promoCodeStatus === "valid" && (
+            <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Code reconnu
+            </span>
+          )}
+          {promoCodeStatus === "invalid" && (
+            <span className="text-xs font-medium text-body-soft">
+              Code non reconnu — vous pouvez continuer sans, ou vérifier l&apos;orthographe.
+            </span>
           )}
         </div>
 
