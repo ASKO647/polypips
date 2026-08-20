@@ -1,9 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
-  listCandidateMarkets,
   fetchMarketBySlug,
-  GammaUnavailableError,
   MarketNotFoundError,
   type GammaMarket,
 } from "../analyze-market/gamma.ts";
@@ -12,97 +10,66 @@ import {
   fetchWalletActivity,
   fetchWalletPositions,
   fetchWalletValue,
-  fetchMarketHolders,
   WALLET_ADDRESS_RE,
   type WalletMovement,
   type WalletPosition,
 } from "./polymarket-data.ts";
+import { fetchMonthlyLeaderboard, LeaderboardUnavailableError } from "./leaderboard.ts";
 
 /**
  * Copy trading here means "watch + alert", never automatic execution —
  * see the copy_trading_suggestions table comment and the in-app tutorial.
- * This function (1) tops up the tracked_wallets pool by discovering wallets
- * that trade daily, are profitable more often than not, and bet across
- * several market categories (a composite score, not "biggest wallet by
- * value" — see scoreCandidate below) when the pool is thin, (2) refreshes
- * every tracked wallet's value/positions/activity, and (3) notifies every
- * user following a wallet (no strategy required) on each fresh movement,
- * and separately checks each active copy-trading strategy's fresh
- * movements against its own risk parameters for suggestions.
+ * This function (1) keeps the tracked_wallets "discovered" pool synced
+ * with Polymarket's own official monthly trader leaderboard — see
+ * leaderboard.ts — rather than a locally computed composite score,
+ * re-synced at most once every LEADERBOARD_RESYNC_INTERVAL_HOURS (not on
+ * every run — see that constant), (2) refreshes every tracked wallet's
+ * value/positions/activity, and (3) notifies every user following a
+ * wallet (no strategy required) on each fresh movement, and separately
+ * checks each active copy-trading strategy's fresh movements against its
+ * own risk parameters for suggestions.
  */
 
-/** Below this many tracked wallets, spend part of the run discovering more
- * instead of only refreshing the existing pool. */
-const MIN_TRACKED_WALLETS_POOL = 12;
-/** Cap on newly-discovered wallets per run — keeps a single run's Data API
- * call volume bounded. */
-const MAX_NEW_WALLETS_PER_RUN = 8;
-/** Sanity floor only — no longer the ranking criterion (see scoreCandidate).
- * Filters out true dust/bot addresses that technically hold a position but
- * aren't real traders, nothing more. */
-const MIN_DISCOVERY_WALLET_VALUE_USD = 1000;
-/** How many of the highest-volume current markets to pull holders from
- * when discovering new wallets. */
-const DISCOVERY_MARKETS_TO_SCAN = 5;
-const HOLDERS_PER_MARKET = 10;
+/** Exactly this many wallets make up the "discovered" pool — Polymarket's
+ * own top monthly traders, not a locally re-derived ranking. */
+const TRACKED_WALLET_COUNT = 10;
+/** Over-fetch beyond TRACKED_WALLET_COUNT so the recent-activity filter
+ * below still has enough leaderboard entries left after rejecting anyone
+ * who ranks well this month but isn't trading recently. */
+const LEADERBOARD_FETCH_LIMIT = 25;
+/** A leaderboard entry only counts as "actually still active" — not just
+ * coasting on one or two big wins earlier in the month — if it traded on
+ * at least this many distinct days within RECENT_ACTIVITY_LOOKBACK_DAYS.
+ * The leaderboard response itself carries no trade-count/frequency field
+ * to filter on directly, so this reuses distinctTradingDays() (below)
+ * against the wallet's real recent activity (already fetched via the
+ * existing Data API /activity endpoint) as a pass/fail gate — not a new
+ * locally computed ranking, just a recency check layered on top of
+ * Polymarket's own rank order. */
+const MIN_RECENT_TRADING_DAYS = 3;
+const RECENT_ACTIVITY_LOOKBACK_DAYS = 14;
+/**
+ * The leaderboard-based pool is only re-synced this often, not on every
+ * run (this function's cron runs every minute). Polymarket's monthly
+ * leaderboard doesn't meaningfully change minute to minute, and
+ * re-syncing more often would purge + reinsert tracked_wallets rows
+ * every run — which cascades to delete
+ * wallet_snapshots (on delete cascade) and would wipe the "évolution"
+ * chart history for the whole pool constantly instead of building it up
+ * over time.
+ *
+ * To change this cadence later: edit this constant and redeploy
+ * (`supabase functions deploy sync-smart-money`), or — with no code
+ * change at all — directly update `created_at` on the current
+ * source='discovered' rows in Supabase (push it further back to force an
+ * immediate resync on the next run, or forward to delay the next one).
+ * The gate compares against the OLDEST discovered wallet's created_at, so
+ * touching any one of the 10 rows is enough.
+ */
+const LEADERBOARD_RESYNC_INTERVAL_HOURS = 24;
 /** How many recent trades to fetch per wallet — powers both the
  * "mouvements récents" list and the copy-trading suggestion check. */
 const ACTIVITY_FETCH_LIMIT = 20;
-
-// --- Discovery scoring: "daily activity + profitable more often than not +
-// multi-category" instead of "biggest wallet by value." ---------------------
-
-/** Window used to judge whether a candidate trades "daily" and to compute
- * its recent win rate / P&L — long enough to smooth over a quiet day or
- * two, short enough that a wallet that's gone dormant doesn't still read
- * as active. */
-const DISCOVERY_LOOKBACK_DAYS = 14;
-/** Fetch a longer activity window than the normal refresh does — need
- * enough trades to actually count distinct trading days over
- * DISCOVERY_LOOKBACK_DAYS, not just the last handful of moves. */
-const DISCOVERY_ACTIVITY_FETCH_LIMIT = 50;
-/** Hard gate: fewer distinct trading days than this and a candidate is
- * disqualified outright, no matter how good its other numbers look — "bets
- * daily" is interpreted as "trades on a clear majority of days," not
- * literally 14/14, which would exclude any real trader who ever takes a day
- * off. Tune this directly if the intended bar is stricter or looser. */
-const MIN_DISTINCT_TRADING_DAYS = 5;
-/** Hard gate: fewer distinct categories among a candidate's recent trades
- * than this and it's disqualified — "bets in several categories," not "one
- * category, repeatedly." */
-const MIN_DISTINCT_CATEGORIES = 2;
-/** Cheap first pass (value + activity, no Gamma calls yet) narrows the raw
- * holder pool down to this many before the expensive second pass
- * (positions for win rate/P&L, Gamma lookups for category) runs — keeps a
- * single run's Data API + Gamma call volume bounded regardless of how many
- * raw holder addresses the discovery markets turn up. */
-const DISCOVERY_SHORTLIST_SIZE = 20;
-/** Hard cap on distinct market→category Gamma lookups in one run — a
- * shortlist of 20 wallets could otherwise reference 100+ distinct markets
- * between them. Lookups are shared via a single cache across the whole
- * shortlist (the same hot market shows up in many wallets' recent trades),
- * so this rarely actually gets hit in practice. */
-const MAX_CATEGORY_LOOKUPS_PER_RUN = 60;
-
-/** Composite score weights — daily activity, profitability (win rate +
- * P&L), and category diversity are each meant to matter, with
- * profitability split so a wallet's *consistency* (win rate) counts for
- * more than the raw size of its P&L (one lucky whale trade shouldn't
- * outweigh a wallet that wins most of the time). Sums to 1.0. */
-const WEIGHT_ACTIVITY = 0.35;
-const WEIGHT_WIN_RATE = 0.25;
-const WEIGHT_PNL = 0.15;
-const WEIGHT_DIVERSITY = 0.25;
-
-type ScoredCandidate = {
-  address: string;
-  value: number;
-  distinctTradingDays: number;
-  winRate: number;
-  totalPnl: number;
-  distinctCategories: number;
-  score: number;
-};
 
 function distinctTradingDays(activity: WalletMovement[], lookbackDays: number): number {
   const cutoff = Date.now() - lookbackDays * 24 * 60 * 60 * 1000;
@@ -126,35 +93,11 @@ function winRateAndPnl(positions: WalletPosition[]): { winRate: number; totalPnl
   };
 }
 
-/** Squashes P&L to 0..1 around a several-thousand-dollar scale (logistic)
- * so one outsized trade can't single-handedly dominate the score the way a
- * raw-dollar comparison would — this is "is it healthily positive," not a
- * leaderboard of absolute profit. */
-function pnlScore(totalPnl: number): number {
-  return 1 / (1 + Math.exp(-totalPnl / 5000));
-}
-
-function compositeScore(input: {
-  distinctTradingDays: number;
-  winRate: number;
-  totalPnl: number;
-  distinctCategories: number;
-}): number {
-  const activityScore = Math.min(1, input.distinctTradingDays / DISCOVERY_LOOKBACK_DAYS);
-  const diversityScore = Math.min(1, input.distinctCategories / 4);
-  return (
-    WEIGHT_ACTIVITY * activityScore +
-    WEIGHT_WIN_RATE * input.winRate +
-    WEIGHT_PNL * pnlScore(input.totalPnl) +
-    WEIGHT_DIVERSITY * diversityScore
-  );
-}
-
 /** Resolves a market slug (as seen in wallet activity's marketSlug field)
- * to its Gamma category, via a cache shared across the whole discovery
- * pass so the same hot market isn't looked up once per wallet that traded
- * it. Never throws — an unresolvable slug just doesn't contribute a
- * category, same defensive posture as the rest of this module. */
+ * to its Gamma category, via a cache shared across the whole refresh pass
+ * so the same hot market isn't looked up once per wallet that traded it.
+ * Never throws — an unresolvable slug just doesn't contribute a category,
+ * same defensive posture as the rest of this module. */
 async function resolveCategory(
   slug: string,
   cache: Map<string, string | null>,
@@ -215,9 +158,10 @@ function computeConsistencyScore(positions: WalletPosition[]): number {
 }
 
 /** Hard cap on distinct market→category Gamma lookups spent computing
- * category diversity across the *whole tracked pool* in one refresh pass —
- * mirrors MAX_CATEGORY_LOOKUPS_PER_RUN's discovery-time budget but is its
- * own separate budget, since refresh (unlike discovery) always runs. */
+ * category diversity across the *whole tracked pool* in one refresh pass
+ * — the same hot market can show up in many wallets' recent trades, so
+ * this rarely actually gets hit in practice, but bounds the worst case
+ * regardless of pool size. */
 const MAX_REFRESH_CATEGORY_LOOKUPS_PER_RUN = 80;
 
 type WalletQuality = {
@@ -539,118 +483,98 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
-  // --- 1. Discovery: top up the tracked pool if it's thin -----------------
-  const { count: trackedCount } = await supabase
+  // --- 1. Discovery: keep the "discovered" pool synced with Polymarket's
+  // real monthly leaderboard, re-synced at most once every
+  // LEADERBOARD_RESYNC_INTERVAL_HOURS (see that constant for why not
+  // every run). Wallets with source='user_added' are never touched here
+  // — that's a separate, user-driven feature untouched by this logic.
+  const { data: discoveredRows } = await supabase
     .from("tracked_wallets")
-    .select("id", { count: "exact", head: true });
+    .select("created_at")
+    .eq("source", "discovered")
+    .order("created_at", { ascending: true })
+    .limit(1);
+
+  const oldestDiscoveredAt = discoveredRows?.[0]?.created_at
+    ? new Date(discoveredRows[0].created_at as string).getTime()
+    : null;
+  // No discovered wallets tracked at all yet — always due (0 = "already
+  // past due", not "wait until the epoch").
+  const resyncDueAt =
+    oldestDiscoveredAt !== null
+      ? oldestDiscoveredAt + LEADERBOARD_RESYNC_INTERVAL_HOURS * 60 * 60 * 1000
+      : 0;
+  const leaderboardResyncDue = Date.now() >= resyncDueAt;
 
   let discovered = 0;
-  if ((trackedCount ?? 0) < MIN_TRACKED_WALLETS_POOL) {
+  let leaderboardSelection: Array<{ rank: number; address: string; label: string }> | null = null;
+
+  if (leaderboardResyncDue) {
     try {
-      const candidateMarkets = (await listCandidateMarkets(30))
-        .filter((m) => m.conditionId)
-        .slice(0, DISCOVERY_MARKETS_TO_SCAN);
+      const entries = await fetchMonthlyLeaderboard(LEADERBOARD_FETCH_LIMIT);
 
-      const { data: existingRows } = await supabase.from("tracked_wallets").select("address");
-      const existingAddresses = new Set(
-        (existingRows ?? []).map((r) => String(r.address).toLowerCase())
-      );
-
-      const holderSets = await mapWithConcurrency(candidateMarkets, 3, (market) =>
-        fetchMarketHolders(market.conditionId!, HOLDERS_PER_MARKET)
-      );
-      const candidateAddresses = Array.from(new Set(holderSets.flat())).filter(
-        (a) => !existingAddresses.has(a)
-      );
-
-      // Pass 1 (cheap): value + activity only, no Gamma calls yet. Narrows
-      // the raw holder pool — which can be dozens of addresses — down to a
-      // bounded shortlist before the expensive per-candidate work
-      // (positions for win rate/P&L, Gamma category lookups) runs.
-      const cheapEvaluated = await mapWithConcurrency(candidateAddresses, 5, async (address) => {
-        const [value, activity] = await Promise.all([
-          fetchWalletValue(address),
-          fetchWalletActivity(address, DISCOVERY_ACTIVITY_FETCH_LIMIT),
-        ]);
-        return { address, value, activity };
-      });
-
-      const shortlist = cheapEvaluated
-        .filter((w) => w.value >= MIN_DISCOVERY_WALLET_VALUE_USD)
-        .map((w) => ({ ...w, tradingDays: distinctTradingDays(w.activity, DISCOVERY_LOOKBACK_DAYS) }))
-        .filter((w) => w.tradingDays >= MIN_DISTINCT_TRADING_DAYS)
-        .sort((a, b) => b.tradingDays - a.tradingDays)
-        .slice(0, DISCOVERY_SHORTLIST_SIZE);
-
-      // Pass 2 (expensive): positions for win rate/P&L, and category
-      // lookups for every distinct market slug the shortlist traded
-      // recently — shared through one cache + one shrinking budget across
-      // the whole shortlist rather than per-wallet.
-      const categoryCache = new Map<string, string | null>();
-      const categoryBudget = { remaining: MAX_CATEGORY_LOOKUPS_PER_RUN };
-
-      const scored: ScoredCandidate[] = await mapWithConcurrency(shortlist, 5, async (w) => {
-        const positions = await fetchWalletPositions(w.address);
-        const { winRate, totalPnl } = winRateAndPnl(positions);
-
-        const slugs = Array.from(
-          new Set(w.activity.map((m) => m.marketSlug).filter((s): s is string => !!s))
-        );
-        const categories = new Set<string>();
-        for (const slug of slugs) {
-          const category = await resolveCategory(slug, categoryCache, categoryBudget);
-          if (category) categories.add(category);
-        }
-
+      // Recent-activity gate: the leaderboard itself carries no
+      // trade-count/frequency field, so this checks each candidate's real
+      // recent activity (already fetched via the existing Data API
+      // /activity endpoint) rather than trusting rank alone.
+      const withActivity = await mapWithConcurrency(entries, 5, async (entry) => {
+        const activity = await fetchWalletActivity(entry.address, ACTIVITY_FETCH_LIMIT);
         return {
-          address: w.address,
-          value: w.value,
-          distinctTradingDays: w.tradingDays,
-          winRate,
-          totalPnl,
-          distinctCategories: categories.size,
-          score: compositeScore({
-            distinctTradingDays: w.tradingDays,
-            winRate,
-            totalPnl,
-            distinctCategories: categories.size,
-          }),
+          entry,
+          tradingDays: distinctTradingDays(activity, RECENT_ACTIVITY_LOOKBACK_DAYS),
         };
       });
 
-      const qualifying = scored
-        .filter((w) => w.distinctCategories >= MIN_DISTINCT_CATEGORIES)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, MAX_NEW_WALLETS_PER_RUN);
-
       console.log(
-        "[sync-smart-money] discovery scoring",
-        scored
-          .sort((a, b) => b.score - a.score)
-          .map((w) => ({
-            address: w.address,
-            score: Number(w.score.toFixed(3)),
-            tradingDays: w.distinctTradingDays,
-            winRate: Number(w.winRate.toFixed(2)),
-            totalPnl: Math.round(w.totalPnl),
-            categories: w.distinctCategories,
-            qualifies: w.distinctCategories >= MIN_DISTINCT_CATEGORIES,
-          }))
+        "[sync-smart-money] monthly leaderboard resync",
+        withActivity.map((w) => ({
+          rank: w.entry.rank,
+          address: w.entry.address,
+          tradingDays: w.tradingDays,
+          qualifies: w.tradingDays >= MIN_RECENT_TRADING_DAYS,
+        }))
       );
 
-      for (const w of qualifying) {
-        const { error } = await supabase.from("tracked_wallets").insert({
-          address: w.address,
-          label: shortLabel(w.address),
-          source: "discovered",
-          total_value: w.value,
-        });
-        if (!error) discovered++;
+      const qualifying = withActivity
+        .filter((w) => w.tradingDays >= MIN_RECENT_TRADING_DAYS)
+        .sort((a, b) => a.entry.rank - b.entry.rank)
+        .slice(0, TRACKED_WALLET_COUNT)
+        .map((w) => ({
+          rank: w.entry.rank,
+          address: w.entry.address,
+          label: w.entry.userName ?? shortLabel(w.entry.address),
+        }));
+
+      if (qualifying.length > 0) {
+        const { error: deleteError } = await supabase
+          .from("tracked_wallets")
+          .delete()
+          .eq("source", "discovered");
+        if (deleteError) {
+          console.error(
+            "[sync-smart-money] failed to clear previous discovered pool",
+            deleteError
+          );
+        }
+
+        for (const w of qualifying) {
+          const { error } = await supabase.from("tracked_wallets").insert({
+            address: w.address,
+            label: w.label,
+            source: "discovered",
+          });
+          if (!error) discovered++;
+        }
+        leaderboardSelection = qualifying;
+      } else {
+        console.error(
+          "[sync-smart-money] monthly leaderboard resync found no qualifying wallets — keeping previous pool"
+        );
       }
     } catch (error) {
       console.error(
-        "[sync-smart-money] discovery failed",
-        error instanceof GammaUnavailableError ? error.message : error
+        "[sync-smart-money] leaderboard resync failed",
+        error instanceof LeaderboardUnavailableError ? error.message : error
       );
     }
   }
@@ -985,6 +909,8 @@ Deno.serve(async (req) => {
   const summary = {
     trackedWallets: wallets?.length ?? 0,
     discovered,
+    leaderboardResyncDue,
+    leaderboardSelection,
     refreshed: refreshed.filter((r) => r.ok).length,
     refreshFailed: refreshed.filter((r) => !r.ok).length,
     followNotificationsCreated,
