@@ -1,31 +1,35 @@
 /**
  * Service layer for the Sports module — every Sports page/component reads
- * through here, never through mock-data.ts directly. Every function is
- * already async, even though the mock implementation resolves
- * synchronously, so swapping the body for a real sports-data API call (and,
- * for match analysis, a real Anthropic call mirroring analyze-market's
- * analyzeMarket) later is a body-only change — no caller needs to be
- * touched.
+ * through here, never through Supabase directly. Backed by real data:
+ * sports_competitions_cache / sports_teams_cache / sports_fixtures_cache,
+ * populated by the sync-sports-data Edge Function from API-Sports (see
+ * that function's own file-level comment, and _shared/api-sports.ts, for
+ * the data source itself and its caveats).
  *
- * Fixture data (teams/competitions/matches) is mock-data.ts, clearly
- * isolated there. Every analytical field (probabilities, score,
- * opportunities, comparison stats, form, H2H, lineups, odds, model
- * accuracy...) is honestly empty here — emptyMatchAnalysis() below is the
- * one place that shape gets built, so wiring a real source later is a
- * matter of populating that bundle for real instead of leaving it null.
+ * IDs handed out to callers (Competition.id, Match.id, Team.id) are
+ * constructed strings — `${sport}-comp-${externalLeagueId}`,
+ * `${sport}-match-${externalFixtureId}`, `${sport}-team-${externalTeamId}`
+ * — never a cache table's own row uuid. sports_fixtures_cache rows are
+ * deleted and reinserted wholesale on every sync run (fresh uuids each
+ * time), so a follow row (sports_match_follows.match_id /
+ * sports_team_follows.team_id, both plain text) that stored a row uuid
+ * would silently point at nothing after the next sync. The external
+ * API-Sports numeric ID is what's actually stable across syncs, so that's
+ * what gets persisted.
+ *
+ * Every analytical field (probabilities, score, opportunities, comparison
+ * stats, form, H2H, lineups, odds, model accuracy...) is still honestly
+ * empty here — emptyMatchAnalysis() below is unchanged. Only the
+ * fixture/team/competition scheduling data below it is now real.
  */
-import {
-  getCountryCode,
-  MOCK_COMPETITIONS,
-  MOCK_MATCHES,
-  MOCK_TEAMS,
-  POPULAR_COUNTRIES,
-} from "./mock-data";
+import { createClient } from "@/lib/supabase/server";
+import { getCountryCode } from "./country-codes";
 import type {
   Competition,
   Country,
   Match,
   MatchAnalysis,
+  MatchStatus,
   ModelAccuracyStats,
   OpportunityFilters,
   OpportunityWithMatch,
@@ -34,38 +38,199 @@ import type {
   Team,
 } from "./types";
 
+function parseEntityId(
+  id: string,
+  kind: "comp" | "match" | "team"
+): { sport: string; externalId: number } | null {
+  const match = id.match(new RegExp(`^([a-z-]+)-${kind}-(\\d+)$`));
+  if (!match) return null;
+  return { sport: match[1], externalId: Number(match[2]) };
+}
+
+/** Re-exported so every existing `import { getCountryCode } from
+ * "@/lib/sports/service"` (Server Component callers) keeps working
+ * unchanged — see country-codes.ts for the actual implementation, split
+ * out because Client Component callers can't import this file (it pulls
+ * in lib/supabase/server.ts). */
+export { getCountryCode } from "./country-codes";
+
+type CompetitionRow = {
+  sport: string;
+  search_term: string;
+  external_league_id: number | null;
+  name: string | null;
+  country: string | null;
+  logo_url: string | null;
+  flag_url: string | null;
+};
+
+function toCompetition(row: CompetitionRow): Competition {
+  return {
+    id: `${row.sport}-comp-${row.external_league_id}`,
+    name: row.name ?? row.search_term,
+    country: row.country ?? "—",
+    sport: row.sport as SportKey,
+    logoUrl: row.logo_url ?? undefined,
+    flagUrl: row.flag_url ?? undefined,
+  };
+}
+
 export async function listCompetitions(sport?: SportKey): Promise<Competition[]> {
-  return sport ? MOCK_COMPETITIONS.filter((c) => c.sport === sport) : MOCK_COMPETITIONS;
+  const supabase = await createClient();
+  let query = supabase
+    .from("sports_competitions_cache")
+    .select("sport, search_term, external_league_id, name, country, logo_url, flag_url")
+    .not("external_league_id", "is", null)
+    .order("name", { ascending: true });
+  if (sport) query = query.eq("sport", sport);
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return (data as CompetitionRow[]).map(toCompetition);
 }
 
+/** Distinct countries actually represented among resolved competitions —
+ * computed from real cached data instead of a hardcoded list, so it grows
+ * on its own as more sports/competitions get added to sync-sports-data. */
 export async function listCountries(): Promise<Country[]> {
-  return POPULAR_COUNTRIES;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sports_competitions_cache")
+    .select("country")
+    .not("country", "is", null)
+    .not("external_league_id", "is", null);
+  if (error || !data) return [];
+
+  const seen = new Map<string, Country>();
+  for (const row of data as { country: string }[]) {
+    if (seen.has(row.country)) continue;
+    const code = getCountryCode(row.country);
+    if (code) seen.set(row.country, { code, name: row.country });
+  }
+  return Array.from(seen.values());
 }
 
-/** Pure lookup, not a network-backed fetch — re-exported here (rather than
- * imported from mock-data.ts directly) purely to keep the module's "go
- * through service.ts" convention consistent for every component. */
-export { getCountryCode };
-
-/** Competitions for a given sport, grouped by country — the shape the
- * "Football" drilldown screen's country/competition picker needs. */
 export async function listCompetitionsByCountry(
   sport: SportKey
 ): Promise<{ country: string; competitions: Competition[] }[]> {
-  const bySport = MOCK_COMPETITIONS.filter((c) => c.sport === sport);
-  const countries = Array.from(new Set(bySport.map((c) => c.country)));
+  const competitions = await listCompetitions(sport);
+  const countries = Array.from(new Set(competitions.map((c) => c.country)));
   return countries.map((country) => ({
     country,
-    competitions: bySport.filter((c) => c.country === country),
+    competitions: competitions.filter((c) => c.country === country),
   }));
 }
 
 export async function getCompetitionById(id: string): Promise<Competition | null> {
-  return MOCK_COMPETITIONS.find((c) => c.id === id) ?? null;
+  const parsed = parseEntityId(id, "comp");
+  if (!parsed) return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sports_competitions_cache")
+    .select("sport, search_term, external_league_id, name, country, logo_url, flag_url")
+    .eq("sport", parsed.sport)
+    .eq("external_league_id", parsed.externalId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return toCompetition(data as CompetitionRow);
+}
+
+type TeamRow = {
+  sport: string;
+  external_team_id: number;
+  name: string;
+  country: string | null;
+  logo_url: string | null;
+};
+
+function initialsFromName(name: string): string {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+  return initials || "?";
+}
+
+function toTeam(row: TeamRow): Team {
+  return {
+    id: `${row.sport}-team-${row.external_team_id}`,
+    name: row.name,
+    // API-Sports' fixtures/games responses only carry a team's full name,
+    // no separate short/nickname field — shortName mirrors name until a
+    // source for that exists.
+    shortName: row.name,
+    initials: initialsFromName(row.name),
+    country: row.country ?? "—",
+    logoUrl: row.logo_url ?? undefined,
+  };
 }
 
 export async function listTeams(): Promise<Team[]> {
-  return MOCK_TEAMS;
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sports_teams_cache")
+    .select("sport, external_team_id, name, country, logo_url")
+    .order("name", { ascending: true });
+  if (error || !data) return [];
+  return (data as TeamRow[]).map(toTeam);
+}
+
+type FixtureRow = {
+  sport: string;
+  external_fixture_id: number;
+  competition_id: string;
+  home_team_external_id: number;
+  home_team_name: string;
+  home_team_logo_url: string | null;
+  away_team_external_id: number;
+  away_team_name: string;
+  away_team_logo_url: string | null;
+  kickoff_at: string;
+  status: string;
+  competition: {
+    name: string | null;
+    country: string | null;
+    logo_url: string | null;
+    flag_url: string | null;
+    external_league_id: number | null;
+  } | null;
+};
+
+function teamFromFixtureSide(sport: string, externalId: number, name: string, logoUrl: string | null): Team {
+  return {
+    id: `${sport}-team-${externalId}`,
+    name,
+    shortName: name,
+    initials: initialsFromName(name),
+    country: "—",
+    logoUrl: logoUrl ?? undefined,
+  };
+}
+
+function toMatch(row: FixtureRow): Match {
+  const sport = row.sport as SportKey;
+  const competition: Competition = {
+    id: `${sport}-comp-${row.competition?.external_league_id ?? "inconnue"}`,
+    name: row.competition?.name ?? "Compétition",
+    country: row.competition?.country ?? "—",
+    sport,
+    logoUrl: row.competition?.logo_url ?? undefined,
+    flagUrl: row.competition?.flag_url ?? undefined,
+  };
+
+  return {
+    id: `${sport}-match-${row.external_fixture_id}`,
+    sport,
+    competition,
+    homeTeam: teamFromFixtureSide(sport, row.home_team_external_id, row.home_team_name, row.home_team_logo_url),
+    awayTeam: teamFromFixtureSide(sport, row.away_team_external_id, row.away_team_name, row.away_team_logo_url),
+    kickoffAt: row.kickoff_at,
+    status: row.status as MatchStatus,
+  };
 }
 
 export type MatchWindow = "today" | "tomorrow" | "week" | "all";
@@ -86,9 +251,11 @@ function matchesWindow(kickoffAt: string, window: MatchWindow | undefined): bool
   if (window === "tomorrow") {
     return kickoff >= startOfDay(1) && kickoff < startOfDay(2);
   }
-  // week
   return kickoff >= startOfDay(0) && kickoff < startOfDay(7);
 }
+
+const FIXTURE_SELECT =
+  "sport, external_fixture_id, competition_id, home_team_external_id, home_team_name, home_team_logo_url, away_team_external_id, away_team_name, away_team_logo_url, kickoff_at, status, competition:sports_competitions_cache(name, country, logo_url, flag_url, external_league_id)";
 
 export async function listUpcomingMatches(filters?: {
   sport?: SportKey;
@@ -96,23 +263,39 @@ export async function listUpcomingMatches(filters?: {
   teamId?: string;
   window?: MatchWindow;
 }): Promise<Match[]> {
-  return MOCK_MATCHES.filter((m) => {
-    if (filters?.sport && m.sport !== filters.sport) return false;
-    if (filters?.competitionId && m.competition.id !== filters.competitionId) return false;
-    if (
-      filters?.teamId &&
-      m.homeTeam.id !== filters.teamId &&
-      m.awayTeam.id !== filters.teamId
-    ) {
-      return false;
-    }
-    if (!matchesWindow(m.kickoffAt, filters?.window)) return false;
-    return true;
-  }).sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt));
+  const supabase = await createClient();
+  let query = supabase.from("sports_fixtures_cache").select(FIXTURE_SELECT).order("kickoff_at", { ascending: true });
+  if (filters?.sport) query = query.eq("sport", filters.sport);
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+
+  let matches = (data as unknown as FixtureRow[]).map(toMatch);
+
+  if (filters?.competitionId) {
+    matches = matches.filter((m) => m.competition.id === filters.competitionId);
+  }
+  if (filters?.teamId) {
+    matches = matches.filter((m) => m.homeTeam.id === filters.teamId || m.awayTeam.id === filters.teamId);
+  }
+  matches = matches.filter((m) => matchesWindow(m.kickoffAt, filters?.window));
+
+  return matches;
 }
 
 export async function getMatchById(id: string): Promise<Match | null> {
-  return MOCK_MATCHES.find((m) => m.id === id) ?? null;
+  const parsed = parseEntityId(id, "match");
+  if (!parsed) return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sports_fixtures_cache")
+    .select(FIXTURE_SELECT)
+    .eq("sport", parsed.sport)
+    .eq("external_fixture_id", parsed.externalId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return toMatch(data as unknown as FixtureRow);
 }
 
 /** The one place the "no invented numbers" rule is enforced structurally:
@@ -159,7 +342,11 @@ export async function getMatchAnalysis(id: string): Promise<MatchAnalysis | null
  * (Overview's "Top opportunités", the global Opportunités page, a match's
  * "Opportunités détectées" panel) reads from here. Empty until a real
  * detection pipeline runs against real stats — never backfilled with
- * plausible-looking mock opportunities. */
+ * plausible-looking mock opportunities. Real fixtures now flow through
+ * listUpcomingMatches; this stays empty because computing "opportunities"
+ * out of them needs a real odds/prediction model, which is a separate,
+ * not-yet-built piece — not something an API-Sports fixtures sync alone
+ * can honestly provide. */
 export async function listOpportunities(
   filters?: OpportunityFilters
 ): Promise<OpportunityWithMatch[]> {

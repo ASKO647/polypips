@@ -3,10 +3,11 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft, CalendarX } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { CompetitionBadge } from "@/components/dashboard/sports/competition-badge";
 import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import { Button } from "@/components/ui/button";
-import { getCountryCode } from "@/lib/sports/service";
+import { getCountryCode } from "@/lib/sports/country-codes";
 import type { Competition, Match, SportKey } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -81,7 +82,8 @@ export function CompetitionMatches({
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2} />
           Retour aux championnats
         </Link>
-        <h1 className="mt-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <h1 className="mt-3 flex items-center gap-3 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <CompetitionBadge competition={competition} />
           {competition.name}
         </h1>
         <p className="mt-1 flex items-center gap-1.5 text-sm text-white/45">

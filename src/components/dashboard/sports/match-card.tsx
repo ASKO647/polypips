@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { CompetitionBadge } from "@/components/dashboard/sports/competition-badge";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import type { Match } from "@/lib/sports/types";
 
@@ -18,7 +19,8 @@ export function MatchCard({ match }: { match: Match }) {
       className="group flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-150 hover:border-white/20"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/60">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold text-white/60">
+          <CompetitionBadge competition={match.competition} size="sm" />
           {match.competition.name}
         </span>
         <span className="text-xs font-medium text-white/40">

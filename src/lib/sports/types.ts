@@ -69,6 +69,13 @@ export type Competition = {
   name: string;
   country: string;
   sport: SportKey;
+  /** Real league crest, only ever populated once a genuine sports-data API
+   * is connected — same convention as Team.logoUrl. */
+  logoUrl?: string;
+  /** Real country/confederation flag as returned by the sports-data API —
+   * preferred over the static FlagIcon lookup when present, since it
+   * covers countries FlagIcon has no hand-drawn SVG for. */
+  flagUrl?: string;
 };
 
 export type MatchStatus = "scheduled" | "live" | "finished";

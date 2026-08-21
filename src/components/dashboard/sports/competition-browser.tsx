@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { ChevronRight, Search } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { CompetitionBadge } from "@/components/dashboard/sports/competition-badge";
 import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
-import { getCountryCode } from "@/lib/sports/service";
+import { getCountryCode } from "@/lib/sports/country-codes";
 import type { Competition, Country, SportKey } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -83,12 +84,15 @@ export function CompetitionBrowser({
                 href={`/dashboard/sports/${sport}/${comp.id}`}
                 className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors duration-150 hover:bg-white/[0.04]"
               >
-                <div>
-                  <p className="text-sm font-semibold text-white">{comp.name}</p>
-                  <p className="flex items-center gap-1.5 text-xs text-white/40">
-                    <FlagIcon code={getCountryCode(comp.country)} className="h-3 w-[18px]" />
-                    {comp.country}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <CompetitionBadge competition={comp} />
+                  <div>
+                    <p className="text-sm font-semibold text-white">{comp.name}</p>
+                    <p className="flex items-center gap-1.5 text-xs text-white/40">
+                      <FlagIcon code={getCountryCode(comp.country)} className="h-3 w-[18px]" />
+                      {comp.country}
+                    </p>
+                  </div>
                 </div>
                 <ChevronRight className="h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
               </Link>

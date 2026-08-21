@@ -91,6 +91,21 @@ function EuFlag() {
   );
 }
 
+/** Simplified (no 50-star field) — same level of detail as the other
+ * flags here, added once real US-based competitions (NBA, NHL, MLB, NFL)
+ * started flowing in from API-Sports. */
+function UsFlag() {
+  return (
+    <svg viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg">
+      <rect width="30" height="20" fill="#fff" />
+      {[0, 2, 4, 6, 8, 10, 12].map((y) => (
+        <rect key={y} y={y} width="30" height="1.54" fill="#B22234" />
+      ))}
+      <rect width="12" height="10.77" fill="#3C3B6E" />
+    </svg>
+  );
+}
+
 const FLAGS: Record<string, () => React.ReactElement> = {
   fr: FrFlag,
   gb: GbFlag,
@@ -98,6 +113,7 @@ const FLAGS: Record<string, () => React.ReactElement> = {
   it: ItFlag,
   de: DeFlag,
   eu: EuFlag,
+  us: UsFlag,
 };
 
 export function FlagIcon({ code, className }: { code: string | null | undefined; className?: string }) {

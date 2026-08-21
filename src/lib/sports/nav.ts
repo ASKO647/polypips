@@ -34,16 +34,25 @@ export const SPORTS_SUB_NAV: SportsSubNavItem[] = [
   { label: "Compétitions", href: "/dashboard/sports/competitions", icon: Swords },
 ];
 
+/** active reflects real API-Sports coverage wired into sync-sports-data
+ * (see SPORT_COMPETITIONS there and _shared/api-sports.ts's file comment)
+ * — not a UI-only toggle. Tennis and boxe are inactive because API-Sports
+ * (the account behind API_SPORTS_KEY) doesn't have a product for either
+ * sport at all, not because of a scope decision on this end. MMA's API
+ * does exist (v1.mma.api-sports.io) but models fighters/fights, not
+ * team-vs-team matches, so it doesn't fit this module's home/away Match
+ * shape without real changes — left inactive for the same reason, deferred
+ * rather than unsupported. */
 export const SPORT_CATEGORIES: SportCategory[] = [
   { key: "football", label: "Football", active: true },
-  { key: "basketball", label: "Basketball", active: false },
+  { key: "basketball", label: "Basketball", active: true },
   { key: "tennis", label: "Tennis", active: false },
-  { key: "nfl", label: "NFL", active: false },
-  { key: "rugby", label: "Rugby", active: false },
-  { key: "hockey", label: "Hockey", active: false },
+  { key: "nfl", label: "NFL", active: true },
+  { key: "rugby", label: "Rugby", active: true },
+  { key: "hockey", label: "Hockey", active: true },
   { key: "mma", label: "MMA", active: false },
   { key: "boxe", label: "Boxe", active: false },
-  { key: "baseball", label: "Baseball", active: false },
+  { key: "baseball", label: "Baseball", active: true },
 ];
 
 export const SPORT_ICONS: Record<SportKey, ComponentType<{ className?: string; strokeWidth?: number }>> = {

@@ -6,21 +6,24 @@ import { Link } from "@/i18n/navigation";
 import { MatchCard } from "@/components/dashboard/sports/match-card";
 import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
 import { StatTile } from "@/components/dashboard/sports/stat-tile";
-import type { Match, SportsOverviewStats } from "@/lib/sports/types";
+import { SPORT_CATEGORIES } from "@/lib/sports/nav";
+import type { Match, SportKey, SportsOverviewStats } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
-type QuickFilter = "all" | "opportunities" | "football" | "basketball" | "tennis" | "today" | "tomorrow" | "week";
+type QuickFilter = "all" | "opportunities" | "today" | "tomorrow" | "week" | SportKey;
+
+const ACTIVE_SPORTS = SPORT_CATEGORIES.filter((s) => s.active);
 
 const QUICK_FILTERS: { key: QuickFilter; label: string }[] = [
   { key: "all", label: "Tous" },
   { key: "opportunities", label: "Opportunités" },
-  { key: "football", label: "Football" },
-  { key: "basketball", label: "Basketball" },
-  { key: "tennis", label: "Tennis" },
+  ...ACTIVE_SPORTS.map((s) => ({ key: s.key as QuickFilter, label: s.label })),
   { key: "today", label: "Aujourd'hui" },
   { key: "tomorrow", label: "Demain" },
   { key: "week", label: "Cette semaine" },
 ];
+
+const ACTIVE_SPORT_KEYS = new Set<string>(ACTIVE_SPORTS.map((s) => s.key));
 
 function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -29,7 +32,7 @@ function isSameDay(a: Date, b: Date): boolean {
 function filterMatches(matches: Match[], filter: QuickFilter): Match[] {
   if (filter === "all") return matches;
   if (filter === "opportunities") return [];
-  if (filter === "football" || filter === "basketball" || filter === "tennis") {
+  if (ACTIVE_SPORT_KEYS.has(filter)) {
     return matches.filter((m) => m.sport === filter);
   }
   const now = new Date();
