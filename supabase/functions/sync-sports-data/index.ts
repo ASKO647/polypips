@@ -115,12 +115,18 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Deno.env.get() reads Edge Function secrets (Dashboard → Edge Functions
+  // → Secrets, or `supabase secrets set`) — a completely different store
+  // from the Vault (vault.decrypted_secrets), which only SQL/pg_cron/pg_net
+  // can read and which this runtime never touches. A key added to the
+  // Vault will never show up here; it has to be an Edge Function secret.
   const apiKey = Deno.env.get("API_SPORTS_KEY");
   if (!apiKey) {
     return new Response(
       JSON.stringify({
         error: "missing_api_key",
-        message: "La variable d'environnement API_SPORTS_KEY n'est pas configurée sur ce projet Supabase.",
+        message:
+          "API_SPORTS_KEY est introuvable comme secret de Edge Function. Vérifie Project Settings → Edge Functions → Secrets (ou `supabase secrets set API_SPORTS_KEY=...`) — PAS le Vault (Project Settings → Vault), qui est un système séparé que cette fonction ne lit jamais.",
       }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
