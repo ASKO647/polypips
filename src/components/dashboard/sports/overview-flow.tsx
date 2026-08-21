@@ -47,11 +47,9 @@ function filterMatches(matches: Match[], filter: QuickFilter): Match[] {
 }
 
 export function OverviewFlow({
-  firstName,
   stats,
   matches,
 }: {
-  firstName: string | null;
   stats: SportsOverviewStats;
   matches: Match[];
 }) {
@@ -63,7 +61,7 @@ export function OverviewFlow({
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Bonjour{firstName ? ` ${firstName}` : ""} !
+          Sports
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
           Votre aperçu sportif du jour — probabilités, statistiques et analyse IA.

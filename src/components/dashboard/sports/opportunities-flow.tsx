@@ -3,24 +3,30 @@
 import { useState } from "react";
 import { Flame, SlidersHorizontal } from "lucide-react";
 import { FiltersDrawer } from "@/components/dashboard/sports/filters-drawer";
+import { PillSelect } from "@/components/dashboard/sports/pill-select";
 import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
 import { SPORT_CATEGORIES } from "@/lib/sports/nav";
 import type { Competition } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
 const CONFIDENCE_OPTIONS = [
-  { label: "Toute confiance", value: 0 },
-  { label: "Confiance > 50%", value: 50 },
-  { label: "Confiance > 60%", value: 60 },
-  { label: "Confiance > 70%", value: 70 },
-  { label: "Confiance > 80%", value: 80 },
+  { label: "Toute confiance", value: "0" },
+  { label: "Confiance > 50%", value: "50" },
+  { label: "Confiance > 60%", value: "60" },
+  { label: "Confiance > 70%", value: "70" },
+  { label: "Confiance > 80%", value: "80" },
 ];
 
 export function OpportunitiesFlow({ competitions }: { competitions: Competition[] }) {
   const [sport, setSport] = useState<string>("all");
-  const [minConfidence, setMinConfidence] = useState(0);
+  const [minConfidence, setMinConfidence] = useState("0");
   const [competitionId, setCompetitionId] = useState<string>("all");
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const competitionOptions = [
+    { label: "Toutes compétitions", value: "all" },
+    ...competitions.map((c) => ({ label: c.name, value: c.id })),
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -66,29 +72,8 @@ export function OpportunitiesFlow({ competitions }: { competitions: Competition[
       </div>
 
       <div className="flex flex-wrap items-center gap-2.5">
-        <select
-          value={minConfidence}
-          onChange={(e) => setMinConfidence(Number(e.target.value))}
-          className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs font-semibold text-white/70 outline-none focus:border-brand-400"
-        >
-          {CONFIDENCE_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={competitionId}
-          onChange={(e) => setCompetitionId(e.target.value)}
-          className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-xs font-semibold text-white/70 outline-none focus:border-brand-400"
-        >
-          <option value="all">Toutes compétitions</option>
-          {competitions.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <PillSelect value={minConfidence} options={CONFIDENCE_OPTIONS} onChange={setMinConfidence} />
+        <PillSelect value={competitionId} options={competitionOptions} onChange={setCompetitionId} />
         <button
           type="button"
           onClick={() => setFiltersOpen(true)}

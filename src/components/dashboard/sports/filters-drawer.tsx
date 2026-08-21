@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { PillSelect } from "@/components/dashboard/sports/pill-select";
 import { Button } from "@/components/ui/button";
 import { SPORT_CATEGORIES, SPORT_ICONS } from "@/lib/sports/nav";
 import type { Competition } from "@/lib/sports/types";
@@ -72,18 +73,16 @@ export function FiltersDrawer({
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">
               Compétitions
             </p>
-            <select
+            <PillSelect
               value={competitionId}
-              onChange={(e) => setCompetitionId(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none focus:border-brand-400"
-            >
-              <option value="all">Toutes compétitions</option>
-              {competitions.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name} — {c.country}
-                </option>
-              ))}
-            </select>
+              onChange={setCompetitionId}
+              options={[
+                { label: "Toutes compétitions", value: "all" },
+                ...competitions.map((c) => ({ label: `${c.name} — ${c.country}`, value: c.id })),
+              ]}
+              triggerClassName="w-full justify-between rounded-xl bg-white/[0.04] px-3 py-2.5 text-sm text-white"
+              panelClassName="w-full"
+            />
           </div>
 
           <div>
@@ -182,17 +181,13 @@ export function FiltersDrawer({
 
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">Trier par</p>
-            <select
+            <PillSelect
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-sm text-white outline-none focus:border-brand-400"
-            >
-              {SORT_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+              onChange={setSortBy}
+              options={SORT_OPTIONS.map((o) => ({ label: o, value: o }))}
+              triggerClassName="w-full justify-between rounded-xl bg-white/[0.04] px-3 py-2.5 text-sm text-white"
+              panelClassName="w-full"
+            />
           </div>
         </div>
 
