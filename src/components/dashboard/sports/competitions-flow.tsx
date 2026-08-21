@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { CompetitionBadge } from "@/components/dashboard/sports/competition-badge";
 import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
-import { SPORT_CATEGORIES } from "@/lib/sports/nav";
+import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS } from "@/lib/sports/nav";
 import { getCountryCode } from "@/lib/sports/country-codes";
 import type { Competition } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
  * rather than a generic icon. */
 export function CompetitionsFlow({ competitions }: { competitions: Competition[] }) {
   const [sport, setSport] = useState<string>("all");
-
-  const activeSports = useMemo(() => SPORT_CATEGORIES.filter((s) => s.active), []);
 
   const filtered = useMemo(
     () => (sport === "all" ? competitions : competitions.filter((c) => c.sport === sport)),
@@ -48,18 +46,19 @@ export function CompetitionsFlow({ competitions }: { competitions: Competition[]
         >
           Tous
         </button>
-        {activeSports.map((s) => (
+        {ACTIVE_SPORT_CATEGORIES.map((s) => (
           <button
             key={s.key}
             type="button"
             onClick={() => setSport(s.key)}
             className={cn(
-              "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
+              "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
               sport === s.key
                 ? "border-brand-400 bg-brand-500/15 text-brand-400"
                 : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
             )}
           >
+            <span aria-hidden>{SPORT_EMOJIS[s.key]}</span>
             {s.label}
           </button>
         ))}

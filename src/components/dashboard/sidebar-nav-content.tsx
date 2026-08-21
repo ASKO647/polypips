@@ -10,7 +10,7 @@ import {
   DASHBOARD_RESOURCE_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
-import { SPORT_CATEGORIES, SPORTS_SUB_NAV } from "@/lib/sports/nav";
+import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
@@ -80,7 +80,7 @@ export function SidebarNavContent({
             <p className="mb-0.5 mt-2 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-white/25">
               Sports
             </p>
-            {SPORT_CATEGORIES.map((sport) => {
+            {ACTIVE_SPORT_CATEGORIES.map((sport) => {
               const href = `/dashboard/sports/${sport.key}`;
               const subActive = pathname === href;
               return (
@@ -90,18 +90,14 @@ export function SidebarNavContent({
                   prefetch
                   onClick={onNavigate}
                   className={cn(
-                    "flex items-center justify-between gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150",
+                    "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150",
                     subActive
                       ? "bg-brand-500/10 text-brand-400"
                       : "text-white/45 hover:bg-white/[0.05] hover:text-white"
                   )}
                 >
+                  <span aria-hidden>{SPORT_EMOJIS[sport.key]}</span>
                   {sport.label}
-                  {!sport.active && (
-                    <span className="rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/35">
-                      Bientôt
-                    </span>
-                  )}
                 </Link>
               );
             })}

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 import { PillSelect } from "@/components/dashboard/sports/pill-select";
 import { Button } from "@/components/ui/button";
-import { SPORT_CATEGORIES, SPORT_ICONS } from "@/lib/sports/nav";
+import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS } from "@/lib/sports/nav";
 import type { Competition } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -88,27 +88,24 @@ export function FiltersDrawer({
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">Sports</p>
             <div className="grid grid-cols-4 gap-2">
-              {SPORT_CATEGORIES.map((s) => {
-                const Icon = SPORT_ICONS[s.key];
-                return (
-                  <button
-                    key={s.key}
-                    type="button"
-                    disabled={!s.active}
-                    onClick={() => setSport(s.key)}
-                    className={cn(
-                      "flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-[10px] font-semibold transition-colors duration-150",
-                      !s.active && "cursor-not-allowed opacity-40",
-                      sport === s.key
-                        ? "border-brand-400 bg-brand-500/15 text-brand-400"
-                        : "border-white/10 bg-white/[0.03] text-white/55"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" strokeWidth={2} />
-                    {s.label}
-                  </button>
-                );
-              })}
+              {ACTIVE_SPORT_CATEGORIES.map((s) => (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => setSport(s.key)}
+                  className={cn(
+                    "flex flex-col items-center gap-1.5 rounded-xl border px-2 py-3 text-[10px] font-semibold transition-colors duration-150",
+                    sport === s.key
+                      ? "border-brand-400 bg-brand-500/15 text-brand-400"
+                      : "border-white/10 bg-white/[0.03] text-white/55"
+                  )}
+                >
+                  <span className="text-base leading-none" aria-hidden>
+                    {SPORT_EMOJIS[s.key]}
+                  </span>
+                  {s.label}
+                </button>
+              ))}
             </div>
           </div>
 

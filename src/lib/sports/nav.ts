@@ -4,19 +4,7 @@
  * DASHBOARD_NAV_ITEMS/DASHBOARD_RESOURCE_ITEMS in dashboard-nav.ts.
  */
 import type { ComponentType } from "react";
-import {
-  Bike,
-  CircleDot,
-  Compass,
-  Dumbbell,
-  Flame,
-  Goal,
-  Hand,
-  Star,
-  Swords,
-  Trophy,
-  Volleyball,
-} from "lucide-react";
+import { Compass, Flame, Hand, Star, Swords, Trophy } from "lucide-react";
 import type { SportCategory, SportKey } from "./types";
 
 export type SportsSubNavItem = {
@@ -55,17 +43,31 @@ export const SPORT_CATEGORIES: SportCategory[] = [
   { key: "baseball", label: "Baseball", active: true },
 ];
 
-export const SPORT_ICONS: Record<SportKey, ComponentType<{ className?: string; strokeWidth?: number }>> = {
-  football: Goal,
-  basketball: CircleDot,
-  tennis: Volleyball,
-  nfl: Trophy,
-  rugby: Swords,
-  hockey: Bike,
-  mma: Dumbbell,
-  boxe: Hand,
-  baseball: CircleDot,
+/** A clearly sport-specific emoji beats a generic/arbitrary lucide icon —
+ * every SportKey has one here, including tennis/mma/boxe, so the mapping
+ * is ready the moment a real data source exists for them. That's separate
+ * from SPORT_CATEGORIES' `active` flag, which is what actually gates
+ * whether a sport can be selected anywhere in the UI — see
+ * ACTIVE_SPORT_CATEGORIES below; nothing should render an emoji for a
+ * sport a user can't actually pick. */
+export const SPORT_EMOJIS: Record<SportKey, string> = {
+  football: "⚽",
+  basketball: "🏀",
+  tennis: "🎾",
+  nfl: "🏈",
+  rugby: "🏉",
+  hockey: "🏒",
+  mma: "🥋",
+  boxe: "🥊",
+  baseball: "⚾",
 };
+
+/** Every sport picker/selector in the Sports module renders from this, not
+ * the full SPORT_CATEGORIES — a sport with no real data source connected
+ * (tennis/mma/boxe, see the comment above) must never appear as a
+ * selectable choice, only its emoji sits ready in SPORT_EMOJIS above for
+ * whenever that changes. */
+export const ACTIVE_SPORT_CATEGORIES: SportCategory[] = SPORT_CATEGORIES.filter((s) => s.active);
 
 export function getSportCategory(key: string): SportCategory | undefined {
   return SPORT_CATEGORIES.find((s) => s.key === key);

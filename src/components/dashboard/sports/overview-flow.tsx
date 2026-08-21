@@ -6,24 +6,22 @@ import { Link } from "@/i18n/navigation";
 import { MatchCard } from "@/components/dashboard/sports/match-card";
 import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
 import { StatTile } from "@/components/dashboard/sports/stat-tile";
-import { SPORT_CATEGORIES } from "@/lib/sports/nav";
+import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS } from "@/lib/sports/nav";
 import type { Match, SportKey, SportsOverviewStats } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
 type QuickFilter = "all" | "opportunities" | "today" | "tomorrow" | "week" | SportKey;
 
-const ACTIVE_SPORTS = SPORT_CATEGORIES.filter((s) => s.active);
-
-const QUICK_FILTERS: { key: QuickFilter; label: string }[] = [
+const QUICK_FILTERS: { key: QuickFilter; label: string; emoji?: string }[] = [
   { key: "all", label: "Tous" },
   { key: "opportunities", label: "Opportunités" },
-  ...ACTIVE_SPORTS.map((s) => ({ key: s.key as QuickFilter, label: s.label })),
+  ...ACTIVE_SPORT_CATEGORIES.map((s) => ({ key: s.key as QuickFilter, label: s.label, emoji: SPORT_EMOJIS[s.key] })),
   { key: "today", label: "Aujourd'hui" },
   { key: "tomorrow", label: "Demain" },
   { key: "week", label: "Cette semaine" },
 ];
 
-const ACTIVE_SPORT_KEYS = new Set<string>(ACTIVE_SPORTS.map((s) => s.key));
+const ACTIVE_SPORT_KEYS = new Set<string>(ACTIVE_SPORT_CATEGORIES.map((s) => s.key));
 
 function isSameDay(a: Date, b: Date): boolean {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -130,12 +128,13 @@ export function OverviewFlow({
               type="button"
               onClick={() => setFilter(f.key)}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
+                "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
                 filter === f.key
                   ? "border-brand-400 bg-brand-500/15 text-brand-400"
                   : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
               )}
             >
+              {f.emoji && <span aria-hidden>{f.emoji}</span>}
               {f.label}
             </button>
           ))}

@@ -5,7 +5,7 @@ import { Flame, SlidersHorizontal } from "lucide-react";
 import { FiltersDrawer } from "@/components/dashboard/sports/filters-drawer";
 import { PillSelect } from "@/components/dashboard/sports/pill-select";
 import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
-import { SPORT_CATEGORIES } from "@/lib/sports/nav";
+import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS } from "@/lib/sports/nav";
 import type { Competition } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
@@ -52,20 +52,19 @@ export function OpportunitiesFlow({ competitions }: { competitions: Competition[
         >
           Tous
         </button>
-        {SPORT_CATEGORIES.map((s) => (
+        {ACTIVE_SPORT_CATEGORIES.map((s) => (
           <button
             key={s.key}
             type="button"
-            disabled={!s.active}
             onClick={() => setSport(s.key)}
             className={cn(
-              "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
-              !s.active && "cursor-not-allowed opacity-40",
+              "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
               sport === s.key
                 ? "border-brand-400 bg-brand-500/15 text-brand-400"
                 : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
             )}
           >
+            <span aria-hidden>{SPORT_EMOJIS[s.key]}</span>
             {s.label}
           </button>
         ))}

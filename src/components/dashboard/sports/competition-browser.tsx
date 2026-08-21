@@ -6,28 +6,42 @@ import { Link } from "@/i18n/navigation";
 import { CompetitionBadge } from "@/components/dashboard/sports/competition-badge";
 import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
 import { getCountryCode } from "@/lib/sports/country-codes";
-import type { Competition, Country, SportKey } from "@/lib/sports/types";
-import { cn } from "@/lib/utils";
+import type { Competition, SportKey } from "@/lib/sports/types";
 
+/**
+ * Sport → Pays → Compétition, in that order — one section per country,
+ * each listing that country's real competitions (from
+ * listCompetitionsByCountry, itself backed by sports_competitions_cache).
+ * A competition with zero near-term fixtures still shows up here (this
+ * list never filters on fixture presence); its own page is what renders
+ * the honest "Aucun match disponible" state — see competition-matches.tsx.
+ */
 export function CompetitionBrowser({
   sport,
-  competitions,
-  countries,
+  groups,
 }: {
   sport: SportKey;
-  competitions: Competition[];
-  countries: Country[];
+  groups: { country: string; competitions: Competition[] }[];
 }) {
   const [query, setQuery] = useState("");
-  const [countryFilter, setCountryFilter] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    return competitions.filter((c) => {
-      if (countryFilter && c.country !== countryFilter) return false;
-      if (query && !c.name.toLowerCase().includes(query.toLowerCase())) return false;
-      return true;
-    });
-  }, [competitions, query, countryFilter]);
+  const sortedGroups = useMemo(
+    () => [...groups].sort((a, b) => a.country.localeCompare(b.country)),
+    [groups]
+  );
+
+  const filteredGroups = useMemo(() => {
+    if (!query.trim()) return sortedGroups;
+    const q = query.toLowerCase();
+    return sortedGroups
+      .map((group) => ({
+        ...group,
+        competitions: group.competitions.filter((c) => c.name.toLowerCase().includes(q)),
+      }))
+      .filter((group) => group.competitions.length > 0);
+  }, [sortedGroups, query]);
+
+  const totalCompetitions = groups.reduce((sum, g) => sum + g.competitions.length, 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -37,69 +51,47 @@ export function CompetitionBrowser({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Rechercher un championnat, une équipe..."
+          placeholder="Rechercher un championnat..."
           className="w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/30 outline-none focus:border-brand-400"
         />
       </div>
 
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/40">
-          Pays populaires
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {countries.map((country) => (
-            <button
-              key={country.code}
-              type="button"
-              onClick={() =>
-                setCountryFilter((prev) => (prev === country.name ? null : country.name))
-              }
-              className={cn(
-                "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
-                countryFilter === country.name
-                  ? "border-brand-400 bg-brand-500/15 text-brand-400"
-                  : "border-white/10 bg-white/[0.03] text-white/60 hover:border-white/20 hover:text-white"
-              )}
-            >
-              <FlagIcon code={country.code} className="h-3.5 w-5" />
-              {country.name}
-            </button>
+      {totalCompetitions === 0 ? (
+        <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-10 text-center text-sm text-white/45">
+          Aucune compétition disponible pour ce sport pour l&apos;instant.
+        </p>
+      ) : filteredGroups.length === 0 ? (
+        <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-8 text-center text-sm text-white/45">
+          Aucun championnat ne correspond à cette recherche.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {filteredGroups.map((group) => (
+            <div key={group.country}>
+              <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/40">
+                <FlagIcon code={getCountryCode(group.country)} className="h-3.5 w-5" />
+                {group.country}
+                <span className="text-white/25">— {group.competitions.length}</span>
+              </h2>
+              <div className="flex flex-col divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+                {group.competitions.map((comp) => (
+                  <Link
+                    key={comp.id}
+                    href={`/dashboard/sports/${sport}/${comp.id}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors duration-150 hover:bg-white/[0.04]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <CompetitionBadge competition={comp} />
+                      <p className="text-sm font-semibold text-white">{comp.name}</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
-      </div>
-
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-white/40">
-          Championnats populaires
-        </h2>
-        {filtered.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-5 py-8 text-center text-sm text-white/45">
-            Aucun championnat ne correspond à cette recherche.
-          </p>
-        ) : (
-          <div className="flex flex-col divide-y divide-white/5 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-            {filtered.map((comp) => (
-              <Link
-                key={comp.id}
-                href={`/dashboard/sports/${sport}/${comp.id}`}
-                className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors duration-150 hover:bg-white/[0.04]"
-              >
-                <div className="flex items-center gap-3">
-                  <CompetitionBadge competition={comp} />
-                  <div>
-                    <p className="text-sm font-semibold text-white">{comp.name}</p>
-                    <p className="flex items-center gap-1.5 text-xs text-white/40">
-                      <FlagIcon code={getCountryCode(comp.country)} className="h-3 w-[18px]" />
-                      {comp.country}
-                    </p>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

@@ -4,8 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { CompetitionBrowser } from "@/components/dashboard/sports/competition-browser";
 import { NotifySportButton } from "@/components/dashboard/sports/notify-sport-button";
-import { getSportCategory, SPORT_ICONS } from "@/lib/sports/nav";
-import { listCompetitions, listCountries } from "@/lib/sports/service";
+import { getSportCategory, SPORT_EMOJIS } from "@/lib/sports/nav";
+import { listCompetitionsByCountry } from "@/lib/sports/service";
 import type { SportKey } from "@/lib/sports/types";
 
 export async function generateMetadata({
@@ -28,7 +28,6 @@ export default async function SportCategoryPage({
   if (!category) notFound();
 
   if (!category.active) {
-    const Icon = SPORT_ICONS[category.key];
     return (
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-4">
@@ -47,8 +46,8 @@ export default async function SportCategoryPage({
         </h1>
 
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-white/10 bg-white/[0.02] px-6 py-20 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.05]">
-            <Icon className="h-6 w-6 text-white/30" strokeWidth={2} />
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.05] text-2xl opacity-40">
+            {SPORT_EMOJIS[category.key]}
           </span>
           <div className="flex flex-col gap-1.5">
             <p className="font-display text-lg font-bold text-white">
@@ -73,17 +72,15 @@ export default async function SportCategoryPage({
     );
   }
 
-  const [competitions, countries] = await Promise.all([
-    listCompetitions(category.key as SportKey),
-    listCountries(),
-  ]);
+  const groups = await listCompetitionsByCountry(category.key as SportKey);
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+      <h1 className="flex items-center gap-2.5 font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <span aria-hidden>{SPORT_EMOJIS[category.key]}</span>
         {category.label}
       </h1>
-      <CompetitionBrowser sport={category.key} competitions={competitions} countries={countries} />
+      <CompetitionBrowser sport={category.key} groups={groups} />
     </div>
   );
 }

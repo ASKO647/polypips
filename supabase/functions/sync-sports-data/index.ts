@@ -30,18 +30,51 @@ import {
  * unverified against a live response.
  */
 
-/** The "biggest competitions" list this module covers today — deliberately
- * curated (not "every league API-Sports has"), matching the scope of the
- * football-only fixture list this replaces. Add a row here (plus flip that
- * sport to active: true in src/lib/sports/nav.ts once real data is
- * confirmed flowing) to extend coverage — no other code change needed. */
+/** The competitions this module covers today — deliberately curated (not
+ * "every league API-Sports has"), but per-country coverage for football
+ * now goes beyond just the top flight to match how the Compétitions
+ * browser (Sport → Pays → Compétition) actually reads: a country groups
+ * ALL of its real competitions, not just its headline league, so France
+ * needs Ligue 1 *and* Ligue 2 *and* Coupe de France to render the way the
+ * feature is meant to. The other sports stay at one entry per country —
+ * unlike football, none of NBA/NHL/MLB/NFL/Top 14 has a real second-tier
+ * league or domestic cup on API-Sports to add, so one competition per
+ * country is already complete there, not an arbitrary scope cut. Add a
+ * row here (plus flip that sport to active: true in src/lib/sports/nav.ts
+ * once real data is confirmed flowing) to extend coverage — no other code
+ * change needed.
+ *
+ * Quota note: each sport has its own separate 100/day free quota (a
+ * different API-Sports host per sport — see SPORT_API_CONFIG), and each
+ * row costs at most 1 request/run once resolved (search only re-runs
+ * every RESOLVE_STALE_DAYS). Football is the dense one at 16 rows: a
+ * 6-hour cron (4 runs/day) costs ~64 requests/day against its 100/day
+ * quota — comfortable headroom. Every other sport here has at most 2
+ * rows, nowhere near its own quota at that same cadence. Don't drop below
+ * 6h without trimming football's list first. */
 const SPORT_COMPETITIONS: { sport: ApiSportsKey; searchTerm: string }[] = [
-  { sport: "football", searchTerm: "Premier League" },
-  { sport: "football", searchTerm: "La Liga" },
-  { sport: "football", searchTerm: "Serie A" },
-  { sport: "football", searchTerm: "Bundesliga" },
+  // France
   { sport: "football", searchTerm: "Ligue 1" },
+  { sport: "football", searchTerm: "Ligue 2" },
+  { sport: "football", searchTerm: "Coupe de France" },
+  // England
+  { sport: "football", searchTerm: "Premier League" },
+  { sport: "football", searchTerm: "Championship" },
+  { sport: "football", searchTerm: "FA Cup" },
+  // Spain
+  { sport: "football", searchTerm: "La Liga" },
+  { sport: "football", searchTerm: "Copa del Rey" },
+  // Italy
+  { sport: "football", searchTerm: "Serie A" },
+  { sport: "football", searchTerm: "Serie B" },
+  { sport: "football", searchTerm: "Coppa Italia" },
+  // Germany
+  { sport: "football", searchTerm: "Bundesliga" },
+  { sport: "football", searchTerm: "2. Bundesliga" },
+  { sport: "football", searchTerm: "DFB Pokal" },
+  // Europe
   { sport: "football", searchTerm: "UEFA Champions League" },
+  { sport: "football", searchTerm: "UEFA Europa League" },
   { sport: "basketball", searchTerm: "NBA" },
   { sport: "basketball", searchTerm: "EuroLeague" },
   { sport: "hockey", searchTerm: "NHL" },
