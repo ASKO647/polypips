@@ -7,7 +7,8 @@ type AnalysisRow = {
   category: string;
   created_at: string;
   market_slug: string | null;
-  decision: "YES" | "NO";
+  decision: string;
+  outcomes: string[] | null;
   ai_probability: number;
   market_probability: number;
   edge: number;
@@ -47,6 +48,7 @@ function mapRow(row: AnalysisRow): MarketAnalysis {
     category: row.category,
     analyzedAt: formatRelativeTime(row.created_at),
     decision: row.decision,
+    outcomes: row.outcomes ?? [],
     aiProbability: row.ai_probability,
     marketProbability: row.market_probability,
     edge: row.edge,
@@ -116,7 +118,7 @@ export async function fetchAnalysisById(
   const { data, error } = await supabase
     .from("analyses")
     .select(
-      "id, question, category, created_at, market_slug, decision, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
+      "id, question, category, created_at, market_slug, decision, outcomes, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
     )
     .eq("id", id)
     .maybeSingle();
@@ -132,7 +134,7 @@ export async function fetchRecentAnalyses(
   const { data, error } = await supabase
     .from("analyses")
     .select(
-      "id, question, category, created_at, market_slug, decision, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
+      "id, question, category, created_at, market_slug, decision, outcomes, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
     )
     .order("created_at", { ascending: false })
     .limit(limit);

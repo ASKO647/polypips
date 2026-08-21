@@ -3,7 +3,13 @@
  * and mirrored by the `analyses` Supabase table for history.
  */
 
-export type AnalysisDecision = "YES" | "NO";
+/** The market's own real outcome label the AI picked — e.g. "Yes", "Up",
+ * a candidate's name. Most Polymarket markets really are Yes/No, but a
+ * real minority (crypto price markets chief among them) use different
+ * label pairs on the exact same binary market shape, so this is never a
+ * hardcoded "YES"/"NO" union — see isPrimaryDecision below for how the UI
+ * still gets consistent styling without knowing the labels in advance. */
+export type AnalysisDecision = string;
 export type ConfidenceLevel = "Faible" | "Moyenne" | "Élevée";
 
 export type AnalysisSource = {
@@ -17,6 +23,10 @@ export type MarketAnalysis = {
   category: string;
   analyzedAt: string;
   decision: AnalysisDecision;
+  /** The market's two real outcome labels, in Gamma's order — decision is
+   * always one of these two. Empty for analyses created before this field
+   * existed; isPrimaryDecision degrades gracefully when it is. */
+  outcomes: string[];
   aiProbability: number;
   marketProbability: number;
   edge: number;
@@ -38,6 +48,25 @@ export type MarketAnalysis = {
  * resolve-markets Edge Function already keys off of. */
 export function polymarketEventUrl(slug: string): string {
   return `https://polymarket.com/event/${slug}`;
+}
+
+/**
+ * Every UI surface that colors/positions a decision by "which of the two
+ * real outcomes" (emerald for the first-listed one, rose for the second)
+ * goes through this one function, so that convention can't drift between
+ * components. Position-based rather than a "is this semantically
+ * positive" guess — "Down" isn't inherently negative, it's just whichever
+ * label Gamma happened to list second, and guessing sentiment per-market
+ * would be both unreliable and unnecessary for a simple two-way style
+ * split. Case-insensitive match (see resolve-markets' own labelsMatch for
+ * why) and defaults to true (primary/emerald) when outcomes is empty —
+ * pre-migration rows with no stored outcomes, or a decision that somehow
+ * doesn't match either label, degrade to the old YES-like default rather
+ * than rendering unstyled.
+ */
+export function isPrimaryDecision(decision: string, outcomes: string[]): boolean {
+  if (outcomes.length < 2) return true;
+  return decision.trim().toLowerCase() !== outcomes[1].trim().toLowerCase();
 }
 
 export type AnalysisProgressStep =

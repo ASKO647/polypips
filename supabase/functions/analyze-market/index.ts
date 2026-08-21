@@ -317,6 +317,12 @@ Deno.serve(async (req) => {
         analyzedAt: new Date().toISOString(),
         marketSlug: market.slug || null,
         decision: verdict.decision,
+        // The market's own two real outcome labels, in Gamma's order —
+        // stored so the frontend can tell "decision" apart from a
+        // hardcoded YES/NO without re-fetching Gamma (see
+        // src/lib/data/analysis.ts's isPrimaryDecision). Empty when Gamma
+        // itself didn't return two real labels for this market.
+        outcomes: market.outcomes,
         aiProbability,
         marketProbability: marketProbabilityPct,
         edge,
@@ -341,6 +347,7 @@ Deno.serve(async (req) => {
         // marketUrl was kept, which stays null for the screenshot flow.
         market_slug: analysis.marketSlug,
         decision: analysis.decision,
+        outcomes: analysis.outcomes,
         ai_probability: analysis.aiProbability,
         market_probability: analysis.marketProbability,
         edge: analysis.edge,

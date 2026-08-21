@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import { polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
+import { isPrimaryDecision, polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function AnalysisResult({
@@ -33,8 +33,8 @@ export function AnalysisResult({
 }) {
   const [unlocking, setUnlocking] = useState(false);
   const locale = useLocale();
-  const isYes = analysis.decision === "YES";
-  const decisionTone = isYes ? "text-emerald-400" : "text-rose-400";
+  const isPrimary = isPrimaryDecision(analysis.decision, analysis.outcomes);
+  const decisionTone = isPrimary ? "text-emerald-400" : "text-rose-400";
 
   const handleUnlock = async () => {
     if (unlocking) return;
@@ -109,8 +109,8 @@ export function AnalysisResult({
               <div className="flex items-center gap-4">
                 <span
                   className={cn(
-                    "flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-base font-black",
-                    isYes
+                    "flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl px-1.5 text-center text-sm font-black leading-tight",
+                    isPrimary
                       ? "bg-emerald-500/15 text-emerald-400"
                       : "bg-rose-500/15 text-rose-400"
                   )}

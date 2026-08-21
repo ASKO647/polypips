@@ -55,7 +55,13 @@ function logAnthropicError(context: string, error: unknown): void {
 }
 
 export type AiVerdict = {
-  decision: "YES" | "NO";
+  /** The market's own real outcome label the AI picked (e.g. "Yes", "Up",
+   * "Manchester United") — never a hardcoded "YES"/"NO": the JSON schema
+   * sent to Anthropic constrains this to exactly the two labels Gamma
+   * returned for the specific market being analyzed (see
+   * buildVerdictSchema), so the model is structurally unable to answer
+   * with anything else. */
+  decision: string;
   aiProbability: number;
   opportunityScore: number;
   confidence: "Faible" | "Moyenne" | "Élevée";
@@ -65,54 +71,76 @@ export type AiVerdict = {
   whatCouldChange: string;
 };
 
-const VERDICT_SCHEMA = {
-  type: "object",
-  properties: {
-    decision: { type: "string", enum: ["YES", "NO"] },
-    aiProbability: {
-      type: "integer",
-      description:
-        "Probabilité estimée par l'IA (0-100) que l'issue YES du marché se réalise.",
+/** Most Polymarket markets ARE Yes/No, but a real minority — crypto price
+ * markets ("Up"/"Down") chief among them — use different label pairs on
+ * the exact same binary (always-exactly-2-outcomes) market shape; true
+ * 3+-option single markets aren't a thing on Polymarket (a multi-choice
+ * *event* like an election is actually N separate Yes/No sub-markets, one
+ * per candidate — see gamma.ts's fetchMarketBySlug, which already picks
+ * one specific sub-market). So this only ever needs to constrain a binary
+ * choice — just not a hardcoded one. Falls back to a generic Oui/Non pair
+ * only for the rare malformed-market case where Gamma didn't return two
+ * real outcome labels, so the schema (and the rest of the pipeline) never
+ * breaks on that edge case. */
+function effectiveOutcomes(market: GammaMarket): [string, string] {
+  const [a, b] = market.outcomes;
+  if (a && b) return [a, b];
+  return ["Oui", "Non"];
+}
+
+function buildVerdictSchema(outcomes: [string, string]) {
+  return {
+    type: "object",
+    properties: {
+      decision: {
+        type: "string",
+        enum: outcomes,
+        description: `L'issue que tu retiens comme la plus probable, EXACTEMENT l'un de ces deux libellés réels du marché : "${outcomes[0]}" ou "${outcomes[1]}".`,
+      },
+      aiProbability: {
+        type: "integer",
+        description: `Probabilité estimée par l'IA (0-100) que l'issue "${outcomes[0]}" du marché se réalise (pas "decision" — toujours la même issue de référence, quelle que soit ta décision finale).`,
+      },
+      opportunityScore: {
+        type: "integer",
+        description:
+          "Score d'opportunité (0-100) combinant l'edge, la confiance et la liquidité du marché.",
+      },
+      confidence: { type: "string", enum: ["Faible", "Moyenne", "Élevée"] },
+      explanation: {
+        type: "string",
+        description:
+          "Explication détaillée (3-5 phrases) citant les règles de résolution et les données réelles du marché.",
+      },
+      favorableFactors: {
+        type: "array",
+        items: { type: "string" },
+        description: "3 à 5 facteurs concrets qui soutiennent la décision.",
+      },
+      risks: {
+        type: "array",
+        items: { type: "string" },
+        description: "2 à 4 risques concrets qui pourraient invalider l'analyse.",
+      },
+      whatCouldChange: {
+        type: "string",
+        description:
+          "Un événement concret et plausible qui changerait significativement cette analyse.",
+      },
     },
-    opportunityScore: {
-      type: "integer",
-      description:
-        "Score d'opportunité (0-100) combinant l'edge, la confiance et la liquidité du marché.",
-    },
-    confidence: { type: "string", enum: ["Faible", "Moyenne", "Élevée"] },
-    explanation: {
-      type: "string",
-      description:
-        "Explication détaillée (3-5 phrases) citant les règles de résolution et les données réelles du marché.",
-    },
-    favorableFactors: {
-      type: "array",
-      items: { type: "string" },
-      description: "3 à 5 facteurs concrets qui soutiennent la décision.",
-    },
-    risks: {
-      type: "array",
-      items: { type: "string" },
-      description: "2 à 4 risques concrets qui pourraient invalider l'analyse.",
-    },
-    whatCouldChange: {
-      type: "string",
-      description:
-        "Un événement concret et plausible qui changerait significativement cette analyse.",
-    },
-  },
-  required: [
-    "decision",
-    "aiProbability",
-    "opportunityScore",
-    "confidence",
-    "explanation",
-    "favorableFactors",
-    "risks",
-    "whatCouldChange",
-  ],
-  additionalProperties: false,
-} as const;
+    required: [
+      "decision",
+      "aiProbability",
+      "opportunityScore",
+      "confidence",
+      "explanation",
+      "favorableFactors",
+      "risks",
+      "whatCouldChange",
+    ],
+    additionalProperties: false,
+  } as const;
+}
 
 const SYSTEM_PROMPT = `Tu es l'analyste IA de Polypips, un outil d'aide à la décision pour des marchés de prédiction Polymarket.
 
@@ -121,10 +149,11 @@ Règles impératives :
 - Reste factuel et probabiliste dans tout ton raisonnement et ton explication.
 - Base ton analyse sur les éléments CONCRETS fournis : la question exacte du marché, ses règles de résolution, le prix actuel du marché (probabilité implicite), le volume et la liquidité, la date de clôture, et toute connaissance factuelle pertinente que tu possèdes sur le sujet.
 - Cite explicitement dans "explanation" les règles de résolution ou données chiffrées qui motivent ta position, plutôt que des suppositions vagues ou génériques.
-- "aiProbability" doit être ton estimation réelle et indépendante de la probabilité de résolution YES, pas une simple copie du prix du marché.
+- Chaque marché a ses propres libellés d'issue réels (souvent "Yes"/"No", mais pas toujours — par exemple "Up"/"Down" sur un marché de prix crypto). "decision" doit être EXACTEMENT l'un des deux libellés fournis dans le message utilisateur, jamais "YES"/"NO" par défaut ni une reformulation.
+- "aiProbability" doit être ton estimation réelle et indépendante de la probabilité que la PREMIÈRE issue mentionnée dans le message utilisateur se réalise, pas une simple copie du prix du marché.
 - Si l'information disponible est insuffisante pour trancher avec confiance, dis-le explicitement dans "explanation" et choisis un niveau de confiance "Faible".`;
 
-function buildUserPrompt(market: GammaMarket, marketUrl: string | null): string {
+function buildUserPrompt(market: GammaMarket, marketUrl: string | null, outcomes: [string, string]): string {
   const outcomeLines = market.outcomes
     .map((outcome, i) => {
       const price = market.outcomePrices[i];
@@ -140,8 +169,8 @@ QUESTION : ${market.question}
 RÈGLES DE RÉSOLUTION :
 ${market.description?.trim() || "Non fournies par l'API — base-toi sur la question elle-même et tes connaissances générales."}
 
-PRIX ACTUELS DU MARCHÉ (probabilité implicite) :
-${outcomeLines || "Non disponibles."}
+ISSUES POSSIBLES DE CE MARCHÉ (libellés réels, choisis "decision" EXACTEMENT parmi ces deux-là) :
+${outcomeLines || `- ${outcomes[0]}\n- ${outcomes[1]} (prix non disponibles)`}
 
 VOLUME TOTAL ÉCHANGÉ : ${market.volume.toLocaleString("fr-FR")} $
 LIQUIDITÉ DISPONIBLE : ${market.liquidity.toLocaleString("fr-FR")} $
@@ -149,13 +178,13 @@ DATE DE CLÔTURE : ${market.endDate ?? "non spécifiée"}
 STATUT : ${market.closed ? "clôturé" : "actif"}
 ${marketUrl ? `LIEN : ${marketUrl}` : ""}
 
-La probabilité de marché actuelle pour l'issue "${market.outcomes[0] ?? "YES"}" est d'environ ${
+La probabilité de marché actuelle pour l'issue "${outcomes[0]}" est d'environ ${
     Number.isFinite(market.outcomePrices[0])
       ? Math.round(market.outcomePrices[0] * 100)
       : "?"
   }%.
 
-Produis ton verdict structuré sur cette issue.`;
+Produis ton verdict structuré. Pour "decision", réponds EXACTEMENT "${outcomes[0]}" ou "${outcomes[1]}" — aucune autre valeur n'est acceptée.`;
 }
 
 /** One attempt at getting a usable verdict. Throws AiServiceError for a
@@ -166,6 +195,7 @@ async function requestVerdictOnce(
   market: GammaMarket,
   marketUrl: string | null
 ): Promise<AiVerdict> {
+  const outcomes = effectiveOutcomes(market);
   let response;
   try {
     response = await client.messages.create({
@@ -187,12 +217,12 @@ async function requestVerdictOnce(
       output_config: {
         format: {
           type: "json_schema",
-          schema: VERDICT_SCHEMA,
+          schema: buildVerdictSchema(outcomes),
         },
       },
       system: SYSTEM_PROMPT,
       messages: [
-        { role: "user", content: buildUserPrompt(market, marketUrl) },
+        { role: "user", content: buildUserPrompt(market, marketUrl, outcomes) },
       ],
     });
   } catch (error) {

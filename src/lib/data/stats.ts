@@ -13,11 +13,15 @@ export type KeyStats = {
   averageOpportunityScore: number;
 };
 
+/** "Primary"/"secondary" = the market's first-/second-listed real outcome
+ * label (see lib/data/analysis.ts's isPrimaryDecision) — not "yes"/"no":
+ * across a mix of markets with different label pairs ("Yes"/"No",
+ * "Up"/"Down"...) there's no single meaningful "yes bucket" to count. */
 export type DecisionSplitData = {
-  yesCount: number;
-  noCount: number;
-  yesAccuracy: number;
-  noAccuracy: number;
+  primaryCount: number;
+  secondaryCount: number;
+  primaryAccuracy: number;
+  secondaryAccuracy: number;
 };
 
 export type CategoryStat = {
@@ -35,7 +39,7 @@ export type ResolvedAnalysis = {
   id: string;
   question: string;
   category: string;
-  decision: "YES" | "NO";
+  decision: string;
   outcome: AnalysisOutcome;
   date: string;
 };

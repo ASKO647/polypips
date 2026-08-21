@@ -92,7 +92,8 @@ type SelectedMarketRow = {
   market_url: string;
   question: string;
   category: string;
-  decision: "YES" | "NO";
+  decision: string;
+  outcomes: string[];
   ai_probability: number;
   market_probability: number;
   edge: number;
@@ -248,6 +249,7 @@ Deno.serve(async (req) => {
         question: market.question,
         category: market.category || "Marché",
         decision: verdict.decision,
+        outcomes: market.outcomes,
         ai_probability: aiProbability,
         market_probability: marketProbabilityPct,
         edge,

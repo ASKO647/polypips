@@ -13,7 +13,9 @@ import {
  * never calls Anthropic, only Polymarket's free public Gamma API — so a
  * frequent cron is cheap. It checks every unresolved `analyses` and
  * `selected_markets` row to see if its market has actually closed, and if
- * so, whether the AI's own YES/NO decision matched the real outcome.
+ * so, whether the AI's own decision (the market's real outcome label —
+ * usually "Yes"/"No" but not always, e.g. "Up"/"Down" on a crypto price
+ * market — never a hardcoded pair) matched the real outcome.
  * "Resolved" here always means "we now know whether the AI call was right
  * or wrong," independent of whether any user placed a real bet on it.
  */
@@ -36,14 +38,31 @@ const CONCURRENCY = 8;
  * the row unresolved and tries again on a later run rather than guessing. */
 const RESOLUTION_CONFIDENCE_MARGIN = 0.1;
 
-function resolveOutcomeFromMarket(market: GammaMarket): "YES" | "NO" | null {
+/** Every Polymarket market is a binary (exactly 2 outcomes) — see
+ * anthropic-analysis.ts's effectiveOutcomes comment — but the two labels
+ * vary per market ("Yes"/"No", "Up"/"Down", ...). Their prices always sum
+ * to ~1, so whichever of the two is confidently above 0.5 is the real
+ * winning label as Gamma itself named it for THIS market — no need to
+ * special-case any particular wording. Returns that label text (not a
+ * hardcoded YES/NO) or null if the market isn't decisively resolved yet. */
+function resolveOutcomeFromMarket(market: GammaMarket): string | null {
   if (!market.closed) return null;
-  const yesIndex = market.outcomes.findIndex((o) => o.toUpperCase() === "YES");
-  const price = yesIndex >= 0 ? market.outcomePrices[yesIndex] : market.outcomePrices[0];
+  if (market.outcomes.length < 2) return null;
+  const price = market.outcomePrices[0];
   if (!Number.isFinite(price)) return null;
-  if (price >= 0.5 + RESOLUTION_CONFIDENCE_MARGIN) return "YES";
-  if (price <= 0.5 - RESOLUTION_CONFIDENCE_MARGIN) return "NO";
+  if (price >= 0.5 + RESOLUTION_CONFIDENCE_MARGIN) return market.outcomes[0];
+  if (price <= 0.5 - RESOLUTION_CONFIDENCE_MARGIN) return market.outcomes[1];
   return null;
+}
+
+/** Case/whitespace-insensitive: `decision` was stored verbatim from an AI
+ * verdict at analysis time, `outcome` comes from a fresh Gamma fetch here
+ * — comparing them as literal strings would false-negative on a market
+ * whose label wording drifted by casing alone (e.g. Gamma returning "Yes"
+ * at one point and "YES" at another) even though they mean the same real
+ * outcome. */
+function labelsMatch(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
 async function mapWithConcurrency<T, R>(
@@ -63,7 +82,7 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
-async function fetchOutcomeForSlug(slug: string): Promise<"YES" | "NO" | null> {
+async function fetchOutcomeForSlug(slug: string): Promise<string | null> {
   try {
     const market = await fetchMarketBySlug(slug, null);
     return resolveOutcomeFromMarket(market);
@@ -118,7 +137,7 @@ Deno.serve(async (req) => {
   for (const row of selectedMarketRows ?? []) slugSet.add(row.slug as string);
   const slugs = Array.from(slugSet).slice(0, MAX_SLUG_LOOKUPS_PER_RUN);
 
-  const slugOutcomes = new Map<string, "YES" | "NO">();
+  const slugOutcomes = new Map<string, string>();
   const slugResults = await mapWithConcurrency(slugs, CONCURRENCY, async (slug) => ({
     slug,
     outcome: await fetchOutcomeForSlug(slug),
@@ -136,7 +155,7 @@ Deno.serve(async (req) => {
       .update({
         resolved: true,
         resolved_outcome: outcome,
-        resolved_correct: row.decision === outcome,
+        resolved_correct: labelsMatch(row.decision as string, outcome),
         resolved_at: nowIso,
       })
       .eq("id", row.id);
@@ -152,7 +171,7 @@ Deno.serve(async (req) => {
       .update({
         resolved: true,
         resolved_outcome: outcome,
-        resolved_correct: row.decision === outcome,
+        resolved_correct: labelsMatch(row.decision as string, outcome),
         resolved_at: nowIso,
       })
       .eq("id", row.id);
@@ -204,7 +223,7 @@ Deno.serve(async (req) => {
               market_slug: market.slug,
               resolved: true,
               resolved_outcome: outcome,
-              resolved_correct: row.decision === outcome,
+              resolved_correct: labelsMatch(row.decision as string, outcome),
               resolved_at: nowIso,
             }
           : { market_slug: market.slug }

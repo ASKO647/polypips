@@ -1,7 +1,7 @@
 import { ArrowRight, ExternalLink, Lock } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import { polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
+import { isPrimaryDecision, polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function MarketCard({
@@ -17,7 +17,7 @@ export function MarketCard({
    * explanation — is blurred out rather than given away for free. */
   locked?: boolean;
 }) {
-  const isYes = market.decision === "YES";
+  const isPrimary = isPrimaryDecision(market.decision, market.outcomes);
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -34,7 +34,7 @@ export function MarketCard({
           <span
             className={cn(
               "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
-              isYes
+              isPrimary
                 ? "bg-emerald-500/15 text-emerald-400"
                 : "bg-rose-500/15 text-rose-400"
             )}

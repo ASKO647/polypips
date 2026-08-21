@@ -1,6 +1,6 @@
 import { Link } from "@/i18n/navigation";
 import { Sparkles } from "lucide-react";
-import type { MarketAnalysis } from "@/lib/data/analysis";
+import { isPrimaryDecision, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 /** Deterministic color for a market's category-initial "icon" — derived
@@ -67,7 +67,7 @@ export function MarketsTable({
               </thead>
               <tbody>
                 {markets.map((market) => {
-                  const isYes = market.decision === "YES";
+                  const isPrimary = isPrimaryDecision(market.decision, market.outcomes);
                   return (
                     <tr
                       key={market.id}
@@ -104,7 +104,7 @@ export function MarketsTable({
                         <span
                           className={cn(
                             "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold",
-                            isYes
+                            isPrimary
                               ? "bg-emerald-500/15 text-emerald-400"
                               : "bg-rose-500/15 text-rose-400"
                           )}

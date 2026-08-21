@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { ArrowRight, Clock, Link2, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import type { MarketAnalysis } from "@/lib/data/analysis";
+import { isPrimaryDecision, type MarketAnalysis } from "@/lib/data/analysis";
 import type { AnalyzeMarketRequest } from "@/lib/supabase/analyze-market-client";
 import { cn } from "@/lib/utils";
 
@@ -212,7 +212,7 @@ export function AnalysisInput({
                 <span
                   className={cn(
                     "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
-                    item.decision === "YES"
+                    isPrimaryDecision(item.decision, item.outcomes)
                       ? "bg-emerald-500/15 text-emerald-400"
                       : "bg-rose-500/15 text-rose-400"
                   )}

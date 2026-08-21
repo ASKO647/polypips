@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isPrimaryDecision } from "@/lib/data/analysis";
 import { formatRelativeTime } from "@/lib/supabase/analyses";
 import type {
   CategoryStat,
@@ -13,17 +14,21 @@ import type {
  * Function once a market genuinely closes — never fabricated. Every
  * derived metric here measures the AI's own decision accuracy, not
  * whether the user placed a real bet: "correct" means decision ===
- * resolved_outcome, full stop.
+ * resolved_outcome (case-insensitively — see resolve-markets' own
+ * labelsMatch), full stop. decision/resolvedOutcome are the market's own
+ * real outcome labels (often "Yes"/"No", not always — see
+ * lib/data/analysis.ts's isPrimaryDecision), never a hardcoded pair.
  */
 export type ResolvedAnalysisRow = {
   id: string;
   question: string;
   category: string;
-  decision: "YES" | "NO";
+  decision: string;
+  outcomes: string[];
   edge: number;
   opportunityScore: number;
   marketProbability: number;
-  resolvedOutcome: "YES" | "NO";
+  resolvedOutcome: string;
   resolvedCorrect: boolean;
   resolvedAt: string;
 };
@@ -32,11 +37,12 @@ type RawRow = {
   id: string;
   question: string;
   category: string;
-  decision: "YES" | "NO";
+  decision: string;
+  outcomes: string[] | null;
   edge: number;
   opportunity_score: number;
   market_probability: number;
-  resolved_outcome: "YES" | "NO";
+  resolved_outcome: string;
   resolved_correct: boolean;
   resolved_at: string;
 };
@@ -48,7 +54,7 @@ export async function fetchResolvedAnalyses(
   const { data, error } = await supabase
     .from("analyses")
     .select(
-      "id, question, category, decision, edge, opportunity_score, market_probability, resolved_outcome, resolved_correct, resolved_at"
+      "id, question, category, decision, outcomes, edge, opportunity_score, market_probability, resolved_outcome, resolved_correct, resolved_at"
     )
     .eq("user_id", userId)
     .eq("resolved", true)
@@ -60,6 +66,7 @@ export async function fetchResolvedAnalyses(
     question: row.question,
     category: row.category,
     decision: row.decision,
+    outcomes: row.outcomes ?? [],
     edge: Number(row.edge),
     opportunityScore: Number(row.opportunity_score),
     marketProbability: Number(row.market_probability),
@@ -100,27 +107,32 @@ function clampProbabilityFraction(pct: number): number {
 /**
  * Real prediction-market payout math (fees/slippage ignored, as befits a
  * "simulation"): buying the decision's side at the market's implied price
- * and holding to resolution. Betting YES at price q with stake S buys S/q
- * shares, worth S/q at resolution if right (profit S·(1−q)/q) or 0 if
- * wrong (loss of the full stake S) — symmetric for NO at price (1−q).
- * This is why marketProbability (the price *at analysis time*, not at
- * resolution) is the right input: it's "what it would have cost to act on
- * this call when the AI made it."
+ * and holding to resolution. Betting the market's first-listed outcome at
+ * price q with stake S buys S/q shares, worth S/q at resolution if right
+ * (profit S·(1−q)/q) or 0 if wrong (loss of the full stake S) — symmetric
+ * for the second-listed outcome at price (1−q). marketProbability is
+ * always the price of the *first-listed* outcome specifically (see
+ * anthropic-analysis.ts's SYSTEM_PROMPT — aiProbability, and by extension
+ * this stored price, is always about that same reference outcome
+ * regardless of which one "decision" ends up picking), at analysis time
+ * not at resolution: it's "what it would have cost to act on this call
+ * when the AI made it."
  */
 export function simulatedPnlForResolvedAnalysis(row: {
-  decision: "YES" | "NO";
+  decision: string;
+  outcomes: string[];
   marketProbability: number;
   resolvedCorrect: boolean;
 }): number {
   const q = clampProbabilityFraction(row.marketProbability);
-  if (row.decision === "YES") {
+  if (isPrimaryDecision(row.decision, row.outcomes)) {
     return row.resolvedCorrect
       ? (SIMULATED_STAKE_EUR * (1 - q)) / q
       : -SIMULATED_STAKE_EUR;
   }
-  const noPrice = 1 - q;
+  const secondaryPrice = 1 - q;
   return row.resolvedCorrect
-    ? (SIMULATED_STAKE_EUR * q) / noPrice
+    ? (SIMULATED_STAKE_EUR * q) / secondaryPrice
     : -SIMULATED_STAKE_EUR;
 }
 
@@ -191,20 +203,25 @@ export function computeKeyStats(rows: ResolvedAnalysisRow[]): KeyStats {
   };
 }
 
+/** "Primary"/"secondary" here means "the market's first-listed outcome" vs
+ * "second-listed" (see isPrimaryDecision) — not a semantic yes/no split,
+ * since across a mix of markets with different label pairs ("Yes"/"No",
+ * "Up"/"Down"...) there's no single meaningful "yes bucket" to pool them
+ * into. Position is the one thing every row has in common. */
 export function computeDecisionSplit(rows: ResolvedAnalysisRow[]): DecisionSplitData | null {
-  const yes = rows.filter((r) => r.decision === "YES");
-  const no = rows.filter((r) => r.decision === "NO");
-  if (yes.length === 0 && no.length === 0) return null;
+  const primary = rows.filter((r) => isPrimaryDecision(r.decision, r.outcomes));
+  const secondary = rows.filter((r) => !isPrimaryDecision(r.decision, r.outcomes));
+  if (primary.length === 0 && secondary.length === 0) return null;
   return {
-    yesCount: yes.length,
-    noCount: no.length,
-    yesAccuracy:
-      yes.length > 0
-        ? Math.round((yes.filter((r) => r.resolvedCorrect).length / yes.length) * 100)
+    primaryCount: primary.length,
+    secondaryCount: secondary.length,
+    primaryAccuracy:
+      primary.length > 0
+        ? Math.round((primary.filter((r) => r.resolvedCorrect).length / primary.length) * 100)
         : 0,
-    noAccuracy:
-      no.length > 0
-        ? Math.round((no.filter((r) => r.resolvedCorrect).length / no.length) * 100)
+    secondaryAccuracy:
+      secondary.length > 0
+        ? Math.round((secondary.filter((r) => r.resolvedCorrect).length / secondary.length) * 100)
         : 0,
   };
 }
