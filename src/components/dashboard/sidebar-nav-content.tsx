@@ -19,8 +19,8 @@ import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
 /** The dashboard has three distinct "universes" — Polymarket (prediction
- * markets), Sport (real-world sports analysis), and Smart Wallets
- * (Fomo/Axiom memecoin wallets + Copy Trading) — each rendered as its own
+ * markets), Sport (real-world sports analysis), and Fomo X Axiom
+ * (memecoin Smart Wallets + Copy Trading) — each rendered as its own
  * collapsible sidebar group with a clearly different accent color, so a
  * user always knows which product they're in. Tableau de bord/Coach
  * IA/Statistiques/Paramètres aren't scoped to any of them and stay
@@ -180,7 +180,7 @@ export function SidebarNavContent({
 
           {renderUniverseGroup({
             id: "smart-wallets",
-            label: "Smart Wallets",
+            label: "Fomo X Axiom",
             accentClass: "bg-sky-400",
             badge: "NOUVEAU",
             items: SIGNAL_NAV_ITEMS,

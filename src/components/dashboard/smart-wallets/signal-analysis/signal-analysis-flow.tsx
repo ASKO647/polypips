@@ -37,10 +37,12 @@ function errorContentFor(error: unknown): React.ReactNode {
   );
 }
 
-/** Smart Wallets universe's own "Analyse IA" (Fomo/Axiom) — a distinct
- * feature from Polymarket's Analyse IA (AnalyseIaFlow, untouched) and from
- * Sport's (SportsAnalysisFlow, untouched). `source` selects which tab this
- * instance represents; the parent AnalyseIaTabs renders one per tab. */
+/** Fomo X Axiom universe's own "Analyse IA" — a distinct feature from
+ * Polymarket's Analyse IA (AnalyseIaFlow, untouched) and from Sport's
+ * (SportsAnalysisFlow, untouched). `source` fixes which one of the two
+ * dedicated pages this instance is ("Analyse AI Fomo" /
+ * "Analyse AI Axiom") — each page renders its own instance, there is no
+ * shared tab switcher. */
 export function SignalAnalysisFlow({
   source,
   hasActiveSubscription,

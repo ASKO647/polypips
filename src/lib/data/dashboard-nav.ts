@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BookOpen,
   Copy,
   GraduationCap,
   LayoutDashboard,
@@ -7,7 +8,6 @@ import {
   LineChart,
   ListChecks,
   Settings,
-  SlidersHorizontal,
   Sparkles,
   Trophy,
   Wallet,
@@ -43,17 +43,29 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },
 ];
 
-/** The "Smart Wallets" universe group — Fomo/Axiom-sourced memecoin
- * wallets and their own Copy Trading pipeline. A third universe alongside
- * Polymarket and Sport, deliberately not folded into POLYMARKET_NAV_ITEMS:
- * different chain (Solana), different asset class (SPL tokens), different
- * Copy Trading semantics (AI Engine + Risk Engine + demo Execution Engine,
- * not suggestion-only) — see the 20260827090000 migration's file comment. */
+/** The "Fomo X Axiom" universe group — Fomo/Axiom-sourced memecoin wallets,
+ * their own Analyse IA (one page per source, unlike Polymarket's single
+ * "Analyse IA" — see analyze-signal-bet), and their own Copy Trading
+ * pipeline. A third universe alongside Polymarket and Sport, deliberately
+ * not folded into POLYMARKET_NAV_ITEMS: different chain (Solana), different
+ * asset class (SPL tokens), different Copy Trading semantics (AI Engine +
+ * Risk Engine + demo Execution Engine, not suggestion-only) — see the
+ * 20260827090000 migration's file comment. Routes stay under
+ * /dashboard/smart-wallets/* (unchanged from before this rename) so
+ * existing links — including ones already generated into notification
+ * rows by sync-signal-wallets — keep resolving; only the labels/grouping
+ * shown to the user changed here. */
 export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
-  { label: "Smart Wallets", href: "/dashboard/smart-wallets", icon: Wallet },
+  { label: "Analyse AI Fomo", href: "/dashboard/smart-wallets/analyse-fomo", icon: Sparkles },
+  { label: "Analyse AI Axiom", href: "/dashboard/smart-wallets/analyse-axiom", icon: Sparkles },
+  { label: "Smart Wallet", href: "/dashboard/smart-wallets", icon: Wallet },
   { label: "Mes Smart Wallets", href: "/dashboard/smart-wallets/suivis", icon: ListChecks },
   { label: "Trades copiés", href: "/dashboard/smart-wallets/positions", icon: Copy },
-  { label: "Paramètres", href: "/dashboard/smart-wallets/parametres", icon: SlidersHorizontal },
+  {
+    label: "Comment connecter PolyPips à Fomo & Axiom",
+    href: "/dashboard/smart-wallets/tutoriel",
+    icon: BookOpen,
+  },
 ];
 
 /** Global tools that aren't specific to either universe — Coach IA answers
