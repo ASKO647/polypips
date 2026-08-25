@@ -1,7 +1,7 @@
 /**
- * Navigation data for the Sports module's sidebar sub-list — rendered by
- * SidebarNavContent under the "Sports" item, same convention as
- * DASHBOARD_NAV_ITEMS/DASHBOARD_RESOURCE_ITEMS in dashboard-nav.ts.
+ * Navigation data for the Sports module's sidebar sub-list — SPORTS_SUB_NAV
+ * below is rendered by SidebarNavContent as the "Sport" universe group's
+ * item list, the counterpart to POLYMARKET_NAV_ITEMS in dashboard-nav.ts.
  */
 import type { ComponentType } from "react";
 import { Compass, Flame, Hand, Star, Swords, Trophy } from "lucide-react";

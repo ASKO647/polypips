@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { BarChart3, Flame, ShieldCheck, Target, Trophy } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { SportsAnalysisFlow } from "@/components/dashboard/sports/ai-analysis/sports-analysis-flow";
 import { MatchCard } from "@/components/dashboard/sports/match-card";
 import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
 import { StatTile } from "@/components/dashboard/sports/stat-tile";
@@ -50,9 +50,11 @@ function filterMatches(matches: Match[], filter: QuickFilter): Match[] {
 export function OverviewFlow({
   stats,
   matches,
+  hasActiveSubscription,
 }: {
   stats: SportsOverviewStats;
   matches: Match[];
+  hasActiveSubscription: boolean;
 }) {
   const [filter, setFilter] = useState<QuickFilter>("all");
 
@@ -100,23 +102,7 @@ export function OverviewFlow({
         />
       </div>
 
-      <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-base font-bold text-white">Top opportunités</h2>
-          <Link
-            href="/dashboard/sports/opportunites"
-            className="text-xs font-semibold text-white/45 transition-colors hover:text-white"
-          >
-            Voir tout
-          </Link>
-        </div>
-        <SportsEmptyState
-          icon={Flame}
-          title="Aucune opportunité détectée pour l'instant"
-          message="Le moteur de détection d'opportunités n'est pas encore connecté à une vraie source de données. Cette section s'activera automatiquement dès qu'il le sera."
-          compact
-        />
-      </div>
+      <SportsAnalysisFlow hasActiveSubscription={hasActiveSubscription} />
 
       <div>
         <h2 className="mb-3 font-display text-base font-bold text-white">Tous les matchs</h2>

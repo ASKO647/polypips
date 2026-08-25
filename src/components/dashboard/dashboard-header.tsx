@@ -5,14 +5,26 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Menu, X } from "lucide-react";
 import { NotificationsBell } from "@/components/dashboard/notifications-bell";
-import { DASHBOARD_NAV_ITEMS, DASHBOARD_RESOURCE_ITEMS } from "@/lib/data/dashboard-nav";
+import {
+  DASHBOARD_GLOBAL_ITEMS,
+  DASHBOARD_RESOURCE_ITEMS,
+  DASHBOARD_TOP_ITEM,
+  POLYMARKET_NAV_ITEMS,
+  SPORTS_TITLE_ITEM,
+} from "@/lib/data/dashboard-nav";
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 /** Longest-prefix match so a sub-route like /dashboard/markets/abc123
  * still resolves to "Marchés sélectionnés" rather than falling through to null. */
 function pageTitleFor(pathname: string): string | null {
-  const items = [...DASHBOARD_NAV_ITEMS, ...DASHBOARD_RESOURCE_ITEMS];
+  const items = [
+    DASHBOARD_TOP_ITEM,
+    ...POLYMARKET_NAV_ITEMS,
+    SPORTS_TITLE_ITEM,
+    ...DASHBOARD_GLOBAL_ITEMS,
+    ...DASHBOARD_RESOURCE_ITEMS,
+  ];
   const match = items
     .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0];
