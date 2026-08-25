@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AnalyseIaFlow } from "@/components/dashboard/analyse-ia/analyse-ia-flow";
+import { AnalyseIaTabs } from "@/components/dashboard/analyse-ia/analyse-ia-tabs";
 import { createClient } from "@/lib/supabase/server";
 import { fetchRecentAnalyses } from "@/lib/supabase/analyses";
 import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
@@ -16,7 +16,7 @@ export default async function AnalyseIaPage() {
   ]);
 
   return (
-    <AnalyseIaFlow
+    <AnalyseIaTabs
       initialRecentAnalyses={recentAnalyses}
       hasActiveSubscription={hasActiveAccess(subscription)}
     />

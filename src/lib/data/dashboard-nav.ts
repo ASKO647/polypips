@@ -5,7 +5,9 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LineChart,
+  ListChecks,
   Settings,
+  SlidersHorizontal,
   Sparkles,
   Trophy,
   Wallet,
@@ -39,6 +41,19 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Marchés sélectionnés", href: "/dashboard/markets", icon: LineChart },
   { label: "Smart Money", href: "/dashboard/smart-money", icon: Wallet },
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },
+];
+
+/** The "Smart Wallets" universe group — Fomo/Axiom-sourced memecoin
+ * wallets and their own Copy Trading pipeline. A third universe alongside
+ * Polymarket and Sport, deliberately not folded into POLYMARKET_NAV_ITEMS:
+ * different chain (Solana), different asset class (SPL tokens), different
+ * Copy Trading semantics (AI Engine + Risk Engine + demo Execution Engine,
+ * not suggestion-only) — see the 20260827090000 migration's file comment. */
+export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
+  { label: "Smart Wallets", href: "/dashboard/smart-wallets", icon: Wallet },
+  { label: "Mes Smart Wallets", href: "/dashboard/smart-wallets/suivis", icon: ListChecks },
+  { label: "Trades copiés", href: "/dashboard/smart-wallets/positions", icon: Copy },
+  { label: "Paramètres", href: "/dashboard/smart-wallets/parametres", icon: SlidersHorizontal },
 ];
 
 /** Global tools that aren't specific to either universe — Coach IA answers

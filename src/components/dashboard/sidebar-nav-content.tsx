@@ -11,18 +11,20 @@ import {
   DASHBOARD_RESOURCE_ITEMS,
   DASHBOARD_TOP_ITEM,
   POLYMARKET_NAV_ITEMS,
+  SIGNAL_NAV_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
 import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
-/** The dashboard has two distinct "universes" — Polymarket (prediction
- * markets) and Sport (real-world sports analysis) — each rendered as its
- * own collapsible sidebar group with a clearly different accent color, so
- * a user always knows which product they're in. Tableau de bord/Coach
- * IA/Statistiques/Paramètres aren't scoped to either and stay outside
- * both groups. */
+/** The dashboard has three distinct "universes" — Polymarket (prediction
+ * markets), Sport (real-world sports analysis), and Smart Wallets
+ * (Fomo/Axiom memecoin wallets + Copy Trading) — each rendered as its own
+ * collapsible sidebar group with a clearly different accent color, so a
+ * user always knows which product they're in. Tableau de bord/Coach
+ * IA/Statistiques/Paramètres aren't scoped to any of them and stay
+ * outside all three groups. */
 type UniverseGroup = {
   id: string;
   label: string;
@@ -175,6 +177,14 @@ export function SidebarNavContent({
               </div>
             )
           )}
+
+          {renderUniverseGroup({
+            id: "smart-wallets",
+            label: "Smart Wallets",
+            accentClass: "bg-sky-400",
+            badge: "NOUVEAU",
+            items: SIGNAL_NAV_ITEMS,
+          })}
         </div>
 
         <div className="flex flex-col gap-0.5">{DASHBOARD_GLOBAL_ITEMS.map(renderLink)}</div>
