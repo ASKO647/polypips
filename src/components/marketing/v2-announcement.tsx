@@ -1,7 +1,7 @@
-import { Sparkles } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { CheckItem } from "@/components/ui/check-item";
+import { V2Badge } from "@/components/marketing/v2-badge";
 
 /** Sales-facing rewrite of what actually shipped recently, not an internal
  * changelog copy-paste — a first-time visitor reading this has never heard
@@ -33,10 +33,7 @@ export function V2Announcement() {
       <Container>
         <div className="relative overflow-hidden rounded-[32px] border border-brand-100 bg-gradient-to-br from-[#FFF7F7] via-white to-[#FFF1F1] px-6 py-12 sm:px-10 lg:px-16 lg:py-16">
           <div className="flex flex-col items-center gap-4 text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-brand-600">
-              <Sparkles className="h-3.5 w-3.5" strokeWidth={2.5} />
-              Nouveau · V2.0
-            </span>
+            <V2Badge />
 
             <h2 className="text-balance font-display text-3xl font-bold leading-[1.15] tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
               La V2.0 est maintenant disponible 🎉

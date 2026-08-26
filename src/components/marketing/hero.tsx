@@ -5,6 +5,7 @@ import { Button, ButtonIcon } from "@/components/ui/button";
 import { SocialProofRow } from "@/components/ui/social-proof-row";
 import { CheckItem } from "@/components/ui/check-item";
 import { HeroBackground } from "@/components/marketing/hero-background";
+import { V2Badge } from "@/components/marketing/v2-badge";
 import { scrollToHashIfAlreadyThere } from "@/lib/hash-scroll";
 
 const TRUST_ITEMS = [
@@ -20,7 +21,8 @@ export function Hero() {
       <HeroBackground />
 
       <div className="relative mx-auto flex w-full max-w-[860px] flex-col items-center px-6 pt-14 pb-8 text-center sm:pt-16 sm:pb-10 lg:pt-16 lg:pb-10">
-        <SocialProofRow align="center" className="animate-fade-up" />
+        <V2Badge className="animate-fade-up" />
+        <SocialProofRow align="center" className="mt-4 animate-fade-up" />
 
         <h1
           className="mt-8 animate-fade-up text-balance font-display text-[2.5rem] font-extrabold leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-[68px]"
