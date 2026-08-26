@@ -199,7 +199,7 @@ Deno.serve(async (req) => {
 
   const summary = {
     ranAt: new Date().toISOString(),
-    discovered: discoveredReal.length,
+    discovered: discovered.length,
     processed: toProcess.length,
     failed: results.filter((r) => r.error !== null).length,
     totalEventsCached: results.reduce((sum, r) => sum + r.eventsCached, 0),

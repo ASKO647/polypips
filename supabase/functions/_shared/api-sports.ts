@@ -96,6 +96,69 @@ export type ResolvedLeague = {
   season: string | null;
 };
 
+/** Picks whichever entry in a league's raw `seasons` array (as API-Sports
+ * returns it — each entry roughly `{ year, start, end, current, coverage }`,
+ * though not every field is guaranteed present on every sport/host) is
+ * actually current as of `now`.
+ *
+ * Deliberately does NOT trust the API's own `current` boolean as the sole
+ * source of truth, and deliberately does NOT hand-code a per-sport calendar
+ * rule (European football = Aug-May, MLB = Mar-Oct, NBA = Oct-June, etc.):
+ * both would need updating by hand every year or every time a competition
+ * doesn't fit the assumed pattern, and a `current` flag that lags for even
+ * a few days around a season turnover is exactly what makes a synced
+ * catalog look stuck on last year's season indefinitely. Every league
+ * already tells us its own real season window via `start`/`end` — using
+ * those against `now` is correct for football's split-year seasons AND
+ * calendar-year sports (MLB) AND everything in between, with one same
+ * rule, recomputed fresh on every call from the actual current date.
+ *
+ * Priority: a season actually in progress today > the soonest season that
+ * hasn't started yet (the close-season gap once the previous one already
+ * finished, and next season's fixtures are typically published ahead of
+ * its start) > the most recently finished one (nothing newer published
+ * yet — the honest "best available" fallback). Only when no entry has a
+ * parseable `start` date at all does this fall back to the `current` flag,
+ * then to the last array entry, since at that point there's no date left
+ * to reason about. */
+export function pickCurrentSeasonEntry(
+  seasons: unknown[],
+  now: Date
+): Record<string, unknown> | string | number | undefined {
+  const entries = seasons.filter((s) => s !== null && s !== undefined) as Array<
+    Record<string, unknown> | string | number
+  >;
+  if (entries.length === 0) return undefined;
+
+  const dated: Array<{ entry: Record<string, unknown>; start: Date; end: Date | null }> = [];
+  for (const raw of entries) {
+    if (!raw || typeof raw !== "object") continue;
+    const startRaw = (raw as Record<string, unknown>).start;
+    if (typeof startRaw !== "string") continue;
+    const start = new Date(startRaw);
+    if (Number.isNaN(start.getTime())) continue;
+    const endRaw = (raw as Record<string, unknown>).end;
+    const end = typeof endRaw === "string" ? new Date(endRaw) : null;
+    dated.push({ entry: raw as Record<string, unknown>, start, end: end && !Number.isNaN(end.getTime()) ? end : null });
+  }
+
+  if (dated.length > 0) {
+    const inProgress = dated.find((d) => d.start <= now && (!d.end || now <= d.end));
+    if (inProgress) return inProgress.entry;
+
+    const upcoming = dated.filter((d) => d.start > now).sort((a, b) => a.start.getTime() - b.start.getTime());
+    if (upcoming.length > 0) return upcoming[0].entry;
+
+    const past = dated.filter((d) => d.start <= now).sort((a, b) => b.start.getTime() - a.start.getTime());
+    if (past.length > 0) return past[0].entry;
+  }
+
+  const currentFlag = entries.find(
+    (s) => s && typeof s === "object" && (s as Record<string, unknown>).current === true
+  );
+  return currentFlag ?? entries[entries.length - 1];
+}
+
 /** Parses one /leagues response item into a ResolvedLeague — shared by
  * resolveLeague (a single search-term lookup) and fetchAllLeagues (the
  * full per-sport catalog), since both hit the same endpoint shape.
@@ -104,8 +167,14 @@ export type ResolvedLeague = {
  * on the item itself — both paths are tried. Returns null when the item
  * has no usable numeric league id, which the caller skips rather than
  * treats as fatal (one malformed row must never drop the rest of a
- * catalog). */
-function parseLeagueItem(item: Record<string, unknown>, fallbackName?: string): ResolvedLeague | null {
+ * catalog). `now` defaults to the real current time and only exists as a
+ * parameter so pickCurrentSeasonEntry's date logic can be exercised
+ * deterministically in tests. */
+function parseLeagueItem(
+  item: Record<string, unknown>,
+  fallbackName?: string,
+  now: Date = new Date()
+): ResolvedLeague | null {
   const league = (item.league ?? item) as Record<string, unknown>;
   const countryRaw = item.country ?? league.country;
   const country =
@@ -125,10 +194,7 @@ function parseLeagueItem(item: Record<string, unknown>, fallbackName?: string): 
   let season: string | null = null;
   const seasons = (item.seasons ?? league.seasons) as unknown;
   if (Array.isArray(seasons) && seasons.length > 0) {
-    const currentEntry = seasons.find(
-      (s) => s && typeof s === "object" && (s as Record<string, unknown>).current === true
-    ) as Record<string, unknown> | undefined;
-    const pick = currentEntry ?? seasons[seasons.length - 1];
+    const pick = pickCurrentSeasonEntry(seasons, now);
     if (pick && typeof pick === "object") {
       const year = (pick as Record<string, unknown>).year ?? (pick as Record<string, unknown>).season;
       season = year !== undefined ? String(year) : null;
@@ -156,13 +222,14 @@ function parseLeagueItem(item: Record<string, unknown>, fallbackName?: string): 
 export async function resolveLeague(
   sport: ApiSportsKey,
   searchTerm: string,
-  apiKey: string
+  apiKey: string,
+  now: Date = new Date()
 ): Promise<ResolvedLeague | null> {
   const config = SPORT_API_CONFIG[sport];
   const json = await apiSportsFetch(config.host, `/leagues?search=${encodeURIComponent(searchTerm)}`, apiKey);
   const response = Array.isArray(json.response) ? json.response : [];
   if (response.length === 0) return null;
-  return parseLeagueItem(response[0] as Record<string, unknown>, searchTerm);
+  return parseLeagueItem(response[0] as Record<string, unknown>, searchTerm, now);
 }
 
 /** Fetches every league/competition API-Sports has indexed for this sport —
@@ -176,13 +243,17 @@ export async function resolveLeague(
  * back, so this is cheap enough to run on every sync (see
  * sync-sports-data/index.ts's syncCatalog). A row with no usable id is
  * skipped, never fabricated. */
-export async function fetchAllLeagues(sport: ApiSportsKey, apiKey: string): Promise<ResolvedLeague[]> {
+export async function fetchAllLeagues(
+  sport: ApiSportsKey,
+  apiKey: string,
+  now: Date = new Date()
+): Promise<ResolvedLeague[]> {
   const config = SPORT_API_CONFIG[sport];
   const json = await apiSportsFetch(config.host, `/leagues`, apiKey);
   const response = Array.isArray(json.response) ? json.response : [];
   const leagues: ResolvedLeague[] = [];
   for (const raw of response) {
-    const parsed = parseLeagueItem(raw as Record<string, unknown>);
+    const parsed = parseLeagueItem(raw as Record<string, unknown>, undefined, now);
     if (parsed) leagues.push(parsed);
   }
   return leagues;
