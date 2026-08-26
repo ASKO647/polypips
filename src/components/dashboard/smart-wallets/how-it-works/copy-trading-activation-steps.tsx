@@ -4,7 +4,7 @@ import { COPY_TRADING_ACTIVATION_STEPS } from "@/lib/data/signal-how-it-works";
 import { cn } from "@/lib/utils";
 
 /** Every step here is real and already shipped — see wallet-card.tsx,
- * my-smart-wallets-flow.tsx and copy-settings-form.tsx for the exact UI
+ * signal-copy-trading-flow.tsx and copy-settings-form.tsx for the exact UI
  * this describes. */
 export function CopyTradingActivationSteps({ hasActiveCopyTrading }: { hasActiveCopyTrading: boolean }) {
   return (
@@ -48,12 +48,9 @@ export function CopyTradingActivationSteps({ hasActiveCopyTrading }: { hasActive
       </div>
 
       <div className="flex flex-col gap-3 pt-1 sm:flex-row">
-        <Button href="/dashboard/smart-wallets" className="sm:flex-1">
-          Ouvrir Smart Wallet
+        <Button href="/dashboard/smart-wallets/suivis" className="sm:flex-1">
+          Ouvrir Copy Trading
           <ButtonIcon>→</ButtonIcon>
-        </Button>
-        <Button href="/dashboard/smart-wallets/suivis" variant="outline" className="sm:flex-1">
-          Aller à Mes Smart Wallets
         </Button>
       </div>
     </div>

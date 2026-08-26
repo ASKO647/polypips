@@ -11,7 +11,7 @@ export const HOW_IT_WORKS_STEPS: { title: string; description: string }[] = [
   {
     title: "Vous suivez un Smart Wallet",
     description:
-      "Depuis \"Smart Wallet\", choisissez un wallet Fomo ou Axiom qui vous intéresse et cliquez sur \"Suivre\".",
+      "Depuis \"Copy Trading\", choisissez un wallet Fomo ou Axiom qui vous intéresse et cliquez sur \"Suivre\".",
   },
   {
     title: "PolyPips surveille ce wallet",
@@ -41,9 +41,9 @@ export const PIPELINE_STAGES: string[] = [
 
 export const COPY_TRADING_ACTIVATION_STEPS: { title: string; description: string }[] = [
   {
-    title: "Aller dans Fomo X Axiom → Smart Wallet",
+    title: "Aller dans Fomo X Axiom → Copy Trading",
     description:
-      "Depuis la sidebar, ouvrez la section \"Fomo X Axiom\" puis la page \"Smart Wallet\" pour parcourir les wallets repérés.",
+      "Depuis la sidebar, ouvrez la section \"Fomo X Axiom\" puis la page \"Copy Trading\" pour parcourir les wallets repérés.",
   },
   {
     title: "Choisir un Smart Wallet",
@@ -53,12 +53,12 @@ export const COPY_TRADING_ACTIVATION_STEPS: { title: string; description: string
   {
     title: 'Cliquer sur "Suivre"',
     description:
-      'Depuis la fiche du wallet ou sa carte dans la liste, cliquez sur "Suivre" — il apparaît alors dans "Mes Smart Wallets".',
+      'Depuis la fiche du wallet ou sa carte dans la liste, cliquez sur "Suivre" — il apparaît alors dans la liste "Mes wallets suivis", juste en dessous.',
   },
   {
-    title: 'Dans "Mes Smart Wallets", cliquer sur "Activer le Copy Trading"',
+    title: 'Dans "Mes wallets suivis", cliquer sur "Activer le Copy Trading"',
     description:
-      'Ouvrez "Mes Smart Wallets", repérez le wallet suivi, et cliquez sur "Activer le Copy Trading" pour déplier son formulaire de paramètres.',
+      'Repérez le wallet suivi dans "Mes wallets suivis" (sur cette même page Copy Trading) et cliquez sur "Activer le Copy Trading" pour déplier son formulaire de paramètres.',
   },
   {
     title: "Configurer vos filtres de notification",
@@ -91,11 +91,11 @@ export const HOW_IT_WORKS_FAQ: { question: string; answer: string }[] = [
   {
     question: "Comment désactiver les notifications pour un wallet ?",
     answer:
-      'Depuis "Mes Smart Wallets", ouvrez les paramètres du wallet suivi et cliquez sur "Désactiver le Copy Trading".',
+      'Depuis la page "Copy Trading", ouvrez les paramètres du wallet suivi (section "Mes wallets suivis") et cliquez sur "Désactiver le Copy Trading".',
   },
   {
     question: "Comment savoir si j'ai déjà vu ou cliqué une notification ?",
     answer:
-      'Consultez "Trades copiés" : chaque suggestion y apparaît avec son statut (nouvelle, vue, ou lien cliqué).',
+      'Consultez "Mes trades copiés" : chaque suggestion y apparaît avec son statut (nouvelle, vue, ou lien cliqué).',
   },
 ];

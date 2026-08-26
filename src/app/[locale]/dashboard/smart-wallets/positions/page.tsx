@@ -9,7 +9,7 @@ import {
 import { fetchSignalCopyTrades } from "@/lib/supabase/signal-copy-trading";
 
 export const metadata: Metadata = {
-  title: "Trades copiés — Polypips",
+  title: "Mes trades copiés — Polypips",
 };
 
 export default async function SignalPositionsPage() {

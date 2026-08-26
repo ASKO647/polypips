@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MySmartWalletsFlow } from "@/components/dashboard/smart-wallets/my-smart-wallets-flow";
+import { SignalCopyTradingFlow } from "@/components/dashboard/smart-wallets/signal-copy-trading-flow";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
   fetchSubscription,
@@ -10,17 +10,18 @@ import { fetchSignalWallets, fetchUserFollowedSignalWalletIds } from "@/lib/supa
 import { fetchAllSignalCopySettings } from "@/lib/supabase/signal-copy-trading";
 
 export const metadata: Metadata = {
-  title: "Mes Smart Wallets — Polypips",
+  title: "Copy Trading — Fomo X Axiom — Polypips",
 };
 
-export default async function MySmartWalletsPage() {
+export default async function SignalCopyTradingPage() {
   const supabase = await createClient();
   const user = await getAuthUser();
 
   if (!user) {
     return (
-      <MySmartWalletsFlow
-        wallets={[]}
+      <SignalCopyTradingFlow
+        allWallets={[]}
+        initialFollowedIds={[]}
         settingsByWalletId={new Map()}
         hasActiveSubscription={false}
         cancelled={false}
@@ -35,11 +36,10 @@ export default async function MySmartWalletsPage() {
     fetchAllSignalCopySettings(supabase, user.id),
   ]);
 
-  const followedWallets = allWallets.filter((w) => followedIds.has(w.id));
-
   return (
-    <MySmartWalletsFlow
-      wallets={followedWallets}
+    <SignalCopyTradingFlow
+      allWallets={allWallets}
+      initialFollowedIds={Array.from(followedIds)}
       settingsByWalletId={settingsByWalletId}
       hasActiveSubscription={hasActiveAccess(subscription)}
       cancelled={isCancelledSubscription(subscription)}

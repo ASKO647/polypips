@@ -181,7 +181,7 @@ export function SignalAnalysisResult({
         <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1">
           Nouvelle analyse
         </Button>
-        <Button href="/dashboard/smart-wallets" className="sm:flex-1">
+        <Button href="/dashboard/smart-wallets/suivis" className="sm:flex-1">
           Découvrir les Smart Wallets
           <ButtonIcon>
             <ArrowRight className="h-4 w-4" />

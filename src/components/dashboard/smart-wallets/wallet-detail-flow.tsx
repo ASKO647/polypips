@@ -81,7 +81,7 @@ export function WalletDetailFlow({
 
   return (
     <div className="flex flex-col gap-6">
-      <Button href="/dashboard/smart-wallets" variant="outline" className="w-fit">
+      <Button href="/dashboard/smart-wallets/suivis" variant="outline" className="w-fit">
         <ArrowLeft className="h-4 w-4" />
         Retour aux Smart Wallets
       </Button>
@@ -178,7 +178,7 @@ export function WalletDetailFlow({
           <p className="mt-2 text-center text-xs text-white/40">
             Activez le Copy Trading depuis{" "}
             <Link href="/dashboard/smart-wallets/suivis" className="font-semibold text-brand-400 underline underline-offset-2">
-              Mes Smart Wallets
+              Copy Trading
             </Link>
             .
           </p>

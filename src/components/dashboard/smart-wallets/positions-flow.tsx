@@ -120,7 +120,7 @@ export function PositionsFlow({
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Trades copiés
+          Mes trades copiés
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
           Chaque trade détecté sur un Smart Wallet suivi et sa décision (copié ou ignoré selon vos
