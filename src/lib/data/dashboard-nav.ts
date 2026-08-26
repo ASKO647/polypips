@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LineChart,
-  ListChecks,
   Settings,
   Sparkles,
   Trophy,
@@ -35,22 +34,33 @@ export const DASHBOARD_TOP_ITEM: DashboardNavItem = {
 /** The "Polymarket" universe group — everything here operates on real
  * Polymarket markets. Mirrors the Sport group (SPORTS_SUB_NAV in
  * lib/sports/nav.ts), which is the other universe; both are rendered as
- * their own collapsible section in SidebarNavContent. */
+ * their own collapsible section in SidebarNavContent.
+ *
+ * Smart Money is deliberately not its own entry anymore: its wallet
+ * browsing/following/detail view now lives at the top of Copy Trading
+ * (an address-lookup search, see WalletLookupPanel) instead of a separate
+ * page — one place to find a wallet and one place to act on it. */
 export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Analyse IA", href: "/dashboard/analyse-ia", icon: Sparkles },
   { label: "Marchés sélectionnés", href: "/dashboard/markets", icon: LineChart },
-  { label: "Smart Money", href: "/dashboard/smart-money", icon: Wallet },
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },
 ];
 
 /** The "Fomo X Axiom" universe group — Fomo/Axiom-sourced memecoin wallets,
  * their own Analyse IA (one page per source, unlike Polymarket's single
  * "Analyse IA" — see analyze-signal-bet), and their own Copy Trading
- * pipeline. A third universe alongside Polymarket and Sport, deliberately
- * not folded into POLYMARKET_NAV_ITEMS: different chain (Solana), different
- * asset class (SPL tokens), different Copy Trading semantics (AI Engine +
- * Risk Engine + demo Execution Engine, not suggestion-only) — see the
- * 20260827090000 migration's file comment. Routes stay under
+ * pipeline (AI Engine + Risk Engine gating a notification — never an
+ * executed order, exactly like Polymarket's own Copy Trading; see
+ * sync-signal-wallets' file comment). A third universe alongside Polymarket
+ * and Sport, deliberately not folded into POLYMARKET_NAV_ITEMS: different
+ * chain (Solana), different asset class (SPL tokens), no official
+ * Fomo/Axiom API to build an address-lookup search on the way Polymarket's
+ * Copy Trading has one.
+ *
+ * "Smart Wallet" isn't its own entry anymore — its browse/filter/follow
+ * grid now lives at the top of the Copy Trading page (still
+ * /dashboard/smart-wallets/suivis, unchanged) instead of a separate one;
+ * see SignalCopyTradingFlow's own comment. Routes otherwise stay under
  * /dashboard/smart-wallets/* (unchanged from before this rename) so
  * existing links — including ones already generated into notification
  * rows by sync-signal-wallets — keep resolving; only the labels/grouping
@@ -58,9 +68,8 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
 export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Analyse AI Fomo", href: "/dashboard/smart-wallets/analyse-fomo", icon: Sparkles },
   { label: "Analyse AI Axiom", href: "/dashboard/smart-wallets/analyse-axiom", icon: Sparkles },
-  { label: "Smart Wallet", href: "/dashboard/smart-wallets", icon: Wallet },
-  { label: "Mes Smart Wallets", href: "/dashboard/smart-wallets/suivis", icon: ListChecks },
-  { label: "Trades copiés", href: "/dashboard/smart-wallets/positions", icon: Copy },
+  { label: "Copy Trading", href: "/dashboard/smart-wallets/suivis", icon: Wallet },
+  { label: "Mes trades copiés", href: "/dashboard/smart-wallets/positions", icon: Copy },
   {
     label: "Comment ça marche",
     href: "/dashboard/smart-wallets/comment-ca-marche",

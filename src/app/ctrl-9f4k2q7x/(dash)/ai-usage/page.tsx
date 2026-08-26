@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { StatCard } from "@/components/owner/stat-card";
-import { WalletChart } from "@/components/dashboard/smart-money/wallet-chart";
+import { WalletChart } from "@/components/ui/wallet-chart";
 import { fetchOwnerAiUsage } from "@/lib/supabase/owner-usage";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };

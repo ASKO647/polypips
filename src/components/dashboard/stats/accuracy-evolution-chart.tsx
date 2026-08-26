@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WalletChart } from "@/components/dashboard/smart-money/wallet-chart";
+import { WalletChart } from "@/components/ui/wallet-chart";
 import type { EvolutionPeriod } from "@/lib/data/stats";
 import { cn } from "@/lib/utils";
 

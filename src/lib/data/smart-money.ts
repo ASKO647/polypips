@@ -53,3 +53,44 @@ export type Wallet = {
   riskLevel: WalletRiskLevel | null;
   trackRecordDays: number | null;
 };
+
+/** One point of the day-by-day gains/losses chart on Copy Trading's
+ * on-demand wallet lookup — net cash flow for that calendar day (sells
+ * minus buys, from the live activity feed), not a portfolio-value
+ * snapshot. `label` is a pre-formatted date ("DD/MM") for the chart's
+ * hover tooltip. */
+export type WalletDailyFlowPoint = {
+  label: string;
+  value: number;
+};
+
+/** Result of an on-demand "paste an address" lookup on Copy Trading —
+ * always built from a live Polymarket Data API call (see
+ * lib/polymarket-data.ts), unlike Wallet above which is a periodically
+ * refreshed row from tracked_wallets. Quality-profile fields
+ * (winRate/roiPercent/...) are the one exception: those are
+ * sync-smart-money's own heuristics computed from historical
+ * wallet_snapshots, so they can only be non-null when this address happens
+ * to already be a tracked wallet — never computed live. */
+export type WalletLookupResult = {
+  address: string;
+  handle: string;
+  totalValue: number;
+  positions: WalletPosition[];
+  recentMovements: WalletMovement[];
+  history: WalletMovement[];
+  dailyFlow: WalletDailyFlowPoint[];
+  /** The tracked_wallets id, when this address is already tracked — needed
+   * so the "Suivre ce wallet" toggle can reflect/act on the real row
+   * instead of always behaving as "not yet followed". null for an address
+   * nobody has looked up or added before. */
+  walletId: string | null;
+  isFollowed: boolean;
+  winRate: number | null;
+  roiPercent: number | null;
+  consistencyScore: number | null;
+  categoryDiversity: number | null;
+  avgPositionSize: number | null;
+  riskLevel: WalletRiskLevel | null;
+  trackRecordDays: number | null;
+};

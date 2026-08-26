@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link } from "@/i18n/navigation";
 import { HelpCircle, Users } from "lucide-react";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";
@@ -9,6 +8,7 @@ import { StrategyActive } from "@/components/dashboard/copy-trading/strategy-act
 import { StrategyCard } from "@/components/dashboard/copy-trading/strategy-card";
 import { StrategyConfigForm } from "@/components/dashboard/copy-trading/strategy-config-form";
 import { TutorialModal } from "@/components/dashboard/copy-trading/tutorial-modal";
+import { WalletLookupPanel } from "@/components/dashboard/copy-trading/wallet-lookup-panel";
 import type { RiskParameters, Strategy, Suggestion } from "@/lib/data/copy-trading";
 import { cn, formatResetDate } from "@/lib/utils";
 
@@ -63,6 +63,27 @@ export function CopyTradingFlow({
   const selectedStrategy = selectedWalletId
     ? (strategies.find((s) => s.walletId === selectedWalletId) ?? null)
     : null;
+
+  const handleWalletFollowed = (walletId: string, label: string, address: string) => {
+    setStrategies((prev) =>
+      prev.some((s) => s.walletId === walletId)
+        ? prev
+        : [
+            ...prev,
+            {
+              walletId,
+              walletLabel: label,
+              walletAddress: address,
+              walletTotalValue: 0,
+              walletWinRate: null,
+              walletRoiPercent: null,
+              strategyId: null,
+              status: null,
+              riskParameters: null,
+            },
+          ]
+    );
+  };
 
   const activeCount = strategies.filter((s) => s.status === "active").length;
 
@@ -256,8 +277,10 @@ export function CopyTradingFlow({
             : "Débloquez le Copy Trading — Débutez pour 0,99 €"
         }
       >
+        <WalletLookupPanel onWalletFollowed={handleWalletFollowed} />
+
         {strategies.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
+          <div className="mt-4 flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
               <Users className="h-5 w-5" strokeWidth={2} />
             </span>
@@ -265,19 +288,12 @@ export function CopyTradingFlow({
               Aucun portefeuille suivi pour l&apos;instant
             </p>
             <p className="max-w-sm text-xs leading-relaxed text-white/45">
-              Le copy trading se configure à partir des portefeuilles que vous
-              suivez sur Smart Money. Suivez-en un pour créer votre première
-              stratégie.
+              Recherchez un wallet Polymarket ci-dessus et suivez-le pour
+              créer votre première stratégie de copy trading.
             </p>
-            <Link
-              href="/dashboard/smart-money"
-              className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-brand-400 bg-brand-500/15 px-4 py-2 text-xs font-semibold text-brand-400 transition-colors hover:bg-brand-500/25"
-            >
-              Aller sur Smart Money
-            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {strategies.map((strategy) => (
               <StrategyCard
                 key={strategy.walletId}

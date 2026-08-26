@@ -111,9 +111,9 @@ export function DashboardOverviewFlow({
             sparklinePoints={analysesSparkline}
           />
           <QuickAccessCard
-            href="/dashboard/smart-money"
+            href="/dashboard/copy-trading"
             icon={Wallet}
-            title="Smart Money"
+            title="Copy Trading"
             stat={
               walletsMax !== null
                 ? `${walletsFollowed}/${walletsMax} wallets suivis`
