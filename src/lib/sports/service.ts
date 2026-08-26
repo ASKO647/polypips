@@ -1,21 +1,41 @@
 /**
  * Service layer for the Sports module — every Sports page/component reads
- * through here, never through Supabase directly. Backed by real data:
- * sports_competitions_cache / sports_teams_cache / sports_fixtures_cache,
- * populated by the sync-sports-data Edge Function from API-Sports (see
- * that function's own file-level comment, and _shared/api-sports.ts, for
- * the data source itself and its caveats).
+ * through here, never through Supabase directly. Backed by real data from
+ * two independent providers:
+ *   - team sports (football/basketball/rugby/baseball) via API-Sports:
+ *     sports_competitions_cache / sports_teams_cache / sports_fixtures_cache,
+ *     populated by sync-sports-data (see that function's file comment, and
+ *     _shared/api-sports.ts, for the source itself and its caveats).
+ *   - individual-athlete sports (tennis/boxing/MMA) via The Odds API:
+ *     odds_api_competitions_cache / odds_api_matches_cache, populated by
+ *     sync-individual-sports-data (see that function's file comment, and
+ *     _shared/odds-api.ts). No separate teams cache exists for these —
+ *     there's no team to follow independently of a match, so player names
+ *     live directly on each match row and get mapped into the same Team
+ *     shape a team-sport player uses (no logoUrl, same as a team with a
+ *     missing crest). These competitions also have no country — they're
+ *     grouped by circuit (ATP/WTA/ITF/Boxe/MMA) instead, stored directly in
+ *     Competition.country so every country-grouping call site (Compétitions
+ *     browser, a competition's own match list) works unchanged; nav.ts's
+ *     circuitEmoji() renders a circuit badge there instead of a flag.
+ *
+ * Every exported function here branches on isIndividualSport(sport) (see
+ * nav.ts) to pick the right backing tables — the frontend components never
+ * know or care which provider a given sport comes from.
  *
  * IDs handed out to callers (Competition.id, Match.id, Team.id) are
- * constructed strings — `${sport}-comp-${externalLeagueId}`,
- * `${sport}-match-${externalFixtureId}`, `${sport}-team-${externalTeamId}`
- * — never a cache table's own row uuid. sports_fixtures_cache rows are
- * deleted and reinserted wholesale on every sync run (fresh uuids each
- * time), so a follow row (sports_match_follows.match_id /
- * sports_team_follows.team_id, both plain text) that stored a row uuid
- * would silently point at nothing after the next sync. The external
- * API-Sports numeric ID is what's actually stable across syncs, so that's
- * what gets persisted.
+ * constructed strings — `${sport}-comp-${externalId}`,
+ * `${sport}-match-${externalId}`, `${sport}-team-${externalId}` — never a
+ * cache table's own row uuid, since fixtures/matches are deleted and
+ * reinserted wholesale on every sync run (fresh uuids each time) and a
+ * follow row (sports_match_follows.match_id / sports_team_follows.team_id,
+ * both plain text) that stored a row uuid would silently point at nothing
+ * after the next sync. externalId is a plain string here (not a number):
+ * API-Sports hands out stable numeric ids, but The Odds API's ids
+ * (sport_key strings like "tennis_atp_french_open", event ids like
+ * "6c7c164...") are opaque strings — parseEntityId no longer assumes
+ * digits-only, and each provider's own code converts to a number where its
+ * own bigint-typed columns need one.
  *
  * Every analytical field (probabilities, score, opportunities, comparison
  * stats, form, H2H, lineups, odds, model accuracy...) is still honestly
@@ -24,6 +44,7 @@
  */
 import { createClient } from "@/lib/supabase/server";
 import { getCountryCode } from "./country-codes";
+import { isIndividualSport } from "./nav";
 import type {
   Competition,
   Country,
@@ -41,10 +62,14 @@ import type {
 function parseEntityId(
   id: string,
   kind: "comp" | "match" | "team"
-): { sport: string; externalId: number } | null {
-  const match = id.match(new RegExp(`^([a-z-]+)-${kind}-(\\d+)$`));
-  if (!match) return null;
-  return { sport: match[1], externalId: Number(match[2]) };
+): { sport: string; externalId: string } | null {
+  const marker = `-${kind}-`;
+  const idx = id.indexOf(marker);
+  if (idx === -1) return null;
+  const sport = id.slice(0, idx);
+  const externalId = id.slice(idx + marker.length);
+  if (!sport || !externalId) return null;
+  return { sport, externalId };
 }
 
 /** Re-exported so every existing `import { getCountryCode } from
@@ -75,7 +100,59 @@ function toCompetition(row: CompetitionRow): Competition {
   };
 }
 
+type IndividualCompetitionRow = {
+  sport: string;
+  odds_api_sport_key: string;
+  circuit: string;
+  title: string;
+};
+
+/** The Odds API never provides a crest for a tournament — logoUrl/flagUrl
+ * stay undefined, exactly like a team-sport Competition with no resolved
+ * logo yet. circuit (ATP/WTA/ITF/Boxe/MMA) is stored in Competition.country
+ * — see this file's header comment for why. */
+function toIndividualCompetition(row: IndividualCompetitionRow): Competition {
+  return {
+    id: `${row.sport}-comp-${row.odds_api_sport_key}`,
+    name: row.title,
+    country: row.circuit,
+    sport: row.sport as SportKey,
+    logoUrl: undefined,
+    flagUrl: undefined,
+  };
+}
+
+async function listIndividualCompetitions(sport?: SportKey): Promise<Competition[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("odds_api_competitions_cache")
+    .select("sport, odds_api_sport_key, circuit, title")
+    .eq("active", true)
+    .order("title", { ascending: true });
+  if (sport) query = query.eq("sport", sport);
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+  return (data as IndividualCompetitionRow[]).map(toIndividualCompetition);
+}
+
 export async function listCompetitions(sport?: SportKey): Promise<Competition[]> {
+  if (sport && isIndividualSport(sport)) {
+    return listIndividualCompetitions(sport);
+  }
+  if (sport) {
+    return listTeamCompetitions(sport);
+  }
+  // No sport filter (the global Compétitions picker): every real
+  // competition across both providers, sorted together by name.
+  const [teamCompetitions, individualCompetitions] = await Promise.all([
+    listTeamCompetitions(),
+    listIndividualCompetitions(),
+  ]);
+  return [...teamCompetitions, ...individualCompetitions].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function listTeamCompetitions(sport?: SportKey): Promise<Competition[]> {
   const supabase = await createClient();
   let query = supabase
     .from("sports_competitions_cache")
@@ -126,11 +203,26 @@ export async function getCompetitionById(id: string): Promise<Competition | null
   if (!parsed) return null;
 
   const supabase = await createClient();
+
+  if (isIndividualSport(parsed.sport as SportKey)) {
+    const { data, error } = await supabase
+      .from("odds_api_competitions_cache")
+      .select("sport, odds_api_sport_key, circuit, title")
+      .eq("sport", parsed.sport)
+      .eq("odds_api_sport_key", parsed.externalId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return toIndividualCompetition(data as IndividualCompetitionRow);
+  }
+
+  const externalLeagueId = Number(parsed.externalId);
+  if (!Number.isFinite(externalLeagueId)) return null;
+
   const { data, error } = await supabase
     .from("sports_competitions_cache")
     .select("sport, search_term, external_league_id, name, country, logo_url, flag_url")
     .eq("sport", parsed.sport)
-    .eq("external_league_id", parsed.externalId)
+    .eq("external_league_id", externalLeagueId)
     .maybeSingle();
   if (error || !data) return null;
   return toCompetition(data as CompetitionRow);
@@ -233,6 +325,90 @@ function toMatch(row: FixtureRow): Match {
   };
 }
 
+type IndividualMatchRow = {
+  sport: string;
+  competition_id: string;
+  odds_api_event_id: string;
+  player_home: string;
+  player_away: string;
+  commence_at: string;
+  status: string;
+  competition: {
+    odds_api_sport_key: string | null;
+    circuit: string | null;
+    title: string | null;
+  } | null;
+};
+
+/** A player mapped into the same Team shape a team-sport player uses — no
+ * logoUrl (The Odds API never provides one), country left as "—" since a
+ * player's own nationality isn't something this API exposes either (the
+ * tournament's circuit already appears on the Competition, not per-team). */
+function teamFromPlayerName(sport: string, name: string): Team {
+  return {
+    id: `${sport}-team-${name}`,
+    name,
+    shortName: name,
+    initials: initialsFromName(name),
+    country: "—",
+    logoUrl: undefined,
+  };
+}
+
+function toIndividualMatch(row: IndividualMatchRow): Match {
+  const sport = row.sport as SportKey;
+  const competition: Competition = {
+    id: `${sport}-comp-${row.competition?.odds_api_sport_key ?? "inconnue"}`,
+    name: row.competition?.title ?? "Compétition",
+    country: row.competition?.circuit ?? "—",
+    sport,
+    logoUrl: undefined,
+    flagUrl: undefined,
+  };
+
+  return {
+    id: `${sport}-match-${row.odds_api_event_id}`,
+    sport,
+    competition,
+    homeTeam: teamFromPlayerName(sport, row.player_home),
+    awayTeam: teamFromPlayerName(sport, row.player_away),
+    kickoffAt: row.commence_at,
+    status: row.status as MatchStatus,
+  };
+}
+
+const INDIVIDUAL_MATCH_SELECT =
+  "sport, competition_id, odds_api_event_id, player_home, player_away, commence_at, status, competition:odds_api_competitions_cache(odds_api_sport_key, circuit, title)";
+
+async function listIndividualMatches(filters?: {
+  sport?: SportKey;
+  competitionId?: string;
+  teamId?: string;
+  window?: MatchWindow;
+}): Promise<Match[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("odds_api_matches_cache")
+    .select(INDIVIDUAL_MATCH_SELECT)
+    .order("commence_at", { ascending: true });
+  if (filters?.sport) query = query.eq("sport", filters.sport);
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+
+  let matches = (data as unknown as IndividualMatchRow[]).map(toIndividualMatch);
+
+  if (filters?.competitionId) {
+    matches = matches.filter((m) => m.competition.id === filters.competitionId);
+  }
+  if (filters?.teamId) {
+    matches = matches.filter((m) => m.homeTeam.id === filters.teamId || m.awayTeam.id === filters.teamId);
+  }
+  matches = matches.filter((m) => matchesWindow(m.kickoffAt, filters?.window));
+
+  return matches;
+}
+
 export type MatchWindow = "today" | "tomorrow" | "week" | "all";
 
 function matchesWindow(kickoffAt: string, window: MatchWindow | undefined): boolean {
@@ -263,6 +439,18 @@ export async function listUpcomingMatches(filters?: {
   teamId?: string;
   window?: MatchWindow;
 }): Promise<Match[]> {
+  // competitionId already encodes its sport (`${sport}-comp-${...}`) — a
+  // caller that only passes competitionId (every per-competition match-list
+  // page) still gets routed to the right table without needing to also
+  // pass sport explicitly.
+  const derivedSport =
+    filters?.sport ??
+    (filters?.competitionId ? (parseEntityId(filters.competitionId, "comp")?.sport as SportKey | undefined) : undefined);
+
+  if (derivedSport && isIndividualSport(derivedSport)) {
+    return listIndividualMatches({ ...filters, sport: derivedSport });
+  }
+
   const supabase = await createClient();
   let query = supabase.from("sports_fixtures_cache").select(FIXTURE_SELECT).order("kickoff_at", { ascending: true });
   if (filters?.sport) query = query.eq("sport", filters.sport);
@@ -288,11 +476,26 @@ export async function getMatchById(id: string): Promise<Match | null> {
   if (!parsed) return null;
 
   const supabase = await createClient();
+
+  if (isIndividualSport(parsed.sport as SportKey)) {
+    const { data, error } = await supabase
+      .from("odds_api_matches_cache")
+      .select(INDIVIDUAL_MATCH_SELECT)
+      .eq("sport", parsed.sport)
+      .eq("odds_api_event_id", parsed.externalId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return toIndividualMatch(data as unknown as IndividualMatchRow);
+  }
+
+  const externalFixtureId = Number(parsed.externalId);
+  if (!Number.isFinite(externalFixtureId)) return null;
+
   const { data, error } = await supabase
     .from("sports_fixtures_cache")
     .select(FIXTURE_SELECT)
     .eq("sport", parsed.sport)
-    .eq("external_fixture_id", parsed.externalId)
+    .eq("external_fixture_id", externalFixtureId)
     .maybeSingle();
   if (error || !data) return null;
   return toMatch(data as unknown as FixtureRow);

@@ -22,37 +22,66 @@ export const SPORTS_SUB_NAV: SportsSubNavItem[] = [
   { label: "Compétitions", href: "/dashboard/sports/competitions", icon: Swords },
 ];
 
-/** The five sports PolyPips covers, in the fixed display order used by
- * every "choose a sport" entry point (SportsMatchesPage's grid, the
- * sidebar's Sport sub-list). active reflects real API-Sports coverage
- * wired into sync-sports-data (see FEATURED_COMPETITIONS there and
- * _shared/api-sports.ts's file comment) — not a UI-only toggle. Tennis is
- * inactive because API-Sports (the account behind API_SPORTS_KEY) doesn't
- * have a tennis product at all — no v1.tennis host exists there. It still
- * appears everywhere a sport is chosen (see SportCategoryPage's honest
- * "bientôt disponible" branch for category.active === false) rather than
- * being hidden, so users see it's coming rather than wondering why it's
- * missing. */
+/** The sports PolyPips covers, in the fixed display order used by every
+ * "choose a sport" entry point (SportsMatchesPage's grid, the sidebar's
+ * Sport sub-list). active reflects real data-source coverage — team sports
+ * via API-Sports (sync-sports-data, FEATURED_COMPETITIONS there and
+ * _shared/api-sports.ts's file comment), individual-athlete sports
+ * (tennis/boxing/MMA) via The Odds API (sync-individual-sports-data,
+ * _shared/odds-api.ts) — not a UI-only toggle. All seven are active: every
+ * one of them has a confirmed real data source behind it as of
+ * 2026-08-27/28 (tennis's tennis_* sport_keys, and boxing_boxing /
+ * mma_mixed_martial_arts confirmed present+active on this account's own
+ * plan before being wired in). */
 export const SPORT_CATEGORIES: SportCategory[] = [
   { key: "football", label: "Football", active: true },
   { key: "basketball", label: "Basketball", active: true },
-  { key: "tennis", label: "Tennis", active: false },
+  { key: "tennis", label: "Tennis", active: true },
   { key: "rugby", label: "Rugby", active: true },
   { key: "baseball", label: "Baseball", active: true },
+  { key: "boxing", label: "Boxe", active: true },
+  { key: "mma", label: "MMA", active: true },
 ];
 
 /** A clearly sport-specific emoji beats a generic/arbitrary lucide icon —
- * every SportKey has one here, including tennis, so the mapping is ready
- * the moment a real tennis data source exists. That's separate from
- * SPORT_CATEGORIES' `active` flag, which is what gates whether a sport has
- * real competitions/matches behind it — see ACTIVE_SPORT_CATEGORIES below. */
+ * every SportKey has one here. That's separate from SPORT_CATEGORIES'
+ * `active` flag, which is what gates whether a sport has real competitions/
+ * matches behind it — see ACTIVE_SPORT_CATEGORIES below. */
 export const SPORT_EMOJIS: Record<SportKey, string> = {
   football: "⚽",
   basketball: "🏀",
   tennis: "🎾",
   rugby: "🏉",
   baseball: "⚾",
+  boxing: "🥊",
+  mma: "🥋",
 };
+
+/** Tennis/boxing/MMA are individual-athlete sports (one player/fighter vs
+ * another, not a team) — lib/sports/service.ts branches on this to read
+ * from odds_api_competitions_cache/odds_api_matches_cache instead of the
+ * team-sport sports_*_cache tables. Also used by CompetitionBrowser and
+ * CompetitionMatches to show a circuit badge (🎾/🥊/🥋) instead of a
+ * country flag, since these sports aren't organized by country. */
+export const INDIVIDUAL_SPORT_KEYS: ReadonlySet<SportKey> = new Set(["tennis", "boxing", "mma"]);
+
+export function isIndividualSport(sport: SportKey): boolean {
+  return INDIVIDUAL_SPORT_KEYS.has(sport);
+}
+
+/** Emoji shown next to a competition's circuit grouping label (ATP / WTA /
+ * ITF / Tennis / Boxe / MMA) in place of a country flag — these sports
+ * don't organize by country, so lib/sports/service.ts stores the circuit
+ * label directly in Competition.country (see that file's comment) and the
+ * UI renders this instead of attempting a flag lookup for it. Returns null
+ * for anything else, so a real country string still renders its normal
+ * flag. */
+export function circuitEmoji(label: string): string | null {
+  if (label === "ATP" || label === "WTA" || label === "ITF" || label === "Tennis") return "🎾";
+  if (label === "Boxe") return "🥊";
+  if (label === "MMA") return "🥋";
+  return null;
+}
 
 /** Filters/quick-selectors over lists of real matches or competitions
  * (Overview's quick filters, the Compétitions/Opportunités pickers, the

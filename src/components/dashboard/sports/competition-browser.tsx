@@ -6,15 +6,20 @@ import { Link } from "@/i18n/navigation";
 import { CompetitionBadge } from "@/components/dashboard/sports/competition-badge";
 import { FlagIcon } from "@/components/dashboard/sports/flag-icon";
 import { getCountryCode } from "@/lib/sports/country-codes";
+import { circuitEmoji } from "@/lib/sports/nav";
 import type { Competition, SportKey } from "@/lib/sports/types";
 
 /**
- * Sport → Pays → Compétition, in that order — one section per country,
- * each listing that country's real competitions (from
- * listCompetitionsByCountry, itself backed by sports_competitions_cache).
- * A competition with zero near-term fixtures still shows up here (this
- * list never filters on fixture presence); its own page is what renders
- * the honest "Aucun match disponible" state — see competition-matches.tsx.
+ * Sport → Pays → Compétition, in that order — one section per group, each
+ * listing that group's real competitions (from listCompetitionsByCountry).
+ * For team sports the group is a real country (sports_competitions_cache);
+ * for individual-athlete sports (tennis/boxing/MMA, odds_api_competitions_
+ * cache) there's no country, so the group is the circuit instead (ATP/WTA/
+ * ITF/Boxe/MMA) — circuitEmoji() renders a matching badge there instead of
+ * attempting a flag. A competition with zero near-term fixtures still
+ * shows up here (this list never filters on fixture presence); its own
+ * page is what renders the honest "Aucun match disponible" state — see
+ * competition-matches.tsx.
  */
 export function CompetitionBrowser({
   sport,
@@ -69,7 +74,11 @@ export function CompetitionBrowser({
           {filteredGroups.map((group) => (
             <div key={group.country}>
               <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/40">
-                <FlagIcon code={getCountryCode(group.country)} className="h-3.5 w-5" />
+                {circuitEmoji(group.country) ? (
+                  <span aria-hidden>{circuitEmoji(group.country)}</span>
+                ) : (
+                  <FlagIcon code={getCountryCode(group.country)} className="h-3.5 w-5" />
+                )}
                 {group.country}
                 <span className="text-white/25">— {group.competitions.length}</span>
               </h2>
