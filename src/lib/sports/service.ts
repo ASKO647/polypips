@@ -271,6 +271,41 @@ export async function listTeams(): Promise<Team[]> {
   return (data as TeamRow[]).map(toTeam);
 }
 
+/** Resolves a single Team.id back to a Team — the counterpart to
+ * getMatchById, and the reason "Mes équipes" reads through this instead of
+ * listTeams()+filter. listTeams() only ever returns rows from
+ * sports_teams_cache, which by design has no concept of an individual-sport
+ * "team" at all (see this file's header comment — a tennis/boxing/MMA
+ * player only ever exists as a name on a match row, via
+ * teamFromPlayerName). A follow written for one of those ids would
+ * therefore never match anything listTeams() returns, silently vanishing
+ * from "Mes équipes" no matter how many times the page reloads. Resolving
+ * by id directly sidesteps that: for an individual sport there's nothing to
+ * query — the player's name is the externalId itself — and for a team
+ * sport this is exactly listTeams()'s one-row equivalent. Returns null
+ * (not a throw) when nothing matches, exactly like getMatchById. */
+export async function getTeamById(id: string): Promise<Team | null> {
+  const parsed = parseEntityId(id, "team");
+  if (!parsed) return null;
+
+  if (isIndividualSport(parsed.sport as SportKey)) {
+    return teamFromPlayerName(parsed.sport, parsed.externalId);
+  }
+
+  const externalTeamId = Number(parsed.externalId);
+  if (!Number.isFinite(externalTeamId)) return null;
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sports_teams_cache")
+    .select("sport, external_team_id, name, country, logo_url")
+    .eq("sport", parsed.sport)
+    .eq("external_team_id", externalTeamId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return toTeam(data as TeamRow);
+}
+
 type FixtureRow = {
   sport: string;
   external_fixture_id: number;
@@ -499,6 +534,50 @@ export async function getMatchById(id: string): Promise<Match | null> {
     .maybeSingle();
   if (error || !data) return null;
   return toMatch(data as unknown as FixtureRow);
+}
+
+/** Real upcoming (and recently played) fixtures between two named
+ * teams/players — the Overview page's "Rechercher un match" box. Matches
+ * by substring, case-insensitive, in either home/away order, across both
+ * providers (team sports via sports_fixtures_cache, individual sports via
+ * odds_api_matches_cache — a search for two player names works exactly the
+ * same way). Four separate `.ilike()`-filtered queries rather than one
+ * `.or()` string: PostgREST's `.or()` takes a single raw filter expression
+ * you'd have to hand-assemble from the two team names, which is exactly
+ * the kind of string-building that's easy to get subtly wrong; four
+ * parameterized queries have no such risk. Returns [] (never throws) for a
+ * blank team name — nothing to search for yet, not an error. */
+export async function searchMatchesByTeams(teamA: string, teamB: string): Promise<Match[]> {
+  const a = teamA.trim();
+  const b = teamB.trim();
+  if (!a || !b) return [];
+
+  const supabase = await createClient();
+
+  const [
+    { data: fixturesAB },
+    { data: fixturesBA },
+    { data: individualAB },
+    { data: individualBA },
+  ] = await Promise.all([
+    supabase.from("sports_fixtures_cache").select(FIXTURE_SELECT).ilike("home_team_name", `%${a}%`).ilike("away_team_name", `%${b}%`),
+    supabase.from("sports_fixtures_cache").select(FIXTURE_SELECT).ilike("home_team_name", `%${b}%`).ilike("away_team_name", `%${a}%`),
+    supabase.from("odds_api_matches_cache").select(INDIVIDUAL_MATCH_SELECT).ilike("player_home", `%${a}%`).ilike("player_away", `%${b}%`),
+    supabase.from("odds_api_matches_cache").select(INDIVIDUAL_MATCH_SELECT).ilike("player_home", `%${b}%`).ilike("player_away", `%${a}%`),
+  ]);
+
+  const fixtureRows = [...(fixturesAB ?? []), ...(fixturesBA ?? [])] as unknown as FixtureRow[];
+  const individualRows = [...(individualAB ?? []), ...(individualBA ?? [])] as unknown as IndividualMatchRow[];
+
+  const seen = new Set<string>();
+  const matches: Match[] = [];
+  for (const match of fixtureRows.map(toMatch).concat(individualRows.map(toIndividualMatch))) {
+    if (seen.has(match.id)) continue;
+    seen.add(match.id);
+    matches.push(match);
+  }
+
+  return matches.sort((m1, m2) => new Date(m1.kickoffAt).getTime() - new Date(m2.kickoffAt).getTime());
 }
 
 /** The one place the "no invented numbers" rule is enforced structurally:

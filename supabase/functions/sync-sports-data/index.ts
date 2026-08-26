@@ -64,11 +64,24 @@ const ACTIVE_SPORTS: ApiSportsKey[] = ["football", "basketball", "rugby", "baseb
  * different API-Sports host per sport — see SPORT_API_CONFIG). The catalog
  * fetch costs exactly 1 request/sport/run regardless of run frequency.
  * Each featured row below costs at most 1 fixtures request/run. Football
- * is the dense one at 16 rows + 1 catalog request = 17: a 6-hour cron (4
- * runs/day) costs ~68 requests/day against its 100/day quota — comfortable
- * headroom. Every other sport here has at most 3 rows, nowhere near its
- * own quota at that same cadence. Don't drop below 6h without trimming
- * football's list first. */
+ * is the dense one at 23 rows + 1 catalog request = 24/run: a 6-hour cron
+ * (4 runs/day) costs ~96 requests/day against its 100/day quota — still
+ * inside it, but with far less headroom than before this list grew (was
+ * 17/run, ~68/day). Move football to an 8-hour cadence (3 runs/day, ~72/
+ * day) before adding more rows here, rather than pushing the 6-hour
+ * schedule any closer to the ceiling. Every other sport here has at most 5
+ * rows, nowhere near its own quota at any of these cadences.
+ *
+ * Names below for competitions this file didn't already cover (Brazil,
+ * the international football tournaments, WNBA, French basketball, the
+ * international rugby tournaments, NPB/KBO) are the most likely real
+ * API-Sports catalog names, not confirmed against a live response — this
+ * sandbox has no network access to api-sports.io and no real API key (see
+ * _shared/api-sports.ts's file comment). matchesFeatured()'s substring
+ * matching tolerates a slightly different official name; a row that
+ * doesn't match anything real just reports matched:false and caches no
+ * fixtures — the catalog phase above it is unaffected either way, so a
+ * wrong guess here degrades gracefully instead of breaking the sync. */
 const FEATURED_COMPETITIONS: { sport: ApiSportsKey; name: string; country?: string }[] = [
   // France
   { sport: "football", name: "Ligue 1", country: "France" },
@@ -89,14 +102,34 @@ const FEATURED_COMPETITIONS: { sport: ApiSportsKey; name: string; country?: stri
   { sport: "football", name: "Bundesliga", country: "Germany" },
   { sport: "football", name: "2. Bundesliga", country: "Germany" },
   { sport: "football", name: "DFB Pokal", country: "Germany" },
-  // Europe
+  // Brazil
+  { sport: "football", name: "Serie A", country: "Brazil" },
+  // Europe / international football
   { sport: "football", name: "UEFA Champions League" },
   { sport: "football", name: "UEFA Europa League" },
+  { sport: "football", name: "UEFA Europa Conference League" },
+  { sport: "football", name: "UEFA Nations League" },
+  { sport: "football", name: "Euro Championship" },
+  { sport: "football", name: "World Cup" },
+  { sport: "football", name: "Copa America" },
+  { sport: "football", name: "FIFA Club World Cup" },
+  // Basketball
   { sport: "basketball", name: "NBA", country: "USA" },
+  { sport: "basketball", name: "WNBA", country: "USA" },
   { sport: "basketball", name: "EuroLeague" },
+  { sport: "basketball", name: "Betclic Élite", country: "France" },
+  { sport: "basketball", name: "Pro A", country: "France" },
+  { sport: "basketball", name: "Coupe de France", country: "France" },
+  // Rugby
   { sport: "rugby", name: "Top 14", country: "France" },
   { sport: "rugby", name: "Premiership Rugby", country: "England" },
+  { sport: "rugby", name: "Six Nations" },
+  { sport: "rugby", name: "Rugby Championship" },
+  { sport: "rugby", name: "World Cup" },
+  // Baseball
   { sport: "baseball", name: "MLB", country: "USA" },
+  { sport: "baseball", name: "NPB", country: "Japan" },
+  { sport: "baseball", name: "KBO League", country: "South Korea" },
 ];
 
 /** Only fixtures/games kicking off within this many days from now are kept

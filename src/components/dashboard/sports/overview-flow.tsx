@@ -1,65 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { BarChart3, Flame, ShieldCheck, Target, Trophy } from "lucide-react";
+import { BarChart3, Flame, ShieldCheck, Target } from "lucide-react";
 import { SportsAnalysisFlow } from "@/components/dashboard/sports/ai-analysis/sports-analysis-flow";
-import { MatchCard } from "@/components/dashboard/sports/match-card";
-import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-state";
 import { StatTile } from "@/components/dashboard/sports/stat-tile";
-import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS } from "@/lib/sports/nav";
-import type { Match, SportKey, SportsOverviewStats } from "@/lib/sports/types";
-import { cn } from "@/lib/utils";
-
-type QuickFilter = "all" | "opportunities" | "today" | "tomorrow" | "week" | SportKey;
-
-const QUICK_FILTERS: { key: QuickFilter; label: string; emoji?: string }[] = [
-  { key: "all", label: "Tous" },
-  { key: "opportunities", label: "Opportunités" },
-  ...ACTIVE_SPORT_CATEGORIES.map((s) => ({ key: s.key as QuickFilter, label: s.label, emoji: SPORT_EMOJIS[s.key] })),
-  { key: "today", label: "Aujourd'hui" },
-  { key: "tomorrow", label: "Demain" },
-  { key: "week", label: "Cette semaine" },
-];
-
-const ACTIVE_SPORT_KEYS = new Set<string>(ACTIVE_SPORT_CATEGORIES.map((s) => s.key));
-
-function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-function filterMatches(matches: Match[], filter: QuickFilter): Match[] {
-  if (filter === "all") return matches;
-  if (filter === "opportunities") return [];
-  if (ACTIVE_SPORT_KEYS.has(filter)) {
-    return matches.filter((m) => m.sport === filter);
-  }
-  const now = new Date();
-  if (filter === "today") {
-    return matches.filter((m) => isSameDay(new Date(m.kickoffAt), now));
-  }
-  if (filter === "tomorrow") {
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return matches.filter((m) => isSameDay(new Date(m.kickoffAt), tomorrow));
-  }
-  const weekEnd = new Date(now);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-  return matches.filter((m) => new Date(m.kickoffAt) <= weekEnd);
-}
+import { TeamSearchPanel } from "@/components/dashboard/sports/team-search-panel";
+import type { SportsOverviewStats } from "@/lib/sports/types";
 
 export function OverviewFlow({
   stats,
-  matches,
   hasActiveSubscription,
 }: {
   stats: SportsOverviewStats;
-  matches: Match[];
   hasActiveSubscription: boolean;
 }) {
-  const [filter, setFilter] = useState<QuickFilter>("all");
-
-  const filtered = useMemo(() => filterMatches(matches, filter), [matches, filter]);
-
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -102,44 +55,9 @@ export function OverviewFlow({
         />
       </div>
 
+      <TeamSearchPanel />
+
       <SportsAnalysisFlow hasActiveSubscription={hasActiveSubscription} />
-
-      <div>
-        <h2 className="mb-3 font-display text-base font-bold text-white">Tous les matchs</h2>
-
-        <div className="mb-4 flex flex-wrap gap-2">
-          {QUICK_FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setFilter(f.key)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
-                filter === f.key
-                  ? "border-brand-400 bg-brand-500/15 text-brand-400"
-                  : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
-              )}
-            >
-              {f.emoji && <span aria-hidden>{f.emoji}</span>}
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <SportsEmptyState
-            icon={Trophy}
-            title="Aucun match pour ce filtre"
-            message="Essayez un autre filtre, ou revenez plus tard pour voir de nouvelles rencontres."
-          />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

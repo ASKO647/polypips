@@ -6,7 +6,8 @@ import { SportsEmptyState } from "@/components/dashboard/sports/sports-empty-sta
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchFollowedTeamIds } from "@/lib/supabase/sports-follows";
-import { getCountryCode, listTeams } from "@/lib/sports/service";
+import { getCountryCode, getTeamById } from "@/lib/sports/service";
+import type { Team } from "@/lib/sports/types";
 
 export const metadata: Metadata = {
   title: "Mes équipes — Sports — Polypips",
@@ -15,12 +16,15 @@ export const metadata: Metadata = {
 export default async function MesEquipesPage() {
   const supabase = await createClient();
   const user = await getAuthUser();
-  const [followedIds, allTeams] = await Promise.all([
-    fetchFollowedTeamIds(supabase, user?.id ?? null),
-    listTeams(),
-  ]);
+  const followedIds = await fetchFollowedTeamIds(supabase, user?.id ?? null);
 
-  const teams = allTeams.filter((t) => followedIds.has(t.id));
+  // Resolved by id, one per followed team — not listTeams()+filter, which
+  // silently drops every individual-sport (tennis/boxing/MMA) follow since
+  // sports_teams_cache structurally has no rows for those. See
+  // getTeamById's own comment for why.
+  const teams = (
+    await Promise.all(Array.from(followedIds).map((id) => getTeamById(id)))
+  ).filter((t): t is Team => t !== null);
 
   return (
     <div className="flex flex-col gap-6">
