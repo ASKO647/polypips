@@ -16,16 +16,7 @@
 
 import type { ConfidenceLevel } from "@/lib/data/analysis";
 
-export type SportKey =
-  | "football"
-  | "basketball"
-  | "tennis"
-  | "nfl"
-  | "rugby"
-  | "hockey"
-  | "mma"
-  | "boxe"
-  | "baseball";
+export type SportKey = "football" | "basketball" | "tennis" | "rugby" | "baseball";
 
 export type SportCategory = {
   key: SportKey;

@@ -56,7 +56,7 @@ export { getCountryCode } from "./country-codes";
 
 type CompetitionRow = {
   sport: string;
-  search_term: string;
+  search_term: string | null;
   external_league_id: number | null;
   name: string | null;
   country: string | null;
@@ -67,7 +67,7 @@ type CompetitionRow = {
 function toCompetition(row: CompetitionRow): Competition {
   return {
     id: `${row.sport}-comp-${row.external_league_id}`,
-    name: row.name ?? row.search_term,
+    name: row.name ?? row.search_term ?? "Compétition",
     country: row.country ?? "—",
     sport: row.sport as SportKey,
     logoUrl: row.logo_url ?? undefined,

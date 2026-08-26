@@ -2,9 +2,10 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
   ApiSportsUnavailableError,
+  fetchAllLeagues,
   fetchSchedule,
-  resolveLeague,
   type ApiSportsKey,
+  type ResolvedLeague,
 } from "../_shared/api-sports.ts";
 
 /**
@@ -12,82 +13,92 @@ import {
  * migration's own comment) in sync with real API-Sports data, replacing
  * what lib/sports/mock-data.ts used to hand-author. Two phases per run:
  *
- * 1. Resolve each curated competition's real league ID/name/logo/season
- *    via a name search — but only if unresolved or stale (see
- *    RESOLVE_STALE_DAYS), so a healthy competition doesn't cost a request
- *    on every run. League metadata barely changes.
- * 2. For every competition with a resolved league ID, fetch its full
- *    schedule and replace that competition's cached fixtures with the
- *    near-term window (see FIXTURE_WINDOW_DAYS/MAX_FIXTURES_PER_COMPETITION)
- *    — a clear-then-reinsert per competition, safe because match_id in
- *    sports_match_follows is the app-level `${sport}-${externalFixtureId}`
- *    string, not a foreign key to this table's own row id.
+ * 1. syncCatalog — for every active sport, fetch API-Sports' FULL league
+ *    catalog (fetchAllLeagues: one request, no search/country filter) and
+ *    upsert every real competition it returns into
+ *    sports_competitions_cache, keyed by (sport, external_league_id). This
+ *    is what makes the Sports → Pays → Compétition browser show every real
+ *    competition API-Sports has for that sport, not a curated subset —
+ *    "toutes les compétitions disponibles" is satisfied by caching the
+ *    catalog verbatim, never by hand-authoring names.
+ * 2. syncFeaturedFixtures — a small curated FEATURED_COMPETITIONS list
+ *    (the biggest leagues/cups per sport) gets its near-term schedule
+ *    eagerly fetched and cached every run, matched against the catalog
+ *    from phase 1 by name (not a hardcoded ID). Every other real
+ *    competition still appears in the browser with its real name/logo/
+ *    country, just without cached fixtures yet — its own page renders the
+ *    honest "Aucun match disponible actuellement" empty state rather than
+ *    disappearing or showing invented matches. Eagerly fetching schedules
+ *    for every league in the full catalog isn't possible on a 100/day
+ *    quota (football alone has hundreds of indexed competitions) — this
+ *    two-tier split is what keeps the catalog genuinely complete while
+ *    keeping fixture fetching inside quota.
  *
- * Every competition is processed independently inside its own try/catch —
- * one sport's API being down, quota-exhausted, or shaped differently than
- * expected must never take down the rest of the run. See
+ * Every sport/competition is processed independently inside its own
+ * try/catch — one sport's API being down, quota-exhausted, or shaped
+ * differently than expected must never take down the rest of the run. See
  * _shared/api-sports.ts's file-level comment for why these shapes are
  * unverified against a live response.
  */
 
-/** The competitions this module covers today — deliberately curated (not
- * "every league API-Sports has"), but per-country coverage for football
- * now goes beyond just the top flight to match how the Compétitions
- * browser (Sport → Pays → Compétition) actually reads: a country groups
- * ALL of its real competitions, not just its headline league, so France
- * needs Ligue 1 *and* Ligue 2 *and* Coupe de France to render the way the
- * feature is meant to. The other sports stay at one entry per country —
- * unlike football, none of NBA/NHL/MLB/NFL/Top 14 has a real second-tier
- * league or domestic cup on API-Sports to add, so one competition per
- * country is already complete there, not an arbitrary scope cut. Add a
- * row here (plus flip that sport to active: true in src/lib/sports/nav.ts
- * once real data is confirmed flowing) to extend coverage — no other code
- * change needed.
+/** The sports this module covers — see src/lib/sports/nav.ts's
+ * SPORT_CATEGORIES for the matching frontend list. Tennis isn't here:
+ * API-Sports has no tennis product at all (no v1.tennis host), so there's
+ * nothing to sync — the frontend shows it as "bientôt disponible" instead
+ * of pretending to cover it. */
+const ACTIVE_SPORTS: ApiSportsKey[] = ["football", "basketball", "rugby", "baseball"];
+
+/** The competitions eagerly synced for fixtures every run — deliberately
+ * curated (the biggest leagues/cups per sport), not "every league in the
+ * catalog" (see the file comment above for why). Matched against the
+ * catalog by name — country disambiguates a name that could otherwise
+ * recur (e.g. a generic "Cup") across countries; omit it for a
+ * competition whose name is already unambiguous (continental/
+ * international ones). Add a row here (plus flip that sport to
+ * active: true in src/lib/sports/nav.ts once real data is confirmed
+ * flowing) to eagerly cover a new competition's fixtures — no other code
+ * change needed, since the catalog itself already covers every sport's
+ * full competition list independently of this array.
  *
  * Quota note: each sport has its own separate 100/day free quota (a
- * different API-Sports host per sport — see SPORT_API_CONFIG), and each
- * row costs at most 1 request/run once resolved (search only re-runs
- * every RESOLVE_STALE_DAYS). Football is the dense one at 16 rows: a
- * 6-hour cron (4 runs/day) costs ~64 requests/day against its 100/day
- * quota — comfortable headroom. Every other sport here has at most 2
- * rows, nowhere near its own quota at that same cadence. Don't drop below
- * 6h without trimming football's list first. */
-const SPORT_COMPETITIONS: { sport: ApiSportsKey; searchTerm: string }[] = [
+ * different API-Sports host per sport — see SPORT_API_CONFIG). The catalog
+ * fetch costs exactly 1 request/sport/run regardless of run frequency.
+ * Each featured row below costs at most 1 fixtures request/run. Football
+ * is the dense one at 16 rows + 1 catalog request = 17: a 6-hour cron (4
+ * runs/day) costs ~68 requests/day against its 100/day quota — comfortable
+ * headroom. Every other sport here has at most 3 rows, nowhere near its
+ * own quota at that same cadence. Don't drop below 6h without trimming
+ * football's list first. */
+const FEATURED_COMPETITIONS: { sport: ApiSportsKey; name: string; country?: string }[] = [
   // France
-  { sport: "football", searchTerm: "Ligue 1" },
-  { sport: "football", searchTerm: "Ligue 2" },
-  { sport: "football", searchTerm: "Coupe de France" },
+  { sport: "football", name: "Ligue 1", country: "France" },
+  { sport: "football", name: "Ligue 2", country: "France" },
+  { sport: "football", name: "Coupe de France", country: "France" },
   // England
-  { sport: "football", searchTerm: "Premier League" },
-  { sport: "football", searchTerm: "Championship" },
-  { sport: "football", searchTerm: "FA Cup" },
+  { sport: "football", name: "Premier League", country: "England" },
+  { sport: "football", name: "Championship", country: "England" },
+  { sport: "football", name: "FA Cup", country: "England" },
   // Spain
-  { sport: "football", searchTerm: "La Liga" },
-  { sport: "football", searchTerm: "Copa del Rey" },
+  { sport: "football", name: "La Liga", country: "Spain" },
+  { sport: "football", name: "Copa del Rey", country: "Spain" },
   // Italy
-  { sport: "football", searchTerm: "Serie A" },
-  { sport: "football", searchTerm: "Serie B" },
-  { sport: "football", searchTerm: "Coppa Italia" },
+  { sport: "football", name: "Serie A", country: "Italy" },
+  { sport: "football", name: "Serie B", country: "Italy" },
+  { sport: "football", name: "Coppa Italia", country: "Italy" },
   // Germany
-  { sport: "football", searchTerm: "Bundesliga" },
-  { sport: "football", searchTerm: "2. Bundesliga" },
-  { sport: "football", searchTerm: "DFB Pokal" },
+  { sport: "football", name: "Bundesliga", country: "Germany" },
+  { sport: "football", name: "2. Bundesliga", country: "Germany" },
+  { sport: "football", name: "DFB Pokal", country: "Germany" },
   // Europe
-  { sport: "football", searchTerm: "UEFA Champions League" },
-  { sport: "football", searchTerm: "UEFA Europa League" },
-  { sport: "basketball", searchTerm: "NBA" },
-  { sport: "basketball", searchTerm: "EuroLeague" },
-  { sport: "hockey", searchTerm: "NHL" },
-  { sport: "rugby", searchTerm: "Top 14" },
-  { sport: "rugby", searchTerm: "Premiership Rugby" },
-  { sport: "baseball", searchTerm: "MLB" },
-  { sport: "nfl", searchTerm: "NFL" },
+  { sport: "football", name: "UEFA Champions League" },
+  { sport: "football", name: "UEFA Europa League" },
+  { sport: "basketball", name: "NBA", country: "USA" },
+  { sport: "basketball", name: "EuroLeague" },
+  { sport: "rugby", name: "Top 14", country: "France" },
+  { sport: "rugby", name: "Premiership Rugby", country: "England" },
+  { sport: "baseball", name: "MLB", country: "USA" },
 ];
 
-/** A resolved competition's league ID/name/logo/season is only re-fetched
- * after this many days — that metadata barely changes, so re-searching it
- * every run would be a pure quota cost for no benefit. */
-const RESOLVE_STALE_DAYS = 7;
 /** Only fixtures/games kicking off within this many days from now are kept
  * cached — a fixture further out isn't "upcoming" in any useful sense for
  * the Overview/Opportunités screens, and dropping it keeps the cache from
@@ -97,6 +108,31 @@ const FIXTURE_WINDOW_DAYS = 21;
  * — protects the Overview/Opportunités screens from an unbounded list on
  * a competition with an unusually dense fixture list. */
 const MAX_FIXTURES_PER_COMPETITION = 30;
+/** Supabase upsert payload size stays comfortable in chunks this size even
+ * for football's catalog (hundreds of leagues/cups in one /leagues
+ * response). */
+const CATALOG_UPSERT_BATCH_SIZE = 200;
+
+function normalizeForMatch(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+/** True when a catalog row is the real competition a FEATURED_COMPETITIONS
+ * entry refers to — name match first (exact, then substring either way to
+ * tolerate a slightly different official name), country match second (only
+ * when the featured entry specifies one, to disambiguate a name that
+ * recurs across countries). */
+function matchesFeatured(
+  row: ResolvedLeague,
+  featured: { name: string; country?: string }
+): boolean {
+  const rowName = normalizeForMatch(row.name);
+  const wantName = normalizeForMatch(featured.name);
+  const nameMatches = rowName === wantName || rowName.includes(wantName) || wantName.includes(rowName);
+  if (!nameMatches) return false;
+  if (!featured.country) return true;
+  return normalizeForMatch(row.country ?? "") === normalizeForMatch(featured.country);
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -133,171 +169,169 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
-
-  const staleCutoff = new Date(Date.now() - RESOLVE_STALE_DAYS * 24 * 60 * 60 * 1000).toISOString();
   const windowEnd = new Date(Date.now() + FIXTURE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-  const results: Array<{
+  // Phase 1 — full competitions catalog per sport, real and dynamic.
+  const catalogsBySport = new Map<ApiSportsKey, ResolvedLeague[]>();
+  const catalogResults: Array<{ sport: string; leaguesCached: number; error: string | null }> = [];
+
+  for (const sport of ACTIVE_SPORTS) {
+    try {
+      const leagues = await fetchAllLeagues(sport, apiKey);
+      catalogsBySport.set(sport, leagues);
+
+      for (let i = 0; i < leagues.length; i += CATALOG_UPSERT_BATCH_SIZE) {
+        const batch = leagues.slice(i, i + CATALOG_UPSERT_BATCH_SIZE);
+        const { error } = await supabase.from("sports_competitions_cache").upsert(
+          batch.map((league) => ({
+            sport,
+            external_league_id: league.externalId,
+            name: league.name,
+            country: league.country,
+            logo_url: league.logoUrl,
+            flag_url: league.flagUrl,
+            season: league.season,
+            resolved_at: new Date().toISOString(),
+            synced_at: new Date().toISOString(),
+          })),
+          { onConflict: "sport,external_league_id" }
+        );
+        if (error) throw new Error(`écriture catalogue échouée : ${error.message}`);
+      }
+
+      catalogResults.push({ sport, leaguesCached: leagues.length, error: null });
+    } catch (error) {
+      const message =
+        error instanceof ApiSportsUnavailableError || error instanceof Error ? error.message : "Erreur inconnue";
+      console.error(`[sync-sports-data] échec catalogue pour ${sport}`, message);
+      catalogResults.push({ sport, leaguesCached: 0, error: message });
+    }
+  }
+
+  // Phase 2 — eager fixtures for the curated "featured" subset only (see
+  // the file comment for why the full catalog can't all get this).
+  const fixtureResults: Array<{
     sport: string;
-    searchTerm: string;
-    resolved: boolean;
-    resolveSkipped: boolean;
+    name: string;
+    matched: boolean;
     fixturesCached: number;
     error: string | null;
   }> = [];
 
-  for (const { sport, searchTerm } of SPORT_COMPETITIONS) {
-    let resolved = false;
-    let resolveSkipped = false;
+  for (const featured of FEATURED_COMPETITIONS) {
+    let matched = false;
     let fixturesCached = 0;
     let errorMessage: string | null = null;
 
     try {
-      const { data: existing, error: fetchError } = await supabase
+      const catalog = catalogsBySport.get(featured.sport) ?? [];
+      const match = catalog.find((row) => matchesFeatured(row, featured));
+
+      if (!match || !match.season) {
+        fixtureResults.push({ sport: featured.sport, name: featured.name, matched: false, fixturesCached: 0, error: null });
+        continue;
+      }
+      matched = true;
+
+      const { data: competitionRow, error: competitionError } = await supabase
         .from("sports_competitions_cache")
-        .select("id, external_league_id, season, resolved_at")
-        .eq("sport", sport)
-        .eq("search_term", searchTerm)
+        .select("id")
+        .eq("sport", featured.sport)
+        .eq("external_league_id", match.externalId)
         .maybeSingle();
+      if (competitionError || !competitionRow) {
+        throw new Error("compétition introuvable dans le cache après synchronisation du catalogue");
+      }
+      const competitionId = competitionRow.id as string;
 
-      if (fetchError) throw new Error(`lecture cache compétition échouée : ${fetchError.message}`);
+      // Bookkeeping only (which curated name this row also satisfies) —
+      // the row's real identity is (sport, external_league_id), not this.
+      await supabase
+        .from("sports_competitions_cache")
+        .update({ search_term: featured.name })
+        .eq("id", competitionId);
 
-      const needsResolve =
-        !existing?.external_league_id ||
-        !existing?.resolved_at ||
-        (existing.resolved_at as string) < staleCutoff;
+      const schedule = await fetchSchedule(featured.sport, match.externalId, match.season, apiKey);
+      const upcoming = schedule
+        .filter((item) => new Date(item.kickoffAt) <= windowEnd)
+        .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt))
+        .slice(0, MAX_FIXTURES_PER_COMPETITION);
 
-      let competitionId = existing?.id as string | undefined;
-      let externalLeagueId = existing?.external_league_id as number | null | undefined;
-      let season = existing?.season as string | null | undefined;
+      const { error: deleteError } = await supabase
+        .from("sports_fixtures_cache")
+        .delete()
+        .eq("competition_id", competitionId);
+      if (deleteError) throw new Error(`purge fixtures échouée : ${deleteError.message}`);
 
-      if (needsResolve) {
-        const league = await resolveLeague(sport, searchTerm, apiKey);
-        if (league) {
-          const { data: upserted, error: upsertError } = await supabase
-            .from("sports_competitions_cache")
-            .upsert(
-              {
-                sport,
-                search_term: searchTerm,
-                external_league_id: league.externalId,
-                name: league.name,
-                country: league.country,
-                logo_url: league.logoUrl,
-                flag_url: league.flagUrl,
-                season: league.season,
-                resolved_at: new Date().toISOString(),
-                synced_at: new Date().toISOString(),
-              },
-              { onConflict: "sport,search_term" }
-            )
-            .select("id, external_league_id, season")
-            .single();
+      if (upcoming.length > 0) {
+        const { error: insertError } = await supabase.from("sports_fixtures_cache").insert(
+          upcoming.map((item) => ({
+            sport: featured.sport,
+            external_fixture_id: item.externalFixtureId,
+            competition_id: competitionId,
+            home_team_external_id: item.homeTeamExternalId,
+            home_team_name: item.homeTeamName,
+            home_team_logo_url: item.homeTeamLogoUrl,
+            away_team_external_id: item.awayTeamExternalId,
+            away_team_name: item.awayTeamName,
+            away_team_logo_url: item.awayTeamLogoUrl,
+            kickoff_at: item.kickoffAt,
+            status: item.status,
+            synced_at: new Date().toISOString(),
+          }))
+        );
+        if (insertError) throw new Error(`insertion fixtures échouée : ${insertError.message}`);
 
-          if (upsertError) throw new Error(`écriture cache compétition échouée : ${upsertError.message}`);
-
-          competitionId = upserted.id as string;
-          externalLeagueId = upserted.external_league_id as number;
-          season = upserted.season as string | null;
-          resolved = true;
-        } else {
-          console.error(
-            `[sync-sports-data] aucune compétition trouvée pour ${sport} / "${searchTerm}" — nouvelle tentative au prochain run`
-          );
+        // sports_teams_cache is upserted (never purged) so a followed team
+        // stays listable on "Mes équipes" even once its fixture rotates out
+        // of the near-term window above — see the migration's comment on
+        // that table for why country here is only a heuristic.
+        const teamsSeen = new Map<number, { name: string; logoUrl: string | null }>();
+        for (const item of upcoming) {
+          teamsSeen.set(item.homeTeamExternalId, { name: item.homeTeamName, logoUrl: item.homeTeamLogoUrl });
+          teamsSeen.set(item.awayTeamExternalId, { name: item.awayTeamName, logoUrl: item.awayTeamLogoUrl });
         }
-      } else {
-        resolveSkipped = true;
+        const { error: teamsError } = await supabase.from("sports_teams_cache").upsert(
+          Array.from(teamsSeen.entries()).map(([externalTeamId, team]) => ({
+            sport: featured.sport,
+            external_team_id: externalTeamId,
+            name: team.name,
+            country: match.country ?? null,
+            logo_url: team.logoUrl,
+            synced_at: new Date().toISOString(),
+          })),
+          { onConflict: "sport,external_team_id" }
+        );
+        if (teamsError) {
+          console.error(`[sync-sports-data] mise à jour équipes échouée pour ${featured.sport}/"${featured.name}"`, teamsError.message);
+        }
       }
 
-      if (competitionId && externalLeagueId && season) {
-        const schedule = await fetchSchedule(sport, externalLeagueId, season, apiKey);
-        const upcoming = schedule
-          .filter((item) => {
-            const kickoff = new Date(item.kickoffAt);
-            return kickoff <= windowEnd;
-          })
-          .sort((a, b) => a.kickoffAt.localeCompare(b.kickoffAt))
-          .slice(0, MAX_FIXTURES_PER_COMPETITION);
-
-        const { error: deleteError } = await supabase
-          .from("sports_fixtures_cache")
-          .delete()
-          .eq("competition_id", competitionId);
-        if (deleteError) throw new Error(`purge fixtures échouée : ${deleteError.message}`);
-
-        if (upcoming.length > 0) {
-          const { error: insertError } = await supabase.from("sports_fixtures_cache").insert(
-            upcoming.map((item) => ({
-              sport,
-              external_fixture_id: item.externalFixtureId,
-              competition_id: competitionId,
-              home_team_external_id: item.homeTeamExternalId,
-              home_team_name: item.homeTeamName,
-              home_team_logo_url: item.homeTeamLogoUrl,
-              away_team_external_id: item.awayTeamExternalId,
-              away_team_name: item.awayTeamName,
-              away_team_logo_url: item.awayTeamLogoUrl,
-              kickoff_at: item.kickoffAt,
-              status: item.status,
-              synced_at: new Date().toISOString(),
-            }))
-          );
-          if (insertError) throw new Error(`insertion fixtures échouée : ${insertError.message}`);
-
-          // sports_teams_cache is upserted (never purged) so a followed
-          // team stays listable on "Mes équipes" even once its fixture
-          // rotates out of the near-term window above — see the
-          // migration's comment on that table for why country here is
-          // only a heuristic.
-          const competitionCountry = (
-            await supabase
-              .from("sports_competitions_cache")
-              .select("country")
-              .eq("id", competitionId)
-              .maybeSingle()
-          ).data?.country as string | null | undefined;
-
-          const teamsSeen = new Map<number, { name: string; logoUrl: string | null }>();
-          for (const item of upcoming) {
-            teamsSeen.set(item.homeTeamExternalId, { name: item.homeTeamName, logoUrl: item.homeTeamLogoUrl });
-            teamsSeen.set(item.awayTeamExternalId, { name: item.awayTeamName, logoUrl: item.awayTeamLogoUrl });
-          }
-          const { error: teamsError } = await supabase.from("sports_teams_cache").upsert(
-            Array.from(teamsSeen.entries()).map(([externalTeamId, team]) => ({
-              sport,
-              external_team_id: externalTeamId,
-              name: team.name,
-              country: competitionCountry ?? null,
-              logo_url: team.logoUrl,
-              synced_at: new Date().toISOString(),
-            })),
-            { onConflict: "sport,external_team_id" }
-          );
-          if (teamsError) {
-            console.error(`[sync-sports-data] mise à jour équipes échouée pour ${sport}/"${searchTerm}"`, teamsError.message);
-          }
-        }
-
-        fixturesCached = upcoming.length;
-      }
+      fixturesCached = upcoming.length;
     } catch (error) {
       errorMessage =
-        error instanceof ApiSportsUnavailableError || error instanceof Error
-          ? error.message
-          : "Erreur inconnue";
-      console.error(`[sync-sports-data] échec pour ${sport} / "${searchTerm}"`, errorMessage);
+        error instanceof ApiSportsUnavailableError || error instanceof Error ? error.message : "Erreur inconnue";
+      console.error(`[sync-sports-data] échec fixtures pour ${featured.sport} / "${featured.name}"`, errorMessage);
     }
 
-    results.push({ sport, searchTerm, resolved, resolveSkipped, fixturesCached, error: errorMessage });
+    fixtureResults.push({ sport: featured.sport, name: featured.name, matched, fixturesCached, error: errorMessage });
   }
 
   const summary = {
     ranAt: new Date().toISOString(),
-    competitions: results.length,
-    resolvedThisRun: results.filter((r) => r.resolved).length,
-    failed: results.filter((r) => r.error !== null).length,
-    totalFixturesCached: results.reduce((sum, r) => sum + r.fixturesCached, 0),
-    details: results,
+    catalog: {
+      sports: catalogResults.length,
+      totalLeaguesCached: catalogResults.reduce((sum, r) => sum + r.leaguesCached, 0),
+      failed: catalogResults.filter((r) => r.error !== null).length,
+      details: catalogResults,
+    },
+    featuredFixtures: {
+      competitions: fixtureResults.length,
+      matched: fixtureResults.filter((r) => r.matched).length,
+      failed: fixtureResults.filter((r) => r.error !== null).length,
+      totalFixturesCached: fixtureResults.reduce((sum, r) => sum + r.fixturesCached, 0),
+      details: fixtureResults,
+    },
   };
   console.log("[sync-sports-data] run complete", summary);
 

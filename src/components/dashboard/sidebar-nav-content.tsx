@@ -14,7 +14,7 @@ import {
   SIGNAL_NAV_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
-import { ACTIVE_SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
+import { SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
@@ -153,7 +153,7 @@ export function SidebarNavContent({
                 <p className="mb-0.5 mt-2 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-white/25">
                   Sports
                 </p>
-                {ACTIVE_SPORT_CATEGORIES.map((sport) => {
+                {SPORT_CATEGORIES.map((sport) => {
                   const href = `/dashboard/sports/${sport.key}`;
                   const subActive = pathname === href;
                   return (
@@ -166,11 +166,17 @@ export function SidebarNavContent({
                         "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150",
                         subActive
                           ? "bg-brand-500/10 text-brand-400"
-                          : "text-white/45 hover:bg-white/[0.05] hover:text-white"
+                          : "text-white/45 hover:bg-white/[0.05] hover:text-white",
+                        !sport.active && "opacity-60"
                       )}
                     >
                       <span aria-hidden>{SPORT_EMOJIS[sport.key]}</span>
                       {sport.label}
+                      {!sport.active && (
+                        <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-white/30">
+                          Bientôt
+                        </span>
+                      )}
                     </Link>
                   );
                 })}

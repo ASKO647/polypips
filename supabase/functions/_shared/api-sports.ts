@@ -22,22 +22,17 @@
  * uses the `x-apisports-key` header — NOT `x-rapidapi-key` +
  * `x-rapidapi-host`, which is only for RapidAPI-issued keys.
  *
- * Tennis and boxing are NOT part of the API-Sports ecosystem at all (no
- * v1.tennis/v1.boxing host exists there) — not included below. MMA
- * (v1.mma.api-sports.io) exists but models fighters/fights rather than
- * team-vs-team matches, which doesn't fit this module's home/away Match
- * shape without real changes — deliberately left out of this pass.
+ * Tennis is NOT part of the API-Sports ecosystem at all (no v1.tennis host
+ * exists there) — not included below, and not selectable anywhere in the
+ * Sports module until a real tennis data source is connected (see
+ * src/lib/sports/nav.ts's SPORT_CATEGORIES comment). Hockey and NFL/american
+ * football products do exist on API-Sports but PolyPips doesn't cover them
+ * (product decision, not a data-availability one) — also not included.
  */
 
 export class ApiSportsUnavailableError extends Error {}
 
-export type ApiSportsKey =
-  | "football"
-  | "basketball"
-  | "hockey"
-  | "rugby"
-  | "baseball"
-  | "nfl";
+export type ApiSportsKey = "football" | "basketball" | "rugby" | "baseball";
 
 export const SPORT_API_CONFIG: Record<
   ApiSportsKey,
@@ -45,10 +40,8 @@ export const SPORT_API_CONFIG: Record<
 > = {
   football: { host: "v3.football.api-sports.io", scheduleEndpoint: "fixtures" },
   basketball: { host: "v1.basketball.api-sports.io", scheduleEndpoint: "games" },
-  hockey: { host: "v1.hockey.api-sports.io", scheduleEndpoint: "games" },
   rugby: { host: "v1.rugby.api-sports.io", scheduleEndpoint: "games" },
   baseball: { host: "v1.baseball.api-sports.io", scheduleEndpoint: "games" },
-  nfl: { host: "v1.american-football.api-sports.io", scheduleEndpoint: "games" },
 };
 
 function hasRealErrors(errors: unknown): boolean {
@@ -103,27 +96,16 @@ export type ResolvedLeague = {
   season: string | null;
 };
 
-/** Resolves a curated "biggest competitions" search term (e.g. "Premier
- * League") to a real API-Sports league ID via that sport's /leagues search
- * — deliberately not a hardcoded numeric ID table, since those couldn't be
- * verified live in this environment and a wrong guess would fail silently
- * forever, whereas a name search self-corrects if API-Sports ever
- * renumbers a league. Returns null (not a throw) when nothing matches —
- * callers treat that as "try again next sync," not an error. */
-export async function resolveLeague(
-  sport: ApiSportsKey,
-  searchTerm: string,
-  apiKey: string
-): Promise<ResolvedLeague | null> {
-  const config = SPORT_API_CONFIG[sport];
-  const json = await apiSportsFetch(config.host, `/leagues?search=${encodeURIComponent(searchTerm)}`, apiKey);
-  const response = Array.isArray(json.response) ? json.response : [];
-  if (response.length === 0) return null;
-
-  const item = response[0] as Record<string, unknown>;
-  // Football's /leagues nests league info under `league` + a sibling
-  // `country` object; several sibling-sport APIs return the same fields
-  // flat on the item itself — both paths are tried.
+/** Parses one /leagues response item into a ResolvedLeague — shared by
+ * resolveLeague (a single search-term lookup) and fetchAllLeagues (the
+ * full per-sport catalog), since both hit the same endpoint shape.
+ * Football's /leagues nests league info under `league` + a sibling
+ * `country` object; several sibling-sport APIs return the same fields flat
+ * on the item itself — both paths are tried. Returns null when the item
+ * has no usable numeric league id, which the caller skips rather than
+ * treats as fatal (one malformed row must never drop the rest of a
+ * catalog). */
+function parseLeagueItem(item: Record<string, unknown>, fallbackName?: string): ResolvedLeague | null {
   const league = (item.league ?? item) as Record<string, unknown>;
   const countryRaw = item.country ?? league.country;
   const country =
@@ -157,12 +139,53 @@ export async function resolveLeague(
 
   return {
     externalId,
-    name: String(league.name ?? item.name ?? searchTerm),
+    name: String(league.name ?? item.name ?? fallbackName ?? `Compétition ${externalId}`),
     country,
     logoUrl: typeof league.logo === "string" ? (league.logo as string) : typeof item.logo === "string" ? (item.logo as string) : null,
     flagUrl,
     season,
   };
+}
+
+/** Resolves a single competition name (e.g. "Premier League") to a real
+ * API-Sports league ID via that sport's /leagues search — used to find a
+ * featured competition's ID inside the freshly-synced catalog when name
+ * matching against the catalog itself isn't enough (see
+ * sync-sports-data/index.ts). Returns null (not a throw) when nothing
+ * matches — callers treat that as "try again next sync," not an error. */
+export async function resolveLeague(
+  sport: ApiSportsKey,
+  searchTerm: string,
+  apiKey: string
+): Promise<ResolvedLeague | null> {
+  const config = SPORT_API_CONFIG[sport];
+  const json = await apiSportsFetch(config.host, `/leagues?search=${encodeURIComponent(searchTerm)}`, apiKey);
+  const response = Array.isArray(json.response) ? json.response : [];
+  if (response.length === 0) return null;
+  return parseLeagueItem(response[0] as Record<string, unknown>, searchTerm);
+}
+
+/** Fetches every league/competition API-Sports has indexed for this sport —
+ * no search/country filter — via a single request to /leagues. This is
+ * the real, complete competition catalog (championships, national cups,
+ * continental and international cups, tournaments — whatever API-Sports
+ * itself has for the sport), not a curated subset: the Sports module's
+ * "toutes les compétitions disponibles, organisées par pays" requirement
+ * is satisfied by caching this verbatim rather than hand-authoring a
+ * competitions list. One request regardless of how many leagues come
+ * back, so this is cheap enough to run on every sync (see
+ * sync-sports-data/index.ts's syncCatalog). A row with no usable id is
+ * skipped, never fabricated. */
+export async function fetchAllLeagues(sport: ApiSportsKey, apiKey: string): Promise<ResolvedLeague[]> {
+  const config = SPORT_API_CONFIG[sport];
+  const json = await apiSportsFetch(config.host, `/leagues`, apiKey);
+  const response = Array.isArray(json.response) ? json.response : [];
+  const leagues: ResolvedLeague[] = [];
+  for (const raw of response) {
+    const parsed = parseLeagueItem(raw as Record<string, unknown>);
+    if (parsed) leagues.push(parsed);
+  }
+  return leagues;
 }
 
 export type ScheduleItem = {

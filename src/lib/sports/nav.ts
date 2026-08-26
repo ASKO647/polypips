@@ -22,51 +22,45 @@ export const SPORTS_SUB_NAV: SportsSubNavItem[] = [
   { label: "Compétitions", href: "/dashboard/sports/competitions", icon: Swords },
 ];
 
-/** active reflects real API-Sports coverage wired into sync-sports-data
- * (see SPORT_COMPETITIONS there and _shared/api-sports.ts's file comment)
- * — not a UI-only toggle. Tennis and boxe are inactive because API-Sports
- * (the account behind API_SPORTS_KEY) doesn't have a product for either
- * sport at all, not because of a scope decision on this end. MMA's API
- * does exist (v1.mma.api-sports.io) but models fighters/fights, not
- * team-vs-team matches, so it doesn't fit this module's home/away Match
- * shape without real changes — left inactive for the same reason, deferred
- * rather than unsupported. */
+/** The five sports PolyPips covers, in the fixed display order used by
+ * every "choose a sport" entry point (SportsMatchesPage's grid, the
+ * sidebar's Sport sub-list). active reflects real API-Sports coverage
+ * wired into sync-sports-data (see FEATURED_COMPETITIONS there and
+ * _shared/api-sports.ts's file comment) — not a UI-only toggle. Tennis is
+ * inactive because API-Sports (the account behind API_SPORTS_KEY) doesn't
+ * have a tennis product at all — no v1.tennis host exists there. It still
+ * appears everywhere a sport is chosen (see SportCategoryPage's honest
+ * "bientôt disponible" branch for category.active === false) rather than
+ * being hidden, so users see it's coming rather than wondering why it's
+ * missing. */
 export const SPORT_CATEGORIES: SportCategory[] = [
   { key: "football", label: "Football", active: true },
   { key: "basketball", label: "Basketball", active: true },
   { key: "tennis", label: "Tennis", active: false },
-  { key: "nfl", label: "NFL", active: true },
   { key: "rugby", label: "Rugby", active: true },
-  { key: "hockey", label: "Hockey", active: true },
-  { key: "mma", label: "MMA", active: false },
-  { key: "boxe", label: "Boxe", active: false },
   { key: "baseball", label: "Baseball", active: true },
 ];
 
 /** A clearly sport-specific emoji beats a generic/arbitrary lucide icon —
- * every SportKey has one here, including tennis/mma/boxe, so the mapping
- * is ready the moment a real data source exists for them. That's separate
- * from SPORT_CATEGORIES' `active` flag, which is what actually gates
- * whether a sport can be selected anywhere in the UI — see
- * ACTIVE_SPORT_CATEGORIES below; nothing should render an emoji for a
- * sport a user can't actually pick. */
+ * every SportKey has one here, including tennis, so the mapping is ready
+ * the moment a real tennis data source exists. That's separate from
+ * SPORT_CATEGORIES' `active` flag, which is what gates whether a sport has
+ * real competitions/matches behind it — see ACTIVE_SPORT_CATEGORIES below. */
 export const SPORT_EMOJIS: Record<SportKey, string> = {
   football: "⚽",
   basketball: "🏀",
   tennis: "🎾",
-  nfl: "🏈",
   rugby: "🏉",
-  hockey: "🏒",
-  mma: "🥋",
-  boxe: "🥊",
   baseball: "⚾",
 };
 
-/** Every sport picker/selector in the Sports module renders from this, not
- * the full SPORT_CATEGORIES — a sport with no real data source connected
- * (tennis/mma/boxe, see the comment above) must never appear as a
- * selectable choice, only its emoji sits ready in SPORT_EMOJIS above for
- * whenever that changes. */
+/** Filters/quick-selectors over lists of real matches or competitions
+ * (Overview's quick filters, the Compétitions/Opportunités pickers, the
+ * filters drawer) render from this — filtering to a sport with no real
+ * data would just show an unexplained empty list. "Choose your sport"
+ * entry points (SportsMatchesPage, the sidebar's Sport sub-list) render
+ * from the full SPORT_CATEGORIES instead, since those already have an
+ * honest "bientôt disponible" destination for an inactive sport. */
 export const ACTIVE_SPORT_CATEGORIES: SportCategory[] = SPORT_CATEGORIES.filter((s) => s.active);
 
 export function getSportCategory(key: string): SportCategory | undefined {
