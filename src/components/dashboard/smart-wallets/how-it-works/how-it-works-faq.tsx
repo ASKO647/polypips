@@ -2,20 +2,18 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { FOMO_AXIOM_FAQ } from "@/lib/data/fomo-axiom-connect";
+import { HOW_IT_WORKS_FAQ } from "@/lib/data/signal-how-it-works";
 import { cn } from "@/lib/utils";
 
-/** A small, self-contained accordion matching the dashboard's dark-mode
- * card language (border-white/10, bg-white/[0.03]) rather than importing
- * the marketing site's <Accordion> (components/ui/accordion.tsx), which
- * is styled for the landing page's light theme (border/surface/ink
- * tokens) and would look inconsistent dropped onto a dark dashboard page. */
-export function FomoAxiomFaq() {
+/** Same small self-contained accordion pattern used elsewhere in the
+ * dashboard's dark theme (not the marketing site's light-themed
+ * <Accordion>, styled for a different token system). */
+export function HowItWorksFaq() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
     <div className="flex flex-col gap-3">
-      {FOMO_AXIOM_FAQ.map((item, i) => {
+      {HOW_IT_WORKS_FAQ.map((item, i) => {
         const open = openIndex === i;
         return (
           <div key={item.question} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">

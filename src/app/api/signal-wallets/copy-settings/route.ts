@@ -11,8 +11,6 @@ type UpsertSettingsBody = {
   maxSimultaneousPositions?: number;
   maxSlippagePercent?: number;
   excludedTokens?: string[];
-  maxLossAmount?: number | null;
-  autoStop?: boolean;
 };
 
 function isValid(body: UpsertSettingsBody): boolean {
@@ -30,8 +28,7 @@ function isValid(body: UpsertSettingsBody): boolean {
     body.maxSimultaneousPositions >= 1 &&
     typeof body.maxSlippagePercent === "number" &&
     body.maxSlippagePercent > 0 &&
-    body.maxSlippagePercent <= 100 &&
-    typeof body.autoStop === "boolean"
+    body.maxSlippagePercent <= 100
   );
 }
 
@@ -106,8 +103,6 @@ export async function PUT(request: Request) {
       max_simultaneous_positions: body.maxSimultaneousPositions,
       max_slippage_percent: body.maxSlippagePercent,
       excluded_tokens: body.excludedTokens ?? [],
-      max_loss_amount: body.maxLossAmount ?? null,
-      auto_stop: body.autoStop,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id,wallet_id" }

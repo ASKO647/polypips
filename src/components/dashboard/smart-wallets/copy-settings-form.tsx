@@ -7,8 +7,11 @@ import { DEFAULT_SIGNAL_COPY_SETTINGS, type SignalCopySettings } from "@/lib/dat
 type FormState = Omit<SignalCopySettings, "id" | "walletId" | "enabled">;
 
 /** The Risk Engine (sync-signal-wallets) reads exactly these fields on
- * every fresh trade — see that function's risk-engine.ts. Every limit set
- * here is always enforced, independent of the AI Engine's own score. */
+ * every fresh trade to decide whether it generates a "copié" notification
+ * — see that function's risk-engine.ts. Every limit set here is always
+ * enforced, independent of the AI Engine's own score. Nothing here ever
+ * sizes or places an order: Copy Trading means watch + notify, exactly
+ * like Polymarket's own Copy Trading. */
 export function CopySettingsForm({
   walletId,
   initial,
@@ -25,8 +28,6 @@ export function CopySettingsForm({
     maxSimultaneousPositions: initial.maxSimultaneousPositions,
     maxSlippagePercent: initial.maxSlippagePercent,
     excludedTokens: initial.excludedTokens,
-    maxLossAmount: initial.maxLossAmount,
-    autoStop: initial.autoStop,
   });
   const [excludedInput, setExcludedInput] = useState(initial.excludedTokens.join(", "));
   const [saving, setSaving] = useState(false);
@@ -116,22 +117,6 @@ export function CopySettingsForm({
             className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-sm text-white outline-none focus:border-brand-400"
           />
         </label>
-        <label className="flex flex-col gap-1 text-[11px] font-semibold text-white/50">
-          Perte maximale journalière ($, optionnel)
-          <input
-            type="number"
-            min={0}
-            value={form.maxLossAmount ?? ""}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                maxLossAmount: e.target.value === "" ? null : Number(e.target.value),
-              }))
-            }
-            placeholder="Aucune limite"
-            className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-brand-400"
-          />
-        </label>
       </div>
 
       <label className="flex flex-col gap-1 text-[11px] font-semibold text-white/50">
@@ -143,16 +128,6 @@ export function CopySettingsForm({
           placeholder="$SCAM, $RUG"
           className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-sm text-white placeholder:text-white/25 outline-none focus:border-brand-400"
         />
-      </label>
-
-      <label className="flex items-center gap-2 text-xs font-medium text-white/60">
-        <input
-          type="checkbox"
-          checked={form.autoStop}
-          onChange={(e) => setForm((prev) => ({ ...prev, autoStop: e.target.checked }))}
-          className="h-4 w-4 rounded border-white/20 bg-white/[0.02] accent-brand-500"
-        />
-        Arrêt automatique si la perte maximale journalière est atteinte
       </label>
 
       {error && <p className="text-xs text-rose-300">{error}</p>}

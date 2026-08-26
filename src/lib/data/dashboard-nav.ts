@@ -62,8 +62,8 @@ export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Mes Smart Wallets", href: "/dashboard/smart-wallets/suivis", icon: ListChecks },
   { label: "Trades copiés", href: "/dashboard/smart-wallets/positions", icon: Copy },
   {
-    label: "Comment connecter PolyPips à Fomo & Axiom",
-    href: "/dashboard/smart-wallets/tutoriel",
+    label: "Comment ça marche",
+    href: "/dashboard/smart-wallets/comment-ca-marche",
     icon: BookOpen,
   },
 ];

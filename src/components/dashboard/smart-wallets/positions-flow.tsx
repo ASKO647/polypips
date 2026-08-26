@@ -1,36 +1,42 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
-import { SIGNAL_COPY_STATUS_LABELS, type SignalCopyStatus, type SignalCopyTrade } from "@/lib/data/signal-copy-trading";
+import { createClient } from "@/lib/supabase/client";
+import { SIGNAL_COPY_STATUS_LABELS, type SignalCopyTrade } from "@/lib/data/signal-copy-trading";
 import { SIGNAL_SOURCE_LABELS } from "@/lib/data/signal-wallets";
 import { cn } from "@/lib/utils";
 
-const STATUS_TONE: Record<SignalCopyStatus, string> = {
-  detection: "bg-white/[0.06] text-white/50",
-  analyse: "bg-sky-500/15 text-sky-400",
-  en_attente: "bg-amber-500/15 text-amber-400",
-  copie: "bg-emerald-500/15 text-emerald-400",
-  ignore: "bg-white/[0.06] text-white/40",
-  en_cours: "bg-brand-500/15 text-brand-400",
-  ferme: "bg-white/[0.08] text-white/60",
-  echec: "bg-rose-500/15 text-rose-400",
-};
+/** Mirrors sync-signal-wallets/index.ts's own buildPlatformUrl() exactly
+ * — that Edge Function (Deno) and this frontend (Next.js) don't share a
+ * module, so this trivial mapping is duplicated rather than imported.
+ * Update both together if a confirmed per-token URL format ever replaces
+ * the homepage fallback. */
+function platformUrl(source: "fomo" | "axiom"): string {
+  return source === "axiom" ? "https://axiom.trade" : "https://fomo.family";
+}
 
-const STATUS_FILTERS: { value: SignalCopyStatus | "all"; label: string }[] = [
+type DecisionFilter = "all" | "copie" | "ignore";
+
+const DECISION_FILTERS: { value: DecisionFilter; label: string }[] = [
   { value: "all", label: "Tous" },
-  { value: "en_cours", label: "En cours" },
   { value: "copie", label: "Copié" },
   { value: "ignore", label: "Ignoré" },
-  { value: "ferme", label: "Fermé" },
 ];
 
-function TradeRow({ trade }: { trade: SignalCopyTrade }) {
+function TradeRow({ trade, onOpen }: { trade: SignalCopyTrade; onOpen: (trade: SignalCopyTrade) => void }) {
+  const isNew = trade.status === "nouvelle";
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+    <button
+      type="button"
+      onClick={() => onOpen(trade)}
+      className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-colors duration-150 hover:border-white/20"
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
+            {isNew && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" aria-hidden />}
             <p className="font-display text-sm font-bold text-white">{trade.walletLabel}</p>
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 text-[10px] font-semibold text-white/40">
               {SIGNAL_SOURCE_LABELS[trade.walletSource]}
@@ -41,56 +47,52 @@ function TradeRow({ trade }: { trade: SignalCopyTrade }) {
             {trade.walletTradeAmount.toLocaleString("fr-FR")} $
           </p>
         </div>
-        <span className={cn("rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide", STATUS_TONE[trade.status])}>
-          {SIGNAL_COPY_STATUS_LABELS[trade.status]}
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide",
+            trade.decision === "copie" ? "bg-emerald-500/15 text-emerald-400" : "bg-white/[0.06] text-white/40"
+          )}
+        >
+          {trade.decision === "copie" ? "Copié" : "Ignoré"}
         </span>
       </div>
 
-      <div className="mt-3 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
         <div>
           <p className="text-white/35">Score IA</p>
           <p className="mt-0.5 font-semibold text-white">{trade.aiScore ?? "—"}/100</p>
         </div>
         <div>
-          <p className="text-white/35">Décision</p>
-          <p className={cn("mt-0.5 font-semibold", trade.decision === "copie" ? "text-emerald-400" : "text-white/50")}>
-            {trade.decision === "copie" ? "Copié" : "Ignoré"}
-          </p>
-        </div>
-        <div>
-          <p className="text-white/35">Montant copié (démo)</p>
+          <p className="text-white/35">Montant estimé</p>
           <p className="mt-0.5 font-semibold text-white">
             {trade.sizedAmount !== null ? `${trade.sizedAmount.toLocaleString("fr-FR")} $` : "—"}
           </p>
         </div>
         <div>
-          <p className="text-white/35">PnL clôturé</p>
-          <p
-            className={cn(
-              "mt-0.5 font-semibold",
-              trade.closedPnl === null ? "text-white" : trade.closedPnl >= 0 ? "text-emerald-400" : "text-rose-400"
-            )}
-          >
-            {trade.closedPnl !== null
-              ? `${trade.closedPnl >= 0 ? "+" : ""}${trade.closedPnl.toLocaleString("fr-FR")} $`
-              : "—"}
-          </p>
+          <p className="text-white/35">Statut</p>
+          <p className="mt-0.5 font-semibold text-white/70">{SIGNAL_COPY_STATUS_LABELS[trade.status]}</p>
         </div>
       </div>
 
       {trade.ignoreReason && (
-        <p className="mt-3 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-[11px] text-white/50">
+        <p className="rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-[11px] text-white/50">
           {trade.ignoreReason}
         </p>
       )}
 
-      <p className="mt-2 text-[11px] text-white/30">{trade.createdAgo} • mode démo — aucune transaction réelle</p>
-    </div>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[11px] text-white/30">{trade.createdAgo}</p>
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-brand-400">
+          Voir sur {SIGNAL_SOURCE_LABELS[trade.walletSource]}
+          <ExternalLink className="h-3 w-3" strokeWidth={2} />
+        </span>
+      </div>
+    </button>
   );
 }
 
 export function PositionsFlow({
-  trades,
+  trades: initialTrades,
   hasActiveSubscription,
   cancelled,
 }: {
@@ -98,22 +100,32 @@ export function PositionsFlow({
   hasActiveSubscription: boolean;
   cancelled: boolean;
 }) {
-  const [status, setStatus] = useState<SignalCopyStatus | "all">("all");
+  const [trades, setTrades] = useState(initialTrades);
+  const [decision, setDecision] = useState<DecisionFilter>("all");
   const filtered = useMemo(
-    () => (status === "all" ? trades : trades.filter((t) => t.status === status)),
-    [trades, status]
+    () => (decision === "all" ? trades : trades.filter((t) => t.decision === decision)),
+    [trades, decision]
   );
+
+  const handleOpen = async (trade: SignalCopyTrade) => {
+    if (trade.status !== "lien_cliquee") {
+      setTrades((prev) => prev.map((t) => (t.id === trade.id ? { ...t, status: "lien_cliquee" } : t)));
+      const supabase = createClient();
+      await supabase.from("signal_copy_trades").update({ status: "lien_cliquee" }).eq("id", trade.id);
+    }
+    window.open(platformUrl(trade.walletSource), "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Trades copiés &amp; positions
+          Trades copiés
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          Chaque trade détecté sur un Smart Wallet suivi, sa décision (COPY/IGNORE), et le suivi de
-          la position simulée jusqu&apos;à sa fermeture. Mode démo — aucune transaction réelle
-          n&apos;est exécutée.
+          Chaque trade détecté sur un Smart Wallet suivi et sa décision (copié ou ignoré selon vos
+          filtres de risque). PolyPips ne trade jamais à votre place — cliquez une ligne pour ouvrir
+          la plateforme concernée et décider vous-même.
         </p>
       </div>
 
@@ -127,14 +139,14 @@ export function PositionsFlow({
         }
       >
         <div className="mb-4 flex flex-wrap gap-1.5">
-          {STATUS_FILTERS.map((f) => (
+          {DECISION_FILTERS.map((f) => (
             <button
               key={f.value}
               type="button"
-              onClick={() => setStatus(f.value)}
+              onClick={() => setDecision(f.value)}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
-                status === f.value
+                decision === f.value
                   ? "border-brand-400 bg-brand-500/15 text-brand-400"
                   : "border-white/10 bg-white/[0.02] text-white/55 hover:border-white/20 hover:text-white"
               )}
@@ -152,7 +164,7 @@ export function PositionsFlow({
         ) : (
           <div className="flex flex-col gap-3">
             {filtered.map((trade) => (
-              <TradeRow key={trade.id} trade={trade} />
+              <TradeRow key={trade.id} trade={trade} onOpen={handleOpen} />
             ))}
           </div>
         )}

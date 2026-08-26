@@ -8,6 +8,12 @@ import type { RawSignalTrade } from "../_shared/signal-providers/index.ts";
  * Per the brief: "Même si AI SCORE = 95/100, le Risk Engine peut dire
  * IGNORE si liquidité insuffisante / montant trop important / etc."
  *
+ * Copy Trading here means exactly what it means for Polymarket
+ * (sync-smart-money's evaluateMovement): watch + AI/risk-filtered
+ * notification with a real external link, never an executed or tracked
+ * position. These checks decide whether a trade generates a "copié" vs.
+ * "ignoré" notification — nothing here ever sizes or places an order.
+ *
  * Every check is logged (not just the first failure) so a user can see
  * exactly why a trade was ignored, not just that it was.
  */
@@ -22,17 +28,16 @@ export type RiskEngineInput = {
     maxSimultaneousPositions: number;
     maxSlippagePercent: number;
     excludedTokens: string[];
-    maxLossAmount: number | null;
   };
   trade: RawSignalTrade;
   /** Sum of sized_amount for this user's 'copie' decisions already made
    * today (before this trade). */
   amountCopiedToday: number;
-  /** Count of this user's currently open ('en_cours') copied positions. */
-  openPositionsCount: number;
-  /** Sum of negative closed_pnl for this user today, as a positive
-   * number (0 if no losses yet today). */
-  lossesToday: number;
+  /** Count of this user's 'copie' decisions in the lookback window (see
+   * POSITION_LOOKBACK_DAYS in index.ts) — a proxy for "simultaneous
+   * positions" exactly like sync-smart-money's own suggestion-count cap,
+   * since there's no real (or simulated) open position to count instead. */
+  recentCopyCount: number;
 };
 
 export type RiskEngineResult = {
@@ -105,22 +110,13 @@ export function applyRiskEngine(input: RiskEngineInput): RiskEngineResult {
       : `Limite quotidienne atteinte (${input.amountCopiedToday.toLocaleString("fr-FR")} $ déjà copiés aujourd'hui, plafond ${settings.maxDailyAmount.toLocaleString("fr-FR")} $)`,
   });
 
-  const positionsOk = input.openPositionsCount < settings.maxSimultaneousPositions;
+  const positionsOk = input.recentCopyCount < settings.maxSimultaneousPositions;
   checks.push({
     rule: "positions_simultanees",
     passed: positionsOk,
     detail: positionsOk
       ? "Sous le nombre maximum de positions simultanées"
-      : `Nombre maximum de positions simultanées atteint (${input.openPositionsCount}/${settings.maxSimultaneousPositions})`,
-  });
-
-  const lossOk = settings.maxLossAmount === null || input.lossesToday < settings.maxLossAmount;
-  checks.push({
-    rule: "perte_maximale",
-    passed: lossOk,
-    detail: lossOk
-      ? "Perte maximale non atteinte"
-      : `Perte maximale journalière atteinte (${input.lossesToday.toLocaleString("fr-FR")} $ / ${settings.maxLossAmount?.toLocaleString("fr-FR")} $) — arrêt automatique`,
+      : `Nombre maximum de positions simultanées atteint (${input.recentCopyCount}/${settings.maxSimultaneousPositions})`,
   });
 
   const firstFailure = checks.find((c) => !c.passed) ?? null;

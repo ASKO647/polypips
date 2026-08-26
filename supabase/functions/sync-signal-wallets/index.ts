@@ -5,33 +5,49 @@ import { computeSignalScore, computeWalletScore } from "./ai-engine.ts";
 import { applyRiskEngine } from "./risk-engine.ts";
 
 /**
- * Smart Wallets (Fomo/Axiom) sync — the whole pipeline described in the
- * brief in one job, mirroring how sync-smart-money already combines
- * discovery + sync + the Polymarket "Smart Copy" decision pipeline in one
- * function rather than several:
+ * Smart Wallets (Fomo/Axiom) sync — mirrors sync-smart-money's own model
+ * exactly (see that function's file comment): watch a followed wallet,
+ * detect a fresh trade, run it through an AI Engine (ai-engine.ts) +
+ * Risk Engine (risk-engine.ts) decision pipeline, and generate ONE
+ * notification carrying a real external link to the platform the trade
+ * happened on (Fomo or Axiom). Nothing here ever executes, sizes, or
+ * tracks a real or simulated position — Copy Trading means "watch + alert
+ * + you decide", never automatic execution, exactly like Polymarket's
+ * Copy Trading. See buildPlatformUrl() below for the one place that link
+ * is built.
  *
  *   getSignalProvider() → discover/refresh wallets → detect new trades
- *   → AI Engine (ai-engine.ts) → Risk Engine (risk-engine.ts)
- *   → COPY/IGNORE → Execution Engine (demo only, below) → position
- *   lifecycle → notifications.
+ *   → AI Engine → Risk Engine → COPY/IGNORE → notification (external link).
  *
  * getSignalProvider() defaults every source to MockSignalProvider — see
  * that module's file comment for why: neither Fomo nor Axiom expose a
  * documented public/commercial API today, and this project does not
  * scrape either. Every wallet/trade row this writes therefore carries
  * data_source_mode='mock', and the frontend always renders a
- * demonstration-data banner for it. The Execution Engine is equally
- * explicit: execution_mode is hardcoded to 'demo' below — there is no
- * code path that can write 'live' (no private keys are ever requested or
- * stored, and no wallet-signing/execution integration exists yet). A real
- * integration is a separate, later change to getSignalProvider() plus a
- * genuine LiveExecutionProvider, not a flag flip.
+ * demonstration-data banner for it.
  */
 
 const SOURCES: SignalSource[] = ["fomo", "axiom"];
 /** AI Engine score floor to even consider copying — independent of, and
  * checked before, the Risk Engine's own limits. */
 const MIN_AI_SCORE_TO_COPY = 55;
+/** How far back to count this user's 'copie' decisions when checking the
+ * "positions simultanées" limit — there's no real (or simulated) open
+ * position to count instead, so a rolling window of recent copy decisions
+ * is used as the proxy, exactly like sync-smart-money's own
+ * SUGGESTION_LOOKBACK_DAYS for the same reason. */
+const POSITION_LOOKBACK_DAYS = 14;
+
+/** The single place a Fomo/Axiom notification's external link is built.
+ * Neither platform publishes a documented URL format for a specific
+ * token/market page (checked — see the research this feature shipped
+ * with), so this deliberately links to the platform's own homepage rather
+ * than guessing a path that could be wrong. Update this one function once
+ * a confirmed per-token URL format is available — nothing else needs to
+ * change. */
+function buildPlatformUrl(source: SignalSource): string {
+  return source === "axiom" ? "https://axiom.trade" : "https://fomo.family";
+}
 
 type SignalWalletRow = {
   id: string;
@@ -49,7 +65,7 @@ async function notify(
   userId: string,
   title: string,
   description: string,
-  linkUrl: string | null
+  linkUrl: string
 ) {
   await supabase.from("notifications").insert({
     user_id: userId,
@@ -82,7 +98,6 @@ Deno.serve(async (req) => {
     walletsUpserted: 0,
     tradesDetected: 0,
     copyDecisions: { copie: 0, ignore: 0 },
-    positionsClosed: 0,
     providerErrors: [] as string[],
   };
 
@@ -138,6 +153,7 @@ Deno.serve(async (req) => {
 
   const wallets = (allWallets ?? []) as SignalWalletRow[];
   const walletByAddress = new Map(wallets.map((w) => [w.address, w]));
+  const lookbackStart = new Date(Date.now() - POSITION_LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
   for (const source of SOURCES) {
     const provider = walletsBySource.get(source)!;
@@ -157,6 +173,7 @@ Deno.serve(async (req) => {
     for (const raw of rawTrades) {
       const wallet = walletByAddress.get(raw.walletAddress);
       if (!wallet) continue;
+      const platformUrl = buildPlatformUrl(wallet.source);
 
       const { data: insertedTrade, error: insertError } = await supabase
         .from("signal_wallet_trades")
@@ -211,7 +228,7 @@ Deno.serve(async (req) => {
       const { data: enabledSettingsRows } = await supabase
         .from("signal_copy_settings")
         .select(
-          "id, user_id, max_position_amount, position_percent, max_daily_amount, max_simultaneous_positions, max_slippage_percent, excluded_tokens, max_loss_amount"
+          "id, user_id, max_position_amount, position_percent, max_daily_amount, max_simultaneous_positions, max_slippage_percent, excluded_tokens"
         )
         .eq("wallet_id", wallet.id)
         .eq("enabled", true);
@@ -229,12 +246,15 @@ Deno.serve(async (req) => {
           supabase,
           userId,
           "🔔 Nouveau trade détecté",
-          `${wallet.label} vient de ${raw.side === "BUY" ? "acheter" : "vendre"} ${raw.tokenSymbol} (${raw.amountUsd.toLocaleString("fr-FR")} $).`,
-          `/dashboard/smart-wallets/${wallet.id}`
+          `${wallet.label} vient de ${raw.side === "BUY" ? "acheter" : "vendre"} ${raw.tokenSymbol} (${raw.amountUsd.toLocaleString("fr-FR")} $). Consultez ${wallet.source === "axiom" ? "Axiom" : "Fomo"} pour voir le détail.`,
+          platformUrl
         );
       }
 
       // --- Copy Trading pipeline: AI Engine → Risk Engine → decision ---
+      // Every fresh trade (BUY or SELL alike) goes through the exact same
+      // pipeline — there's no "position" to open or close anymore, so a
+      // SELL is evaluated and notified just like a BUY, not special-cased.
       const aiVerdict = computeSignalScore(
         {
           address: wallet.address,
@@ -260,7 +280,7 @@ Deno.serve(async (req) => {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
 
-        const [{ data: copiedTodayRows }, { data: openRows }, { data: lossRows }] = await Promise.all([
+        const [{ data: copiedTodayRows }, { data: recentCopyRows }] = await Promise.all([
           supabase
             .from("signal_copy_trades")
             .select("sized_amount")
@@ -271,24 +291,15 @@ Deno.serve(async (req) => {
             .from("signal_copy_trades")
             .select("id")
             .eq("user_id", userId)
-            .eq("status", "en_cours"),
-          supabase
-            .from("signal_copy_trades")
-            .select("closed_pnl")
-            .eq("user_id", userId)
-            .lt("closed_pnl", 0)
-            .gte("closed_at", todayStart.toISOString()),
+            .eq("decision", "copie")
+            .gte("created_at", lookbackStart),
         ]);
 
         const amountCopiedToday = (copiedTodayRows ?? []).reduce(
           (sum, r) => sum + Number(r.sized_amount ?? 0),
           0
         );
-        const openPositionsCount = (openRows ?? []).length;
-        const lossesToday = (lossRows ?? []).reduce(
-          (sum, r) => sum + Math.abs(Number(r.closed_pnl ?? 0)),
-          0
-        );
+        const recentCopyCount = (recentCopyRows ?? []).length;
 
         const riskResult = applyRiskEngine({
           settings: {
@@ -298,12 +309,10 @@ Deno.serve(async (req) => {
             maxSimultaneousPositions: Number(settingsRow.max_simultaneous_positions),
             maxSlippagePercent: Number(settingsRow.max_slippage_percent),
             excludedTokens: (settingsRow.excluded_tokens as string[]) ?? [],
-            maxLossAmount: settingsRow.max_loss_amount === null ? null : Number(settingsRow.max_loss_amount),
           },
           trade: raw,
           amountCopiedToday,
-          openPositionsCount,
-          lossesToday,
+          recentCopyCount,
         });
 
         const aiApproved = aiVerdict.score >= MIN_AI_SCORE_TO_COPY;
@@ -317,103 +326,59 @@ Deno.serve(async (req) => {
 
         summary.copyDecisions[decision]++;
 
-        const isOpeningBuy = raw.side === "BUY" && decision === "copie";
-        const status = isOpeningBuy ? "en_cours" : decision === "copie" ? "ferme" : "ignore";
-
-        const { data: copyTradeRow } = await supabase
-          .from("signal_copy_trades")
-          .insert({
-            user_id: userId,
-            wallet_id: wallet.id,
-            settings_id: settingsRow.id,
-            source_trade_id: insertedTrade.id,
-            token_symbol: raw.tokenSymbol,
-            token_address: raw.tokenAddress,
-            wallet_trade_side: raw.side,
-            wallet_trade_amount: raw.amountUsd,
-            ai_score: aiVerdict.score,
-            ai_summary:
-              decision === "copie"
-                ? `Score IA ${aiVerdict.score}/100 — conditions réunies, copie exécutée (mode démo).`
-                : `Score IA ${aiVerdict.score}/100 — trade ignoré.`,
-            ai_positives: aiVerdict.positives,
-            ai_risks: aiVerdict.risks,
-            risk_checks: riskResult.checks,
-            decision,
-            ignore_reason: ignoreReason,
-            sized_amount: decision === "copie" ? riskResult.sizedAmount : null,
-            entry_price: isOpeningBuy ? raw.price : null,
-            status,
-            execution_mode: "demo",
-            opened_at: isOpeningBuy ? new Date().toISOString() : null,
-            closed_at: status === "ferme" ? new Date().toISOString() : null,
-          })
-          .select("id")
-          .single();
-
-        // --- Position lifecycle: a SELL closes the matching open BUY ---
-        // Simplification, documented: the mock provider emits atomic
-        // BUY/SELL trades with no "percent of position" field, so any
-        // SELL closes the whole open position rather than partially —
-        // the schema (status/closed_pnl) supports partial closes once a
-        // real provider supplies that data.
-        if (raw.side === "SELL") {
-          const { data: openPosition } = await supabase
-            .from("signal_copy_trades")
-            .select("id, sized_amount")
-            .eq("user_id", userId)
-            .eq("wallet_id", wallet.id)
-            .eq("token_symbol", raw.tokenSymbol)
-            .eq("status", "en_cours")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (openPosition) {
-            const closedPnl = raw.pnl ?? null;
-            await supabase
-              .from("signal_copy_trades")
-              .update({
-                status: "ferme",
-                closed_at: new Date().toISOString(),
-                closed_pnl: closedPnl,
-              })
-              .eq("id", openPosition.id);
-            summary.positionsClosed++;
-            await notify(
-              supabase,
-              userId,
-              "✅ Position fermée",
-              `Position ${raw.tokenSymbol} sur ${wallet.label} clôturée${closedPnl !== null ? ` (${closedPnl >= 0 ? "+" : ""}${closedPnl.toLocaleString("fr-FR")} $)` : ""}.`,
-              "/dashboard/smart-wallets/positions"
-            );
-          }
+        const { error: copyTradeError } = await supabase.from("signal_copy_trades").insert({
+          user_id: userId,
+          wallet_id: wallet.id,
+          settings_id: settingsRow.id,
+          source_trade_id: insertedTrade.id,
+          token_symbol: raw.tokenSymbol,
+          token_address: raw.tokenAddress,
+          wallet_trade_side: raw.side,
+          wallet_trade_amount: raw.amountUsd,
+          ai_score: aiVerdict.score,
+          ai_summary:
+            decision === "copie"
+              ? `Score IA ${aiVerdict.score}/100 — conditions réunies, notification envoyée.`
+              : `Score IA ${aiVerdict.score}/100 — trade ignoré.`,
+          ai_positives: aiVerdict.positives,
+          ai_risks: aiVerdict.risks,
+          risk_checks: riskResult.checks,
+          decision,
+          ignore_reason: ignoreReason,
+          sized_amount: decision === "copie" ? riskResult.sizedAmount : null,
+          entry_price: raw.price,
+        });
+        if (copyTradeError) {
+          console.error("[sync-signal-wallets] échec insertion signal_copy_trades", userId, wallet.id, copyTradeError);
         }
 
-        // --- Notifications for this decision ----------------------------
-        const walletLink = `/dashboard/smart-wallets/${wallet.id}`;
+        // --- Notifications for this decision — always the real external
+        // link to the platform the trade happened on, never an internal
+        // PolyPips route. ---
         if (decision === "copie") {
           await notify(
             supabase,
             userId,
-            "🟢 Trade copié",
-            `${wallet.label} • ${raw.tokenSymbol} • Score IA ${aiVerdict.score}/100 • ${riskResult.sizedAmount.toLocaleString("fr-FR")} $ (mode démo)`,
-            walletLink
+            "🟢 Nouvelle position détectée",
+            `${wallet.label} • ${raw.tokenSymbol} • Score IA ${aiVerdict.score}/100. Consultez ${wallet.source === "axiom" ? "Axiom" : "Fomo"} pour décider si vous répliquez ce trade.`,
+            platformUrl
           );
         } else if (!riskResult.approved) {
-          await notify(supabase, userId, "⚠️ Limite de risque atteinte", ignoreReason ?? "Une limite de risque a bloqué ce trade.", walletLink);
+          await notify(
+            supabase,
+            userId,
+            "⚠️ Limite de risque atteinte",
+            ignoreReason ?? "Une limite de risque a bloqué la notification pour ce trade.",
+            platformUrl
+          );
         } else {
           await notify(
             supabase,
             userId,
             "🔴 Trade ignoré",
             `${wallet.label} • ${raw.tokenSymbol} • Score IA ${aiVerdict.score}/100 — sous le seuil requis.`,
-            walletLink
+            platformUrl
           );
-        }
-
-        if (!copyTradeRow) {
-          console.error("[sync-signal-wallets] échec insertion signal_copy_trades", userId, wallet.id);
         }
       }
     }

@@ -1,12 +1,11 @@
 import { CheckCircle2 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import { COPY_TRADING_ACTIVATION_STEPS } from "@/lib/data/fomo-axiom-connect";
+import { COPY_TRADING_ACTIVATION_STEPS } from "@/lib/data/signal-how-it-works";
 import { cn } from "@/lib/utils";
 
 /** Every step here is real and already shipped — see wallet-card.tsx,
  * my-smart-wallets-flow.tsx and copy-settings-form.tsx for the exact UI
- * this describes. Unlike the Axiom/Fomo tracks, this whole section works
- * today (in demo mode for execution — see PipelineDiagram's own note). */
+ * this describes. */
 export function CopyTradingActivationSteps({ hasActiveCopyTrading }: { hasActiveCopyTrading: boolean }) {
   return (
     <div className="flex flex-col gap-4">
@@ -15,8 +14,8 @@ export function CopyTradingActivationSteps({ hasActiveCopyTrading }: { hasActive
           Activer le Copy Trading
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-white/55">
-          Votre compte est prêt : suivre des Smart Wallets et activer le Copy Trading fonctionne
-          dès aujourd&apos;hui, indépendamment de la connexion directe à Axiom ou Fomo ci-dessus.
+          Suivre des Smart Wallets et activer le Copy Trading fonctionne dès aujourd&apos;hui — ça
+          ne fait jamais plus que vous notifier.
         </p>
       </div>
 

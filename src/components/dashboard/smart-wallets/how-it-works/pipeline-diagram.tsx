@@ -1,9 +1,9 @@
-import { ArrowDown, FlaskConical } from "lucide-react";
-import { PIPELINE_STAGES } from "@/lib/data/fomo-axiom-connect";
+import { ArrowDown, ShieldCheck } from "lucide-react";
+import { PIPELINE_STAGES } from "@/lib/data/signal-how-it-works";
 
-/** Purely explanatory — no props, no live state. Mirrors the exact stage
- * names from the brief so a user can map this diagram directly onto what
- * they see happen in "Trades copiés". */
+/** Purely explanatory — no props, no live state. Mirrors the real stages
+ * in sync-signal-wallets/index.ts, ending on "vous décidez" rather than
+ * an execution step, since none exists. */
 export function PipelineDiagram() {
   return (
     <div className="flex flex-col gap-4">
@@ -13,7 +13,7 @@ export function PipelineDiagram() {
         </h2>
         <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-white/55">
           Une fois le Copy Trading activé sur un Smart Wallet, ce pipeline tourne à chaque
-          synchronisation, sans action de votre part.
+          synchronisation, sans action de votre part — jusqu&apos;à la notification.
         </p>
       </div>
 
@@ -30,12 +30,12 @@ export function PipelineDiagram() {
         ))}
       </div>
 
-      <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3.5">
-        <FlaskConical className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" strokeWidth={2} />
-        <p className="text-xs leading-relaxed text-amber-200/90">
-          &quot;EXÉCUTION&quot; s&apos;effectue aujourd&apos;hui uniquement en mode démo — aucune
-          transaction réelle n&apos;est envoyée sur la blockchain, et aucune clé privée n&apos;est
-          jamais demandée ou stockée par PolyPips.
+      <div className="flex items-start gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] px-4 py-3.5">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" strokeWidth={2} />
+        <p className="text-xs leading-relaxed text-emerald-200/90">
+          PolyPips s&apos;arrête à la notification : aucun ordre n&apos;est jamais passé
+          automatiquement, sur aucune plateforme, et aucune clé privée n&apos;est jamais demandée
+          ou stockée.
         </p>
       </div>
     </div>

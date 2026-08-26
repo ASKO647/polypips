@@ -10,7 +10,7 @@ export async function fetchSignalCopySettings(
   const { data } = await supabase
     .from("signal_copy_settings")
     .select(
-      "id, enabled, max_position_amount, position_percent, max_daily_amount, max_simultaneous_positions, max_slippage_percent, excluded_tokens, max_loss_amount, auto_stop"
+      "id, enabled, max_position_amount, position_percent, max_daily_amount, max_simultaneous_positions, max_slippage_percent, excluded_tokens"
     )
     .eq("user_id", userId)
     .eq("wallet_id", walletId)
@@ -30,8 +30,6 @@ export async function fetchSignalCopySettings(
     maxSimultaneousPositions: data.max_simultaneous_positions as number,
     maxSlippagePercent: Number(data.max_slippage_percent),
     excludedTokens: (data.excluded_tokens as string[]) ?? [],
-    maxLossAmount: data.max_loss_amount === null ? null : Number(data.max_loss_amount),
-    autoStop: data.auto_stop as boolean,
   };
 }
 
@@ -44,7 +42,7 @@ export async function fetchAllSignalCopySettings(
   const { data } = await supabase
     .from("signal_copy_settings")
     .select(
-      "id, wallet_id, enabled, max_position_amount, position_percent, max_daily_amount, max_simultaneous_positions, max_slippage_percent, excluded_tokens, max_loss_amount, auto_stop"
+      "id, wallet_id, enabled, max_position_amount, position_percent, max_daily_amount, max_simultaneous_positions, max_slippage_percent, excluded_tokens"
     )
     .eq("user_id", userId);
 
@@ -60,8 +58,6 @@ export async function fetchAllSignalCopySettings(
       maxSimultaneousPositions: row.max_simultaneous_positions as number,
       maxSlippagePercent: Number(row.max_slippage_percent),
       excludedTokens: (row.excluded_tokens as string[]) ?? [],
-      maxLossAmount: row.max_loss_amount === null ? null : Number(row.max_loss_amount),
-      autoStop: row.auto_stop as boolean,
     });
   }
   return map;
@@ -75,7 +71,7 @@ export async function fetchSignalCopyTrades(
   const { data, error } = await supabase
     .from("signal_copy_trades")
     .select(
-      "id, wallet_id, token_symbol, wallet_trade_side, wallet_trade_amount, ai_score, ai_summary, ai_positives, ai_risks, risk_checks, decision, ignore_reason, sized_amount, entry_price, status, execution_mode, closed_pnl, created_at, signal_wallets ( label, source )"
+      "id, wallet_id, token_symbol, wallet_trade_side, wallet_trade_amount, ai_score, ai_summary, ai_positives, ai_risks, risk_checks, decision, ignore_reason, sized_amount, entry_price, status, created_at, signal_wallets ( label, source )"
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
@@ -103,8 +99,6 @@ export async function fetchSignalCopyTrades(
       sizedAmount: row.sized_amount === null ? null : Number(row.sized_amount),
       entryPrice: row.entry_price === null ? null : Number(row.entry_price),
       status: row.status as SignalCopyTrade["status"],
-      executionMode: row.execution_mode as "demo" | "live",
-      closedPnl: row.closed_pnl === null ? null : Number(row.closed_pnl),
       createdAgo: formatRelativeTime(row.created_at as string),
     } satisfies SignalCopyTrade;
   });

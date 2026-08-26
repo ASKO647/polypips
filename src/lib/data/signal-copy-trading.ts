@@ -1,30 +1,21 @@
 /**
  * Real data: Copy Trading for the Smart Wallets (Fomo/Axiom) universe.
- * Separate from lib/data/copy-trading.ts (Polymarket's own Copy Trading —
- * suggestion + alert only). Here, Copy Trading additionally runs a
- * Risk Engine + Execution Engine pipeline (see sync-signal-wallets), but
- * execution is ALWAYS in demo mode — see SignalCopyTrade.executionMode.
+ * Same model as lib/data/copy-trading.ts (Polymarket's own Copy Trading):
+ * a wallet trade run through an AI Engine + Risk Engine reaches one
+ * decision (copié/ignoré) and one notification with a real external link
+ * — never an executed or simulated position. See sync-signal-wallets for
+ * the pipeline itself.
  */
 
-export type SignalCopyStatus =
-  | "detection"
-  | "analyse"
-  | "en_attente"
-  | "copie"
-  | "ignore"
-  | "en_cours"
-  | "ferme"
-  | "echec";
+/** Whether the USER has looked at / clicked through this suggestion —
+ * never a trade's own execution state. Mirrors copy_trading_suggestions'
+ * status column exactly. */
+export type SignalCopyStatus = "nouvelle" | "vue" | "lien_cliquee";
 
 export const SIGNAL_COPY_STATUS_LABELS: Record<SignalCopyStatus, string> = {
-  detection: "Détection",
-  analyse: "Analyse",
-  en_attente: "En attente",
-  copie: "Copié",
-  ignore: "Ignoré",
-  en_cours: "En cours",
-  ferme: "Fermé",
-  echec: "Échec",
+  nouvelle: "Nouvelle",
+  vue: "Vue",
+  lien_cliquee: "Lien cliqué",
 };
 
 export type SignalCopySettings = {
@@ -37,8 +28,6 @@ export type SignalCopySettings = {
   maxSimultaneousPositions: number;
   maxSlippagePercent: number;
   excludedTokens: string[];
-  maxLossAmount: number | null;
-  autoStop: boolean;
 };
 
 export const DEFAULT_SIGNAL_COPY_SETTINGS: Omit<SignalCopySettings, "id" | "walletId"> = {
@@ -49,15 +38,13 @@ export const DEFAULT_SIGNAL_COPY_SETTINGS: Omit<SignalCopySettings, "id" | "wall
   maxSimultaneousPositions: 3,
   maxSlippagePercent: 5,
   excludedTokens: [],
-  maxLossAmount: null,
-  autoStop: true,
 };
 
 export type SignalRiskCheck = { rule: string; passed: boolean; detail: string };
 
-/** One decision + lifecycle record — a wallet trade the Risk/AI Engine
- * evaluated, its COPY/IGNORE decision, and (for a copied BUY) the
- * simulated position's state through to close. */
+/** One decision record — a wallet trade the AI/Risk Engine evaluated and
+ * its COPY/IGNORE decision. sizedAmount/entryPrice are informational
+ * context only (what a copy would look like), never an executed amount. */
 export type SignalCopyTrade = {
   id: string;
   walletId: string;
@@ -76,7 +63,5 @@ export type SignalCopyTrade = {
   sizedAmount: number | null;
   entryPrice: number | null;
   status: SignalCopyStatus;
-  executionMode: "demo" | "live";
-  closedPnl: number | null;
   createdAgo: string;
 };
