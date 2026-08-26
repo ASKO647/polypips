@@ -33,6 +33,23 @@ type UniverseGroup = {
   items: DashboardNavItem[];
 };
 
+/** Picks whichever known href is the single best match for the current
+ * pathname — an exact match, or otherwise the longest href that pathname
+ * falls under. "Longest wins" is what keeps a short parent route (e.g.
+ * "/dashboard", which is a startsWith-prefix of literally every other
+ * dashboard route) from lighting up alongside whatever more specific page
+ * is actually open; see dashboard-header.tsx's pageTitleFor, which already
+ * used this exact rule for the page title and never had this bug. */
+function findActiveHref(pathname: string, hrefs: string[]): string | null {
+  let best: string | null = null;
+  for (const href of hrefs) {
+    const matches = pathname === href || pathname.startsWith(`${href}/`);
+    if (!matches) continue;
+    if (best === null || href.length > best.length) best = href;
+  }
+  return best;
+}
+
 export function SidebarNavContent({
   userEmail,
   subscription,
@@ -48,8 +65,18 @@ export function SidebarNavContent({
   const toggleGroup = (id: string) =>
     setCollapsedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
+  const activeHref = findActiveHref(pathname, [
+    DASHBOARD_TOP_ITEM.href,
+    ...POLYMARKET_NAV_ITEMS.map((i) => i.href),
+    ...SPORTS_SUB_NAV.map((i) => i.href),
+    ...SPORT_CATEGORIES.map((s) => `/dashboard/sports/${s.key}`),
+    ...SIGNAL_NAV_ITEMS.map((i) => i.href),
+    ...DASHBOARD_GLOBAL_ITEMS.map((i) => i.href),
+    ...DASHBOARD_RESOURCE_ITEMS.map((i) => i.href),
+  ]);
+
   const renderLink = (item: DashboardNavItem) => {
-    const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const active = item.href === activeHref;
 
     return (
       <Link
