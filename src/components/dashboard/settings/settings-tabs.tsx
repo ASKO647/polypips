@@ -1,16 +1,10 @@
 "use client";
 
 import type { ComponentType } from "react";
-import { CreditCard, KeyRound, User, Bell, Gift, Music2 } from "lucide-react";
+import { CreditCard, KeyRound, User, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type SettingsTabId =
-  | "profile"
-  | "password"
-  | "subscription"
-  | "notifications"
-  | "referral"
-  | "tiktok";
+export type SettingsTabId = "profile" | "password" | "subscription" | "notifications";
 
 const TABS: {
   id: SettingsTabId;
@@ -21,8 +15,6 @@ const TABS: {
   { id: "password", label: "Mot de passe", icon: KeyRound },
   { id: "subscription", label: "Abonnement", icon: CreditCard },
   { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "referral", label: "Inviter et gagner", icon: Gift },
-  { id: "tiktok", label: "Monétiser mon TikTok", icon: Music2 },
 ];
 
 export function SettingsTabs({

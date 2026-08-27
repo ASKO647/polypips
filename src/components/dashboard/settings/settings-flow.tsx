@@ -10,15 +10,11 @@ import { ProfileTab } from "@/components/dashboard/settings/profile-tab";
 import { PasswordTab } from "@/components/dashboard/settings/password-tab";
 import { SubscriptionTab } from "@/components/dashboard/settings/subscription-tab";
 import { NotificationsTab } from "@/components/dashboard/settings/notifications-tab";
-import { ReferralTab } from "@/components/dashboard/settings/referral-tab";
-import { TiktokTab } from "@/components/dashboard/settings/tiktok-tab";
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
-import type { ReferralHistoryItem, ReferralStats } from "@/lib/data/referrals";
-import type { TiktokSubmission } from "@/lib/data/tiktok-clips";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
@@ -36,11 +32,6 @@ export function SettingsFlow({
   trialDaysRemaining,
   walletQuotaCount,
   walletQuotaMax,
-  referralOrigin,
-  initialReferralSlug,
-  referralStats,
-  referralHistory,
-  tiktokSubmissions,
 }: {
   email: string;
   initialUsername: string;
@@ -53,11 +44,6 @@ export function SettingsFlow({
   walletQuotaCount: number;
   /** null = unlimited (both plans are unlimited on this quota now). */
   walletQuotaMax: number | null;
-  referralOrigin: string;
-  initialReferralSlug: string | null;
-  referralStats: ReferralStats;
-  referralHistory: ReferralHistoryItem[];
-  tiktokSubmissions: TiktokSubmission[];
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTabId>("profile");
@@ -178,15 +164,6 @@ export function SettingsFlow({
             onToggle={toggleNotification}
           />
         )}
-        {activeTab === "referral" && (
-          <ReferralTab
-            origin={referralOrigin}
-            initialSlug={initialReferralSlug}
-            stats={referralStats}
-            history={referralHistory}
-          />
-        )}
-        {activeTab === "tiktok" && <TiktokTab initialSubmissions={tiktokSubmissions} />}
       </div>
 
       <CancelSubscriptionModal
