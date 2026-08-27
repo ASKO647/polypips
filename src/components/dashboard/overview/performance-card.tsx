@@ -1,7 +1,10 @@
+"use client";
+
 import { Link } from "@/i18n/navigation";
 import { TrendingUp } from "lucide-react";
+import { useCurrency } from "@/providers/currency-provider";
 import type { PerformanceStats } from "@/lib/supabase/performance";
-import { cn, formatSignedEUR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 /**
  * `stats === null` (or resolvedCount === 0) means no analysis has been
@@ -14,21 +17,23 @@ import { cn, formatSignedEUR } from "@/lib/utils";
  * as such directly on the card, not just in a tooltip.
  */
 export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
+  const { formatAmount } = useCurrency();
+
   if (!stats || stats.resolvedCount === 0) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <h2 className="font-display text-base font-bold text-white">
+      <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
+        <h2 className="font-display text-base font-bold text-dash-text">
           Performance globale
         </h2>
 
-        <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-dashed border-white/10 px-6 py-10 text-center">
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/[0.05]">
-            <TrendingUp className="h-5 w-5 text-white/30" />
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-dashed border-dash-border px-6 py-10 text-center">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-dash-surface-strong">
+            <TrendingUp className="h-5 w-5 text-dash-text-quaternary" />
           </span>
-          <p className="text-sm font-semibold text-white">
+          <p className="text-sm font-semibold text-dash-text">
             Pas encore assez de données
           </p>
-          <p className="max-w-xs text-xs leading-relaxed text-white/45">
+          <p className="max-w-xs text-xs leading-relaxed text-dash-text-quaternary">
             Le suivi de performance (ROI, P&amp;L, win rate) se construit
             automatiquement dès qu&apos;un marché que vous avez analysé se
             résout — revenez une fois qu&apos;au moins une analyse aura été
@@ -38,7 +43,7 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
 
         <Link
           href="/dashboard/stats"
-          className="mt-4 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] py-2.5 text-sm font-semibold text-white/70 transition-colors hover:border-white/20 hover:text-white"
+          className="mt-4 flex w-full items-center justify-center rounded-xl border border-dash-border bg-dash-surface-alt py-2.5 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-border-strong hover:text-dash-text"
         >
           Voir toutes les statistiques →
         </Link>
@@ -47,26 +52,26 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+    <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-base font-bold text-white">
+        <h2 className="font-display text-base font-bold text-dash-text">
           Performance globale
         </h2>
-        <span className="shrink-0 text-[11px] font-semibold text-white/35">
+        <span className="shrink-0 text-[11px] font-semibold text-dash-text-quaternary">
           {stats.resolvedCount} résolue{stats.resolvedCount > 1 ? "s" : ""}
         </span>
       </div>
-      <p className="mt-1 text-[11px] leading-relaxed text-white/35">
+      <p className="mt-1 text-[11px] leading-relaxed text-dash-text-quaternary">
         Simulation basée sur les décisions de l&apos;IA — mise théorique de
         100 € par analyse, jamais un gain réel.
       </p>
 
       <div className="mt-4 grid grid-cols-3 gap-3 text-center">
         <div>
-          <p className="font-display text-lg font-bold text-white">
+          <p className="font-display text-lg font-bold text-dash-text">
             {Math.round(stats.winRate)}%
           </p>
-          <p className="mt-0.5 text-[11px] text-white/40">Win rate</p>
+          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">Win rate</p>
         </div>
         <div>
           <p
@@ -78,7 +83,7 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
             {stats.simulatedRoi >= 0 ? "+" : ""}
             {stats.simulatedRoi.toFixed(1)}%
           </p>
-          <p className="mt-0.5 text-[11px] text-white/40">ROI simulé</p>
+          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">ROI simulé</p>
         </div>
         <div>
           <p
@@ -87,15 +92,15 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
               stats.simulatedPnl >= 0 ? "text-emerald-400" : "text-rose-400"
             )}
           >
-            {formatSignedEUR(stats.simulatedPnl)}
+            {formatAmount(stats.simulatedPnl, { signed: true })}
           </p>
-          <p className="mt-0.5 text-[11px] text-white/40">P&amp;L simulé</p>
+          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">P&amp;L simulé</p>
         </div>
       </div>
 
       <Link
         href="/dashboard/stats"
-        className="mt-4 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] py-2.5 text-sm font-semibold text-white/70 transition-colors hover:border-white/20 hover:text-white"
+        className="mt-4 flex w-full items-center justify-center rounded-xl border border-dash-border bg-dash-surface-alt py-2.5 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-border-strong hover:text-dash-text"
       >
         Voir toutes les statistiques →
       </Link>

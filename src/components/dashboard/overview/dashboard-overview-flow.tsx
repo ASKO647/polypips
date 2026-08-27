@@ -88,10 +88,10 @@ export function DashboardOverviewFlow({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
           {firstName ? `Bonjour, ${firstName} 👋` : "Bonjour 👋"}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
+        <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
           Vue d&apos;ensemble de votre activité et de vos accès rapides.
         </p>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { Sparkles, Wallet } from "lucide-react";
 import { PLAN_ICONS } from "@/components/dashboard/account-status-card";
@@ -27,6 +28,7 @@ export function SettingsFlow({
   email,
   initialUsername,
   initialPseudo,
+  initialAvatarUrl,
   memberSince,
   googleConnected,
   mfaEnabled,
@@ -42,6 +44,7 @@ export function SettingsFlow({
   email: string;
   initialUsername: string;
   initialPseudo: string;
+  initialAvatarUrl: string | null;
   /** Formatted "12 mars 2024", or null if unavailable. */
   memberSince: string | null;
   googleConnected: boolean;
@@ -58,7 +61,13 @@ export function SettingsFlow({
   walletQuotaMax: number | null;
 }) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<SettingsTabId>("profile");
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const isValidTab = (value: string | null): value is SettingsTabId =>
+    value === "profile" || value === "password" || value === "subscription" || value === "notifications";
+  const [activeTab, setActiveTab] = useState<SettingsTabId>(
+    isValidTab(requestedTab) ? requestedTab : "profile"
+  );
   const [notifications, setNotifications] = useState(
     DEFAULT_NOTIFICATION_PREFERENCES
   );
@@ -116,10 +125,10 @@ export function SettingsFlow({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
             Paramètres
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
+          <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
             Gérez votre compte, votre abonnement et vos préférences.
           </p>
         </div>
@@ -151,12 +160,13 @@ export function SettingsFlow({
 
       <SettingsTabs active={activeTab} onChange={setActiveTab} />
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+      <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
         {activeTab === "profile" && (
           <ProfileTab
             email={email}
             initialUsername={initialUsername}
             initialPseudo={initialPseudo}
+            initialAvatarUrl={initialAvatarUrl}
             memberSince={memberSince}
             googleConnected={googleConnected}
             mfaEnabled={mfaEnabled}

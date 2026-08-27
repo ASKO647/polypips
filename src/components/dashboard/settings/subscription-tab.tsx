@@ -1,5 +1,8 @@
+"use client";
+
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
+import { useCurrency } from "@/providers/currency-provider";
 import type { PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
@@ -11,7 +14,7 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
     label: "Paiement en échec",
     className: "bg-amber-500/15 text-amber-400",
   },
-  canceled: { label: "Terminé", className: "bg-white/10 text-white/50" },
+  canceled: { label: "Terminé", className: "bg-dash-surface-strong text-dash-text-tertiary" },
 };
 
 export function SubscriptionTab({
@@ -41,15 +44,21 @@ export function SubscriptionTab({
     !subscription?.cancelAtPeriodEnd;
   const needsResubscribe =
     subscription?.cancelAtPeriodEnd || subscription?.status === "canceled";
+  const { formatAmount } = useCurrency();
 
   if (!subscription || !plan) {
     return (
       <div>
-        <p className="text-sm text-white/60">
+        <p className="text-sm text-dash-text-secondary">
           Vous n&apos;avez pas d&apos;abonnement actif.
         </p>
         <div className="mt-5">
-          <Button href="/#tarifs">Voir les offres</Button>
+          <Link
+            href="/pricing"
+            className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600 sm:w-auto sm:px-6"
+          >
+            Voir les offres
+          </Link>
         </div>
       </div>
     );
@@ -59,11 +68,11 @@ export function SubscriptionTab({
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-baseline gap-2">
-          <span className="font-display text-2xl font-bold text-white">
+          <span className="font-display text-2xl font-bold text-dash-text">
             {plan.name}
           </span>
-          <span className="text-sm text-white/50">
-            {plan.price} {plan.priceSuffix}
+          <span className="text-sm text-dash-text-tertiary">
+            {formatAmount(plan.priceEur)} {plan.priceSuffix}
           </span>
         </div>
         {badge && (
@@ -82,7 +91,7 @@ export function SubscriptionTab({
         {plan.features.map((feature) => (
           <li
             key={feature}
-            className="flex items-start gap-2 text-sm text-white/70"
+            className="flex items-start gap-2 text-sm text-dash-text-secondary"
           >
             <Check
               className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400"
@@ -94,7 +103,7 @@ export function SubscriptionTab({
       </ul>
 
       {periodEndLabel && (
-        <p className="mt-4 text-xs text-white/35">
+        <p className="mt-4 text-xs text-dash-text-quaternary">
           {subscription.status === "canceled"
             ? `Abonnement terminé le ${periodEndLabel}`
             : subscription.cancelAtPeriodEnd
@@ -123,7 +132,12 @@ export function SubscriptionTab({
 
       {needsResubscribe && (
         <div className="mt-5">
-          <Button href="/#tarifs">Se réabonner</Button>
+          <Link
+            href="/pricing"
+            className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-600 sm:w-auto"
+          >
+            Se réabonner
+          </Link>
         </div>
       )}
     </div>

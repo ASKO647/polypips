@@ -62,12 +62,12 @@ export function LockedOverlay({
   return (
     <div className={cn("relative", className)}>
       {locked && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-b from-[#160b0c]/50 via-[#160b0c]/80 to-[#160b0c]/95 px-6 py-10 text-center">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-b from-dash-bg/50 via-dash-bg/80 to-dash-bg/95 px-6 py-10 text-center">
           <span
             className={cn(
               "flex items-center justify-center rounded-full",
               cancelled
-                ? "h-9 w-9 bg-white/10 text-white/60"
+                ? "h-9 w-9 bg-dash-surface-strong text-dash-text-secondary"
                 : "h-12 w-12 bg-brand-500/15 text-brand-400"
             )}
           >
@@ -80,7 +80,7 @@ export function LockedOverlay({
           <p
             className={cn(
               "max-w-xs leading-relaxed",
-              cancelled ? "text-xs font-medium text-white/60" : "text-sm font-medium text-white/80"
+              cancelled ? "text-xs font-medium text-dash-text-secondary" : "text-sm font-medium text-dash-text"
             )}
           >
             {message}

@@ -44,20 +44,20 @@ export function SubscriptionQuickCard({
     <Link
       href="/dashboard/settings"
       prefetch
-      className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-150 hover:border-white/20 hover:bg-white/[0.05]"
+      className="relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-dash-border bg-dash-surface p-5 transition-colors duration-150 hover:border-dash-border-strong hover:bg-dash-surface-hover"
     >
       <Icon
         aria-hidden
-        className="pointer-events-none absolute -right-3 -top-3 h-24 w-24 text-white/[0.04]"
+        className="pointer-events-none absolute -right-3 -top-3 h-24 w-24 text-dash-surface-strong"
         strokeWidth={1.5}
       />
       <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500/15 text-brand-400">
         <Icon className="h-5 w-5" strokeWidth={2} />
       </span>
       <div className="relative">
-        <p className="text-xs font-semibold text-white/45">Statut abonnement</p>
+        <p className="text-xs font-semibold text-dash-text-quaternary">Statut abonnement</p>
         <p className="mt-1 text-sm font-bold text-brand-400">{plan.name}</p>
-        <p className="mt-0.5 text-xs text-white/45">{statusLine}</p>
+        <p className="mt-0.5 text-xs text-dash-text-quaternary">{statusLine}</p>
       </div>
     </Link>
   );

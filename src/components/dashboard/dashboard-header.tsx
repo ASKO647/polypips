@@ -5,6 +5,7 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Menu, X } from "lucide-react";
 import { NotificationsBell } from "@/components/dashboard/notifications-bell";
+import { ProfileMenu } from "@/components/dashboard/profile-menu";
 import {
   DASHBOARD_GLOBAL_ITEMS,
   DASHBOARD_RESOURCE_ITEMS,
@@ -65,6 +66,9 @@ export function DashboardHeader({
   subscription,
   cancelled,
   trialEndsAt,
+  userEmail,
+  displayName,
+  avatarUrl,
 }: {
   menuOpen: boolean;
   onMenuToggle: () => void;
@@ -76,6 +80,9 @@ export function DashboardHeader({
    * an hourly timer (not just on mount) so it keeps ticking down without a
    * page reload. */
   trialEndsAt: string | null;
+  userEmail: string;
+  displayName: string;
+  avatarUrl: string | null;
 }) {
   const pathname = usePathname();
   const pageTitle = pageTitleFor(pathname);
@@ -93,19 +100,19 @@ export function DashboardHeader({
   }, [trialEndsAt, tick]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[calc(72px+env(safe-area-inset-top))] items-center justify-between border-b border-white/10 bg-[#160b0c]/95 pt-[env(safe-area-inset-top)] pr-[calc(1.25rem+env(safe-area-inset-right))] pl-[calc(1.25rem+env(safe-area-inset-left))] backdrop-blur-md lg:h-[72px] lg:px-8 lg:pt-0">
+    <header className="sticky top-0 z-30 flex h-[calc(72px+env(safe-area-inset-top))] items-center justify-between border-b border-dash-border bg-dash-bg/95 pt-[env(safe-area-inset-top)] pr-[calc(1.25rem+env(safe-area-inset-right))] pl-[calc(1.25rem+env(safe-area-inset-left))] backdrop-blur-md lg:h-[72px] lg:px-8 lg:pt-0">
       <div className="flex min-w-0 items-center gap-3">
         {showBack ? (
           <>
             <Link
               href="/dashboard"
               aria-label="Retour au tableau de bord"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-colors duration-150 hover:text-white"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dash-border bg-dash-surface-alt text-dash-text-secondary transition-colors duration-150 hover:text-dash-text"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
             </Link>
             {pageTitle && (
-              <span className="truncate font-display text-sm font-bold text-white sm:text-base">
+              <span className="truncate font-display text-sm font-bold text-dash-text sm:text-base">
                 {pageTitle}
               </span>
             )}
@@ -128,19 +135,26 @@ export function DashboardHeader({
       </div>
 
       <div className="flex items-center gap-2.5 sm:gap-3">
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white/70">
+        <span className="hidden items-center gap-1.5 whitespace-nowrap rounded-full border border-dash-border bg-dash-surface-alt px-3 py-1.5 text-xs font-semibold text-dash-text-secondary sm:inline-flex">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
           {planPillLabel(subscription, cancelled, trialDaysRemaining)}
         </span>
 
         <NotificationsBell notifications={notifications} />
 
+        <ProfileMenu
+          displayName={displayName}
+          email={userEmail}
+          avatarUrl={avatarUrl}
+          planLabel={planPillLabel(subscription, cancelled, trialDaysRemaining)}
+        />
+
         <button
           type="button"
           aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={menuOpen}
           onClick={onMenuToggle}
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 hover:text-white active:scale-95 lg:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-dash-border bg-dash-surface-alt text-dash-text-secondary transition-transform duration-150 ease-out hover:scale-105 hover:text-dash-text active:scale-95 lg:hidden"
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>

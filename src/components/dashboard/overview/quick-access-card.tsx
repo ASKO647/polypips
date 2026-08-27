@@ -28,7 +28,7 @@ export function QuickAccessCard({
     brand: "bg-brand-500/15 text-brand-400",
     emerald: "bg-emerald-500/15 text-emerald-400",
     amber: "bg-amber-500/15 text-amber-400",
-    neutral: "bg-white/10 text-white/70",
+    neutral: "bg-dash-surface-strong text-dash-text-secondary",
   }[tone];
 
   const hasActivity = sparklinePoints?.some((v) => v > 0) ?? false;
@@ -37,7 +37,7 @@ export function QuickAccessCard({
     <Link
       href={href}
       prefetch
-      className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-150 hover:border-white/20 hover:bg-white/[0.05]"
+      className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-surface p-5 transition-colors duration-150 hover:border-dash-border-strong hover:bg-dash-surface-hover"
     >
       <div className="flex items-center justify-between">
         <span className={cn("flex h-10 w-10 items-center justify-center rounded-xl", toneClasses)}>
@@ -50,8 +50,8 @@ export function QuickAccessCard({
         )}
       </div>
       <div>
-        <p className="text-sm font-bold text-white">{title}</p>
-        <p className="mt-0.5 text-xs text-white/45">{stat}</p>
+        <p className="text-sm font-bold text-dash-text">{title}</p>
+        <p className="mt-0.5 text-xs text-dash-text-quaternary">{stat}</p>
       </div>
       {sparklinePoints && (
         <div className="-mx-1 h-7">

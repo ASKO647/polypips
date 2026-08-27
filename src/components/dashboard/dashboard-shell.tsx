@@ -5,27 +5,34 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav";
 import { DashboardBottomNav } from "@/components/dashboard/dashboard-bottom-nav";
+import { DashboardThemeProvider, useDashboardTheme } from "@/providers/dashboard-theme-provider";
+import { CurrencyProvider, type CurrencyCode } from "@/providers/currency-provider";
 import { isCancelledSubscription, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { NotificationItem } from "@/lib/data/notifications";
 
-export function DashboardShell({
+function DashboardShellInner({
   userEmail,
+  displayName,
+  avatarUrl,
   subscription,
   trialEndsAt,
   notifications,
   children,
 }: {
   userEmail: string;
+  displayName: string;
+  avatarUrl: string | null;
   subscription: SubscriptionRow | null;
   trialEndsAt: string | null;
   notifications: NotificationItem[];
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme } = useDashboardTheme();
 
   return (
-    <div className="flex min-h-screen bg-[#160b0c]">
-      <DashboardSidebar userEmail={userEmail} subscription={subscription} />
+    <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg">
+      <DashboardSidebar subscription={subscription} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
@@ -35,6 +42,9 @@ export function DashboardShell({
           subscription={subscription}
           cancelled={isCancelledSubscription(subscription)}
           trialEndsAt={trialEndsAt}
+          userEmail={userEmail}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
         />
         <main className="flex-1 px-5 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] lg:px-8 lg:py-8 lg:pb-8">
           {children}
@@ -49,9 +59,45 @@ export function DashboardShell({
       <DashboardMobileNav
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
-        userEmail={userEmail}
         subscription={subscription}
       />
     </div>
+  );
+}
+
+export function DashboardShell({
+  userEmail,
+  displayName,
+  avatarUrl,
+  initialCurrency,
+  subscription,
+  trialEndsAt,
+  notifications,
+  children,
+}: {
+  userEmail: string;
+  displayName: string;
+  avatarUrl: string | null;
+  initialCurrency: CurrencyCode;
+  subscription: SubscriptionRow | null;
+  trialEndsAt: string | null;
+  notifications: NotificationItem[];
+  children: React.ReactNode;
+}) {
+  return (
+    <DashboardThemeProvider>
+      <CurrencyProvider initialCurrency={initialCurrency}>
+        <DashboardShellInner
+          userEmail={userEmail}
+          displayName={displayName}
+          avatarUrl={avatarUrl}
+          subscription={subscription}
+          trialEndsAt={trialEndsAt}
+          notifications={notifications}
+        >
+          {children}
+        </DashboardShellInner>
+      </CurrencyProvider>
+    </DashboardThemeProvider>
   );
 }

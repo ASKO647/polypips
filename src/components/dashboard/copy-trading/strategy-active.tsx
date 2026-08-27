@@ -6,7 +6,8 @@ import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclai
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import type { RiskParameters, Strategy, Suggestion } from "@/lib/data/copy-trading";
 import { createClient } from "@/lib/supabase/client";
-import { cn, formatEUR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrency } from "@/providers/currency-provider";
 
 const STATUS_LABEL: Record<Suggestion["status"], string> = {
   nouvelle: "Nouvelle",
@@ -51,6 +52,7 @@ export function StrategyActive({
   quotaLocked?: boolean;
   quotaLockMessage?: string | null;
 }) {
+  const { formatAmount } = useCurrency();
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [pending, setPending] = useState(false);
 
@@ -200,18 +202,18 @@ export function StrategyActive({
           <div className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
             <div>
               <p className="text-white/35">Budget</p>
-              <p className="mt-0.5 font-semibold text-white">{formatEUR(params.maxBudget)}</p>
+              <p className="mt-0.5 font-semibold text-white">{formatAmount(params.maxBudget)}</p>
             </div>
             <div>
               <p className="text-white/35">Maximum par trade</p>
               <p className="mt-0.5 font-semibold text-white">
-                {formatEUR(params.maxPositionAmount)}
+                {formatAmount(params.maxPositionAmount)}
               </p>
             </div>
             <div>
               <p className="text-white/35">Exposition max</p>
               <p className="mt-0.5 font-semibold text-white">
-                {params.maxExposure}% ({formatEUR((params.maxBudget * params.maxExposure) / 100)})
+                {params.maxExposure}% ({formatAmount((params.maxBudget * params.maxExposure) / 100)})
               </p>
             </div>
             <div>
@@ -314,17 +316,17 @@ export function StrategyActive({
                       {isCopied ? (
                         <>
                           <span className="text-sm font-semibold text-white">
-                            {formatEUR(suggestion.amount)}
+                            {formatAmount(suggestion.amount)}
                           </span>
                           {suggestion.originalAmount !== null && (
                             <span className="text-[11px] text-white/35">
-                              original {formatEUR(suggestion.originalAmount)}
+                              original {formatAmount(suggestion.originalAmount)}
                             </span>
                           )}
                         </>
                       ) : (
                         <span className="text-sm font-semibold text-white/40">
-                          {formatEUR(suggestion.originalAmount ?? suggestion.amount)}
+                          {formatAmount(suggestion.originalAmount ?? suggestion.amount)}
                         </span>
                       )}
                       <ExternalLink className="mt-1 h-4 w-4 text-white/30" />

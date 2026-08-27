@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { TriangleAlert, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const CONFIRM_WORD = "SUPPRIMER";
 
@@ -22,11 +21,11 @@ export function DeleteAccountModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 animate-fade-in bg-black/70"
+        className="absolute inset-0 animate-fade-in bg-dash-overlay"
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative w-full max-w-md animate-fade-up rounded-2xl border border-rose-500/20 bg-[#160b0c] p-6 shadow-2xl">
+      <div className="relative w-full max-w-md animate-fade-up rounded-2xl border border-rose-500/20 bg-dash-bg p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-500/15 text-rose-400">
             <TriangleAlert className="h-5 w-5" />
@@ -35,19 +34,19 @@ export function DeleteAccountModal({
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dash-border text-dash-text-secondary transition-colors hover:text-dash-text"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <h2 className="mt-4 font-display text-lg font-bold text-white">
+        <h2 className="mt-4 font-display text-lg font-bold text-dash-text">
           Supprimer définitivement votre compte ?
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/60">
+        <p className="mt-2 text-sm leading-relaxed text-dash-text-secondary">
           Cette action est irréversible. Toutes vos analyses, positions
           suivies et préférences seront supprimées. Pour confirmer, tapez{" "}
-          <span className="font-semibold text-white">{CONFIRM_WORD}</span>{" "}
+          <span className="font-semibold text-dash-text">{CONFIRM_WORD}</span>{" "}
           ci-dessous.
         </p>
 
@@ -56,18 +55,17 @@ export function DeleteAccountModal({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={CONFIRM_WORD}
-          className="mt-4 w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-rose-400/50 focus:outline-none"
+          className="mt-4 w-full rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-rose-400/50 focus:outline-none"
         />
 
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={onClose}
-            className="sm:flex-1"
+            className="flex h-11 items-center justify-center rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text sm:flex-1"
           >
             Annuler
-          </Button>
+          </button>
           <button
             type="button"
             disabled={value.trim() !== CONFIRM_WORD}

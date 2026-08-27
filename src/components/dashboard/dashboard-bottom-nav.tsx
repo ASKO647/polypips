@@ -42,7 +42,7 @@ export function DashboardBottomNav({
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-white/10 bg-[#160b0c] pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-dash-border bg-dash-bg pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:hidden"
       aria-label="Navigation principale"
     >
       {TABS.map((tab) => {
@@ -55,7 +55,7 @@ export function DashboardBottomNav({
             prefetch
             className={cn(
               "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-1.5 text-[11px] font-medium transition-colors duration-150",
-              active ? "text-brand-400" : "text-white/50"
+              active ? "text-brand-400" : "text-dash-text-tertiary"
             )}
           >
             <tab.icon className="h-5 w-5" strokeWidth={2} />
@@ -71,7 +71,7 @@ export function DashboardBottomNav({
         aria-expanded={menuOpen}
         className={cn(
           "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-1.5 text-[11px] font-medium transition-colors duration-150",
-          menuActive || menuOpen ? "text-brand-400" : "text-white/50"
+          menuActive || menuOpen ? "text-brand-400" : "text-dash-text-tertiary"
         )}
       >
         <Menu className="h-5 w-5" strokeWidth={2} />

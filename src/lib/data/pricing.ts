@@ -3,6 +3,10 @@ export type PricingPlan = {
   name: string;
   tagline: string;
   price: string;
+  /** Numeric EUR value backing `price` — Stripe always bills in EUR, but
+   * the dashboard's currency preference needs a real number to convert
+   * for display rather than parsing the localized `price` string. */
+  priceEur: number;
   priceSuffix: string;
   afterOffer?: string;
   originalPrice?: string;
@@ -19,6 +23,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: "Offre découverte",
     tagline: "L'entrée idéale pour tester Polypips",
     price: "0,99 €",
+    priceEur: 0.99,
     priceSuffix: "pendant 3 jours",
     afterOffer: "Puis 29,99 € / mois",
     features: [
@@ -38,6 +43,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: "Polypips Pro",
     tagline: "L'accès complet à Polypips, sans limites",
     price: "29,99 €",
+    priceEur: 29.99,
     priceSuffix: "/ mois",
     originalPrice: "49,99 €",
     features: [

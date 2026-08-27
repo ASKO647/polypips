@@ -1,7 +1,6 @@
 "use client";
 
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export function CancelSubscriptionModal({
   open,
@@ -21,25 +20,25 @@ export function CancelSubscriptionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 animate-fade-in bg-black/70"
+        className="absolute inset-0 animate-fade-in bg-dash-overlay"
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative w-full max-w-md animate-fade-up rounded-2xl border border-white/10 bg-[#160b0c] p-6 shadow-2xl">
+      <div className="relative w-full max-w-md animate-fade-up rounded-2xl border border-dash-border bg-dash-bg p-6 shadow-2xl">
         <div className="flex items-start justify-between gap-4">
-          <h2 className="font-display text-lg font-bold text-white">
+          <h2 className="font-display text-lg font-bold text-dash-text">
             Annuler votre abonnement ?
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dash-border text-dash-text-secondary transition-colors hover:text-dash-text"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-white/60">
+        <p className="mt-2 text-sm leading-relaxed text-dash-text-secondary">
           Votre accès sera coupé immédiatement, même s&apos;il vous reste du
           temps payé sur la période en cours
           {renewalDate ? ` (jusqu'au ${renewalDate})` : ""} — pas de
@@ -47,23 +46,22 @@ export function CancelSubscriptionModal({
           l&apos;annulation.
         </p>
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={onClose}
             disabled={confirming}
-            className="sm:flex-1"
+            className="flex h-11 items-center justify-center rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text disabled:pointer-events-none disabled:opacity-50 sm:flex-1"
           >
             Retour
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
             onClick={onConfirm}
             disabled={confirming}
-            className="sm:flex-1"
+            className="flex h-11 items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-60 sm:flex-1"
           >
             {confirming ? "Annulation en cours..." : "Confirmer l'annulation"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

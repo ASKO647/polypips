@@ -17,13 +17,13 @@ export function SettingsToggle({
       role="switch"
       aria-checked={checked}
       onClick={onChange}
-      className="flex w-full items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5 text-left transition-colors duration-150 hover:border-white/20"
+      className="flex w-full items-center justify-between gap-4 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3.5 text-left transition-colors duration-150 hover:border-dash-border-strong"
     >
-      <span className="text-sm font-medium text-white">{label}</span>
+      <span className="text-sm font-medium text-dash-text">{label}</span>
       <span
         className={cn(
           "relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200",
-          checked ? "bg-brand-500" : "bg-white/15"
+          checked ? "bg-brand-500" : "bg-dash-surface-strong"
         )}
       >
         <span

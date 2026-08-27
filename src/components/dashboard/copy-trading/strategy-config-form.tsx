@@ -5,7 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RiskDisclaimer } from "@/components/dashboard/copy-trading/risk-disclaimer";
 import type { RiskParameters, Strategy } from "@/lib/data/copy-trading";
-import { cn, formatEUR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrency } from "@/providers/currency-provider";
 
 function NumberField({
   label,
@@ -159,6 +160,7 @@ export function StrategyConfigForm({
   onCancel: () => void;
   onActivate: (params: RiskParameters) => Promise<void>;
 }) {
+  const { formatAmount } = useCurrency();
   const initial = strategy.riskParameters ?? DEFAULT_RISK_PARAMETERS;
   const [maxBudget, setMaxBudget] = useState(initial.maxBudget);
   const [maxPositionAmount, setMaxPositionAmount] = useState(initial.maxPositionAmount);
@@ -261,18 +263,18 @@ export function StrategyConfigForm({
         <div className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
           <div>
             <p className="text-white/35">Budget</p>
-            <p className="mt-0.5 font-semibold text-white">{formatEUR(maxBudget)}</p>
+            <p className="mt-0.5 font-semibold text-white">{formatAmount(maxBudget)}</p>
           </div>
           <div>
             <p className="text-white/35">Maximum par trade</p>
             <p className="mt-0.5 font-semibold text-white">
-              {formatEUR(maxPositionAmount)}
+              {formatAmount(maxPositionAmount)}
             </p>
           </div>
           <div>
             <p className="text-white/35">Exposition max</p>
             <p className="mt-0.5 font-semibold text-white">
-              {maxExposure}% ({formatEUR((maxBudget * maxExposure) / 100)})
+              {maxExposure}% ({formatAmount((maxBudget * maxExposure) / 100)})
             </p>
           </div>
           <div>

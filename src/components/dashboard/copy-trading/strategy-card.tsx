@@ -3,7 +3,8 @@
 import { ArrowRight, Lock } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import type { Strategy } from "@/lib/data/copy-trading";
-import { cn, formatEUR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrency } from "@/providers/currency-provider";
 
 export function StrategyCard({
   strategy,
@@ -22,6 +23,7 @@ export function StrategyCard({
   configureDisabled?: boolean;
   configureDisabledReason?: string | null;
 }) {
+  const { formatAmount } = useCurrency();
   const configured = strategy.strategyId !== null;
   const blocked = !configured && configureDisabled;
 
@@ -46,7 +48,7 @@ export function StrategyCard({
           )}
         </div>
         <p className="mt-1.5 text-sm leading-relaxed text-white/55">
-          Portefeuille suivi : {formatEUR(strategy.walletTotalValue)} sous
+          Portefeuille suivi : {formatAmount(strategy.walletTotalValue)} sous
           gestion actuellement.
         </p>
         {(strategy.walletWinRate !== null || strategy.walletRoiPercent !== null) && (
@@ -78,7 +80,7 @@ export function StrategyCard({
           <div>
             <p className="text-white/35">Budget</p>
             <p className="mt-0.5 font-semibold text-white">
-              {formatEUR(strategy.riskParameters.maxBudget)}
+              {formatAmount(strategy.riskParameters.maxBudget)}
             </p>
           </div>
           <div>

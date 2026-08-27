@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ComponentType, type ReactNode } from "react";
+import { useRef, useState, type ComponentType, type ReactNode } from "react";
 import {
   CheckCircle2,
   Camera,
@@ -20,21 +20,28 @@ import {
   Check,
   Link2,
   TriangleAlert,
+  Loader2,
 } from "lucide-react";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { createClient } from "@/lib/supabase/client";
+import { uploadAvatar, validateAvatarFile } from "@/lib/supabase/avatar";
+import { UserAvatar } from "@/components/dashboard/user-avatar";
+import { useDashboardTheme } from "@/providers/dashboard-theme-provider";
+import { useCurrency, SUPPORTED_CURRENCIES, type CurrencyCode } from "@/providers/currency-provider";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
 
-/** One rounded dark card, used for every block on this page — same tokens
- * as the tab container itself (border-white/10, bg-white/[0.03]). */
+/** One rounded card, used for every block on this page — same tokens as
+ * the tab container itself. Dashboard-theme-aware (dark by default, real
+ * light mode once the user switches it in Préférences or the header
+ * menu). */
 function Card({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
   return (
-    <div className={cn("rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6", className)}>
-      <h2 className="font-display text-base font-bold text-white">{title}</h2>
+    <div className={cn("rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6", className)}>
+      <h2 className="font-display text-base font-bold text-dash-text">{title}</h2>
       <div className="mt-4 flex flex-col gap-4">{children}</div>
     </div>
   );
@@ -54,14 +61,14 @@ function SecurityRow({
   action: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3.5">
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/60">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-dash-surface-strong text-dash-text-tertiary">
           <Icon className="h-4 w-4" strokeWidth={2} />
         </span>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">{label}</span>
-          <span className="text-xs text-white/40">{value}</span>
+          <span className="text-sm font-semibold text-dash-text">{label}</span>
+          <span className="text-xs text-dash-text-quaternary">{value}</span>
         </div>
       </div>
       {action}
@@ -70,9 +77,9 @@ function SecurityRow({
 }
 
 /** Outline pill button reused for every small inline action in this page
- * (Modifier / Gérer / Voir) — dashboard-native styling (white/10 border),
- * deliberately not the marketing Button component, which renders a white
- * pill unsuited to this dark UI. */
+ * (Modifier / Gérer / Voir) — dashboard-native styling, deliberately not
+ * the marketing Button component, which renders a white pill unsuited to
+ * this UI. */
 function InlineActionButton({
   children,
   onClick,
@@ -87,7 +94,7 @@ function InlineActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="shrink-0 rounded-full border border-white/15 px-4 py-1.5 text-xs font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white disabled:pointer-events-none disabled:opacity-40"
+      className="shrink-0 rounded-full border border-dash-border-strong px-4 py-1.5 text-xs font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text disabled:pointer-events-none disabled:opacity-40"
     >
       {children}
     </button>
@@ -102,7 +109,7 @@ function ComingSoonButton({ label }: { label: string }) {
   return (
     <div className="flex shrink-0 flex-col items-end gap-1">
       <InlineActionButton onClick={() => setShowNote(true)}>{label}</InlineActionButton>
-      {showNote && <span className="text-[11px] text-white/35">Bientôt disponible</span>}
+      {showNote && <span className="text-[11px] text-dash-text-faint">Bientôt disponible</span>}
     </div>
   );
 }
@@ -119,14 +126,14 @@ function PreferenceRow({
   control: ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3.5">
       <div className="flex items-center gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/60">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-dash-surface-strong text-dash-text-tertiary">
           <Icon className="h-4 w-4" strokeWidth={2} />
         </span>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">{label}</span>
-          {description && <span className="text-xs text-white/40">{description}</span>}
+          <span className="text-sm font-semibold text-dash-text">{label}</span>
+          {description && <span className="text-xs text-dash-text-quaternary">{description}</span>}
         </div>
       </div>
       {control}
@@ -143,7 +150,7 @@ function RedToggle({ checked, onChange }: { checked: boolean; onChange: () => vo
       onClick={onChange}
       className={cn(
         "relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200",
-        checked ? "bg-brand-500" : "bg-white/15"
+        checked ? "bg-brand-500" : "bg-dash-surface-strong"
       )}
     >
       <span
@@ -160,19 +167,22 @@ function PreferenceSelect({
   value,
   onChange,
   options,
+  disabled,
 }: {
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
+  disabled?: boolean;
 }) {
   return (
     <select
       value={value}
+      disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
-      className="shrink-0 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-white focus:border-white/25 focus:outline-none"
+      className="shrink-0 rounded-lg border border-dash-border bg-dash-surface-alt px-3 py-1.5 text-xs font-semibold text-dash-text focus:border-dash-border-strong focus:outline-none disabled:opacity-50"
     >
       {options.map((opt) => (
-        <option key={opt.value} value={opt.value} className="bg-[#160b0c] text-white">
+        <option key={opt.value} value={opt.value}>
           {opt.label}
         </option>
       ))}
@@ -191,13 +201,13 @@ function ActivityRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="flex items-center gap-2.5 text-sm text-white/70">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/[0.05] text-white/50">
+      <span className="flex items-center gap-2.5 text-sm text-dash-text-secondary">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-dash-surface-strong text-dash-text-tertiary">
           <Icon className="h-3.5 w-3.5" strokeWidth={2} />
         </span>
         {label}
       </span>
-      <span className="text-sm font-bold text-white">{value}</span>
+      <span className="text-sm font-bold text-dash-text">{value}</span>
     </div>
   );
 }
@@ -213,6 +223,7 @@ export function ProfileTab({
   email,
   initialUsername,
   initialPseudo,
+  initialAvatarUrl,
   memberSince,
   googleConnected,
   mfaEnabled,
@@ -227,6 +238,7 @@ export function ProfileTab({
   email: string;
   initialUsername: string;
   initialPseudo: string;
+  initialAvatarUrl: string | null;
   /** Formatted "12 mars 2024", or null if unavailable. */
   memberSince: string | null;
   googleConnected: boolean;
@@ -241,6 +253,10 @@ export function ProfileTab({
 }) {
   const [username, setUsername] = useState(initialUsername);
   const [pseudo, setPseudo] = useState(initialPseudo);
+  const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [language, setLanguage] = useState("fr");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -248,9 +264,11 @@ export function ProfileTab({
 
   const [notifications, setNotifications] = useState(true);
   const [emailAlerts, setEmailAlerts] = useState(true);
-  const [theme, setTheme] = useState("dark");
-  const [currency, setCurrency] = useState("EUR");
   const [timezone, setTimezone] = useState("Europe/Paris");
+
+  const { theme, setTheme } = useDashboardTheme();
+  const { currency, setCurrency, formatAmount, ratesUnavailable } = useCurrency();
+  const [prefError, setPrefError] = useState<string | null>(null);
 
   const [referralCopied, setReferralCopied] = useState(false);
 
@@ -272,6 +290,49 @@ export function ProfileTab({
       setError(err instanceof Error ? err.message : "Une erreur est survenue.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarPick = () => fileInputRef.current?.click();
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow picking the same file again later
+    if (!file) return;
+
+    const validationError = validateAvatarFile(file);
+    if (validationError) {
+      setAvatarError(validationError);
+      return;
+    }
+
+    setAvatarUploading(true);
+    setAvatarError(null);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Session expirée, reconnectez-vous.");
+      const newUrl = await uploadAvatar(supabase, user.id, file);
+      setAvatarUrl(newUrl);
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "L'upload a échoué. Réessayez.");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleThemeChange = (next: string) => {
+    setTheme(next === "light" ? "light" : "dark");
+  };
+
+  const handleCurrencyChange = async (next: string) => {
+    setPrefError(null);
+    try {
+      await setCurrency(next as CurrencyCode);
+    } catch (err) {
+      setPrefError(err instanceof Error ? err.message : "Impossible d'enregistrer la devise.");
     }
   };
 
@@ -301,19 +362,34 @@ export function ProfileTab({
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
       {/* Colonne de gauche */}
       <div className="flex flex-col gap-6">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+        <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
           <div className="flex flex-wrap items-center gap-5">
             <div className="relative shrink-0">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-brand-500/15 text-2xl font-bold text-brand-400">
-                {(username || email || "?").charAt(0).toUpperCase()}
-              </div>
-              <span className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#160b0c] bg-white/10 text-white/70">
-                <Camera className="h-3.5 w-3.5" strokeWidth={2} />
-              </span>
+              <UserAvatar name={username || email} avatarUrl={avatarUrl} size={80} className="text-2xl" />
+              <button
+                type="button"
+                onClick={handleAvatarPick}
+                disabled={avatarUploading}
+                aria-label="Changer la photo de profil"
+                className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-dash-bg bg-dash-surface-strong text-dash-text-secondary transition-colors hover:text-dash-text disabled:pointer-events-none"
+              >
+                {avatarUploading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+                ) : (
+                  <Camera className="h-3.5 w-3.5" strokeWidth={2} />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-display text-lg font-bold text-white">
+                <span className="font-display text-lg font-bold text-dash-text">
                   {username || "Utilisateur Polypips"}
                 </span>
                 {currentPlan && currentPlan.id !== "decouverte" && (
@@ -322,20 +398,21 @@ export function ProfileTab({
                   </span>
                 )}
               </div>
-              <span className="text-sm text-white/50">{email}</span>
+              <span className="text-sm text-dash-text-tertiary">{email}</span>
               {memberSince && (
-                <span className="text-xs text-white/35">Membre depuis le {memberSince}</span>
+                <span className="text-xs text-dash-text-quaternary">Membre depuis le {memberSince}</span>
               )}
               <span className="mt-1 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Compte vérifié
               </span>
             </div>
           </div>
+          {avatarError && <p className="mt-3 text-xs text-rose-400">{avatarError}</p>}
         </div>
 
         <Card title="Informations personnelles">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="profile-fullname" className="text-xs font-medium text-white/50">
+            <label htmlFor="profile-fullname" className="text-xs font-medium text-dash-text-tertiary">
               Nom complet
             </label>
             <input
@@ -347,14 +424,14 @@ export function ProfileTab({
                 setSaved(false);
               }}
               placeholder="Votre nom"
-              className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none"
+              className="rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-dash-border-strong focus:outline-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-white/50">Adresse e-mail</label>
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2.5">
-              <span className="flex-1 truncate text-sm text-white/70">{email}</span>
+            <label className="text-xs font-medium text-dash-text-tertiary">Adresse e-mail</label>
+            <div className="flex items-center gap-2 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-2.5">
+              <span className="flex-1 truncate text-sm text-dash-text-secondary">{email}</span>
               <span className="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
                 Vérifié
               </span>
@@ -362,7 +439,7 @@ export function ProfileTab({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="profile-pseudo" className="text-xs font-medium text-white/50">
+            <label htmlFor="profile-pseudo" className="text-xs font-medium text-dash-text-tertiary">
               Pseudo
             </label>
             <input
@@ -374,22 +451,22 @@ export function ProfileTab({
                 setSaved(false);
               }}
               placeholder="Votre pseudo"
-              className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none"
+              className="rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-dash-border-strong focus:outline-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="profile-language" className="text-xs font-medium text-white/50">
+            <label htmlFor="profile-language" className="text-xs font-medium text-dash-text-tertiary">
               Langue
             </label>
             <select
               id="profile-language"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white focus:border-white/25 focus:outline-none sm:max-w-xs"
+              className="rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text focus:border-dash-border-strong focus:outline-none sm:max-w-xs"
             >
-              <option value="fr" className="bg-[#160b0c] text-white">Français</option>
-              <option value="en" className="bg-[#160b0c] text-white">English</option>
+              <option value="fr">Français</option>
+              <option value="en">English</option>
             </select>
           </div>
 
@@ -422,7 +499,7 @@ export function ProfileTab({
             icon={ShieldCheck}
             label="Authentification à deux facteurs"
             value={
-              <span className={mfaEnabled ? "text-emerald-400" : "text-white/40"}>
+              <span className={mfaEnabled ? "text-emerald-400" : "text-dash-text-quaternary"}>
                 {mfaEnabled ? "Activée" : "Non activée"}
               </span>
             }
@@ -438,7 +515,7 @@ export function ProfileTab({
             icon={GoogleIcon}
             label="Connexion avec Google"
             value={
-              <span className={googleConnected ? "text-emerald-400" : "text-white/40"}>
+              <span className={googleConnected ? "text-emerald-400" : "text-dash-text-quaternary"}>
                 {googleConnected ? "Connecté" : "Non connecté"}
               </span>
             }
@@ -466,7 +543,7 @@ export function ProfileTab({
             control={
               <PreferenceSelect
                 value={theme}
-                onChange={setTheme}
+                onChange={handleThemeChange}
                 options={[
                   { value: "dark", label: "Sombre" },
                   { value: "light", label: "Clair" },
@@ -477,18 +554,20 @@ export function ProfileTab({
           <PreferenceRow
             icon={Coins}
             label="Devise"
-            description="Choisir votre devise d'affichage"
+            description={
+              ratesUnavailable && currency !== "EUR"
+                ? "Taux de change indisponible — affichage en EUR pour l'instant"
+                : "Choisir votre devise d'affichage"
+            }
             control={
               <PreferenceSelect
                 value={currency}
-                onChange={setCurrency}
-                options={[
-                  { value: "EUR", label: "EUR (€)" },
-                  { value: "USD", label: "USD ($)" },
-                ]}
+                onChange={handleCurrencyChange}
+                options={SUPPORTED_CURRENCIES.map((c) => ({ value: c.code, label: c.label }))}
               />
             }
           />
+          {prefError && <p className="text-xs text-rose-400">{prefError}</p>}
           <PreferenceRow
             icon={Clock}
             label="Fuseau horaire"
@@ -516,18 +595,18 @@ export function ProfileTab({
                 <span className="rounded-lg bg-brand-500/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-brand-400">
                   {currentPlan.id === "pro" ? "Pro" : "Découverte"}
                 </span>
-                <span className="font-display text-xl font-bold text-white">
-                  {currentPlan.price}
-                  <span className="text-sm font-medium text-white/50"> {currentPlan.priceSuffix}</span>
+                <span className="font-display text-xl font-bold text-dash-text">
+                  {formatAmount(currentPlan.priceEur)}
+                  <span className="text-sm font-medium text-dash-text-tertiary"> {currentPlan.priceSuffix}</span>
                 </span>
               </div>
               {subscriptionBadgeLabel && (
-                <span className="w-fit rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white/60">
+                <span className="w-fit rounded-full bg-dash-surface-strong px-2.5 py-1 text-[11px] font-semibold text-dash-text-secondary">
                   {subscriptionBadgeLabel}
                 </span>
               )}
               {periodEndLabel && (
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-dash-text-quaternary">
                   {subscription.cancelAtPeriodEnd
                     ? `Accès coupé — période payée jusqu'au ${periodEndLabel}`
                     : `Prochain renouvellement : ${periodEndLabel}`}
@@ -558,7 +637,7 @@ export function ProfileTab({
             </>
           ) : (
             <>
-              <p className="text-sm text-white/50">Vous n&apos;avez pas d&apos;abonnement actif.</p>
+              <p className="text-sm text-dash-text-tertiary">Vous n&apos;avez pas d&apos;abonnement actif.</p>
               <Link
                 href="/pricing"
                 className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
@@ -583,16 +662,16 @@ export function ProfileTab({
         </Card>
 
         <Card title="Invitez vos amis">
-          <p className="text-sm leading-relaxed text-white/50">
+          <p className="text-sm leading-relaxed text-dash-text-tertiary">
             Le programme de parrainage sera bientôt de retour.
           </p>
-          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2.5">
-            <span className="flex-1 truncate text-sm text-white/50">{referralLink}</span>
+          <div className="flex items-center gap-2 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-2.5">
+            <span className="flex-1 truncate text-sm text-dash-text-tertiary">{referralLink}</span>
             <button
               type="button"
               onClick={handleCopyReferral}
               aria-label="Copier le lien d'invitation"
-              className="shrink-0 text-white/50 transition-colors hover:text-white"
+              className="shrink-0 text-dash-text-tertiary transition-colors hover:text-dash-text"
             >
               {referralCopied ? (
                 <Check className="h-4 w-4 text-emerald-400" />
@@ -602,13 +681,13 @@ export function ProfileTab({
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5">
-              <p className="text-[11px] font-medium text-white/40">Filleuls</p>
-              <p className="mt-0.5 text-sm font-bold text-white">0</p>
+            <div className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5">
+              <p className="text-[11px] font-medium text-dash-text-quaternary">Filleuls</p>
+              <p className="mt-0.5 text-sm font-bold text-dash-text">0</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] px-3 py-2.5">
-              <p className="text-[11px] font-medium text-white/40">Gains générés</p>
-              <p className="mt-0.5 text-sm font-bold text-white">0,00 €</p>
+            <div className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5">
+              <p className="text-[11px] font-medium text-dash-text-quaternary">Gains générés</p>
+              <p className="mt-0.5 text-sm font-bold text-dash-text">{formatAmount(0)}</p>
             </div>
           </div>
           <Link
@@ -620,8 +699,8 @@ export function ProfileTab({
         </Card>
 
         <Card title="Mes outils connectés">
-          <div className="flex items-start gap-2.5 text-sm text-white/50">
-            <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
+          <div className="flex items-start gap-2.5 text-sm text-dash-text-tertiary">
+            <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-dash-text-quaternary" strokeWidth={2} />
             <p>Aucun outil connecté. Connectez vos comptes pour une expérience complète.</p>
           </div>
           <ComingSoonInlineButton label="Gérer les connexions" />
@@ -629,11 +708,11 @@ export function ProfileTab({
 
         <Card title="Zone dangereuse" className="border-rose-500/20">
           <h3 className="-mt-2 text-sm font-bold text-rose-400">Supprimer mon compte</h3>
-          <p className="text-sm leading-relaxed text-white/50">
+          <p className="text-sm leading-relaxed text-dash-text-tertiary">
             Cette action est irréversible. Toutes vos données seront définitivement supprimées.
           </p>
           {deletionRequested ? (
-            <p className="flex items-center gap-2 text-sm font-medium text-white/70">
+            <p className="flex items-center gap-2 text-sm font-medium text-dash-text-secondary">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
               Demande de suppression enregistrée. Notre équipe vous contactera par email.
             </p>
@@ -695,11 +774,11 @@ function ComingSoonInlineButton({ label }: { label: string }) {
       <button
         type="button"
         onClick={() => setShowNote(true)}
-        className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-white/80 transition-colors hover:border-white/30 hover:text-white"
+        className="rounded-full border border-dash-border-strong px-4 py-2 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text"
       >
         {label}
       </button>
-      {showNote && <span className="text-xs text-white/35">Bientôt disponible</span>}
+      {showNote && <span className="text-xs text-dash-text-faint">Bientôt disponible</span>}
     </div>
   );
 }

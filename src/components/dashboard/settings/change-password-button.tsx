@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 export function ChangePasswordButton({ email }: { email: string }) {
@@ -35,19 +34,18 @@ export function ChangePasswordButton({ email }: { email: string }) {
 
   return (
     <div className="flex flex-col gap-1.5">
-      <Button
+      <button
         type="button"
-        variant="outline"
         onClick={handleClick}
         disabled={status === "sending"}
-        className="w-full sm:w-auto"
+        className="flex h-11 w-full items-center justify-center rounded-full border border-dash-border-strong px-5 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text disabled:pointer-events-none disabled:opacity-50 sm:w-auto"
       >
         {status === "sending" ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
           "Changer le mot de passe"
         )}
-      </Button>
+      </button>
       {status === "error" && (
         <p className="text-xs text-rose-400">
           Une erreur est survenue. Merci de réessayer.

@@ -53,9 +53,9 @@ export function ActivityDonut({
   });
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+    <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-base font-bold text-white">
+        <h2 className="font-display text-base font-bold text-dash-text">
           Votre activité
         </h2>
         <div className="flex gap-1">
@@ -67,8 +67,8 @@ export function ActivityDonut({
               className={cn(
                 "rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors duration-150",
                 period === opt.key
-                  ? "border-white/25 bg-white/[0.1] text-white"
-                  : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white"
+                  ? "border-dash-border-strong bg-dash-surface-strong text-dash-text"
+                  : "border-dash-border bg-dash-surface text-dash-text-tertiary hover:text-dash-text"
               )}
             >
               {opt.label}
@@ -91,7 +91,7 @@ export function ActivityDonut({
               cy={SIZE / 2}
               r={RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.08)"
+              stroke="var(--color-dash-border)"
               strokeWidth={STROKE_WIDTH}
             />
             {total > 0 &&
@@ -112,26 +112,26 @@ export function ActivityDonut({
                 ))}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-display text-3xl font-bold text-white">{total}</span>
-            <span className="text-[11px] text-white/40">Total</span>
+            <span className="font-display text-3xl font-bold text-dash-text">{total}</span>
+            <span className="text-[11px] text-dash-text-quaternary">Total</span>
           </div>
         </div>
 
         <div className="flex w-full flex-col gap-2.5 sm:w-auto">
           {SEGMENTS.map((seg) => (
             <div key={seg.key} className="flex items-center justify-between gap-6 text-sm">
-              <span className="flex items-center gap-2 text-white/70">
+              <span className="flex items-center gap-2 text-dash-text-secondary">
                 <span className={cn("h-2 w-2 rounded-full", seg.dot)} />
                 {seg.label}
               </span>
-              <span className="font-semibold text-white">{counts[seg.key]}</span>
+              <span className="font-semibold text-dash-text">{counts[seg.key]}</span>
             </div>
           ))}
         </div>
       </div>
 
       {total === 0 && (
-        <p className="mt-4 text-center text-xs text-white/35">
+        <p className="mt-4 text-center text-xs text-dash-text-quaternary">
           Aucune activité enregistrée sur cette période.
         </p>
       )}

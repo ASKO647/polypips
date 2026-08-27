@@ -13,15 +13,15 @@ export function RecentActivitySection({
   notifications: NotificationItem[];
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-      <h2 className="font-display text-base font-bold text-white">
+    <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
+      <h2 className="font-display text-base font-bold text-dash-text">
         Activité récente
       </h2>
 
       {notifications.length === 0 ? (
-        <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-dashed border-white/10 px-6 py-10 text-center">
-          <BellOff className="h-5 w-5 text-white/25" />
-          <p className="text-sm text-white/40">
+        <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-dashed border-dash-border px-6 py-10 text-center">
+          <BellOff className="h-5 w-5 text-dash-text-faint" />
+          <p className="text-sm text-dash-text-quaternary">
             Aucune notification pour le moment.
           </p>
         </div>
@@ -31,29 +31,29 @@ export function RecentActivitySection({
             const card = (
               <div
                 className={cn(
-                  "flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition-colors duration-150",
-                  notification.linkUrl && "hover:border-white/20 hover:bg-white/[0.05]"
+                  "flex items-start gap-3 rounded-2xl border border-dash-border bg-dash-surface p-4 transition-colors duration-150",
+                  notification.linkUrl && "hover:border-dash-border-strong hover:bg-dash-surface-hover"
                 )}
               >
                 <span
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
                     notification.read
-                      ? "bg-white/[0.06] text-white/30"
+                      ? "bg-dash-surface-strong text-dash-text-faint"
                       : "bg-brand-500/15 text-brand-400"
                   )}
                 >
                   <Bell className="h-4 w-4" strokeWidth={2.25} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-white/40">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-dash-text-quaternary">
                     {notification.title}
                   </p>
-                  <p className="mt-1 text-sm leading-snug text-white">
+                  <p className="mt-1 text-sm leading-snug text-dash-text">
                     {notification.description}
                   </p>
                 </div>
-                <span className="shrink-0 text-[11px] text-white/30">
+                <span className="shrink-0 text-[11px] text-dash-text-faint">
                   {notification.timeAgo}
                 </span>
               </div>

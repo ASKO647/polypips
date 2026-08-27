@@ -32,6 +32,7 @@ export default async function SettingsPage() {
   const initialUsername =
     (user?.user_metadata?.full_name as string | undefined) ?? "";
   const initialPseudo = (user?.user_metadata?.username as string | undefined) ?? "";
+  const initialAvatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null;
 
   if (!user) {
     return (
@@ -39,6 +40,7 @@ export default async function SettingsPage() {
         email={email}
         initialUsername={initialUsername}
         initialPseudo={initialPseudo}
+        initialAvatarUrl={initialAvatarUrl}
         memberSince={null}
         googleConnected={false}
         mfaEnabled={false}
@@ -83,6 +85,7 @@ export default async function SettingsPage() {
       email={email}
       initialUsername={initialUsername}
       initialPseudo={initialPseudo}
+      initialAvatarUrl={initialAvatarUrl}
       memberSince={memberSince}
       googleConnected={googleConnected}
       mfaEnabled={mfaEnabled}

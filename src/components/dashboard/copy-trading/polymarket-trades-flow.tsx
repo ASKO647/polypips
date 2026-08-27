@@ -2,11 +2,11 @@
 
 import { CopiedTradesList } from "@/components/dashboard/copy-trading/copied-trades-list";
 import { createClient } from "@/lib/supabase/client";
+import { useCurrency } from "@/providers/currency-provider";
 import type { Suggestion } from "@/lib/data/copy-trading";
-import { formatEUR } from "@/lib/utils";
 import type { CopiedTradeItem } from "@/lib/data/copied-trades";
 
-function toItem(suggestion: Suggestion): CopiedTradeItem {
+function toItem(suggestion: Suggestion, formatAmount: (amountEur: number) => string): CopiedTradeItem {
   const isCopied = suggestion.decision === "copied";
   const edgeSuffix =
     suggestion.edge !== null ? ` · edge ${suggestion.edge >= 0 ? "+" : ""}${suggestion.edge.toFixed(1)}%` : "";
@@ -20,7 +20,7 @@ function toItem(suggestion: Suggestion): CopiedTradeItem {
     score: suggestion.opportunityScore,
     scoreLabel: "Score opportunité",
     amountLabel: isCopied ? "Montant suggéré" : "Montant wallet",
-    amountValue: formatEUR(isCopied ? suggestion.amount : (suggestion.originalAmount ?? suggestion.amount)),
+    amountValue: formatAmount(isCopied ? suggestion.amount : (suggestion.originalAmount ?? suggestion.amount)),
     status: suggestion.status,
     ignoreReason: suggestion.ignoreReason,
     createdAgo: suggestion.createdAgo,
@@ -37,6 +37,7 @@ export function PolymarketTradesFlow({
   hasActiveSubscription: boolean;
   cancelled: boolean;
 }) {
+  const { formatAmount } = useCurrency();
   const suggestionById = new Map(suggestions.map((s) => [s.id, s]));
 
   const handleOpen = async (item: CopiedTradeItem) => {
@@ -53,7 +54,7 @@ export function PolymarketTradesFlow({
     <CopiedTradesList
       title="Mes trades copiés"
       description="Chaque mouvement détecté sur un wallet Polymarket suivi et sa décision (copié ou ignoré selon vos filtres de risque). PolyPips ne trade jamais à votre place — cliquez une ligne pour ouvrir le marché sur Polymarket et décider vous-même."
-      items={suggestions.map(toItem)}
+      items={suggestions.map((s) => toItem(s, formatAmount))}
       hasActiveSubscription={hasActiveSubscription}
       cancelled={cancelled}
       lockedMessage={

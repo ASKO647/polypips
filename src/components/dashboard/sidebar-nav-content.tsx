@@ -3,12 +3,9 @@
 import { useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { ChevronDown, Plus } from "lucide-react";
-import { SignOutButton } from "@/components/auth/sign-out-button";
-import { Button } from "@/components/ui/button";
 import { AccountStatusCard } from "@/components/dashboard/account-status-card";
 import {
   DASHBOARD_GLOBAL_ITEMS,
-  DASHBOARD_RESOURCE_ITEMS,
   DASHBOARD_TOP_ITEM,
   POLYMARKET_NAV_ITEMS,
   SIGNAL_NAV_ITEMS,
@@ -35,11 +32,9 @@ type UniverseGroup = {
 };
 
 export function SidebarNavContent({
-  userEmail,
   subscription,
   onNavigate,
 }: {
-  userEmail: string;
   subscription: SubscriptionRow | null;
   onNavigate?: () => void;
 }) {
@@ -56,7 +51,6 @@ export function SidebarNavContent({
     ...SPORT_CATEGORIES.map((s) => `/dashboard/sports/${s.key}`),
     ...SIGNAL_NAV_ITEMS.map((i) => i.href),
     ...DASHBOARD_GLOBAL_ITEMS.map((i) => i.href),
-    ...DASHBOARD_RESOURCE_ITEMS.map((i) => i.href),
   ]);
 
   const renderLink = (item: DashboardNavItem) => {
@@ -72,7 +66,7 @@ export function SidebarNavContent({
           "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors duration-150",
           active
             ? "bg-brand-500/15 text-white"
-            : "text-white/55 hover:bg-white/[0.06] hover:text-white"
+            : "text-dash-text-secondary hover:bg-dash-surface-hover hover:text-dash-text"
         )}
       >
         <item.icon
@@ -101,13 +95,13 @@ export function SidebarNavContent({
           type="button"
           onClick={() => toggleGroup(group.id)}
           aria-expanded={!collapsed}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-white/[0.04]"
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors duration-150 hover:bg-dash-surface-hover"
         >
           <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", group.accentClass)} />
           <span
             className={cn(
               "flex-1 text-[11px] font-bold uppercase tracking-wide",
-              groupActive ? "text-white" : "text-white/45"
+              groupActive ? "text-dash-text" : "text-dash-text-quaternary"
             )}
           >
             {group.label}
@@ -119,7 +113,7 @@ export function SidebarNavContent({
           )}
           <ChevronDown
             className={cn(
-              "h-3.5 w-3.5 shrink-0 text-white/30 transition-transform duration-150",
+              "h-3.5 w-3.5 shrink-0 text-dash-text-quaternary transition-transform duration-150",
               collapsed && "-rotate-90"
             )}
             strokeWidth={2.5}
@@ -160,8 +154,8 @@ export function SidebarNavContent({
               items: SPORTS_SUB_NAV,
             },
             withinSports && (
-              <div className="ml-4 flex flex-col gap-0.5 border-l border-white/10 pl-3">
-                <p className="mb-0.5 mt-2 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-white/25">
+              <div className="ml-4 flex flex-col gap-0.5 border-l border-dash-border pl-3">
+                <p className="mb-0.5 mt-2 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-dash-text-faint">
                   Sports
                 </p>
                 {SPORT_CATEGORIES.map((sport) => {
@@ -177,14 +171,14 @@ export function SidebarNavContent({
                         "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150",
                         subActive
                           ? "bg-brand-500/10 text-brand-400"
-                          : "text-white/45 hover:bg-white/[0.05] hover:text-white",
+                          : "text-dash-text-quaternary hover:bg-dash-surface-hover hover:text-dash-text",
                         !sport.active && "opacity-60"
                       )}
                     >
                       <span aria-hidden>{SPORT_EMOJIS[sport.key]}</span>
                       {sport.label}
                       {!sport.active && (
-                        <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-white/30">
+                        <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-dash-text-faint">
                           Bientôt
                         </span>
                       )}
@@ -205,28 +199,18 @@ export function SidebarNavContent({
         </div>
 
         <div className="flex flex-col gap-0.5">{DASHBOARD_GLOBAL_ITEMS.map(renderLink)}</div>
-
-        <div>
-          <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-wide text-white/30">
-            Ressources
-          </p>
-          <div className="flex flex-col gap-0.5">{DASHBOARD_RESOURCE_ITEMS.map(renderLink)}</div>
-        </div>
       </nav>
 
       <div className="flex flex-col gap-3 px-4 pb-4">
         <AccountStatusCard subscription={subscription} />
-        <Button href="/dashboard/analyse-ia" variant="outline" onClick={onNavigate} className="w-full">
+        <Link
+          href="/dashboard/analyse-ia"
+          onClick={onNavigate}
+          className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text"
+        >
           <Plus className="h-4 w-4" strokeWidth={2.5} />
           Nouvelle analyse
-        </Button>
-      </div>
-
-      <div className="border-t border-white/10 p-4">
-        <p className="truncate px-1 text-xs text-white/40">{userEmail}</p>
-        <div className="mt-2.5">
-          <SignOutButton />
-        </div>
+        </Link>
       </div>
     </>
   );

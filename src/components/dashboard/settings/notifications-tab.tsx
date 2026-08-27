@@ -11,8 +11,8 @@ export function NotificationsTab({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h3 className="text-sm font-semibold text-white">Notifications</h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-white/50">
+        <h3 className="text-sm font-semibold text-dash-text">Notifications</h3>
+        <p className="mt-1.5 text-sm leading-relaxed text-dash-text-tertiary">
           Choisissez les notifications que vous recevez dans la cloche du
           tableau de bord.
         </p>

@@ -55,7 +55,7 @@ export function NotificationsBell({
         aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 hover:text-white active:scale-95"
+        className="relative flex h-11 w-11 items-center justify-center rounded-full border border-dash-border bg-dash-surface-alt text-dash-text-secondary transition-transform duration-150 ease-out hover:scale-105 hover:text-dash-text active:scale-95"
       >
         <Bell className="h-[18px] w-[18px]" strokeWidth={2} />
         {unreadCount > 0 && (
@@ -68,27 +68,27 @@ export function NotificationsBell({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+10px)] z-50 w-80 max-w-[calc(100vw-2.5rem)] animate-fade-up overflow-hidden rounded-2xl border border-white/10 bg-[#160b0c] shadow-[0_20px_50px_-16px_rgba(0,0,0,0.6)]"
+          className="absolute right-0 top-[calc(100%+10px)] z-50 w-80 max-w-[calc(100vw-2.5rem)] animate-fade-up overflow-hidden rounded-2xl border border-dash-border bg-dash-bg shadow-[0_20px_50px_-16px_rgba(0,0,0,0.6)]"
         >
-          <div className="border-b border-white/10 px-4 py-3">
-            <p className="text-sm font-bold text-white">Notifications</p>
+          <div className="border-b border-dash-border px-4 py-3">
+            <p className="text-sm font-bold text-dash-text">Notifications</p>
           </div>
 
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
-              <BellOff className="h-6 w-6 text-white/25" />
-              <p className="text-sm text-white/40">
+              <BellOff className="h-6 w-6 text-dash-text-faint" />
+              <p className="text-sm text-dash-text-quaternary">
                 Aucune notification pour le moment.
               </p>
             </div>
           ) : (
             <ul className="flex max-h-80 flex-col overflow-y-auto">
               {notifications.map((notification) => (
-                <li key={notification.id} className="border-b border-white/5 last:border-0">
+                <li key={notification.id} className="border-b border-dash-border-soft last:border-0">
                   <button
                     type="button"
                     onClick={() => handleSelect(notification)}
-                    className="flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
+                    className="flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-dash-surface-hover"
                   >
                     <span
                       className={cn(
@@ -97,13 +97,13 @@ export function NotificationsBell({
                       )}
                     />
                     <div className="flex flex-col gap-0.5">
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-dash-text">
                         {notification.title}
                       </p>
-                      <p className="text-xs text-white/50">
+                      <p className="text-xs text-dash-text-tertiary">
                         {notification.description}
                       </p>
-                      <p className="mt-0.5 text-[11px] text-white/30">
+                      <p className="mt-0.5 text-[11px] text-dash-text-faint">
                         {notification.timeAgo}
                       </p>
                     </div>

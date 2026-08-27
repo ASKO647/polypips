@@ -1,5 +1,8 @@
+"use client";
+
 import { Crown, Rocket } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
+import { useCurrency } from "@/providers/currency-provider";
 import { PRICING_PLANS } from "@/lib/data/pricing";
 import { getTrialDaysRemaining, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { formatResetDate } from "@/lib/utils";
@@ -23,16 +26,21 @@ export function AccountStatusCard({
 }: {
   subscription: SubscriptionRow | null;
 }) {
+  const { formatAmount } = useCurrency();
+
   if (!subscription) {
     return (
-      <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
-        <p className="text-sm font-semibold text-white">Aucun abonnement</p>
-        <p className="text-xs text-white/50">
+      <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-surface-strong p-4">
+        <p className="text-sm font-semibold text-dash-text">Aucun abonnement</p>
+        <p className="text-xs text-dash-text-tertiary">
           Débloquez les résultats d&apos;analyse en clair.
         </p>
-        <Button href="/#tarifs" size="sm" className="w-full">
+        <Link
+          href="/pricing"
+          className="flex h-9 w-full items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-white transition-colors hover:bg-brand-600"
+        >
           Voir les offres
-        </Button>
+        </Link>
       </div>
     );
   }
@@ -41,16 +49,16 @@ export function AccountStatusCard({
 
   if (subscription.status === "trialing" && trialDays !== null) {
     return (
-      <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+      <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-surface-strong p-4">
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
             <Rocket className="h-4 w-4" strokeWidth={2} />
           </span>
-          <span className="text-sm font-semibold text-white">Offre découverte</span>
+          <span className="text-sm font-semibold text-dash-text">Offre découverte</span>
         </div>
 
         <div>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-dash-text-tertiary">
             Votre offre découverte expire dans :
           </p>
           <p className="mt-1 font-display text-3xl font-bold text-brand-400">
@@ -58,12 +66,12 @@ export function AccountStatusCard({
           </p>
         </div>
 
-        <p className="text-xs text-white/60">
+        <p className="text-xs text-dash-text-secondary">
           Accès complet à toutes les fonctionnalités
         </p>
 
-        <p className="text-[11px] text-white/35">
-          Puis {PRO_PLAN.price}{PRO_PLAN.priceSuffix}
+        <p className="text-[11px] text-dash-text-quaternary">
+          Puis {formatAmount(PRO_PLAN.priceEur)}{PRO_PLAN.priceSuffix}
         </p>
       </div>
     );
@@ -75,24 +83,24 @@ export function AccountStatusCard({
   const PlanIcon = PLAN_ICONS[plan.id] ?? Crown;
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.05] p-4">
+    <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-surface-strong p-4">
       <div className="flex items-center gap-2.5">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
           <PlanIcon className="h-4 w-4" strokeWidth={2} />
         </span>
-        <span className="truncate text-sm font-semibold text-white">{plan.name}</span>
+        <span className="truncate text-sm font-semibold text-dash-text">{plan.name}</span>
       </div>
 
       {pastDue ? (
         <p className="text-xs font-semibold text-amber-400">Paiement en échec</p>
       ) : cancelled ? (
-        <p className="text-xs font-semibold text-white/60">
+        <p className="text-xs font-semibold text-dash-text-secondary">
           {subscription.currentPeriodEnd
             ? `Se termine le ${formatResetDate(subscription.currentPeriodEnd)}`
             : "Abonnement annulé"}
         </p>
       ) : (
-        <p className="text-xs text-white/50">
+        <p className="text-xs text-dash-text-tertiary">
           {subscription.currentPeriodEnd
             ? `Renouvellement le ${formatResetDate(subscription.currentPeriodEnd)}`
             : "Abonnement actif"}

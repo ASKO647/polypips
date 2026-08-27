@@ -5,11 +5,18 @@ import { Check, Loader2, Plus, Search } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { WalletChart } from "@/components/ui/wallet-chart";
 import type { WalletLookupResult, WalletMovement, WalletPosition } from "@/lib/data/smart-money";
-import { cn, formatEUR, formatSignedEUR } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCurrency } from "@/providers/currency-provider";
 
 const WALLET_ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
 
-function MovementRow({ movement }: { movement: WalletMovement }) {
+function MovementRow({
+  movement,
+  formatAmount,
+}: {
+  movement: WalletMovement;
+  formatAmount: (amountEur: number) => string;
+}) {
   const positive = movement.type === "Achat";
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
@@ -22,7 +29,7 @@ function MovementRow({ movement }: { movement: WalletMovement }) {
       <div className="flex shrink-0 flex-col items-end gap-0.5">
         <span className={cn("text-sm font-bold", positive ? "text-emerald-400" : "text-rose-400")}>
           {positive ? "+" : "-"}
-          {formatEUR(movement.amount)}
+          {formatAmount(movement.amount)}
         </span>
         <span className="text-[11px] text-white/35">{movement.timeAgo}</span>
       </div>
@@ -30,7 +37,13 @@ function MovementRow({ movement }: { movement: WalletMovement }) {
   );
 }
 
-function PositionRow({ position }: { position: WalletPosition }) {
+function PositionRow({
+  position,
+  formatAmount,
+}: {
+  position: WalletPosition;
+  formatAmount: (amountEur: number, opts?: { signed?: boolean }) => string;
+}) {
   const gain = position.pnl >= 0;
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
@@ -46,9 +59,9 @@ function PositionRow({ position }: { position: WalletPosition }) {
         </span>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-0.5">
-        <span className="text-sm font-semibold text-white">{formatEUR(position.amount)}</span>
+        <span className="text-sm font-semibold text-white">{formatAmount(position.amount)}</span>
         <span className={cn("text-xs font-bold", gain ? "text-emerald-400" : "text-rose-400")}>
-          {formatSignedEUR(position.pnl)}
+          {formatAmount(position.pnl, { signed: true })}
         </span>
       </div>
     </div>
@@ -71,6 +84,7 @@ export function WalletLookupPanel({
    * Money's old handleWalletAdded optimistic-add pattern. */
   onWalletFollowed: (walletId: string, label: string, address: string) => void;
 }) {
+  const { formatAmount } = useCurrency();
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -174,7 +188,7 @@ export function WalletLookupPanel({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="font-display text-lg font-bold text-white sm:text-xl">{result.handle}</p>
-              <p className="mt-1 font-display text-2xl font-bold text-white">{formatEUR(result.totalValue)}</p>
+              <p className="mt-1 font-display text-2xl font-bold text-white">{formatAmount(result.totalValue)}</p>
             </div>
             <button
               type="button"
@@ -250,7 +264,7 @@ export function WalletLookupPanel({
                   labels={chartLabels}
                   positive={chartPositive}
                   interactive
-                  valueFormatter={formatSignedEUR}
+                  valueFormatter={(v) => formatAmount(v, { signed: true })}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">
@@ -266,7 +280,9 @@ export function WalletLookupPanel({
               {result.positions.length === 0 ? (
                 <EmptyRow label="Aucune position ouverte pour le moment." />
               ) : (
-                result.positions.map((position) => <PositionRow key={position.id} position={position} />)
+                result.positions.map((position) => (
+                  <PositionRow key={position.id} position={position} formatAmount={formatAmount} />
+                ))
               )}
             </div>
           </div>
@@ -277,7 +293,9 @@ export function WalletLookupPanel({
               {result.recentMovements.length === 0 ? (
                 <EmptyRow label="Aucun mouvement récent détecté." />
               ) : (
-                result.recentMovements.map((movement) => <MovementRow key={movement.id} movement={movement} />)
+                result.recentMovements.map((movement) => (
+                  <MovementRow key={movement.id} movement={movement} formatAmount={formatAmount} />
+                ))
               )}
             </div>
           </div>
@@ -287,7 +305,7 @@ export function WalletLookupPanel({
               <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Historique</p>
               <div className="mt-3 flex flex-col gap-2">
                 {result.history.map((movement) => (
-                  <MovementRow key={movement.id} movement={movement} />
+                  <MovementRow key={movement.id} movement={movement} formatAmount={formatAmount} />
                 ))}
               </div>
             </div>

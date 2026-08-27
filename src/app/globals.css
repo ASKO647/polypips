@@ -36,6 +36,45 @@
   /* Rouge CTA — reserved for primary buttons. */
   --color-cta: #ff2d3d;
   --color-cta-hover: #e52323;
+
+  /* Dashboard-only palette — independent from the marketing site's
+     forced-light theme above. Defaults to the dashboard's original
+     hardcoded dark look; [data-dashboard-theme="light"] below overrides
+     these same variables for the real light mode. Scoped under
+     [data-dashboard-theme] (set on the dashboard shell root) rather than
+     the site-wide `.dark`/`data-theme` convention, since the rest of the
+     site stays forced-light regardless of this toggle. */
+  --color-dash-bg: #160b0c;
+  --color-dash-surface: rgba(255, 255, 255, 0.03);
+  --color-dash-surface-alt: rgba(255, 255, 255, 0.04);
+  --color-dash-surface-strong: rgba(255, 255, 255, 0.1);
+  --color-dash-surface-hover: rgba(255, 255, 255, 0.06);
+  --color-dash-border: rgba(255, 255, 255, 0.1);
+  --color-dash-border-soft: rgba(255, 255, 255, 0.05);
+  --color-dash-border-strong: rgba(255, 255, 255, 0.15);
+  --color-dash-text: #ffffff;
+  --color-dash-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-dash-text-tertiary: rgba(255, 255, 255, 0.5);
+  --color-dash-text-quaternary: rgba(255, 255, 255, 0.35);
+  --color-dash-text-faint: rgba(255, 255, 255, 0.25);
+  --color-dash-overlay: rgba(0, 0, 0, 0.6);
+}
+
+[data-dashboard-theme="light"] {
+  --color-dash-bg: #faf7f7;
+  --color-dash-surface: #ffffff;
+  --color-dash-surface-alt: #f7f2f2;
+  --color-dash-surface-strong: #f0e4e4;
+  --color-dash-surface-hover: #f5eeee;
+  --color-dash-border: #ebe0e0;
+  --color-dash-border-soft: #f2e9e9;
+  --color-dash-border-strong: #ddcccc;
+  --color-dash-text: #1a0d0e;
+  --color-dash-text-secondary: #5a4a4c;
+  --color-dash-text-tertiary: #7d6d6f;
+  --color-dash-text-quaternary: #9d9092;
+  --color-dash-text-faint: #b8adaf;
+  --color-dash-overlay: rgba(20, 10, 11, 0.35);
 }
 
 @theme inline {
@@ -67,6 +106,21 @@
 
   --color-cta: var(--color-cta);
   --color-cta-hover: var(--color-cta-hover);
+
+  --color-dash-bg: var(--color-dash-bg);
+  --color-dash-surface: var(--color-dash-surface);
+  --color-dash-surface-alt: var(--color-dash-surface-alt);
+  --color-dash-surface-strong: var(--color-dash-surface-strong);
+  --color-dash-surface-hover: var(--color-dash-surface-hover);
+  --color-dash-border: var(--color-dash-border);
+  --color-dash-border-soft: var(--color-dash-border-soft);
+  --color-dash-border-strong: var(--color-dash-border-strong);
+  --color-dash-text: var(--color-dash-text);
+  --color-dash-text-secondary: var(--color-dash-text-secondary);
+  --color-dash-text-tertiary: var(--color-dash-text-tertiary);
+  --color-dash-text-quaternary: var(--color-dash-text-quaternary);
+  --color-dash-text-faint: var(--color-dash-text-faint);
+  --color-dash-overlay: var(--color-dash-overlay);
 
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in: fade-in 0.6s ease both;
