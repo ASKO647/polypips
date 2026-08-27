@@ -15,6 +15,7 @@ import { DeleteAccountModal } from "@/components/dashboard/settings/delete-accou
 import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
+import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",
@@ -25,6 +26,11 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
 export function SettingsFlow({
   email,
   initialUsername,
+  initialPseudo,
+  memberSince,
+  googleConnected,
+  mfaEnabled,
+  activity,
   initialSubscription,
   plan,
   analysesToday,
@@ -35,6 +41,12 @@ export function SettingsFlow({
 }: {
   email: string;
   initialUsername: string;
+  initialPseudo: string;
+  /** Formatted "12 mars 2024", or null if unavailable. */
+  memberSince: string | null;
+  googleConnected: boolean;
+  mfaEnabled: boolean;
+  activity: ProfileActivityStats;
   initialSubscription: SubscriptionRow | null;
   plan: PricingPlan;
   analysesToday: number;
@@ -144,6 +156,15 @@ export function SettingsFlow({
           <ProfileTab
             email={email}
             initialUsername={initialUsername}
+            initialPseudo={initialPseudo}
+            memberSince={memberSince}
+            googleConnected={googleConnected}
+            mfaEnabled={mfaEnabled}
+            currentPlan={currentPlan}
+            subscription={subscription}
+            periodEndLabel={periodEndLabel}
+            activity={activity}
+            onOpenCancelModal={() => setCancelModalOpen(true)}
             onOpenDeleteModal={() => setDeleteModalOpen(true)}
             deletionRequested={deletionRequested}
           />
