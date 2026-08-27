@@ -42,6 +42,8 @@ export type SuggestionDecision = "copied" | "ignored";
  * (with a specific reason), but never an executed trade. */
 export type Suggestion = {
   id: string;
+  walletId: string;
+  walletLabel: string;
   marketQuestion: string;
   marketUrl: string;
   side: "YES" | "NO";

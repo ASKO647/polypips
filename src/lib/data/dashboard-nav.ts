@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LineChart,
+  ListChecks,
   Settings,
   Sparkles,
   Trophy,
@@ -44,6 +45,7 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Analyse IA", href: "/dashboard/analyse-ia", icon: Sparkles },
   { label: "Marchés sélectionnés", href: "/dashboard/markets", icon: LineChart },
   { label: "Copy Trading", href: "/dashboard/copy-trading", icon: Copy },
+  { label: "Mes trades copiés", href: "/dashboard/copy-trading/positions", icon: ListChecks },
 ];
 
 /** The "Fomo X Axiom" universe group — Fomo/Axiom-sourced memecoin wallets,

@@ -78,6 +78,51 @@ export async function fetchStrategies(
     });
 }
 
+const SUGGESTION_SELECT =
+  "id, wallet_id, market_question, market_url, side, amount, original_amount, decision, ignore_reason, market_probability, ai_probability, edge, opportunity_score, confidence, status, created_at, tracked_wallets ( label )";
+
+type SuggestionRow = {
+  id: string;
+  wallet_id: string;
+  market_question: string;
+  market_url: string;
+  side: "YES" | "NO";
+  amount: number;
+  original_amount: number | null;
+  decision: Suggestion["decision"];
+  ignore_reason: string | null;
+  market_probability: number | null;
+  ai_probability: number | null;
+  edge: number | null;
+  opportunity_score: number | null;
+  confidence: string | null;
+  status: Suggestion["status"];
+  created_at: string;
+  tracked_wallets: { label: string } | null;
+};
+
+function mapSuggestionRow(row: SuggestionRow): Suggestion {
+  return {
+    id: row.id,
+    walletId: row.wallet_id,
+    walletLabel: row.tracked_wallets?.label ?? "Wallet inconnu",
+    marketQuestion: row.market_question,
+    marketUrl: row.market_url,
+    side: row.side,
+    amount: Number(row.amount),
+    originalAmount: row.original_amount === null ? null : Number(row.original_amount),
+    decision: row.decision,
+    ignoreReason: row.ignore_reason,
+    marketProbability: row.market_probability === null ? null : Number(row.market_probability),
+    aiProbability: row.ai_probability === null ? null : Number(row.ai_probability),
+    edge: row.edge === null ? null : Number(row.edge),
+    opportunityScore: row.opportunity_score === null ? null : Number(row.opportunity_score),
+    confidence: row.confidence,
+    status: row.status,
+    createdAgo: formatRelativeTime(row.created_at),
+  };
+}
+
 export async function fetchSuggestions(
   supabase: SupabaseClient,
   strategyId: string,
@@ -85,32 +130,35 @@ export async function fetchSuggestions(
 ): Promise<Suggestion[]> {
   const { data, error } = await supabase
     .from("copy_trading_suggestions")
-    .select(
-      "id, market_question, market_url, side, amount, original_amount, decision, ignore_reason, market_probability, ai_probability, edge, opportunity_score, confidence, status, created_at"
-    )
+    .select(SUGGESTION_SELECT)
     .eq("strategy_id", strategyId)
     .order("created_at", { ascending: false })
     .limit(limit);
 
   if (error || !data) return [];
+  return (data as unknown as SuggestionRow[]).map(mapSuggestionRow);
+}
 
-  return data.map((row) => ({
-    id: row.id as string,
-    marketQuestion: row.market_question as string,
-    marketUrl: row.market_url as string,
-    side: row.side as "YES" | "NO",
-    amount: Number(row.amount),
-    originalAmount: row.original_amount === null ? null : Number(row.original_amount),
-    decision: row.decision as Suggestion["decision"],
-    ignoreReason: row.ignore_reason as string | null,
-    marketProbability: row.market_probability === null ? null : Number(row.market_probability),
-    aiProbability: row.ai_probability === null ? null : Number(row.ai_probability),
-    edge: row.edge === null ? null : Number(row.edge),
-    opportunityScore: row.opportunity_score === null ? null : Number(row.opportunity_score),
-    confidence: row.confidence as string | null,
-    status: row.status as Suggestion["status"],
-    createdAgo: formatRelativeTime(row.created_at as string),
-  }));
+/** Every suggestion across every one of the user's strategies, newest
+ * first — the "Mes trades copiés" list, unlike fetchSuggestions above
+ * which scopes to a single strategy's own activity feed. Filters directly
+ * on copy_trading_suggestions.user_id (present on the row itself, no join
+ * through copy_trading_strategies needed) — same shape as
+ * fetchSignalCopyTrades for the Fomo/Axiom universe. */
+export async function fetchAllSuggestions(
+  supabase: SupabaseClient,
+  userId: string,
+  limit = 60
+): Promise<Suggestion[]> {
+  const { data, error } = await supabase
+    .from("copy_trading_suggestions")
+    .select(SUGGESTION_SELECT)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data) return [];
+  return (data as unknown as SuggestionRow[]).map(mapSuggestionRow);
 }
 
 export async function countActiveStrategies(
