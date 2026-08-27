@@ -10,6 +10,7 @@ import {
   Settings,
   Sparkles,
   Trophy,
+  Users,
   Wallet,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -85,6 +86,10 @@ export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
 export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
   { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
   { label: "Statistiques", href: "/dashboard/stats", icon: BarChart3 },
+  // Groups/chat aren't scoped to Polymarket, Sport, or Fomo X Axiom — a
+  // user's community can span any/all of those interests, so this lives
+  // alongside Coach IA/Statistiques rather than inside one universe group.
+  { label: "Communauté", href: "/dashboard/community", icon: Users },
 ];
 
 /** Not rendered directly in the sidebar — the Sport universe group
