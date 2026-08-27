@@ -615,7 +615,7 @@ export function ProfileTab({
             href="/partners"
             className="text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
           >
-            Voir le programme d&apos;affiliation →
+            En attendant, découvrez notre programme partenaires sur candidature →
           </Link>
         </Card>
 
