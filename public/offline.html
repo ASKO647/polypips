@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Pas de connexion — Polypips</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #fafafa;
+    color: #120507;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  }
+  .card {
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+  }
+  .icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    background: #fff1f1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon svg { width: 30px; height: 30px; }
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #6b6b6b;
+    margin: 0 0 24px;
+  }
+  button {
+    appearance: none;
+    border: none;
+    border-radius: 999px;
+    background: #ff2d3d;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 28px;
+    min-height: 44px;
+    cursor: pointer;
+  }
+  button:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#e52323" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="1" y1="1" x2="23" y2="23"></line>
+        <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"></path>
+        <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"></path>
+        <path d="M10.71 5.05A16 16 0 0 1 22.58 9"></path>
+        <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"></path>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+    </div>
+    <h1>Pas de connexion</h1>
+    <p>Impossible de charger Polypips pour le moment. Vérifiez votre connexion internet et réessayez.</p>
+    <button onclick="location.reload()">Réessayer</button>
+  </div>
+</body>
+</html>

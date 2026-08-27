@@ -1,0 +1,32 @@
+{
+  "name": "Polypips — Analyse IA pour paris et marchés de prédiction",
+  "short_name": "Polypips",
+  "description": "Analyse IA de paris sportifs et marchés Polymarket, copy trading et suivi de performance.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#e52323",
+  "background_color": "#fafafa",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
