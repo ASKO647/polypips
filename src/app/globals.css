@@ -60,6 +60,29 @@
   --color-dash-overlay: rgba(0, 0, 0, 0.6);
 }
 
+/* Explicit dark values (identical to the :root defaults above), so a
+   nested element can pin itself back to dark even inside a
+   [data-dashboard-theme="light"] ancestor — used to force-dark the
+   dashboard sections not yet converted to the light theme (see
+   DashboardShell's `main`), since CSS custom properties otherwise just
+   inherit the ancestor's light values down the tree. */
+[data-dashboard-theme="dark"] {
+  --color-dash-bg: #160b0c;
+  --color-dash-surface: rgba(255, 255, 255, 0.03);
+  --color-dash-surface-alt: rgba(255, 255, 255, 0.04);
+  --color-dash-surface-strong: rgba(255, 255, 255, 0.1);
+  --color-dash-surface-hover: rgba(255, 255, 255, 0.06);
+  --color-dash-border: rgba(255, 255, 255, 0.1);
+  --color-dash-border-soft: rgba(255, 255, 255, 0.05);
+  --color-dash-border-strong: rgba(255, 255, 255, 0.15);
+  --color-dash-text: #ffffff;
+  --color-dash-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-dash-text-tertiary: rgba(255, 255, 255, 0.5);
+  --color-dash-text-quaternary: rgba(255, 255, 255, 0.35);
+  --color-dash-text-faint: rgba(255, 255, 255, 0.25);
+  --color-dash-overlay: rgba(0, 0, 0, 0.6);
+}
+
 [data-dashboard-theme="light"] {
   --color-dash-bg: #faf7f7;
   --color-dash-surface: #ffffff;

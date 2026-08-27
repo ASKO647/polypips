@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "@/i18n/navigation";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav";
@@ -29,6 +30,18 @@ function DashboardShellInner({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme } = useDashboardTheme();
+  const pathname = usePathname();
+
+  // Only the sidebar, header, profile menu, Settings, and the Dashboard
+  // overview have been converted to the real light/dark theme so far — the
+  // rest of the dashboard (Sport, Fomo/Axiom, Coach, Stats, Copy Trading,
+  // Markets, Analyse IA) still uses hardcoded dark-mode styling
+  // (text-white, bg-white/[…]) designed against a permanently dark canvas.
+  // Pin `main`'s theme scope to dark on those routes so their un-converted
+  // text stays legible regardless of the user's chosen theme, until they
+  // get their own dedicated conversion pass.
+  const isCoreThemedRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/settings");
+  const mainTheme = isCoreThemedRoute ? theme : "dark";
 
   return (
     <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg text-dash-text">
@@ -46,7 +59,10 @@ function DashboardShellInner({
           displayName={displayName}
           avatarUrl={avatarUrl}
         />
-        <main className="flex-1 px-5 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] lg:px-8 lg:py-8 lg:pb-8">
+        <main
+          data-dashboard-theme={mainTheme}
+          className="flex-1 bg-dash-bg px-5 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] text-dash-text lg:px-8 lg:py-8 lg:pb-8"
+        >
           {children}
         </main>
       </div>
