@@ -46,7 +46,7 @@ export function MatchAnalysisView({
           <button
             type="button"
             aria-label="Partager ce match"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/50 transition-colors hover:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/50 transition-colors hover:text-white"
           >
             <Share2 className="h-4 w-4" strokeWidth={2} />
           </button>

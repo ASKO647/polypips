@@ -32,6 +32,8 @@ export function CompetitionBadge({
         <img
           src={competition.logoUrl}
           alt={competition.name}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-contain"
           onError={() => setImageFailed(true)}
         />

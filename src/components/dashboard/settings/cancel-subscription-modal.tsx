@@ -34,7 +34,7 @@ export function CancelSubscriptionModal({
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>

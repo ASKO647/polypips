@@ -16,6 +16,7 @@ import {
 } from "@/lib/data/dashboard-nav";
 import { SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
+import { findActiveHref } from "@/lib/dashboard-nav-active";
 import { cn } from "@/lib/utils";
 
 /** The dashboard has three distinct "universes" — Polymarket (prediction
@@ -32,23 +33,6 @@ type UniverseGroup = {
   badge?: string;
   items: DashboardNavItem[];
 };
-
-/** Picks whichever known href is the single best match for the current
- * pathname — an exact match, or otherwise the longest href that pathname
- * falls under. "Longest wins" is what keeps a short parent route (e.g.
- * "/dashboard", which is a startsWith-prefix of literally every other
- * dashboard route) from lighting up alongside whatever more specific page
- * is actually open; see dashboard-header.tsx's pageTitleFor, which already
- * used this exact rule for the page title and never had this bug. */
-function findActiveHref(pathname: string, hrefs: string[]): string | null {
-  let best: string | null = null;
-  for (const href of hrefs) {
-    const matches = pathname === href || pathname.startsWith(`${href}/`);
-    if (!matches) continue;
-    if (best === null || href.length > best.length) best = href;
-  }
-  return best;
-}
 
 export function SidebarNavContent({
   userEmail,

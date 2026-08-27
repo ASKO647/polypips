@@ -49,7 +49,7 @@ export function CookieConsentBanner() {
     <div
       role="dialog"
       aria-label="Préférences de cookies"
-      className="fixed inset-x-0 bottom-0 z-[70] px-4 pb-4 sm:px-6 sm:pb-6"
+      className="fixed inset-x-0 bottom-0 z-[70] px-4 pb-[calc(72px+env(safe-area-inset-bottom))] sm:px-6 lg:pb-6"
     >
       <div className="mx-auto w-full max-w-xl rounded-2xl border border-border-strong bg-surface shadow-[0_16px_48px_rgba(18,5,7,0.16)]">
         {mode === "banner" ? (

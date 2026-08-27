@@ -93,14 +93,14 @@ export function DashboardHeader({
   }, [trialEndsAt, tick]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between border-b border-white/10 bg-[#160b0c]/95 px-5 backdrop-blur-md lg:px-8">
+    <header className="sticky top-0 z-30 flex h-[calc(72px+env(safe-area-inset-top))] items-center justify-between border-b border-white/10 bg-[#160b0c]/95 pt-[env(safe-area-inset-top)] pr-[calc(1.25rem+env(safe-area-inset-right))] pl-[calc(1.25rem+env(safe-area-inset-left))] backdrop-blur-md lg:h-[72px] lg:px-8 lg:pt-0">
       <div className="flex min-w-0 items-center gap-3">
         {showBack ? (
           <>
             <Link
               href="/dashboard"
               aria-label="Retour au tableau de bord"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-colors duration-150 hover:text-white"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-colors duration-150 hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
             </Link>
@@ -140,7 +140,7 @@ export function DashboardHeader({
           aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={menuOpen}
           onClick={onMenuToggle}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 hover:text-white active:scale-95 lg:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 hover:text-white active:scale-95 lg:hidden"
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>

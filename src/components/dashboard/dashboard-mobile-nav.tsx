@@ -24,14 +24,14 @@ export function DashboardMobileNav({
         onClick={onClose}
         aria-hidden
       />
-      <div className="absolute inset-y-0 right-0 flex w-[280px] max-w-[80vw] animate-fade-up flex-col overflow-y-auto border-l border-white/10 bg-[#160b0c]">
+      <div className="absolute inset-y-0 right-0 flex w-[280px] max-w-[80vw] animate-fade-up flex-col overflow-y-auto border-l border-white/10 bg-[#160b0c] pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)]">
         <div className="flex h-[72px] shrink-0 items-center justify-between px-5">
           <span className="font-display text-base font-bold text-white">Menu</span>
           <button
             type="button"
             aria-label="Fermer le menu"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/70 transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
           >
             <X className="h-4.5 w-4.5" />
           </button>

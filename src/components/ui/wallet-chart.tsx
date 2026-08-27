@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
+import { memo, useId, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const TONE_CLASSES = {
@@ -10,7 +10,7 @@ const TONE_CLASSES = {
   neutral: "text-white/30",
 } as const;
 
-export function WalletChart({
+function WalletChartComponent({
   points,
   positive,
   tone,
@@ -48,21 +48,27 @@ export function WalletChart({
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const width = 100;
   const height = 40;
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const range = max - min || 1;
-  const stepX = width / (points.length - 1 || 1);
 
-  const coords = points.map((value, i) => {
-    const x = i * stepX;
-    const y = height - ((value - min) / range) * height;
-    return { x, y };
-  });
+  // Recomputed only when `points` itself changes — interactive mode's
+  // hover state updates on every pointer move and must not re-derive this
+  // geometry each time.
+  const { coords, linePath, areaPath } = useMemo(() => {
+    const min = Math.min(...points);
+    const max = Math.max(...points);
+    const range = max - min || 1;
+    const stepX = width / (points.length - 1 || 1);
 
-  const linePath = coords
-    .map((c, i) => `${i === 0 ? "M" : "L"}${c.x},${c.y}`)
-    .join(" ");
-  const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
+    const coords = points.map((value, i) => {
+      const x = i * stepX;
+      const y = height - ((value - min) / range) * height;
+      return { x, y };
+    });
+
+    const linePath = coords.map((c, i) => `${i === 0 ? "M" : "L"}${c.x},${c.y}`).join(" ");
+    const areaPath = `${linePath} L${width},${height} L0,${height} Z`;
+
+    return { coords, linePath, areaPath };
+  }, [points]);
 
   const updateHover = (clientX: number) => {
     const svg = svgRef.current;
@@ -156,3 +162,9 @@ export function WalletChart({
     </div>
   );
 }
+
+// Memoized: this renders in dense lists (dashboard quick-access cards,
+// wallet detail views) where a parent re-render shouldn't force every
+// sparkline to redo its SVG path/coords math when its own props haven't
+// changed.
+export const WalletChart = memo(WalletChartComponent);

@@ -62,7 +62,7 @@ export function FiltersDrawer({
             type="button"
             aria-label="Fermer les filtres"
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 hover:text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>

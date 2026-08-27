@@ -39,7 +39,7 @@ export function TutorialModal({ onClose }: { onClose: () => void }) {
             type="button"
             aria-label="Fermer"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/[0.06] hover:text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/[0.06] hover:text-white"
           >
             <X className="h-4 w-4" />
           </button>

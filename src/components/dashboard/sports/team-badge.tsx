@@ -33,6 +33,8 @@ export function TeamBadge({ team, size = "md" }: { team: Team; size?: "sm" | "md
         <img
           src={team.logoUrl}
           alt={team.name}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover"
           onError={() => setImageFailed(true)}
         />
