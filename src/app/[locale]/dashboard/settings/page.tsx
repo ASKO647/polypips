@@ -9,6 +9,13 @@ import {
 import { countAnalysesToday } from "@/lib/supabase/analyses";
 import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
 import { getDailyAnalysisLimit, getMaxTrackedWallets, PRICING_PLANS } from "@/lib/data/pricing";
+import {
+  fetchReferralSlug,
+  fetchReferralStats,
+  fetchReferralHistory,
+} from "@/lib/supabase/user-referrals";
+import { fetchTiktokSubmissions } from "@/lib/supabase/tiktok-clips";
+import { requestOrigin } from "@/lib/owner-origin";
 
 export const metadata: Metadata = {
   title: "Paramètres — Polypips",
@@ -23,6 +30,7 @@ export default async function SettingsPage() {
     (user?.user_metadata?.full_name as string | undefined) ?? "";
 
   if (!user) {
+    const referralOrigin = await requestOrigin();
     return (
       <SettingsFlow
         email={email}
@@ -34,15 +42,26 @@ export default async function SettingsPage() {
         trialDaysRemaining={null}
         walletQuotaCount={0}
         walletQuotaMax={null}
+        referralOrigin={referralOrigin}
+        initialReferralSlug={null}
+        referralStats={{ totalReferred: 0, totalConverted: 0, pendingEur: 0, paidEur: 0 }}
+        referralHistory={[]}
+        tiktokSubmissions={[]}
       />
     );
   }
 
-  const [subscription, plan, analysesToday] = await Promise.all([
-    fetchSubscription(supabase),
-    getEffectivePlan(supabase, user.id),
-    countAnalysesToday(supabase, user.id),
-  ]);
+  const [subscription, plan, analysesToday, referralOrigin, referralSlug, referralStats, referralHistory, tiktokSubmissions] =
+    await Promise.all([
+      fetchSubscription(supabase),
+      getEffectivePlan(supabase, user.id),
+      countAnalysesToday(supabase, user.id),
+      requestOrigin(),
+      fetchReferralSlug(supabase, user.id),
+      fetchReferralStats(supabase, user.id),
+      fetchReferralHistory(supabase, user.id),
+      fetchTiktokSubmissions(supabase, user.id),
+    ]);
 
   const maxTrackedWallets = getMaxTrackedWallets(plan);
   const walletQuota = await getQuotaLockState(
@@ -63,6 +82,11 @@ export default async function SettingsPage() {
       trialDaysRemaining={getTrialDaysRemaining(subscription)}
       walletQuotaCount={walletQuota.count}
       walletQuotaMax={maxTrackedWallets}
+      referralOrigin={referralOrigin}
+      initialReferralSlug={referralSlug}
+      referralStats={referralStats}
+      referralHistory={referralHistory}
+      tiktokSubmissions={tiktokSubmissions}
     />
   );
 }

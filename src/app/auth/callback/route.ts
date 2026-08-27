@@ -5,6 +5,8 @@ import { readStoredAttributionFromHeader } from "@/lib/attribution/capture";
 import { recordSignupSource } from "@/lib/supabase/signup-sources";
 import { readInfluencerAttributionFromHeader } from "@/lib/influencers/attribution";
 import { recordInfluencerReferral } from "@/lib/supabase/influencer-referrals";
+import { readReferralAttributionFromHeader } from "@/lib/referrals/attribution";
+import { recordReferralAttribution } from "@/lib/supabase/user-referrals";
 
 const ALLOWED_ERROR_REDIRECTS = ["/signup", "/login"];
 
@@ -65,6 +67,10 @@ export async function GET(request: Request) {
       const influencerAttribution = readInfluencerAttributionFromHeader(cookieHeader);
       if (influencerAttribution && data.user) {
         await recordInfluencerReferral(supabase, data.user.id, influencerAttribution);
+      }
+      const referralAttribution = readReferralAttributionFromHeader(cookieHeader);
+      if (referralAttribution && data.user) {
+        await recordReferralAttribution(supabase, data.user.id, referralAttribution);
       }
       return NextResponse.redirect(`${origin}${next}`);
     }

@@ -5,6 +5,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPlanId, planForPriceId, type PlanId } from "@/lib/stripe/plans";
 import { recordInfluencerConversion } from "@/lib/supabase/influencer-commissions";
+import { recordReferralConversion } from "@/lib/supabase/user-referral-conversions";
 
 type DbStatus = "trialing" | "active" | "canceled" | "past_due";
 
@@ -106,6 +107,7 @@ async function handleCheckoutCompleted(
   // (in cents) — exactly "le montant du premier paiement" the commission
   // is computed from, no separate invoice fetch needed.
   await recordInfluencerConversion(supabase, userId, session.amount_total);
+  await recordReferralConversion(supabase, userId, session.amount_total);
 }
 
 async function handleSubscriptionUpdated(

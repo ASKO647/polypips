@@ -12,6 +12,8 @@ import {
   FileClock,
   ShieldCheck,
   Megaphone,
+  Gift,
+  Music2,
   type LucideIcon,
 } from "lucide-react";
 import { OWNER_BASE_PATH } from "@/lib/owner-path";
@@ -31,6 +33,8 @@ export const OWNER_NAV_ITEMS: OwnerNavItem[] = [
   { label: "Real-Time", href: `${OWNER_BASE_PATH}/realtime`, icon: Radio },
   { label: "Acquisition", href: `${OWNER_BASE_PATH}/acquisition`, icon: Target },
   { label: "Influenceurs", href: `${OWNER_BASE_PATH}/influencers`, icon: Megaphone },
+  { label: "Parrainage", href: `${OWNER_BASE_PATH}/referrals`, icon: Gift },
+  { label: "Clips TikTok", href: `${OWNER_BASE_PATH}/tiktok-clips`, icon: Music2 },
   { label: "Product Usage", href: `${OWNER_BASE_PATH}/product-usage`, icon: Activity },
   { label: "AI Usage", href: `${OWNER_BASE_PATH}/ai-usage`, icon: Bot },
   { label: "Payments", href: `${OWNER_BASE_PATH}/payments`, icon: Wallet },
