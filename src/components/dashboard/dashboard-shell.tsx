@@ -31,7 +31,7 @@ function DashboardShellInner({
   const { theme } = useDashboardTheme();
 
   return (
-    <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg">
+    <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg text-dash-text">
       <DashboardSidebar subscription={subscription} />
 
       <div className="flex min-w-0 flex-1 flex-col">
