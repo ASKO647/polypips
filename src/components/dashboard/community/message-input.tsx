@@ -64,7 +64,7 @@ export function MessageInput({
   };
 
   return (
-    <div className="shrink-0 border-t border-white/10 p-3 sm:p-4">
+    <div className="shrink-0 border-t border-white/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
       {error && <p className="mb-2 text-xs font-medium text-rose-400">{error}</p>}
 
       {imagePreview && (

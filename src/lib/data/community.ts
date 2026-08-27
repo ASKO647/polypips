@@ -76,3 +76,16 @@ export type CommunityMessage = {
   imageUrl: string | null;
   createdAt: string;
 };
+
+/** The fixed quick-reaction set — matches the migration's check constraint
+ * on community_message_reactions.emoji. */
+export const REACTION_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥"] as const;
+export type MessageReactionEmoji = (typeof REACTION_EMOJIS)[number];
+
+/** One row from community_message_reactions — one user's reaction to one
+ * message with one emoji. The UI aggregates these per (message, emoji). */
+export type MessageReaction = {
+  messageId: string;
+  userId: string;
+  emoji: MessageReactionEmoji;
+};

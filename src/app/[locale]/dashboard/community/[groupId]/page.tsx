@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { GroupViewFlow } from "@/components/dashboard/community/group-view-flow";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, hasActiveAccess, isCancelledSubscription } from "@/lib/supabase/subscriptions";
-import { fetchMessages, getGroupView } from "@/lib/supabase/community";
+import { fetchMessages, fetchReactions, getGroupView } from "@/lib/supabase/community";
 
 export async function generateMetadata({
   params,
@@ -40,12 +40,16 @@ export default async function CommunityGroupPage({
 
   const isApprovedMember = view.isOwner || view.myMembership?.status === "approved";
   const messages = isApprovedMember ? await fetchMessages(supabase, groupId) : [];
+  const reactions = isApprovedMember
+    ? await fetchReactions(supabase, messages.map((m) => m.id))
+    : [];
 
   return (
     <GroupViewFlow
       groupId={groupId}
       initialView={view}
       initialMessages={messages}
+      initialReactions={reactions}
       currentUserId={user.id}
       hasActiveSubscription={hasActiveAccess(subscription)}
       cancelled={isCancelledSubscription(subscription)}

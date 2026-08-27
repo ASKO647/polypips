@@ -10,13 +10,22 @@ import { MessageInput } from "@/components/dashboard/community/message-input";
 import { ManageGroupPanel } from "@/components/dashboard/community/manage-group-panel";
 import { ReportMessageModal } from "@/components/dashboard/community/report-message-modal";
 import { createClient } from "@/lib/supabase/client";
-import { fetchMessages, getGroupView, joinGroup, subscribeToGroupMessages } from "@/lib/supabase/community";
-import type { CommunityGroupView, CommunityMessage } from "@/lib/data/community";
+import {
+  fetchMessages,
+  fetchReactions,
+  getGroupView,
+  joinGroup,
+  subscribeToGroupMessages,
+  subscribeToGroupReactions,
+  toggleReaction,
+} from "@/lib/supabase/community";
+import type { CommunityGroupView, CommunityMessage, MessageReaction, MessageReactionEmoji } from "@/lib/data/community";
 
 export function GroupViewFlow({
   groupId,
   initialView,
   initialMessages,
+  initialReactions,
   currentUserId,
   hasActiveSubscription,
   cancelled,
@@ -24,6 +33,7 @@ export function GroupViewFlow({
   groupId: string;
   initialView: CommunityGroupView;
   initialMessages: CommunityMessage[];
+  initialReactions: MessageReaction[];
   currentUserId: string;
   hasActiveSubscription: boolean;
   cancelled: boolean;
@@ -31,6 +41,7 @@ export function GroupViewFlow({
   const router = useRouter();
   const [view, setView] = useState(initialView);
   const [messages, setMessages] = useState(initialMessages);
+  const [reactions, setReactions] = useState(initialReactions);
   const [manageOpen, setManageOpen] = useState(false);
   const [reportTarget, setReportTarget] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
@@ -51,10 +62,58 @@ export function GroupViewFlow({
   }, [groupId, isApprovedMember]);
 
   useEffect(() => {
+    if (!isApprovedMember) return;
+    const supabase = createClient();
+    const channel = subscribeToGroupReactions(supabase, groupId, (event) => {
+      setReactions((prev) => {
+        const matches = (r: MessageReaction) =>
+          r.messageId === event.reaction.messageId && r.userId === event.reaction.userId && r.emoji === event.reaction.emoji;
+        if (event.type === "insert") {
+          return prev.some(matches) ? prev : [...prev, event.reaction];
+        }
+        return prev.filter((r) => !matches(r));
+      });
+    });
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [groupId, isApprovedMember]);
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages.length]);
 
   const memberByUserId = new Map(view.members.map((m) => [m.userId, m]));
+
+  const reactionsByMessage = new Map<string, MessageReaction[]>();
+  for (const reaction of reactions) {
+    const bucket = reactionsByMessage.get(reaction.messageId);
+    if (bucket) bucket.push(reaction);
+    else reactionsByMessage.set(reaction.messageId, [reaction]);
+  }
+
+  const handleToggleReaction = (messageId: string, emoji: MessageReactionEmoji) => {
+    const alreadyReacted = reactions.some(
+      (r) => r.messageId === messageId && r.userId === currentUserId && r.emoji === emoji
+    );
+    // Optimistic update — the realtime subscription above will reconcile
+    // (and de-dupe, via the same matches() check) once the server confirms.
+    setReactions((prev) =>
+      alreadyReacted
+        ? prev.filter((r) => !(r.messageId === messageId && r.userId === currentUserId && r.emoji === emoji))
+        : [...prev, { messageId, userId: currentUserId, emoji }]
+    );
+    const supabase = createClient();
+    toggleReaction(supabase, messageId, emoji).catch(() => {
+      // Roll back on failure — most likely cause is the caller no longer
+      // being an approved member (e.g. removed mid-session).
+      setReactions((prev) =>
+        alreadyReacted
+          ? [...prev, { messageId, userId: currentUserId, emoji }]
+          : prev.filter((r) => !(r.messageId === messageId && r.userId === currentUserId && r.emoji === emoji))
+      );
+    });
+  };
 
   const handleRequestAccess = async () => {
     setJoining(true);
@@ -72,7 +131,9 @@ export function GroupViewFlow({
       if (freshView) {
         setView(freshView);
         if (freshView.isOwner || freshView.myMembership?.status === "approved") {
-          setMessages(await fetchMessages(supabase, groupId));
+          const freshMessages = await fetchMessages(supabase, groupId);
+          setMessages(freshMessages);
+          setReactions(await fetchReactions(supabase, freshMessages.map((m) => m.id)));
         }
       }
     } catch (err) {
@@ -83,7 +144,7 @@ export function GroupViewFlow({
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col gap-4 lg:h-[calc(100vh-6rem)]">
+    <div className="flex h-[calc(100dvh-8rem)] flex-col gap-4 lg:h-[calc(100dvh-6rem)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <Link
@@ -121,7 +182,8 @@ export function GroupViewFlow({
           <LockedOverlay
             locked={!hasActiveSubscription}
             cancelled={cancelled}
-            contentClassName="flex h-full flex-col"
+            className="flex h-full flex-col overflow-hidden"
+            contentClassName="flex h-full flex-col overflow-hidden"
             message={
               cancelled
                 ? "Réabonnez-vous pour continuer à discuter dans ce groupe."
@@ -141,7 +203,10 @@ export function GroupViewFlow({
                     isOwn={message.userId === currentUserId}
                     senderName={memberByUserId.get(message.userId)?.displayName ?? "Membre"}
                     senderAvatarUrl={memberByUserId.get(message.userId)?.avatarUrl ?? null}
+                    reactions={reactionsByMessage.get(message.id) ?? []}
+                    currentUserId={currentUserId}
                     onReport={() => setReportTarget(message.id)}
+                    onToggleReaction={(emoji) => handleToggleReaction(message.id, emoji)}
                   />
                 ))
               )}

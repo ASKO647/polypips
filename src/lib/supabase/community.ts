@@ -3,6 +3,8 @@ import type {
   CommunityGroupView,
   CommunityMessage,
   FoundCommunityGroup,
+  MessageReaction,
+  MessageReactionEmoji,
   MyCommunityGroup,
   PublicCommunityGroup,
 } from "@/lib/data/community";
@@ -214,6 +216,40 @@ export async function reportMessage(
   if (error) throw new Error(error.message);
 }
 
+export async function fetchReactions(
+  supabase: SupabaseClient,
+  messageIds: string[]
+): Promise<MessageReaction[]> {
+  if (messageIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from("community_message_reactions")
+    .select("message_id, user_id, emoji")
+    .in("message_id", messageIds);
+  if (error || !data) return [];
+  return data.map((row) => ({
+    messageId: row.message_id as string,
+    userId: row.user_id as string,
+    emoji: row.emoji as MessageReactionEmoji,
+  }));
+}
+
+/** Adds the caller's reaction, or removes it if it's already there —
+ * the atomic add/remove decision is made server-side (community_toggle_
+ * reaction), not by checking client state first, so two rapid clicks
+ * can't race into a duplicate insert/delete pair. */
+export async function toggleReaction(
+  supabase: SupabaseClient,
+  messageId: string,
+  emoji: MessageReactionEmoji
+): Promise<"added" | "removed"> {
+  const { data, error } = await supabase.rpc("community_toggle_reaction", {
+    p_message_id: messageId,
+    p_emoji: emoji,
+  });
+  if (error) throw new Error(error.message);
+  return data as "added" | "removed";
+}
+
 /** Subscribes to new messages in one group — caller owns the channel's
  * lifecycle (supabase.removeChannel(channel) on cleanup). */
 export function subscribeToGroupMessages(
@@ -237,6 +273,46 @@ export function subscribeToGroupMessages(
           createdAt: row.created_at as string,
         });
       }
+    )
+    .subscribe();
+}
+
+/** Subscribes to reaction add/remove events in one group — same channel
+ * lifecycle contract as subscribeToGroupMessages (caller must
+ * supabase.removeChannel(channel) on cleanup). Requires REPLICA IDENTITY
+ * FULL on community_message_reactions (set in its migration) so DELETE
+ * payloads still carry group_id/user_id/emoji instead of just the id. */
+export function subscribeToGroupReactions(
+  supabase: SupabaseClient,
+  groupId: string,
+  onChange: (event: { type: "insert" | "delete"; reaction: MessageReaction }) => void
+) {
+  const mapRow = (row: Record<string, unknown>): MessageReaction => ({
+    messageId: row.message_id as string,
+    userId: row.user_id as string,
+    emoji: row.emoji as MessageReactionEmoji,
+  });
+  return supabase
+    .channel(`community-reactions-${groupId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "community_message_reactions",
+        filter: `group_id=eq.${groupId}`,
+      },
+      (payload) => onChange({ type: "insert", reaction: mapRow(payload.new as Record<string, unknown>) })
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "DELETE",
+        schema: "public",
+        table: "community_message_reactions",
+        filter: `group_id=eq.${groupId}`,
+      },
+      (payload) => onChange({ type: "delete", reaction: mapRow(payload.old as Record<string, unknown>) })
     )
     .subscribe();
 }
