@@ -1,4 +1,5 @@
 import {
+  Activity,
   BarChart3,
   BookOpen,
   Copy,
@@ -69,6 +70,7 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
  * rows by sync-signal-wallets — keep resolving; only the labels/grouping
  * shown to the user changed here. */
 export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
+  { label: "Pips Tracks", href: "/dashboard/smart-wallets/pips-tracks", icon: Activity },
   { label: "Analyse AI Fomo", href: "/dashboard/smart-wallets/analyse-fomo", icon: Sparkles },
   { label: "Analyse AI Axiom", href: "/dashboard/smart-wallets/analyse-axiom", icon: Sparkles },
   { label: "Copy Trading", href: "/dashboard/smart-wallets/suivis", icon: Wallet },
