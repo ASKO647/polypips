@@ -27,9 +27,14 @@ export const createClient = cache(async () => {
               cookieStore.set(name, value, options)
             );
           } catch {
-            // Called from a Server Component during render — cookies are
-            // already refreshed by the auth callback route, so this is safe
-            // to ignore.
+            // Server Components can't persist cookies (this only succeeds
+            // from a Route Handler or Server Action) — safe to ignore here
+            // because proxy.ts's refreshSupabaseSession() already refreshes
+            // the token (and persists the rotated cookie) in middleware,
+            // before the request ever reaches a Server Component. Without
+            // that middleware step, this catch would silently discard every
+            // mid-render refresh instead — see lib/supabase/middleware.ts's
+            // file comment for the "random logout" bug that caused.
           }
         },
       },
