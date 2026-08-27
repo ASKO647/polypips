@@ -8,7 +8,7 @@ export function AuthHeader({
   variant?: "login" | "signup";
 }) {
   return (
-    <header className="border-b border-border bg-surface/90 backdrop-blur-md">
+    <header className="border-b border-border bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
       <div className="mx-auto flex h-18 w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
         <Logo />
 
