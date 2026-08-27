@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, Copy, Gift } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, Check, Copy, Gift, RotateCw } from "lucide-react";
 import { getOrCreateReferralSlug } from "@/app/[locale]/dashboard/settings/referral-actions";
 import {
   REFERRAL_COMMISSION_EUR,
@@ -63,6 +63,17 @@ function statusTone(status: ReferralHistoryItem["status"]): string {
   return "bg-white/10 text-white/60";
 }
 
+/** Explicit state machine instead of a bare `string | null` for the slug:
+ * a nullable value can't distinguish "still loading" from "the fetch
+ * failed and resolved to null" — setState(null) when the state is already
+ * null is a no-op in React, so that collapse used to leave the UI stuck on
+ * "Génération de votre lien..." forever with no way to tell the two apart
+ * or retry. */
+type SlugState =
+  | { status: "loading" }
+  | { status: "ready"; slug: string }
+  | { status: "error"; message: string };
+
 export function ReferralTab({
   origin,
   initialSlug,
@@ -74,20 +85,49 @@ export function ReferralTab({
   stats: ReferralStats;
   history: ReferralHistoryItem[];
 }) {
-  const [slug, setSlug] = useState(initialSlug);
+  const [slugState, setSlugState] = useState<SlugState>(
+    initialSlug ? { status: "ready", slug: initialSlug } : { status: "loading" }
+  );
+
+  // Fetches without touching state first — the mount effect below relies on
+  // the initial state already being "loading", and the retry button sets
+  // "loading" itself before calling this, so this never needs to.
+  const fetchSlug = useCallback(() => {
+    getOrCreateReferralSlug()
+      .then((result) => {
+        if (result.slug) {
+          setSlugState({ status: "ready", slug: result.slug });
+        } else {
+          setSlugState({
+            status: "error",
+            message: result.error ?? "Une erreur inconnue est survenue.",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("[referral-tab] getOrCreateReferralSlug failed", error);
+        setSlugState({
+          status: "error",
+          message: "Impossible de contacter le serveur. Vérifiez votre connexion.",
+        });
+      });
+  }, []);
+
+  const retry = useCallback(() => {
+    setSlugState({ status: "loading" });
+    fetchSlug();
+  }, [fetchSlug]);
 
   useEffect(() => {
-    if (slug) return;
-    let cancelled = false;
-    getOrCreateReferralSlug().then((created) => {
-      if (!cancelled) setSlug(created);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [slug]);
+    // Only runs once on mount when there's no slug yet — retries afterward
+    // are user-triggered via the "Réessayer" button, never automatic.
+    if (!initialSlug) {
+      fetchSlug();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const link = slug ? `${origin}/r/${slug}` : null;
+  const link = slugState.status === "ready" ? `${origin}/r/${slugState.slug}` : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,13 +145,35 @@ export function ReferralTab({
         <div className="mt-2 flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <input
             type="text"
-            value={link ?? "Génération de votre lien..."}
+            value={
+              slugState.status === "ready"
+                ? link!
+                : slugState.status === "error"
+                  ? "Lien indisponible"
+                  : "Génération de votre lien..."
+            }
             disabled
             readOnly
             className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2.5 text-sm text-white/70 sm:max-w-md"
           />
           {link && <ReferralCopyButton value={link} />}
+          {slugState.status === "error" && (
+            <button
+              type="button"
+              onClick={retry}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-white/10 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-white/15"
+            >
+              <RotateCw className="h-3.5 w-3.5" /> Réessayer
+            </button>
+          )}
         </div>
+        {slugState.status === "error" && (
+          <p className="mt-2 flex items-start gap-1.5 text-xs text-rose-400">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Impossible de générer votre lien de parrainage ({slugState.message}). Réessayez ou
+            contactez le support si le problème persiste.
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

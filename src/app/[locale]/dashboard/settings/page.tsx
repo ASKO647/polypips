@@ -83,7 +83,7 @@ export default async function SettingsPage() {
       walletQuotaCount={walletQuota.count}
       walletQuotaMax={maxTrackedWallets}
       referralOrigin={referralOrigin}
-      initialReferralSlug={referralSlug}
+      initialReferralSlug={referralSlug.slug}
       referralStats={referralStats}
       referralHistory={referralHistory}
       tiktokSubmissions={tiktokSubmissions}

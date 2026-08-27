@@ -4,16 +4,29 @@ import type { ReferralAttribution } from "@/lib/referrals/attribution";
 import { formatRelativeTime } from "@/lib/supabase/analyses";
 import type { ReferralHistoryItem, ReferralStats, ReferralStatus } from "@/lib/data/referrals";
 
+/** A result type instead of a bare nullable string: a null slug can mean
+ * either "doesn't exist yet" (fine, ensureReferralSlug will create one) or
+ * "the query failed" (RLS denial, PostgREST schema-cache miss right after
+ * a migration, network error...) — collapsing those into one falsy value
+ * is exactly what let a real DB error look identical to "not created yet"
+ * and hang the UI forever. See ensureReferralSlug below. */
+export type ReferralSlugResult = { slug: string | null; error: string | null };
+
 export async function fetchReferralSlug(
   supabase: SupabaseClient,
   userId: string
-): Promise<string | null> {
-  const { data } = await supabase
+): Promise<ReferralSlugResult> {
+  const { data, error } = await supabase
     .from("user_referral_links")
     .select("slug")
     .eq("user_id", userId)
     .maybeSingle();
-  return data?.slug ?? null;
+
+  if (error) {
+    console.error("[user-referrals] failed to fetch referral link", error);
+    return { slug: null, error: error.message };
+  }
+  return { slug: data?.slug ?? null, error: null };
 }
 
 const MAX_SLUG_ATTEMPTS = 5;
@@ -22,31 +35,39 @@ const MAX_SLUG_ATTEMPTS = 5;
  * "Inviter et gagner" tab — see referral-actions.ts, called from
  * ReferralTab's mount effect. Retries a fresh random slug on a unique-
  * constraint collision (astronomically rare at 10 hex chars, but the
- * insert is cheap enough that a short retry loop costs nothing). */
+ * insert is cheap enough that a short retry loop costs nothing). Any other
+ * failure is returned as an explicit error instead of being swallowed —
+ * console.error here runs server-side and is invisible to the browser, so
+ * the caller MUST surface `error` to the client rather than treat a null
+ * slug as "still loading". */
 export async function ensureReferralSlug(
   supabase: SupabaseClient,
   userId: string
-): Promise<string | null> {
+): Promise<ReferralSlugResult> {
   const existing = await fetchReferralSlug(supabase, userId);
-  if (existing) return existing;
+  if (existing.slug) return existing;
+  if (existing.error) return existing;
 
   for (let attempt = 0; attempt < MAX_SLUG_ATTEMPTS; attempt++) {
     const slug = generateReferralSlug();
     const { error } = await supabase.from("user_referral_links").insert({ user_id: userId, slug });
-    if (!error) return slug;
+    if (!error) return { slug, error: null };
 
     // A concurrent request (e.g. two tabs) may have already created this
     // user's row between the read above and this insert — re-read instead
     // of endlessly retrying a new slug that will never be needed.
     const raceExisting = await fetchReferralSlug(supabase, userId);
-    if (raceExisting) return raceExisting;
+    if (raceExisting.slug) return raceExisting;
 
     if (error.code !== "23505") {
       console.error("[user-referrals] failed to create referral link", error);
-      return null;
+      return { slug: null, error: error.message };
     }
   }
-  return null;
+  return {
+    slug: null,
+    error: "Impossible de générer un lien unique après plusieurs tentatives.",
+  };
 }
 
 export async function fetchReferralStats(
