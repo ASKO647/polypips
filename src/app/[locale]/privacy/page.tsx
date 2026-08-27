@@ -6,10 +6,10 @@
  * before this site goes into real production, and every
  * [À COMPLÉTER : ...] placeholder must be filled in with accurate
  * information first. The list of sub-processors (Supabase, Stripe,
- * Anthropic) reflects the codebase's actual third-party integrations at
- * the time this draft was written — verify it still matches reality
- * before publishing, and add any new integration introduced since. Do not
- * treat this as legal advice.
+ * Anthropic, Vercel, API-Sports) reflects the codebase's actual
+ * third-party integrations at the time this draft was written — verify it
+ * still matches reality before publishing, and add any new integration
+ * introduced since. Do not treat this as legal advice.
  */
 import type { Metadata } from "next";
 import { LegalPageShell, LegalSection, ToComplete } from "@/components/marketing/legal-page-shell";
@@ -144,6 +144,12 @@ export default function PrivacyPage() {
           <li>
             <strong>Vercel</strong> (Vercel Inc.) — hébergement technique du
             site et de l&apos;application.
+          </li>
+          <li>
+            <strong>API-Sports</strong> — fournisseur des données sportives
+            publiques (compétitions, équipes, résultats) utilisées pour les
+            analyses sportives. Aucune donnée personnelle de l&apos;Utilisateur
+            n&apos;est transmise à ce prestataire.
           </li>
         </ul>
         <p>

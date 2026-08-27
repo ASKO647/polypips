@@ -22,9 +22,9 @@ export const FOOTER_COLUMNS: FooterColumn[] = [
   {
     title: "Produit",
     links: [
-      { label: "Fonctionnalités", href: "#fonctionnalites" },
-      { label: "Tarifs", href: "#tarifs" },
-      { label: "Comment ça marche", href: "#comment-ca-marche" },
+      { label: "Fonctionnalités", href: "/features" },
+      { label: "Tarifs", href: "/pricing" },
+      { label: "Comment ça marche", href: "/how-it-works" },
       { label: "Mises à jour", href: "/changelog" },
     ],
   },
