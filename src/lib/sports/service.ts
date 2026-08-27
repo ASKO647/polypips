@@ -38,14 +38,21 @@
  * own bigint-typed columns need one.
  *
  * Every analytical field (probabilities, score, opportunities, comparison
- * stats, form, H2H, lineups, odds, model accuracy...) is still honestly
- * empty here — emptyMatchAnalysis() below is unchanged. Only the
- * fixture/team/competition scheduling data below it is now real.
+ * stats, form, H2H, lineups, model accuracy...) is still honestly empty
+ * here — emptyMatchAnalysis() below is unchanged for all of them. The one
+ * exception is `odds` for football matches: a small complement, football_
+ * odds_cache (populated by sync-individual-sports-data from The Odds API,
+ * rapproched against these same API-Sports fixtures by team name + kickoff
+ * date — see that function's file comment), gets joined in by
+ * getMatchAnalysis() below when a confident match exists. A football
+ * fixture The Odds API doesn't cover (or couldn't be confidently matched)
+ * simply keeps odds: [] — never an invented price.
  */
 import { createClient } from "@/lib/supabase/server";
 import { getCountryCode } from "./country-codes";
 import { isIndividualSport } from "./nav";
 import type {
+  BookmakerOdds,
   Competition,
   Country,
   Match,
@@ -614,10 +621,55 @@ function emptyMatchAnalysis(match: Match): MatchAnalysis {
   };
 }
 
+type FootballOddsRow = {
+  bookmakers: { key: string; title: string; home: number; draw: number; away: number }[] | null;
+};
+
+/** The football-odds complement's one read path — see this file's header
+ * comment and sync-individual-sports-data's file comment for how the row
+ * gets there. Returns [] (not an error) for any football fixture with no
+ * cached row: not covered by The Odds API's plan, or no confident
+ * team+date match was found — both are the same honest "no odds yet" case
+ * from the caller's point of view. */
+async function fetchFootballOdds(externalFixtureId: string): Promise<BookmakerOdds[]> {
+  const parsedId = Number(externalFixtureId);
+  if (!Number.isFinite(parsedId)) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("football_odds_cache")
+    .select("bookmakers")
+    .eq("external_fixture_id", parsedId)
+    .maybeSingle();
+  if (error || !data) return [];
+
+  const row = data as FootballOddsRow;
+  if (!Array.isArray(row.bookmakers)) return [];
+
+  return row.bookmakers
+    .filter(
+      (b): b is { key: string; title: string; home: number; draw: number; away: number } =>
+        typeof b?.title === "string" &&
+        typeof b?.home === "number" &&
+        typeof b?.draw === "number" &&
+        typeof b?.away === "number"
+    )
+    .map((b) => ({ bookmaker: b.title, home: b.home, draw: b.draw, away: b.away }));
+}
+
 export async function getMatchAnalysis(id: string): Promise<MatchAnalysis | null> {
   const match = await getMatchById(id);
   if (!match) return null;
-  return emptyMatchAnalysis(match);
+  const analysis = emptyMatchAnalysis(match);
+
+  if (match.sport === "football") {
+    const parsed = parseEntityId(id, "match");
+    if (parsed) {
+      analysis.odds = await fetchFootballOdds(parsed.externalId);
+    }
+  }
+
+  return analysis;
 }
 
 /** Every match/opportunity/confidence detection surface across the module
