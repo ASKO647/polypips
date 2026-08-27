@@ -4,7 +4,7 @@
  * item list, the counterpart to POLYMARKET_NAV_ITEMS in dashboard-nav.ts.
  */
 import type { ComponentType } from "react";
-import { Compass, Flame, Hand, Star, Swords, Trophy } from "lucide-react";
+import { Compass, Swords, Trophy } from "lucide-react";
 import type { SportCategory, SportKey } from "./types";
 
 export type SportsSubNavItem = {
@@ -15,10 +15,7 @@ export type SportsSubNavItem = {
 
 export const SPORTS_SUB_NAV: SportsSubNavItem[] = [
   { label: "Overview", href: "/dashboard/sports", icon: Compass },
-  { label: "Opportunités", href: "/dashboard/sports/opportunites", icon: Flame },
   { label: "Matches", href: "/dashboard/sports/matches", icon: Trophy },
-  { label: "Mes matchs", href: "/dashboard/sports/mes-matchs", icon: Star },
-  { label: "Mes équipes", href: "/dashboard/sports/mes-equipes", icon: Hand },
   { label: "Compétitions", href: "/dashboard/sports/competitions", icon: Swords },
 ];
 

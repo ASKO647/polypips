@@ -335,6 +335,11 @@ export function validateCommunityImage(file: File): string | null {
   return null;
 }
 
+/** Group avatars live in the public community-avatars bucket (mirrors
+ * lib/supabase/avatar.ts's uploadAvatar exactly — see that bucket's own
+ * migration comment for why public read is correct here: a group's
+ * avatar is shown in "Découvrir" to non-members deciding whether to
+ * join). */
 export async function uploadGroupAvatar(
   supabase: SupabaseClient,
   groupId: string,
@@ -344,16 +349,16 @@ export async function uploadGroupAvatar(
   if (validationError) throw new Error(validationError);
 
   const extension = EXTENSION_BY_TYPE[file.type] ?? "jpg";
-  const path = `avatars/${groupId}/avatar.${extension}`;
+  const path = `${groupId}/avatar.${extension}`;
 
   const { error: uploadError } = await supabase.storage
-    .from("community-media")
+    .from("community-avatars")
     .upload(path, file, { upsert: true, contentType: file.type });
   if (uploadError) throw new Error(uploadError.message);
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from("community-media").getPublicUrl(path);
+  } = supabase.storage.from("community-avatars").getPublicUrl(path);
   const bustedUrl = `${publicUrl}?v=${Date.now()}`;
 
   const { error: updateError } = await supabase
@@ -364,6 +369,19 @@ export async function uploadGroupAvatar(
 
   return bustedUrl;
 }
+
+// A private group's chat images must stay gated to its approved members,
+// so — unlike group avatars — community-media stays a private bucket and
+// this mints a signed URL instead of a (non-functional, against a
+// private bucket) public one. A long-lived TTL keeps the rest of the
+// architecture simple (the URL is stored once in community_messages.
+// image_url and just rendered directly, exactly like any other image
+// URL) at the cost of the link eventually expiring rather than being
+// truly permanent — reasonable for chat history, and mints only succeed
+// for someone who already passes the bucket's own community_is_member
+// RLS check, so this never grants access beyond what the sender already
+// legitimately had.
+const MESSAGE_IMAGE_SIGNED_URL_TTL_SECONDS = 60 * 60 * 24 * 365;
 
 export async function uploadMessageImage(
   supabase: SupabaseClient,
@@ -382,8 +400,9 @@ export async function uploadMessageImage(
     .upload(path, file, { contentType: file.type });
   if (uploadError) throw new Error(uploadError.message);
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("community-media").getPublicUrl(path);
-  return publicUrl;
+  const { data, error: signError } = await supabase.storage
+    .from("community-media")
+    .createSignedUrl(path, MESSAGE_IMAGE_SIGNED_URL_TTL_SECONDS);
+  if (signError || !data) throw new Error(signError?.message ?? "Image envoyée mais son URL n'a pas pu être générée.");
+  return data.signedUrl;
 }

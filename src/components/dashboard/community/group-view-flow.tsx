@@ -256,6 +256,7 @@ export function GroupViewFlow({
           groupId={groupId}
           groupName={view.group.name}
           groupDescription={view.group.description}
+          groupAvatarUrl={view.group.avatarUrl}
           isPrivate={view.group.isPrivate}
           inviteCode={view.group.inviteCode}
           members={view.members}

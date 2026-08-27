@@ -1,4 +1,3 @@
-import { FollowTeamButton } from "@/components/dashboard/sports/follow-team-button";
 import { TeamBadge } from "@/components/dashboard/sports/team-badge";
 import type { Match } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
@@ -17,15 +16,7 @@ const STATUS_LABEL: Record<Match["status"], string> = {
   finished: "Terminé",
 };
 
-export function MatchHeader({
-  match,
-  homeFollowed,
-  awayFollowed,
-}: {
-  match: Match;
-  homeFollowed: boolean;
-  awayFollowed: boolean;
-}) {
+export function MatchHeader({ match }: { match: Match }) {
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center sm:p-8">
       <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-3 py-1 text-xs font-semibold text-white/60">
@@ -34,11 +25,6 @@ export function MatchHeader({
 
       <div className="flex w-full items-center justify-center gap-4 sm:gap-10">
         <div className="flex flex-1 flex-col items-center gap-3 sm:flex-row sm:justify-end">
-          <FollowTeamButton
-            teamId={match.homeTeam.id}
-            teamName={match.homeTeam.name}
-            initialFollowed={homeFollowed}
-          />
           <TeamBadge team={match.homeTeam} size="lg" />
         </div>
 
@@ -52,11 +38,6 @@ export function MatchHeader({
 
         <div className="flex flex-1 flex-col items-center gap-3 sm:flex-row sm:justify-start">
           <TeamBadge team={match.awayTeam} size="lg" />
-          <FollowTeamButton
-            teamId={match.awayTeam.id}
-            teamName={match.awayTeam.name}
-            initialFollowed={awayFollowed}
-          />
         </div>
       </div>
 

@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Check, Copy, Trash2, X } from "lucide-react";
+import { useRef, useState } from "react";
+import { Camera, Check, Copy, Loader2, Trash2, X } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { createClient } from "@/lib/supabase/client";
-import { approveMember, deleteGroup, rejectMember, removeMember, updateGroup } from "@/lib/supabase/community";
+import {
+  approveMember,
+  deleteGroup,
+  rejectMember,
+  removeMember,
+  updateGroup,
+  uploadGroupAvatar,
+  validateCommunityImage,
+} from "@/lib/supabase/community";
 import { cn } from "@/lib/utils";
 import type { CommunityMember, CommunityMemberStatus } from "@/lib/data/community";
 
@@ -14,6 +22,7 @@ export function ManageGroupPanel({
   groupId,
   groupName,
   groupDescription,
+  groupAvatarUrl,
   isPrivate,
   inviteCode,
   members,
@@ -26,10 +35,11 @@ export function ManageGroupPanel({
   groupId: string;
   groupName: string;
   groupDescription: string;
+  groupAvatarUrl: string | null;
   isPrivate: boolean;
   inviteCode: string | null;
   members: CommunityMember[];
-  onGroupUpdated: (patch: { isPrivate: boolean }) => void;
+  onGroupUpdated: (patch: { isPrivate?: boolean; avatarUrl?: string }) => void;
   onMemberUpdated: (userId: string, status: CommunityMemberStatus | "removed") => void;
   onGroupDeleted: () => void;
 }) {
@@ -39,8 +49,37 @@ export function ManageGroupPanel({
   const [deleteConfirming, setDeleteConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   if (!open) return null;
+
+  const handleAvatarPick = () => avatarInputRef.current?.click();
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const validationError = validateCommunityImage(file);
+    if (validationError) {
+      setAvatarError(validationError);
+      return;
+    }
+
+    setAvatarUploading(true);
+    setAvatarError(null);
+    try {
+      const supabase = createClient();
+      const newUrl = await uploadGroupAvatar(supabase, groupId, file);
+      onGroupUpdated({ avatarUrl: newUrl });
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "L'upload a échoué. Réessayez.");
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
 
   const approvedMembers = members.filter((m) => m.status === "approved" && m.role !== "owner");
   const pendingMembers = members.filter((m) => m.status === "pending");
@@ -148,6 +187,33 @@ export function ManageGroupPanel({
         <div className="flex-1 overflow-y-auto p-5">
           <div className="flex flex-col gap-5">
             {error && <p className="text-xs font-medium text-rose-400">{error}</p>}
+
+            <div className="flex flex-col items-center gap-2">
+              <div className="relative shrink-0">
+                <UserAvatar name={groupName} avatarUrl={groupAvatarUrl} size={72} className="text-xl" />
+                <button
+                  type="button"
+                  onClick={handleAvatarPick}
+                  disabled={avatarUploading}
+                  aria-label="Changer la photo du groupe"
+                  className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#0f0808] bg-white/[0.08] text-white/70 transition-colors hover:text-white disabled:pointer-events-none"
+                >
+                  {avatarUploading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+                  ) : (
+                    <Camera className="h-3.5 w-3.5" strokeWidth={2} />
+                  )}
+                </button>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={handleAvatarChange}
+                />
+              </div>
+              {avatarError && <p className="text-xs font-medium text-rose-400">{avatarError}</p>}
+            </div>
 
             <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5">
               <div>
