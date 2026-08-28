@@ -34,12 +34,17 @@ alter table public.community_messages
   check (content <> '' or image_url is not null or audio_url is not null);
 
 -- community_send_message() gains two new optional parameters and the
--- owner-only rule for audio. Adding parameters via CREATE OR REPLACE
--- would just create a second, overloaded function (Postgres identifies a
--- function by name + parameter types, and REPLACE cannot change that) —
--- drop the old 3-parameter signature explicitly first so there's only
--- ever one community_send_message.
+-- owner-only rule for audio. Drop both the pre-voice-messages 3-parameter
+-- signature AND the 5-parameter one below before recreating it, so this
+-- block is safe to run however many times it needs to be (a first-time
+-- apply only ever finds the 3-parameter version; re-running it after an
+-- already-successful apply — or after a partial one that got this far —
+-- finds the 5-parameter version instead; either way there must only ever
+-- be one community_send_message left standing before CREATE FUNCTION
+-- runs, since plain CREATE FUNCTION errors instead of replacing when a
+-- same-signature function already exists).
 drop function if exists public.community_send_message(uuid, text, text);
+drop function if exists public.community_send_message(uuid, text, text, text, integer);
 
 create function public.community_send_message(
   p_group_id uuid,
