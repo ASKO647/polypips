@@ -235,7 +235,6 @@ export function GroupViewFlow({
             <MessageInput
               groupId={groupId}
               userId={currentUserId}
-              isOwner={view.isOwner}
               disabled={!hasActiveSubscription}
             />
           </LockedOverlay>

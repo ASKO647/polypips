@@ -3,21 +3,15 @@
 import { useRef, useState } from "react";
 import { ImagePlus, Send, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { sendMessage, uploadMessageImage, uploadVoiceMessage, validateCommunityImage } from "@/lib/supabase/community";
-import { VoiceRecorderButton } from "@/components/dashboard/community/voice-recorder-button";
+import { sendMessage, uploadMessageImage, validateCommunityImage } from "@/lib/supabase/community";
 
 export function MessageInput({
   groupId,
   userId,
-  isOwner,
   disabled,
 }: {
   groupId: string;
   userId: string;
-  /** Only the group owner can record/send a voice message — see this
-   * feature's own request: everyone can listen, only the owner can post
-   * one. */
-  isOwner: boolean;
   disabled: boolean;
 }) {
   const [text, setText] = useState("");
@@ -25,7 +19,6 @@ export function MessageInput({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [voiceRecording, setVoiceRecording] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePickImage = () => fileInputRef.current?.click();
@@ -70,12 +63,6 @@ export function MessageInput({
     }
   };
 
-  const handleSendVoice = async (blob: Blob, durationSeconds: number) => {
-    const supabase = createClient();
-    const audioUrl = await uploadVoiceMessage(supabase, groupId, userId, blob);
-    await sendMessage(supabase, { groupId, content: "", audioUrl, audioDurationSeconds: durationSeconds });
-  };
-
   return (
     <div className="shrink-0 border-t border-white/10 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:p-4">
       {error && <p className="mb-2 text-xs font-medium text-rose-400">{error}</p>}
@@ -109,44 +96,31 @@ export function MessageInput({
           className="hidden"
           onChange={handleImageChange}
         />
-        {!voiceRecording && (
-          <button
-            type="button"
-            onClick={handlePickImage}
-            disabled={disabled || sending}
-            aria-label="Joindre une image"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/50 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-40"
-          >
-            <ImagePlus className="h-4 w-4" strokeWidth={2} />
-          </button>
-        )}
-        {isOwner && (
-          <VoiceRecorderButton
-            disabled={disabled || sending}
-            onRecordingChange={setVoiceRecording}
-            onSend={handleSendVoice}
-          />
-        )}
-        {!voiceRecording && (
-          <>
-            <input
-              type="text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Écrivez un message..."
-              disabled={disabled || sending}
-              className="w-full rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-white/25 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={disabled || sending || (text.trim() === "" && !imageFile)}
-              aria-label="Envoyer"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition-transform duration-150 ease-out hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          onClick={handlePickImage}
+          disabled={disabled || sending}
+          aria-label="Joindre une image"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/50 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-40"
+        >
+          <ImagePlus className="h-4 w-4" strokeWidth={2} />
+        </button>
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Écrivez un message..."
+          disabled={disabled || sending}
+          className="w-full rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-white/25 focus:outline-none disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          disabled={disabled || sending || (text.trim() === "" && !imageFile)}
+          aria-label="Envoyer"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition-transform duration-150 ease-out hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+        >
+          <Send className="h-4 w-4" />
+        </button>
       </form>
     </div>
   );

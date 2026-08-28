@@ -6,7 +6,6 @@ import { Flag, SmilePlus } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { MessageReactionPicker } from "@/components/dashboard/community/message-reaction-picker";
 import { PhotoLightbox } from "@/components/dashboard/community/photo-lightbox";
-import { VoiceMessagePlayer } from "@/components/dashboard/community/voice-message-player";
 import { cn } from "@/lib/utils";
 import type { CommunityMessage, MessageReaction, MessageReactionEmoji } from "@/lib/data/community";
 
@@ -153,13 +152,6 @@ export function MessageBubble({
                 unoptimized
               />
             </button>
-          )}
-          {message.audioUrl && (
-            <VoiceMessagePlayer
-              src={message.audioUrl}
-              durationSeconds={message.audioDurationSeconds}
-              className={message.content ? "mb-2" : undefined}
-            />
           )}
           {message.content && <p>{message.content}</p>}
         </div>
