@@ -74,6 +74,8 @@ export type CommunityMessage = {
   userId: string;
   content: string;
   imageUrl: string | null;
+  audioUrl: string | null;
+  audioDurationSeconds: number | null;
   createdAt: string;
 };
 

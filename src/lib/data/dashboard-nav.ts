@@ -70,7 +70,6 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
  * rows by sync-signal-wallets — keep resolving; only the labels/grouping
  * shown to the user changed here. */
 export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
-  { label: "Pips Tracks", href: "/dashboard/smart-wallets/pips-tracks", icon: Activity },
   { label: "Analyse AI Fomo", href: "/dashboard/smart-wallets/analyse-fomo", icon: Sparkles },
   { label: "Analyse AI Axiom", href: "/dashboard/smart-wallets/analyse-axiom", icon: Sparkles },
   { label: "Copy Trading", href: "/dashboard/smart-wallets/suivis", icon: Wallet },
@@ -84,8 +83,14 @@ export const SIGNAL_NAV_ITEMS: DashboardNavItem[] = [
 
 /** Global tools that aren't specific to either universe — Coach IA answers
  * questions about analyses from both, Statistiques tracks performance
- * across both. */
+ * across both. Pips Tracks lives here too (not under Fomo X Axiom
+ * anymore): its feed spans Fomo/Axiom/News/Signal IA sources, which
+ * isn't a single-universe concern any more than Communauté is — the URL
+ * stays under /dashboard/smart-wallets/pips-tracks unchanged so no link
+ * (including any already generated one) breaks; only where it's grouped
+ * in the sidebar changed. */
 export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
+  { label: "Pips Tracks", href: "/dashboard/smart-wallets/pips-tracks", icon: Activity },
   { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
   { label: "Statistiques", href: "/dashboard/stats", icon: BarChart3 },
   // Groups/chat aren't scoped to Polymarket, Sport, or Fomo X Axiom — a

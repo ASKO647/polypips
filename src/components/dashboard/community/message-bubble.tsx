@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Flag, SmilePlus } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { MessageReactionPicker } from "@/components/dashboard/community/message-reaction-picker";
+import { PhotoLightbox } from "@/components/dashboard/community/photo-lightbox";
+import { VoiceMessagePlayer } from "@/components/dashboard/community/voice-message-player";
 import { cn } from "@/lib/utils";
 import type { CommunityMessage, MessageReaction, MessageReactionEmoji } from "@/lib/data/community";
 
@@ -46,6 +48,7 @@ export function MessageBubble({
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPlacement, setPickerPlacement] = useState<"above" | "below">("above");
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -135,17 +138,35 @@ export function MessageBubble({
           )}
         >
           {message.imageUrl && (
-            <Image
-              src={message.imageUrl}
-              alt=""
-              width={280}
-              height={210}
-              className="mb-2 h-auto max-h-64 w-full rounded-xl object-cover"
-              unoptimized
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              aria-label="Agrandir la photo"
+              className="mb-2 block w-full cursor-zoom-in"
+            >
+              <Image
+                src={message.imageUrl}
+                alt=""
+                width={280}
+                height={210}
+                className="h-auto max-h-64 w-full rounded-xl object-cover"
+                unoptimized
+              />
+            </button>
+          )}
+          {message.audioUrl && (
+            <VoiceMessagePlayer
+              src={message.audioUrl}
+              durationSeconds={message.audioDurationSeconds}
+              className={message.content ? "mb-2" : undefined}
             />
           )}
           {message.content && <p>{message.content}</p>}
         </div>
+
+        {lightboxOpen && message.imageUrl && (
+          <PhotoLightbox src={message.imageUrl} onClose={() => setLightboxOpen(false)} />
+        )}
 
         {summary.size > 0 && (
           <div className={cn("flex flex-wrap items-center gap-1 px-1", isOwn ? "justify-end" : "justify-start")}>

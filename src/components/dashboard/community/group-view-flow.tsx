@@ -46,6 +46,7 @@ export function GroupViewFlow({
   const [reportTarget, setReportTarget] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [reactionError, setReactionError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isApprovedMember = view.isOwner || view.myMembership?.status === "approved";
@@ -103,15 +104,22 @@ export function GroupViewFlow({
         ? prev.filter((r) => !(r.messageId === messageId && r.userId === currentUserId && r.emoji === emoji))
         : [...prev, { messageId, userId: currentUserId, emoji }]
     );
+    setReactionError(null);
     const supabase = createClient();
-    toggleReaction(supabase, messageId, emoji).catch(() => {
+    toggleReaction(supabase, messageId, emoji).catch((err) => {
       // Roll back on failure — most likely cause is the caller no longer
-      // being an approved member (e.g. removed mid-session).
+      // being an approved member (e.g. removed mid-session), or the
+      // community_toggle_reaction RPC not existing yet in this Supabase
+      // project (a pending migration). Previously this rolled back
+      // completely silently, which is exactly why the bug this was
+      // shipped to fix ("reactions don't show") was so hard to notice —
+      // the reaction really was being added and then invisibly undone.
       setReactions((prev) =>
         alreadyReacted
           ? [...prev, { messageId, userId: currentUserId, emoji }]
           : prev.filter((r) => !(r.messageId === messageId && r.userId === currentUserId && r.emoji === emoji))
       );
+      setReactionError(err instanceof Error ? err.message : "Réaction impossible pour le moment.");
     });
   };
 
@@ -190,6 +198,19 @@ export function GroupViewFlow({
                 : "Débloquez votre abonnement pour accéder au chat de ce groupe."
             }
           >
+            {reactionError && (
+              <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3.5 py-2.5 text-xs text-rose-300">
+                <span>{reactionError}</span>
+                <button
+                  type="button"
+                  onClick={() => setReactionError(null)}
+                  aria-label="Fermer"
+                  className="shrink-0 text-rose-300/70 hover:text-rose-300"
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
               {messages.length === 0 ? (
                 <p className="py-10 text-center text-sm text-white/40">
@@ -211,7 +232,12 @@ export function GroupViewFlow({
                 ))
               )}
             </div>
-            <MessageInput groupId={groupId} userId={currentUserId} disabled={!hasActiveSubscription} />
+            <MessageInput
+              groupId={groupId}
+              userId={currentUserId}
+              isOwner={view.isOwner}
+              disabled={!hasActiveSubscription}
+            />
           </LockedOverlay>
         ) : view.myMembership?.status === "pending" ? (
           <StatusPanel

@@ -167,43 +167,51 @@ export async function removeMember(supabase: SupabaseClient, groupId: string, us
 
 const MESSAGE_PAGE_SIZE = 100;
 
-export async function fetchMessages(supabase: SupabaseClient, groupId: string): Promise<CommunityMessage[]> {
-  const { data, error } = await supabase
-    .from("community_messages")
-    .select("id, group_id, user_id, content, image_url, created_at")
-    .eq("group_id", groupId)
-    .order("created_at", { ascending: true })
-    .limit(MESSAGE_PAGE_SIZE);
-  if (error || !data) return [];
-  return data.map((row) => ({
-    id: row.id as string,
-    groupId: row.group_id as string,
-    userId: row.user_id as string,
-    content: row.content as string,
-    imageUrl: row.image_url as string | null,
-    createdAt: row.created_at as string,
-  }));
-}
-
-export async function sendMessage(
-  supabase: SupabaseClient,
-  input: { groupId: string; content: string; imageUrl?: string | null }
-): Promise<CommunityMessage> {
-  const { data, error } = await supabase.rpc("community_send_message", {
-    p_group_id: input.groupId,
-    p_content: input.content,
-    p_image_url: input.imageUrl ?? null,
-  });
-  if (error || !data) throw new Error(error?.message ?? "Message non envoyé.");
-  const row = data as Record<string, unknown>;
+function mapMessageRow(row: Record<string, unknown>): CommunityMessage {
   return {
     id: row.id as string,
     groupId: row.group_id as string,
     userId: row.user_id as string,
     content: row.content as string,
     imageUrl: row.image_url as string | null,
+    audioUrl: row.audio_url as string | null,
+    audioDurationSeconds: row.audio_duration_seconds !== null && row.audio_duration_seconds !== undefined
+      ? Number(row.audio_duration_seconds)
+      : null,
     createdAt: row.created_at as string,
   };
+}
+
+export async function fetchMessages(supabase: SupabaseClient, groupId: string): Promise<CommunityMessage[]> {
+  const { data, error } = await supabase
+    .from("community_messages")
+    .select("id, group_id, user_id, content, image_url, audio_url, audio_duration_seconds, created_at")
+    .eq("group_id", groupId)
+    .order("created_at", { ascending: true })
+    .limit(MESSAGE_PAGE_SIZE);
+  if (error || !data) return [];
+  return data.map((row) => mapMessageRow(row as Record<string, unknown>));
+}
+
+export async function sendMessage(
+  supabase: SupabaseClient,
+  input: {
+    groupId: string;
+    content: string;
+    imageUrl?: string | null;
+    audioUrl?: string | null;
+    audioDurationSeconds?: number | null;
+  }
+): Promise<CommunityMessage> {
+  const { data, error } = await supabase.rpc("community_send_message", {
+    p_group_id: input.groupId,
+    p_content: input.content,
+    p_image_url: input.imageUrl ?? null,
+    p_audio_url: input.audioUrl ?? null,
+    p_audio_duration_seconds: input.audioDurationSeconds ?? null,
+  });
+  if (error || !data) throw new Error(error?.message ?? "Message non envoyé.");
+  return mapMessageRow(data as Record<string, unknown>);
 }
 
 export async function reportMessage(
@@ -262,17 +270,7 @@ export function subscribeToGroupMessages(
     .on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "community_messages", filter: `group_id=eq.${groupId}` },
-      (payload) => {
-        const row = payload.new as Record<string, unknown>;
-        onInsert({
-          id: row.id as string,
-          groupId: row.group_id as string,
-          userId: row.user_id as string,
-          content: row.content as string,
-          imageUrl: row.image_url as string | null,
-          createdAt: row.created_at as string,
-        });
-      }
+      (payload) => onInsert(mapMessageRow(payload.new as Record<string, unknown>))
     )
     .subscribe();
 }
@@ -404,5 +402,49 @@ export async function uploadMessageImage(
     .from("community-media")
     .createSignedUrl(path, MESSAGE_IMAGE_SIGNED_URL_TTL_SECONDS);
   if (signError || !data) throw new Error(signError?.message ?? "Image envoyée mais son URL n'a pas pu être générée.");
+  return data.signedUrl;
+}
+
+const VOICE_MESSAGE_MAX_BYTES = 10 * 1024 * 1024;
+const VOICE_EXTENSION_BY_MIME: Record<string, string> = {
+  "audio/webm": "webm",
+  "audio/ogg": "ogg",
+  "audio/mp4": "m4a",
+  "audio/mpeg": "mp3",
+};
+
+function extensionForAudioBlob(blob: Blob): string {
+  const baseType = blob.type.split(";")[0]?.trim();
+  return VOICE_EXTENSION_BY_MIME[baseType] ?? "webm";
+}
+
+/** Same private bucket/signed-URL pattern as uploadMessageImage — see
+ * that function's own comment. No separate storage policy needed: the
+ * messages/{group}/{user}/… prefix's existing member-gated policy
+ * doesn't care about file type; the owner-only restriction that matters
+ * is enforced by community_send_message() refusing to accept
+ * p_audio_url from anyone but the group owner, not by storage. */
+export async function uploadVoiceMessage(
+  supabase: SupabaseClient,
+  groupId: string,
+  userId: string,
+  blob: Blob
+): Promise<string> {
+  if (blob.size > VOICE_MESSAGE_MAX_BYTES) {
+    throw new Error("Message vocal trop volumineux.");
+  }
+
+  const extension = extensionForAudioBlob(blob);
+  const path = `messages/${groupId}/${userId}/${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("community-media")
+    .upload(path, blob, { contentType: blob.type || "audio/webm" });
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data, error: signError } = await supabase.storage
+    .from("community-media")
+    .createSignedUrl(path, MESSAGE_IMAGE_SIGNED_URL_TTL_SECONDS);
+  if (signError || !data) throw new Error(signError?.message ?? "Vocal envoyé mais son URL n'a pas pu être générée.");
   return data.signedUrl;
 }
