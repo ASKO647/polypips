@@ -32,7 +32,7 @@
 
 export class ApiSportsUnavailableError extends Error {}
 
-export type ApiSportsKey = "football" | "basketball" | "rugby" | "baseball";
+export type ApiSportsKey = "football" | "basketball" | "rugby";
 
 export const SPORT_API_CONFIG: Record<
   ApiSportsKey,
@@ -41,7 +41,6 @@ export const SPORT_API_CONFIG: Record<
   football: { host: "v3.football.api-sports.io", scheduleEndpoint: "fixtures" },
   basketball: { host: "v1.basketball.api-sports.io", scheduleEndpoint: "games" },
   rugby: { host: "v1.rugby.api-sports.io", scheduleEndpoint: "games" },
-  baseball: { host: "v1.baseball.api-sports.io", scheduleEndpoint: "games" },
 };
 
 function hasRealErrors(errors: unknown): boolean {
@@ -96,6 +95,31 @@ export type ResolvedLeague = {
   season: string | null;
 };
 
+/** A past season whose end (or start, absent an end) is older than this is
+ * no longer "the best available fallback" — it's a stale, already-finished
+ * edition that shouldn't keep resurfacing as if it were current. This is
+ * what fixes the "Euro 2024 still shows in 2026" bug: a one-off tournament
+ * (Euro, World Cup, Copa América...) that only recurs every 2-4 years has
+ * no in-progress and no near-future season between editions, so it used to
+ * fall all the way back to "most recently finished" — correct for a
+ * regular annual league waiting for its next season to be published (a gap
+ * of at most a few months), completely wrong for a quadrennial event
+ * that's stale for years. 730 days (2 years) is comfortably longer than
+ * any real annual league's close season, yet always shorter than the gap
+ * between two editions of any periodic tournament — so this one
+ * sport/competition-agnostic threshold resolves both cases correctly
+ * without needing to classify competition "type" (unreliable/unverified
+ * API field) or hand-code a per-competition calendar. */
+const MAX_STALE_PAST_DAYS = 730;
+/** Symmetric near-future bound for the "upcoming" branch — an entry whose
+ * season hasn't started is only "à venir prochainement" if it starts
+ * within this horizon. Guards the same theoretical case (a far-future
+ * season entry resolving as if it were the current one) without needing to
+ * assume how far in advance any given sport typically publishes its next
+ * season. */
+const MAX_FUTURE_HORIZON_DAYS = 400;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
 /** Picks whichever entry in a league's raw `seasons` array (as API-Sports
  * returns it — each entry roughly `{ year, start, end, current, coverage }`,
  * though not every field is guaranteed present on every sport/host) is
@@ -114,13 +138,23 @@ export type ResolvedLeague = {
  * rule, recomputed fresh on every call from the actual current date.
  *
  * Priority: a season actually in progress today > the soonest season that
- * hasn't started yet (the close-season gap once the previous one already
- * finished, and next season's fixtures are typically published ahead of
- * its start) > the most recently finished one (nothing newer published
- * yet — the honest "best available" fallback). Only when no entry has a
- * parseable `start` date at all does this fall back to the `current` flag,
- * then to the last array entry, since at that point there's no date left
- * to reason about. */
+ * starts within MAX_FUTURE_HORIZON_DAYS (the close-season gap once the
+ * previous one already finished, and next season's fixtures are typically
+ * published ahead of its start) > the most recently finished one, but only
+ * if it ended within MAX_STALE_PAST_DAYS (nothing newer published yet —
+ * the honest "best available" fallback for a competition that runs every
+ * year). When real dated entries exist but none of the three qualifies —
+ * every dated entry is either too far in the future or, more commonly, too
+ * long in the past — this returns undefined rather than resurrecting a
+ * stale edition: there is nothing currently viable to show, so callers
+ * (see fetchAllLeagues / sync-sports-data) leave this competition out of
+ * the catalog entirely instead of displaying a defunct season as if it
+ * were live. Only when no entry has a parseable `start` date at all
+ * (`dated` stays empty — a different, much rarer condition than "found
+ * dates but they're all stale") does this fall back to the API's own
+ * `current` flag, then to the last array entry, since at that point
+ * there's no date left to reason about and no risk of the staleness bug
+ * either. */
 export function pickCurrentSeasonEntry(
   seasons: unknown[],
   now: Date
@@ -146,11 +180,24 @@ export function pickCurrentSeasonEntry(
     const inProgress = dated.find((d) => d.start <= now && (!d.end || now <= d.end));
     if (inProgress) return inProgress.entry;
 
-    const upcoming = dated.filter((d) => d.start > now).sort((a, b) => a.start.getTime() - b.start.getTime());
+    const upcoming = dated
+      .filter((d) => d.start > now && d.start.getTime() - now.getTime() <= MAX_FUTURE_HORIZON_DAYS * DAY_MS)
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
     if (upcoming.length > 0) return upcoming[0].entry;
 
-    const past = dated.filter((d) => d.start <= now).sort((a, b) => b.start.getTime() - a.start.getTime());
+    const past = dated
+      .filter((d) => d.start <= now && now.getTime() - (d.end ?? d.start).getTime() <= MAX_STALE_PAST_DAYS * DAY_MS)
+      .sort((a, b) => b.start.getTime() - a.start.getTime());
     if (past.length > 0) return past[0].entry;
+
+    // Real dated entries exist, but every single one is either years in
+    // the past or too far in the future to count as "current" — a
+    // periodic/one-off tournament between editions. Deliberately does NOT
+    // fall through to the current-flag/last-entry fallback below, which
+    // exists for the unrelated "no usable dates at all" case — falling
+    // through here would just resurrect the same stale entry this
+    // function exists to exclude.
+    return undefined;
   }
 
   const currentFlag = entries.find(

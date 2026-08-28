@@ -8,7 +8,7 @@ import { V2Badge } from "@/components/marketing/v2-badge";
  * of "Smart Money" or "Fomo X Axiom" yet, so each line leads with the
  * concrete win rather than the feature's internal name. */
 const V2_HIGHLIGHTS = [
-  "Analyse IA sur 7 sports — foot, basket, tennis, rugby, baseball, boxe, MMA",
+  "Analyse IA sur 4 sports — foot, basket, tennis, rugby",
   "Smart Money basé sur le vrai classement mensuel des meilleurs traders",
   "Copy Trading validé par l'IA avant chaque suggestion",
   "Wallets crypto Fomo & Axiom suivis en temps réel",

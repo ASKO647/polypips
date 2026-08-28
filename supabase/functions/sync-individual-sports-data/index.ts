@@ -10,8 +10,8 @@ import {
 } from "../_shared/odds-api.ts";
 
 /**
- * The individual-athlete counterpart to sync-sports-data — covers tennis,
- * boxing and MMA via The Odds API, kept as its own function (and its own
+ * The individual-athlete counterpart to sync-sports-data — covers tennis
+ * via The Odds API, kept as its own function (and its own
  * odds_api_*_cache tables, see that migration's file comment) rather than
  * folded into sync-sports-data, because:
  *   - different provider, different auth scheme (query param vs header),
@@ -25,11 +25,13 @@ import {
  *     search like sync-sports-data's featured competitions.
  *
  * Three things happen per run:
- * 1. Discover every currently-active competition this account's plan
- *    covers: every tennis_* sport_key (one per tournament — Roland-Garros,
- *    Wimbledon, etc., real and dynamic, never hardcoded) plus the two
- *    fixed boxing/MMA sport_keys, IF they're actually present and active
- *    in this account's own /v4/sports response — confirmed, never assumed.
+ * 1. Discover every currently-active tennis competition this account's
+ *    plan covers: every tennis_* sport_key (one per tournament — Roland-
+ *    Garros, Wimbledon, etc., real and dynamic, never hardcoded), IF
+ *    actually present and active in this account's own /v4/sports
+ *    response — confirmed, never assumed. Boxing and MMA were removed
+ *    (2026-08-28, product decision) — not deactivated: see
+ *    src/lib/sports/nav.ts's SPORT_CATEGORIES comment.
  * 2. For each, fetch its near-term schedule (/events — no odds, see
  *    _shared/odds-api.ts) and cache it.
  * 3. Football-odds complement: reusing the same /v4/sports catalog from
@@ -48,18 +50,7 @@ import {
  * league's fetch failing must never take down the rest of the run.
  */
 
-type IndividualSport = "tennis" | "boxing" | "mma";
-
-/** boxing_boxing and mma_mixed_martial_arts aren't split by promotion/
- * tournament on The Odds API — one fixed sport_key covers all boxing (or
- * all MMA) events, confirmed present and active on this account's plan
- * before being added here (2026-08-27). If either ever disappears from
- * /v4/sports, the discovery loop below simply stops finding it — no error,
- * no fixture wipe of what's already cached. */
-const STATIC_SPORTS: { sportKey: string; sport: IndividualSport; circuit: string }[] = [
-  { sportKey: "boxing_boxing", sport: "boxing", circuit: "Boxe" },
-  { sportKey: "mma_mixed_martial_arts", sport: "mma", circuit: "MMA" },
-];
+type IndividualSport = "tennis";
 
 function tennisCircuit(sportKey: string): string {
   if (sportKey.startsWith("tennis_atp_")) return "ATP";
@@ -77,8 +68,7 @@ const MAX_EVENTS_PER_COMPETITION = 30;
  * tennis can have many tournaments active at once (multiple ATP/WTA/ITF
  * events run concurrently through most of the season). At 1 request/sport
  * (free) + 1 request/competition, this cap plus an hourly cron (matching
- * the quota's hourly reset) stays comfortably inside 100 requests/hour
- * even with boxing/MMA's 2 extra requests included. */
+ * the quota's hourly reset) stays comfortably inside 100 requests/hour. */
 const MAX_COMPETITIONS_PER_RUN = 40;
 
 /** Football-odds complement (see _shared/odds-api.ts's header comment) —
@@ -87,15 +77,15 @@ const MAX_COMPETITIONS_PER_RUN = 40;
  * about this account's Odds API quota, instead of two crons each guessing
  * how much budget the other has already spent this hour.
  *
- * Unlike the free tennis/boxing/MMA discovery above, /v4/sports/{key}/odds
+ * Unlike the free tennis discovery above, /v4/sports/{key}/odds
  * costs 1 credit per sport_key per call (1 region × 1 market) regardless
  * of event count — real money-shaped cost, not just a request-count
  * concern. Two independent safeguards keep it cheap without needing to
  * know this account's actual plan size:
  *   1. Throttled to once every FOOTBALL_ODDS_THROTTLE_HOURS, checked
  *      against football_odds_cache's own newest synced_at — the cheap
- *      tennis/boxing/MMA discovery above still runs every hour as before,
- *      only the paid odds step is rate-limited.
+ *      tennis discovery above still runs every hour as before, only the
+ *      paid odds step is rate-limited.
  *   2. Self-stopping mid-run via the response's own x-requests-remaining
  *      header (see fetchOddsApiOddsForSport) — processing stops the
  *      moment remaining quota drops under FOOTBALL_ODDS_QUOTA_FLOOR,
@@ -248,12 +238,6 @@ Deno.serve(async (req) => {
     if (!entry.active) continue;
     if (entry.key.startsWith("tennis_")) {
       discovered.push({ sportKey: entry.key, sport: "tennis", circuit: tennisCircuit(entry.key), title: entry.title });
-    }
-  }
-  for (const staticEntry of STATIC_SPORTS) {
-    const match = catalog.find((s) => s.key === staticEntry.sportKey && s.active);
-    if (match) {
-      discovered.push({ sportKey: staticEntry.sportKey, sport: staticEntry.sport, circuit: staticEntry.circuit, title: match.title });
     }
   }
 

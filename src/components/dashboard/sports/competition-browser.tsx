@@ -13,10 +13,10 @@ import type { Competition, SportKey } from "@/lib/sports/types";
  * Sport → Pays → Compétition, in that order — one section per group, each
  * listing that group's real competitions (from listCompetitionsByCountry).
  * For team sports the group is a real country (sports_competitions_cache);
- * for individual-athlete sports (tennis/boxing/MMA, odds_api_competitions_
- * cache) there's no country, so the group is the circuit instead (ATP/WTA/
- * ITF/Boxe/MMA) — circuitEmoji() renders a matching badge there instead of
- * attempting a flag. A competition with zero near-term fixtures still
+ * for tennis (odds_api_competitions_cache) there's no country, so the
+ * group is the circuit instead (ATP/WTA/ITF) — circuitEmoji() renders a
+ * matching badge there instead of attempting a flag. A competition with
+ * zero near-term fixtures still
  * shows up here (this list never filters on fixture presence); its own
  * page is what renders the honest "Aucun match disponible" state — see
  * competition-matches.tsx.

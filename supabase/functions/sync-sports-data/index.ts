@@ -20,7 +20,14 @@ import {
  *    is what makes the Sports → Pays → Compétition browser show every real
  *    competition API-Sports has for that sport, not a curated subset —
  *    "toutes les compétitions disponibles" is satisfied by caching the
- *    catalog verbatim, never by hand-authoring names.
+ *    catalog, never by hand-authoring names. Not quite verbatim: a league
+ *    whose season data resolves to nothing currently viable (see
+ *    pickCurrentSeasonEntry in _shared/api-sports.ts — a periodic
+ *    tournament like the Euro between editions) is left out rather than
+ *    cached with a stale season. Deduped by external_league_id and written
+ *    with a per-batch-then-per-row fallback on write failure, so one bad or
+ *    duplicate row can never silently truncate the rest of the catalog —
+ *    see the loop below.
  * 2. syncFeaturedFixtures — a small curated FEATURED_COMPETITIONS list
  *    (the biggest leagues/cups per sport) gets its near-term schedule
  *    eagerly fetched and cached every run, matched against the catalog
@@ -45,8 +52,9 @@ import {
  * SPORT_CATEGORIES for the matching frontend list. Tennis isn't here:
  * API-Sports has no tennis product at all (no v1.tennis host), so there's
  * nothing to sync — the frontend shows it as "bientôt disponible" instead
- * of pretending to cover it. */
-const ACTIVE_SPORTS: ApiSportsKey[] = ["football", "basketball", "rugby", "baseball"];
+ * of pretending to cover it. Baseball was removed (2026-08-28, product
+ * decision) — not deactivated: see nav.ts's SPORT_CATEGORIES comment. */
+const ACTIVE_SPORTS: ApiSportsKey[] = ["football", "basketball", "rugby"];
 
 /** The competitions eagerly synced for fixtures every run — deliberately
  * curated (the biggest leagues/cups per sport), not "every league in the
@@ -126,10 +134,6 @@ const FEATURED_COMPETITIONS: { sport: ApiSportsKey; name: string; country?: stri
   { sport: "rugby", name: "Six Nations" },
   { sport: "rugby", name: "Rugby Championship" },
   { sport: "rugby", name: "World Cup" },
-  // Baseball
-  { sport: "baseball", name: "MLB", country: "USA" },
-  { sport: "baseball", name: "NPB", country: "Japan" },
-  { sport: "baseball", name: "KBO League", country: "South Korea" },
 ];
 
 /** Only fixtures/games kicking off within this many days from now are kept
@@ -206,38 +210,122 @@ Deno.serve(async (req) => {
 
   // Phase 1 — full competitions catalog per sport, real and dynamic.
   const catalogsBySport = new Map<ApiSportsKey, ResolvedLeague[]>();
-  const catalogResults: Array<{ sport: string; leaguesCached: number; error: string | null }> = [];
+  const catalogResults: Array<{
+    sport: string;
+    leaguesFetched: number;
+    leaguesSkippedNoCurrentSeason: number;
+    leaguesCached: number;
+    rowsFailed: number;
+    error: string | null;
+  }> = [];
 
   for (const sport of ACTIVE_SPORTS) {
-    try {
-      const leagues = await fetchAllLeagues(sport, apiKey);
-      catalogsBySport.set(sport, leagues);
+    let leaguesFetched = 0;
+    let leaguesSkippedNoCurrentSeason = 0;
+    let leaguesCached = 0;
+    let rowsFailed = 0;
 
-      for (let i = 0; i < leagues.length; i += CATALOG_UPSERT_BATCH_SIZE) {
-        const batch = leagues.slice(i, i + CATALOG_UPSERT_BATCH_SIZE);
-        const { error } = await supabase.from("sports_competitions_cache").upsert(
-          batch.map((league) => ({
-            sport,
-            external_league_id: league.externalId,
-            name: league.name,
-            country: league.country,
-            logo_url: league.logoUrl,
-            flag_url: league.flagUrl,
-            season: league.season,
-            resolved_at: new Date().toISOString(),
-            synced_at: new Date().toISOString(),
-          })),
-          { onConflict: "sport,external_league_id" }
-        );
-        if (error) throw new Error(`écriture catalogue échouée : ${error.message}`);
+    try {
+      const fetched = await fetchAllLeagues(sport, apiKey);
+      leaguesFetched = fetched.length;
+      // Kept in full (including season-less ones below) for phase 2's
+      // name matching — a season-less league just reports matched:false
+      // there, same as it always has.
+      catalogsBySport.set(sport, fetched);
+
+      // Two defensive steps before writing, both aimed at the same class
+      // of bug: one bad/duplicate row silently truncating everything
+      // after it in a batch (see the per-batch/per-row fallback below for
+      // the other half of this defense).
+      //  1. Dedupe by externalId — the upsert's ON CONFLICT target is
+      //     (sport, external_league_id); if API-Sports' /leagues response
+      //     ever contains the same league id twice (seen on some
+      //     sibling-sport hosts that return one row per league+season
+      //     instead of nesting seasons), Postgres raises "ON CONFLICT DO
+      //     UPDATE command cannot affect row a second time" for that
+      //     whole batch — keep only the last occurrence.
+      //  2. Drop leagues with no viable current/near-term season
+      //     (pickCurrentSeasonEntry returned undefined — see that
+      //     function's comment) — this is what makes a one-off tournament
+      //     between editions (Euro, World Cup...) simply not show up
+      //     rather than displaying its last, now-stale edition. A league
+      //     with real season data just never published (never had any
+      //     dated entries at all) is unaffected and still gets cached, as
+      //     before.
+      const dedupedById = new Map<number, ResolvedLeague>();
+      for (const league of fetched) dedupedById.set(league.externalId, league);
+      const withCurrentSeason: ResolvedLeague[] = [];
+      for (const league of dedupedById.values()) {
+        if (league.season === null) {
+          leaguesSkippedNoCurrentSeason += 1;
+          continue;
+        }
+        withCurrentSeason.push(league);
       }
 
-      catalogResults.push({ sport, leaguesCached: leagues.length, error: null });
+      for (let i = 0; i < withCurrentSeason.length; i += CATALOG_UPSERT_BATCH_SIZE) {
+        const batch = withCurrentSeason.slice(i, i + CATALOG_UPSERT_BATCH_SIZE);
+        const rows = batch.map((league) => ({
+          sport,
+          external_league_id: league.externalId,
+          name: league.name,
+          country: league.country,
+          logo_url: league.logoUrl,
+          flag_url: league.flagUrl,
+          season: league.season,
+          resolved_at: new Date().toISOString(),
+          synced_at: new Date().toISOString(),
+        }));
+
+        const { error } = await supabase
+          .from("sports_competitions_cache")
+          .upsert(rows, { onConflict: "sport,external_league_id" });
+
+        if (!error) {
+          leaguesCached += batch.length;
+          continue;
+        }
+
+        // A whole-batch failure must never take the rest of the catalog
+        // down with it (this was the actual bug behind real competitions
+        // — Italy's Serie A, UEFA Europa Conference League — silently
+        // never making it into the cache while others from the same
+        // catalog did): fall back to one upsert per row so only the
+        // genuinely bad row(s) get dropped, logged individually, while
+        // every good row in the batch still gets written.
+        console.error(
+          `[sync-sports-data] échec du batch catalogue pour ${sport} (${batch.length} lignes) — reprise ligne par ligne`,
+          error.message
+        );
+        for (const row of rows) {
+          const { error: rowError } = await supabase
+            .from("sports_competitions_cache")
+            .upsert(row, { onConflict: "sport,external_league_id" });
+          if (rowError) {
+            rowsFailed += 1;
+            console.error(
+              `[sync-sports-data] ligne catalogue rejetée pour ${sport} / external_league_id=${row.external_league_id} ("${row.name}")`,
+              rowError.message
+            );
+          } else {
+            leaguesCached += 1;
+          }
+        }
+      }
+
+      catalogResults.push({ sport, leaguesFetched, leaguesSkippedNoCurrentSeason, leaguesCached, rowsFailed, error: null });
     } catch (error) {
       const message =
         error instanceof ApiSportsUnavailableError || error instanceof Error ? error.message : "Erreur inconnue";
       console.error(`[sync-sports-data] échec catalogue pour ${sport}`, message);
-      catalogResults.push({ sport, leaguesCached: 0, error: message });
+      catalogResults.push({
+        sport,
+        leaguesFetched,
+        leaguesSkippedNoCurrentSeason,
+        leaguesCached,
+        rowsFailed,
+        error: message,
+      });
     }
   }
 
@@ -354,7 +442,10 @@ Deno.serve(async (req) => {
     ranAt: new Date().toISOString(),
     catalog: {
       sports: catalogResults.length,
+      totalLeaguesFetched: catalogResults.reduce((sum, r) => sum + r.leaguesFetched, 0),
+      totalLeaguesSkippedNoCurrentSeason: catalogResults.reduce((sum, r) => sum + r.leaguesSkippedNoCurrentSeason, 0),
       totalLeaguesCached: catalogResults.reduce((sum, r) => sum + r.leaguesCached, 0),
+      totalRowsFailed: catalogResults.reduce((sum, r) => sum + r.rowsFailed, 0),
       failed: catalogResults.filter((r) => r.error !== null).length,
       details: catalogResults,
     },

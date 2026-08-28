@@ -1,7 +1,11 @@
 /**
- * Client for The Odds API (the-odds-api.com) — covers individual-athlete
- * sports (tennis, boxing, MMA) that API-Sports (_shared/api-sports.ts)
- * doesn't have a product for at all, AND (as of the football-odds
+ * Client for The Odds API (the-odds-api.com) — covers tennis, the
+ * individual-athlete sport that API-Sports (_shared/api-sports.ts)
+ * doesn't have a product for at all (boxing and MMA were also synced this
+ * way until 2026-08-28, when they were removed as a product decision —
+ * see src/lib/sports/nav.ts's SPORT_CATEGORIES comment; nothing sport-
+ * specific in this file needed to change since it just takes whatever
+ * sport_key sync-individual-sports-data asks for), AND (as of the football-odds
  * complement) bookmaker odds for the subset of football leagues this
  * account's plan covers, layered on top of API-Sports' own football
  * fixtures — API-Sports stays the only source for the football fixtures
@@ -29,9 +33,9 @@
  * paid call here — priced per region × market, one charge per sport_key
  * regardless of how many events/bookmakers it returns — used only for the
  * football-odds complement, gated by the response's own
- * x-requests-remaining header rather than an assumed budget. Tennis/boxing/
- * MMA still never call it: PolyPips doesn't show bookmaker odds there yet,
- * so paying that cost would buy nothing.
+ * x-requests-remaining header rather than an assumed budget. Tennis still
+ * never calls it: PolyPips doesn't show bookmaker odds there yet, so
+ * paying that cost would buy nothing.
  */
 
 export class OddsApiUnavailableError extends Error {}
@@ -95,9 +99,7 @@ export type OddsApiSportInfo = {
 
 /** GET /v4/sports — the live catalog of every sport_key available on this
  * API key's plan, confirmed free (no quota cost) regardless of plan tier.
- * Used to discover which tennis_* tournament keys are currently active,
- * and to confirm boxing_boxing/mma_mixed_martial_arts are actually on this
- * account rather than assuming it. */
+ * Used to discover which tennis_* tournament keys are currently active. */
 export async function fetchOddsApiSports(apiKey: string): Promise<OddsApiSportInfo[]> {
   const json = await oddsApiFetch("/v4/sports/", apiKey);
   const items = Array.isArray(json) ? json : [];
@@ -173,9 +175,9 @@ export type OddsApiOddsEvent = {
  * costs quota: 1 region × 1 market (h2h, i.e. 1X2/moneyline) = 1 credit,
  * charged once for the whole sport_key regardless of how many events or
  * bookmakers come back in the response. Used only for football (see
- * sync-individual-sports-data's football-odds step) — tennis/boxing/MMA
- * still never call this (see this file's header comment), since PolyPips
- * doesn't show bookmaker odds anywhere in those sports yet.
+ * sync-individual-sports-data's football-odds step) — tennis still never
+ * calls this (see this file's header comment), since PolyPips doesn't
+ * show bookmaker odds there yet.
  *
  * Returns both the parsed events and the account's remaining-quota count
  * straight from the response headers, so the caller can stop requesting

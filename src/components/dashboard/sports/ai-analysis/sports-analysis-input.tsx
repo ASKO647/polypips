@@ -190,7 +190,7 @@ export function SportsAnalysisInput({
                 type="text"
                 value={bet.sport}
                 onChange={setField("sport")}
-                placeholder="Football, Tennis, MMA..."
+                placeholder="Football, Tennis, Rugby..."
                 className="rounded-xl border border-white/10 bg-white/[0.02] px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 outline-none focus:border-brand-400"
               />
             </label>

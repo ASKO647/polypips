@@ -2,11 +2,11 @@
  * Service layer for the Sports module — every Sports page/component reads
  * through here, never through Supabase directly. Backed by real data from
  * two independent providers:
- *   - team sports (football/basketball/rugby/baseball) via API-Sports:
+ *   - team sports (football/basketball/rugby) via API-Sports:
  *     sports_competitions_cache / sports_teams_cache / sports_fixtures_cache,
  *     populated by sync-sports-data (see that function's file comment, and
  *     _shared/api-sports.ts, for the source itself and its caveats).
- *   - individual-athlete sports (tennis/boxing/MMA) via The Odds API:
+ *   - tennis, the individual-athlete sport, via The Odds API:
  *     odds_api_competitions_cache / odds_api_matches_cache, populated by
  *     sync-individual-sports-data (see that function's file comment, and
  *     _shared/odds-api.ts). No separate teams cache exists for these —
@@ -14,7 +14,7 @@
  *     live directly on each match row and get mapped into the same Team
  *     shape a team-sport player uses (no logoUrl, same as a team with a
  *     missing crest). These competitions also have no country — they're
- *     grouped by circuit (ATP/WTA/ITF/Boxe/MMA) instead, stored directly in
+ *     grouped by circuit (ATP/WTA/ITF) instead, stored directly in
  *     Competition.country so every country-grouping call site (Compétitions
  *     browser, a competition's own match list) works unchanged; nav.ts's
  *     circuitEmoji() renders a circuit badge there instead of a flag.
@@ -116,8 +116,8 @@ type IndividualCompetitionRow = {
 
 /** The Odds API never provides a crest for a tournament — logoUrl/flagUrl
  * stay undefined, exactly like a team-sport Competition with no resolved
- * logo yet. circuit (ATP/WTA/ITF/Boxe/MMA) is stored in Competition.country
- * — see this file's header comment for why. */
+ * logo yet. circuit (ATP/WTA/ITF) is stored in Competition.country — see
+ * this file's header comment for why. */
 function toIndividualCompetition(row: IndividualCompetitionRow): Competition {
   return {
     id: `${row.sport}-comp-${row.odds_api_sport_key}`,
@@ -282,7 +282,7 @@ export async function listTeams(): Promise<Team[]> {
  * getMatchById, and the reason "Mes équipes" reads through this instead of
  * listTeams()+filter. listTeams() only ever returns rows from
  * sports_teams_cache, which by design has no concept of an individual-sport
- * "team" at all (see this file's header comment — a tennis/boxing/MMA
+ * "team" at all (see this file's header comment — a tennis
  * player only ever exists as a name on a match row, via
  * teamFromPlayerName). A follow written for one of those ids would
  * therefore never match anything listTeams() returns, silently vanishing
