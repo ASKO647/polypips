@@ -10,7 +10,7 @@ import {
   POLYMARKET_NAV_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
-import { SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
+import { SPORTS_SUB_NAV } from "@/lib/sports/nav";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { findActiveHref } from "@/lib/dashboard-nav-active";
 import { cn } from "@/lib/utils";
@@ -46,7 +46,6 @@ export function SidebarNavContent({
     DASHBOARD_TOP_ITEM.href,
     ...POLYMARKET_NAV_ITEMS.map((i) => i.href),
     ...SPORTS_SUB_NAV.map((i) => i.href),
-    ...SPORT_CATEGORIES.map((s) => `/dashboard/sports/${s.key}`),
     ...DASHBOARD_GLOBAL_ITEMS.map((i) => i.href),
   ]);
 
@@ -127,8 +126,6 @@ export function SidebarNavContent({
     );
   };
 
-  const withinSports = pathname === "/dashboard/sports" || pathname.startsWith("/dashboard/sports/");
-
   return (
     <>
       <nav className="flex flex-1 flex-col gap-4 px-4 py-2">
@@ -142,49 +139,13 @@ export function SidebarNavContent({
             items: POLYMARKET_NAV_ITEMS,
           })}
 
-          {renderUniverseGroup(
-            {
-              id: "sport",
-              label: "Sport",
-              accentClass: "bg-emerald-400",
-              badge: "NOUVEAU",
-              items: SPORTS_SUB_NAV,
-            },
-            withinSports && (
-              <div className="ml-4 flex flex-col gap-0.5 border-l border-dash-border pl-3">
-                <p className="mb-0.5 mt-2 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-dash-text-faint">
-                  Sports
-                </p>
-                {SPORT_CATEGORIES.map((sport) => {
-                  const href = `/dashboard/sports/${sport.key}`;
-                  const subActive = pathname === href;
-                  return (
-                    <Link
-                      key={sport.key}
-                      href={href}
-                      prefetch
-                      onClick={onNavigate}
-                      className={cn(
-                        "flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] font-medium transition-colors duration-150",
-                        subActive
-                          ? "bg-brand-500/10 text-brand-400"
-                          : "text-dash-text-quaternary hover:bg-dash-surface-hover hover:text-dash-text",
-                        !sport.active && "opacity-60"
-                      )}
-                    >
-                      <span aria-hidden>{SPORT_EMOJIS[sport.key]}</span>
-                      {sport.label}
-                      {!sport.active && (
-                        <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-dash-text-faint">
-                          Bientôt
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-              </div>
-            )
-          )}
+          {renderUniverseGroup({
+            id: "sport",
+            label: "Sport",
+            accentClass: "bg-emerald-400",
+            badge: "NOUVEAU",
+            items: SPORTS_SUB_NAV,
+          })}
         </div>
 
         <div className="flex flex-col gap-0.5">{DASHBOARD_GLOBAL_ITEMS.map(renderLink)}</div>

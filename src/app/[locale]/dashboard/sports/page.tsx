@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { SportComingSoon } from "@/components/dashboard/sports/sport-coming-soon";
+import { SportAnalyseIaFlow } from "@/components/dashboard/sports/sport-analyse-ia-flow";
 
 export const metadata: Metadata = {
-  title: "Sports — Polypips",
+  title: "Sport — Analyse IA — Polypips",
 };
 
-export default function SportsOverviewPage() {
-  return <SportComingSoon />;
+export default function SportAnalyseIaPage() {
+  return <SportAnalyseIaFlow />;
 }

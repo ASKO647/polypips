@@ -24,23 +24,43 @@
  *
  * Tennis is NOT part of the API-Sports ecosystem at all (no v1.tennis host
  * exists there) — not included below, and not selectable anywhere in the
- * Sports module until a real tennis data source is connected (see
- * src/lib/sports/nav.ts's SPORT_CATEGORIES comment). Hockey and NFL/american
+ * Sports module until a real tennis data source is connected (a separate
+ * vendor/API key entirely — see src/lib/sports/nav.ts's SPORT_CATEGORIES
+ * comment). Rugby was covered before the Sport universe's "Analyse IA"
+ * rebuild (2026-09, product decision: Football/Basketball/Tennis only) —
+ * removed here along with it, not deactivated. Hockey and NFL/american
  * football products do exist on API-Sports but PolyPips doesn't cover them
  * (product decision, not a data-availability one) — also not included.
  */
 
 export class ApiSportsUnavailableError extends Error {}
 
-export type ApiSportsKey = "football" | "basketball" | "rugby";
+export type ApiSportsKey = "football" | "basketball";
 
 export const SPORT_API_CONFIG: Record<
   ApiSportsKey,
-  { host: string; scheduleEndpoint: "fixtures" | "games" }
+  {
+    host: string;
+    scheduleEndpoint: "fixtures" | "games";
+    /** Path (relative to host) for the head-to-head lookup between two
+     * team IDs — football's API-Sports product exposes a dedicated
+     * /fixtures/headtohead endpoint; basketball's sibling product instead
+     * filters the base /games endpoint with an h2h= query param rather
+     * than having its own sub-path. Both ultimately return the same
+     * fixture/game array shape fetchSchedule already parses. */
+    h2hPath: (team1Id: number, team2Id: number) => string;
+  }
 > = {
-  football: { host: "v3.football.api-sports.io", scheduleEndpoint: "fixtures" },
-  basketball: { host: "v1.basketball.api-sports.io", scheduleEndpoint: "games" },
-  rugby: { host: "v1.rugby.api-sports.io", scheduleEndpoint: "games" },
+  football: {
+    host: "v3.football.api-sports.io",
+    scheduleEndpoint: "fixtures",
+    h2hPath: (a, b) => `/fixtures/headtohead?h2h=${a}-${b}`,
+  },
+  basketball: {
+    host: "v1.basketball.api-sports.io",
+    scheduleEndpoint: "games",
+    h2hPath: (a, b) => `/games?h2h=${a}-${b}`,
+  },
 };
 
 function hasRealErrors(errors: unknown): boolean {
@@ -316,6 +336,16 @@ export type ScheduleItem = {
   awayTeamExternalId: number;
   awayTeamName: string;
   awayTeamLogoUrl: string | null;
+  /** Every fixture in a football/basketball response carries its own
+   * league object (a head-to-head pair can have met across several
+   * competitions, e.g. league play AND a cup) — null only when the row's
+   * own shape didn't include one. */
+  competitionName: string | null;
+  /** Present on a finished item — the score fetchHeadToHead's recent-
+   * meetings callers need for real context; always null for a scheduled
+   * (not yet played) item. */
+  homeScore: number | null;
+  awayScore: number | null;
 };
 
 /** Rows whose status falls in here are dropped from the sync entirely —
@@ -338,24 +368,12 @@ function normalizeStatus(shortCode: string | undefined | null): "scheduled" | "l
   return "live";
 }
 
-/** Fetches every fixture/game API-Sports has for this league+season (no
- * `next=`/`date=` filtering server-side — that parameter's exact
- * availability per sport couldn't be verified live), then callers filter
- * to the near-term window themselves. One request per competition either
- * way, so this doesn't cost more against the daily quota. */
-export async function fetchSchedule(
-  sport: ApiSportsKey,
-  leagueExternalId: number,
-  season: string,
-  apiKey: string
-): Promise<ScheduleItem[]> {
-  const config = SPORT_API_CONFIG[sport];
-  const json = await apiSportsFetch(
-    config.host,
-    `/${config.scheduleEndpoint}?league=${leagueExternalId}&season=${encodeURIComponent(season)}`,
-    apiKey
-  );
-  const response = Array.isArray(json.response) ? json.response : [];
+/** Shared by fetchSchedule and fetchHeadToHead — both hit an endpoint that
+ * returns the same fixture/game array shape (either `{fixture, teams}` for
+ * football, or the fields flat on the row itself for basketball). A row
+ * missing an id, date, or either team is skipped rather than fabricated;
+ * one malformed row must never drop the rest of the response. */
+function parseScheduleItems(response: unknown[]): ScheduleItem[] {
   const items: ScheduleItem[] = [];
 
   for (const raw of response) {
@@ -377,6 +395,12 @@ export async function fetchSchedule(
     const kickoff = new Date(dateStr);
     if (Number.isNaN(kickoff.getTime())) continue;
 
+    const league = row.league as Record<string, unknown> | undefined;
+    const goals = row.goals as Record<string, unknown> | undefined;
+    const scores = row.scores as Record<string, unknown> | undefined;
+    const homeScoreRaw = goals?.home ?? (scores?.home as Record<string, unknown> | undefined)?.total;
+    const awayScoreRaw = goals?.away ?? (scores?.away as Record<string, unknown> | undefined)?.total;
+
     items.push({
       externalFixtureId: Number(fixtureId),
       kickoffAt: kickoff.toISOString(),
@@ -387,8 +411,90 @@ export async function fetchSchedule(
       awayTeamExternalId: Number(away.id),
       awayTeamName: typeof away.name === "string" ? away.name : "Équipe inconnue",
       awayTeamLogoUrl: typeof away.logo === "string" ? (away.logo as string) : null,
+      competitionName: typeof league?.name === "string" ? (league.name as string) : null,
+      homeScore: typeof homeScoreRaw === "number" ? homeScoreRaw : null,
+      awayScore: typeof awayScoreRaw === "number" ? awayScoreRaw : null,
     });
   }
 
   return items;
+}
+
+/** Fetches every fixture/game API-Sports has for this league+season (no
+ * `next=`/`date=` filtering server-side — that parameter's exact
+ * availability per sport couldn't be verified live), then callers filter
+ * to the near-term window themselves. One request per competition either
+ * way, so this doesn't cost more against the daily quota. */
+export async function fetchSchedule(
+  sport: ApiSportsKey,
+  leagueExternalId: number,
+  season: string,
+  apiKey: string
+): Promise<ScheduleItem[]> {
+  const config = SPORT_API_CONFIG[sport];
+  const json = await apiSportsFetch(
+    config.host,
+    `/${config.scheduleEndpoint}?league=${leagueExternalId}&season=${encodeURIComponent(season)}`,
+    apiKey
+  );
+  return parseScheduleItems(Array.isArray(json.response) ? json.response : []);
+}
+
+export type ResolvedTeam = {
+  externalId: number;
+  name: string;
+  logoUrl: string | null;
+  country: string | null;
+};
+
+/** Resolves a free-text team name (as typed by a user, e.g. "Real Madrid")
+ * to API-Sports' own team records via /teams?search= — one request,
+ * returns every match the search turns up (rarely more than a handful) so
+ * the caller can pick the best one (see analyzeIA's team-name matching in
+ * sport-match-search/index.ts) rather than trusting result order. */
+export async function searchTeams(
+  sport: ApiSportsKey,
+  searchTerm: string,
+  apiKey: string
+): Promise<ResolvedTeam[]> {
+  const config = SPORT_API_CONFIG[sport];
+  const json = await apiSportsFetch(config.host, `/teams?search=${encodeURIComponent(searchTerm)}`, apiKey);
+  const response = Array.isArray(json.response) ? json.response : [];
+  const teams: ResolvedTeam[] = [];
+  for (const raw of response) {
+    const row = raw as Record<string, unknown>;
+    const team = (row.team ?? row) as Record<string, unknown>;
+    const externalId = Number(team.id);
+    if (!Number.isFinite(externalId)) continue;
+    const countryRaw = row.country ?? team.country;
+    const country =
+      typeof countryRaw === "string"
+        ? countryRaw
+        : countryRaw && typeof countryRaw === "object"
+          ? ((countryRaw as Record<string, unknown>).name as string | undefined) ?? null
+          : null;
+    teams.push({
+      externalId,
+      name: typeof team.name === "string" ? team.name : `Équipe ${externalId}`,
+      logoUrl: typeof team.logo === "string" ? (team.logo as string) : null,
+      country,
+    });
+  }
+  return teams;
+}
+
+/** Every fixture/game API-Sports has ever recorded between these two exact
+ * teams — past AND future, whatever the endpoint returns, with no status
+ * filter server-side (unverified availability per sport, same reasoning as
+ * fetchSchedule) — callers split it into "next 3 upcoming" and "recent
+ * meetings for context" themselves (see sport-match-search/index.ts). */
+export async function fetchHeadToHead(
+  sport: ApiSportsKey,
+  team1ExternalId: number,
+  team2ExternalId: number,
+  apiKey: string
+): Promise<ScheduleItem[]> {
+  const config = SPORT_API_CONFIG[sport];
+  const json = await apiSportsFetch(config.host, config.h2hPath(team1ExternalId, team2ExternalId), apiKey);
+  return parseScheduleItems(Array.isArray(json.response) ? json.response : []);
 }
