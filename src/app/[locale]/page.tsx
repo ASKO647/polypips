@@ -1,37 +1,30 @@
-import { SiteHeader } from "@/components/layout/site-header";
-import { AnnouncementBar } from "@/components/layout/announcement-bar";
-import { Footer } from "@/components/layout/footer";
-import { Hero } from "@/components/marketing/hero";
-import { FeatureSection } from "@/components/marketing/feature-section";
-import { ProofShowcase } from "@/components/marketing/proof-showcase";
-import { HowItWorks } from "@/components/marketing/how-it-works";
-import { ProductDemo } from "@/components/marketing/product-demo";
-import { PotentialCalculator } from "@/components/marketing/potential-calculator";
-import { V2Announcement } from "@/components/marketing/v2-announcement";
-import { Pricing } from "@/components/marketing/pricing";
-import { FAQ } from "@/components/marketing/faq";
-import { FinalCTA } from "@/components/marketing/final-cta";
-import { SmartMoneyActivityPopup } from "@/components/marketing/smart-money-activity-popup";
+import type { Metadata } from "next";
+import { BatipilotHeader } from "@/components/batipilot/header";
+import { BatipilotHero } from "@/components/batipilot/hero";
+import { AgentsSection } from "@/components/batipilot/agents-section";
+import { AutomationSection } from "@/components/batipilot/automation-section";
+import { PricingSection } from "@/components/batipilot/pricing-section";
+import { HowItWorksSection } from "@/components/batipilot/how-it-works-section";
+import { BatipilotFooter } from "@/components/batipilot/footer";
+
+export const metadata: Metadata = {
+  title: "BatiPilot — L'IA qui pilote votre entreprise BTP",
+  description:
+    "BatiPilot automatise la gestion de chantiers, le standard téléphonique, les dossiers d'aides, la relance commerciale, les appels d'offres et le marketing des entreprises du BTP.",
+};
 
 export default function Home() {
   return (
-    <>
-      <AnnouncementBar />
-      <SiteHeader />
+    <div className="bg-[#04060d] text-white">
+      <BatipilotHeader />
       <main>
-        <Hero />
-        <FeatureSection />
-        <ProofShowcase />
-        <HowItWorks />
-        <ProductDemo />
-        <PotentialCalculator />
-        <V2Announcement />
-        <Pricing />
-        <FAQ />
-        <FinalCTA />
+        <BatipilotHero />
+        <AgentsSection />
+        <AutomationSection />
+        <PricingSection />
+        <HowItWorksSection />
       </main>
-      <Footer />
-      <SmartMoneyActivityPopup />
-    </>
+      <BatipilotFooter />
+    </div>
   );
 }

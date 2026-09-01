@@ -185,6 +185,58 @@
       box-shadow: 0 0 0 10px rgba(255, 45, 61, 0);
     }
   }
+  --animate-grid-pan: grid-pan 24s linear infinite;
+  --animate-mesh-drift: mesh-drift 18s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+  --animate-float-slow: float-slow 7s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 14s linear infinite;
+
+  @keyframes grid-pan {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 64px 64px;
+    }
+  }
+  @keyframes mesh-drift {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(3%, -4%) scale(1.05);
+    }
+    66% {
+      transform: translate(-3%, 3%) scale(0.98);
+    }
+  }
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
   @keyframes cta-sheen {
     0% {
       opacity: 0;
@@ -276,6 +328,16 @@ body {
   .cta-sheen::before {
     animation: none;
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-grid-pan,
+  .animate-mesh-drift,
+  .animate-glow-pulse,
+  .animate-float-slow,
+  .animate-spin-slow {
+    animation: none !important;
   }
 }
 
