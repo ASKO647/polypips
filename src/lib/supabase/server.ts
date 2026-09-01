@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { fetchWithTimeout } from "@/lib/supabase/fetch-with-timeout";
 
 /** React's cache() memoizes per request in the App Router — every Server
  * Component in a single render pass (the dashboard layout plus whichever
@@ -17,6 +18,7 @@ export const createClient = cache(async () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { fetch: fetchWithTimeout() },
       cookies: {
         getAll() {
           return cookieStore.getAll();
