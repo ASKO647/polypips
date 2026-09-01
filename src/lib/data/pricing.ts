@@ -94,18 +94,3 @@ export function getMaxTrackedWallets(plan: PricingPlan): number | null {
   return null;
 }
 
-/**
- * "3 stratégies actives par mois" is a locked monthly quota, not a
- * freely-swappable concurrent cap: once a user has activated N strategies
- * in the current billing cycle, they can't deactivate one to activate a
- * different one until the subscription renews (see
- * lib/supabase/quota-cycles.ts). Returns null when unlimited.
- */
-export function getMaxActiveCopyTradingStrategies(plan: PricingPlan): number | null {
-  for (const feature of plan.features) {
-    const match = feature.match(/^(\d+)\s+stratégies?\s+actives?\s+par\s+mois$/i);
-    if (match) return Number(match[1]);
-  }
-  return null;
-}
-

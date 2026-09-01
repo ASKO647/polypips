@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Menu, Sparkles, Trophy, Wallet } from "lucide-react";
+import { LayoutDashboard, Sparkles, Trophy, Users, Menu } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { findActiveHref } from "@/lib/dashboard-nav-active";
 import { cn } from "@/lib/utils";
@@ -9,22 +9,16 @@ const TABS = [
   { label: "Accueil", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analyse IA", href: "/dashboard/analyse-ia", icon: Sparkles },
   { label: "Sport", href: "/dashboard/sports", icon: Trophy },
-  { label: "Fomo/Axiom", href: "/dashboard/smart-wallets", icon: Wallet },
+  { label: "Communauté", href: "/dashboard/community", icon: Users },
 ] as const;
 
 /**
  * Real bottom tab bar for mobile, not just a hamburger — the dashboard has
- * three separate "universes" (Polymarket/Sport/Fomo X Axiom) plus global
- * tools, too much to fit in 5 tabs, so this surfaces only the busiest entry
- * point per universe and a trailing "Menu" tab that opens the existing full
- * drawer (DashboardMobileNav) for everything else (Copy Trading, Coach IA,
- * Statistiques, Paramètres, ...).
- *
- * "Fomo/Axiom" points at /dashboard/smart-wallets (a route prefix, not a
- * page of its own) purely so findActiveHref can group all of that
- * universe's sub-routes under one tab; Link still needs a real destination,
- * so it targets the Analyse IA Fomo page — the same "first tab" pattern the
- * sidebar's own group header doesn't need but this flat tab bar does.
+ * two separate "universes" (Polymarket/Sport) plus global tools, too much
+ * to fit in 5 tabs, so this surfaces only the busiest entry point per
+ * universe plus one global tool, and a trailing "Menu" tab that opens the
+ * existing full drawer (DashboardMobileNav) for everything else (Smart
+ * Wallet, Coach IA, Statistiques, Profil, ...).
  */
 export function DashboardBottomNav({
   onOpenMenu,
@@ -47,11 +41,10 @@ export function DashboardBottomNav({
     >
       {TABS.map((tab) => {
         const active = tab.href === activeHref;
-        const linkHref = tab.href === "/dashboard/smart-wallets" ? "/dashboard/smart-wallets/analyse-fomo" : tab.href;
         return (
           <Link
             key={tab.href}
-            href={linkHref}
+            href={tab.href}
             prefetch
             className={cn(
               "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 py-1.5 text-[11px] font-medium transition-colors duration-150",

@@ -11,7 +11,6 @@ import {
   DASHBOARD_RESOURCE_ITEMS,
   DASHBOARD_TOP_ITEM,
   POLYMARKET_NAV_ITEMS,
-  SIGNAL_NAV_ITEMS,
   SPORTS_TITLE_ITEM,
 } from "@/lib/data/dashboard-nav";
 import type { NotificationItem } from "@/lib/data/notifications";
@@ -24,7 +23,6 @@ function pageTitleFor(pathname: string): string | null {
     DASHBOARD_TOP_ITEM,
     ...POLYMARKET_NAV_ITEMS,
     SPORTS_TITLE_ITEM,
-    ...SIGNAL_NAV_ITEMS,
     ...DASHBOARD_GLOBAL_ITEMS,
     ...DASHBOARD_RESOURCE_ITEMS,
   ];

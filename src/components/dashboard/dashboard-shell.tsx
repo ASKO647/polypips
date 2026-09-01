@@ -34,8 +34,8 @@ function DashboardShellInner({
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
   // overview have been converted to the real light/dark theme so far — the
-  // rest of the dashboard (Sport, Fomo/Axiom, Coach, Stats, Copy Trading,
-  // Markets, Analyse IA) still uses hardcoded dark-mode styling
+  // rest of the dashboard (Sport, Coach, Stats, Smart Wallet, Markets,
+  // Analyse IA) still uses hardcoded dark-mode styling
   // (text-white, bg-white/[…]) designed against a permanently dark canvas.
   // Pin `main`'s theme scope to dark on those routes so their un-converted
   // text stays legible regardless of the user's chosen theme, until they

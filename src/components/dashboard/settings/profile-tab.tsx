@@ -15,7 +15,6 @@ import {
   Sparkles,
   Star,
   Wallet,
-  Repeat2,
   Copy,
   Check,
   Link2,
@@ -652,7 +651,6 @@ export function ProfileTab({
           <ActivityRow icon={Sparkles} label="Analyses effectuées" value={activity.analysesCount} />
           <ActivityRow icon={Star} label="Marchés suivis" value={activity.marketsFollowedCount} />
           <ActivityRow icon={Wallet} label="Smart Wallets suivis" value={activity.walletsFollowedCount} />
-          <ActivityRow icon={Repeat2} label="Trades copiés" value={activity.copiedTradesCount} />
           <Link
             href="/dashboard/stats"
             className="mt-1 text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"

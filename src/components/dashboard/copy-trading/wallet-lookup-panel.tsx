@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Loader2, Plus, Search } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { WalletChart } from "@/components/ui/wallet-chart";
@@ -78,11 +78,16 @@ function EmptyRow({ label }: { label: string }) {
 
 export function WalletLookupPanel({
   onWalletFollowed,
+  prefillAddress,
 }: {
-  /** Lets the strategies list below react immediately once a looked-up
-   * wallet gets followed, without a full page reload — mirrors Smart
-   * Money's old handleWalletAdded optimistic-add pattern. */
+  /** Lets the followed-wallets list below react immediately once a
+   * looked-up wallet gets followed, without a full page reload. */
   onWalletFollowed: (walletId: string, label: string, address: string) => void;
+  /** Set (to a new address, or the same address again — see the effect's
+   * own key handling below) to pre-fill and immediately re-run the search
+   * — "voir le détail" on an already-followed wallet's card reuses this
+   * same panel instead of duplicating its whole result view. */
+  prefillAddress?: { address: string; key: number };
 }) {
   const { formatAmount } = useCurrency();
   const [address, setAddress] = useState("");
@@ -91,9 +96,8 @@ export function WalletLookupPanel({
   const [result, setResult] = useState<WalletLookupResult | null>(null);
   const [followPending, setFollowPending] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmed = address.trim().toLowerCase();
+  const performSearch = async (rawAddress: string) => {
+    const trimmed = rawAddress.trim().toLowerCase();
     if (!WALLET_ADDRESS_RE.test(trimmed)) {
       setError("Adresse invalide. Format attendu : 0x suivi de 40 caractères hexadécimaux.");
       return;
@@ -117,6 +121,25 @@ export function WalletLookupPanel({
       setLoading(false);
     }
   };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    performSearch(address);
+  };
+
+  useEffect(() => {
+    if (!prefillAddress) return;
+    // A "voir le détail" click on a followed-wallet card outside this
+    // component is exactly the kind of external event an effect should
+    // synchronize from — not a derived-state anti-pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAddress(prefillAddress.address);
+    performSearch(prefillAddress.address);
+    // Only re-run when a new prefill request comes in (key changes) —
+    // performSearch is intentionally omitted, it would re-run on every
+    // render otherwise since it's redefined each time.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefillAddress?.key]);
 
   const toggleFollow = async () => {
     if (!result || followPending) return;

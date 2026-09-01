@@ -43,36 +43,30 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: "suivre-un-wallet-en-copy-trading",
-    title: "Comment suivre un wallet en Copy Trading",
-    excerpt:
-      "Repérer un portefeuille Smart Money, consulter son historique, et configurer une stratégie en simulation.",
+    title: "Comment suivre un wallet avec Smart Wallet",
+    excerpt: "Rechercher un portefeuille Polymarket par adresse, consulter son activité, et le suivre.",
     intro:
-      "Ce guide explique comment suivre un portefeuille on-chain et configurer une stratégie de copy trading en mode simulation, sans jamais engager de fonds réels.",
+      "Ce guide explique comment rechercher un portefeuille Polymarket par son adresse et le suivre pour être notifié de ses mouvements — Polypips ne place jamais d'ordre à votre place, c'est vous qui décidez de répliquer ou non un mouvement sur Polymarket.",
     steps: [
       {
-        title: "Ouvrez la section Smart Money",
+        title: "Ouvrez Smart Wallet",
         description:
-          "Depuis le tableau de bord, accédez à la section Smart Money de l'univers Polymarket ou Fomo/Axiom, selon les marchés que vous souhaitez suivre.",
+          "Depuis le tableau de bord, accédez à la section Smart Wallet de l'univers Polymarket.",
       },
       {
-        title: "Recherchez ou repérez un portefeuille",
+        title: "Recherchez un portefeuille par adresse",
         description:
-          "Utilisez la recherche par adresse de portefeuille, ou parcourez les portefeuilles déjà identifiés par Polypips pour repérer une activité qui vous intéresse.",
+          "Collez l'adresse (0x...) d'un portefeuille Polymarket dans le champ de recherche pour voir ses positions, son profil et son activité récente.",
       },
       {
         title: "Consultez son historique et ses métriques",
         description:
-          "Avant de suivre un portefeuille, examinez son historique de décisions, sa taille moyenne de position et les métriques de qualité affichées — ces données sont publiques et vérifiables on-chain.",
+          "Avant de suivre un portefeuille, examinez son historique de mouvements, sa taille moyenne de position et les métriques de qualité affichées — ces données sont publiques et vérifiables on-chain.",
       },
       {
         title: "Suivez le portefeuille",
         description:
-          "Cliquez sur « Suivre » pour ajouter le portefeuille à votre liste. Vous serez notifié de son activité selon vos préférences de notification.",
-      },
-      {
-        title: "Configurez une stratégie en simulation",
-        description:
-          "Depuis Copy Trading, créez une stratégie basée sur ce portefeuille : définissez votre budget maximum, votre niveau de risque et vos limites d'exposition. La stratégie s'exécute uniquement en simulation — aucun ordre réel n'est jamais transmis.",
+          "Cliquez sur « Suivre ce wallet » pour l'ajouter à votre liste. Vous recevrez une notification, avec un lien direct vers le marché Polymarket concerné, dès qu'il ouvre une nouvelle position.",
       },
     ],
   },

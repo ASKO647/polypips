@@ -1,14 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { countFollowedWallets } from "@/lib/supabase/wallets";
-import { countActiveStrategies } from "@/lib/supabase/copy-trading";
 
-export type QuotaFeature = "wallets" | "copy_trading";
+export type QuotaFeature = "wallets";
 
 /**
  * Ensures the user's quota-cycle anchor for `feature` matches their
- * subscription's live current_period_end, resetting their selection for
- * that feature (deleting followed wallets, or active strategies) if the
- * subscription has actually renewed since the anchor was last set.
+ * subscription's live current_period_end, resetting their followed-wallet
+ * selection if the subscription has actually renewed since the anchor was
+ * last set.
  *
  * Returns the live period_end to lock against, or null when the user has
  * no real Stripe subscription period to anchor to — callers should treat
@@ -40,13 +39,9 @@ export async function syncQuotaCycle(
     cycleRow && new Date(cycleRow.period_end as string).getTime() === new Date(periodEnd).getTime();
   if (sameCycle) return { periodEnd, resetOccurred: false };
 
-  // No anchor yet, or the subscription has renewed since it was set —
-  // wipe this feature's selection and re-anchor to the current cycle.
-  if (feature === "wallets") {
-    await supabase.from("user_wallet_follows").delete().eq("user_id", userId);
-  } else {
-    await supabase.from("copy_trading_strategies").delete().eq("user_id", userId);
-  }
+  // No anchor yet, or the subscription has renewed since it was set — wipe
+  // this feature's selection and re-anchor to the current cycle.
+  await supabase.from("user_wallet_follows").delete().eq("user_id", userId);
 
   await supabase.from("user_quota_cycles").upsert(
     { user_id: userId, feature, period_end: periodEnd, updated_at: new Date().toISOString() },
@@ -88,10 +83,7 @@ export async function getQuotaLockState(
     return { locked: false, count: 0, maxAllowed, periodEnd: null };
   }
 
-  const count =
-    feature === "wallets"
-      ? await countFollowedWallets(supabase, userId)
-      : await countActiveStrategies(supabase, userId);
+  const count = await countFollowedWallets(supabase, userId);
 
   return { locked: count >= maxAllowed, count, maxAllowed, periodEnd };
 }

@@ -8,7 +8,6 @@ import {
   DASHBOARD_GLOBAL_ITEMS,
   DASHBOARD_TOP_ITEM,
   POLYMARKET_NAV_ITEMS,
-  SIGNAL_NAV_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
 import { SPORT_CATEGORIES, SPORT_EMOJIS, SPORTS_SUB_NAV } from "@/lib/sports/nav";
@@ -16,13 +15,12 @@ import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { findActiveHref } from "@/lib/dashboard-nav-active";
 import { cn } from "@/lib/utils";
 
-/** The dashboard has three distinct "universes" — Polymarket (prediction
- * markets), Sport (real-world sports analysis), and Fomo X Axiom
- * (memecoin Smart Wallets + Copy Trading) — each rendered as its own
- * collapsible sidebar group with a clearly different accent color, so a
- * user always knows which product they're in. Tableau de bord/Coach
- * IA/Statistiques/Paramètres aren't scoped to any of them and stay
- * outside all three groups. */
+/** The dashboard has two distinct "universes" — Polymarket (prediction
+ * markets) and Sport (real-world sports analysis) — each rendered as its
+ * own collapsible sidebar group with a clearly different accent color, so
+ * a user always knows which product they're in. Tableau de bord/Coach
+ * IA/Statistiques/Profil aren't scoped to either and stay outside both
+ * groups. */
 type UniverseGroup = {
   id: string;
   label: string;
@@ -49,7 +47,6 @@ export function SidebarNavContent({
     ...POLYMARKET_NAV_ITEMS.map((i) => i.href),
     ...SPORTS_SUB_NAV.map((i) => i.href),
     ...SPORT_CATEGORIES.map((s) => `/dashboard/sports/${s.key}`),
-    ...SIGNAL_NAV_ITEMS.map((i) => i.href),
     ...DASHBOARD_GLOBAL_ITEMS.map((i) => i.href),
   ]);
 
@@ -188,14 +185,6 @@ export function SidebarNavContent({
               </div>
             )
           )}
-
-          {renderUniverseGroup({
-            id: "smart-wallets",
-            label: "Fomo X Axiom",
-            accentClass: "bg-sky-400",
-            badge: "NOUVEAU",
-            items: SIGNAL_NAV_ITEMS,
-          })}
         </div>
 
         <div className="flex flex-col gap-0.5">{DASHBOARD_GLOBAL_ITEMS.map(renderLink)}</div>
