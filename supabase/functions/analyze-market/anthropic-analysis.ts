@@ -1,6 +1,21 @@
 import Anthropic from "npm:@anthropic-ai/sdk@0.116.0";
 import type { GammaMarket } from "./gamma.ts";
 
+/** A verdict for a multi-candidate event (see gamma.ts's MultiCandidateEvent):
+ * "decision" is the chosen candidate's own real label (e.g. "Donald
+ * Trump"), never a Yes/No — a multi-candidate market has no yes/no
+ * framing to answer with. */
+export type AiMultiCandidateVerdict = {
+  decision: string;
+  aiProbability: number;
+  opportunityScore: number;
+  confidence: "Faible" | "Moyenne" | "Élevée";
+  explanation: string;
+  favorableFactors: string[];
+  risks: string[];
+  whatCouldChange: string;
+};
+
 const client = new Anthropic({
   apiKey: Deno.env.get("ANTHROPIC_API_KEY"),
 });
@@ -71,17 +86,25 @@ export type AiVerdict = {
   whatCouldChange: string;
 };
 
-/** Most Polymarket markets ARE Yes/No, but a real minority — crypto price
- * markets ("Up"/"Down") chief among them — use different label pairs on
- * the exact same binary (always-exactly-2-outcomes) market shape; true
- * 3+-option single markets aren't a thing on Polymarket (a multi-choice
- * *event* like an election is actually N separate Yes/No sub-markets, one
- * per candidate — see gamma.ts's fetchMarketBySlug, which already picks
- * one specific sub-market). So this only ever needs to constrain a binary
- * choice — just not a hardcoded one. Falls back to a generic Oui/Non pair
- * only for the rare malformed-market case where Gamma didn't return two
- * real outcome labels, so the schema (and the rest of the pipeline) never
- * breaks on that edge case. */
+/** This function only ever handles a SINGLE Yes/No-shaped market — either a
+ * genuinely standalone one, or one explicitly-targeted sub-market of a
+ * multi-candidate event (the user's screenshot/link named that one
+ * specific candidate). Most Polymarket markets ARE Yes/No, but a real
+ * minority — crypto price markets ("Up"/"Down") chief among them — use
+ * different label pairs on the exact same binary (always-exactly-2-
+ * outcomes) shape.
+ *
+ * A multi-choice *event* like an election is actually N separate Yes/No
+ * sub-markets, one per candidate — when no single candidate was targeted,
+ * gamma.ts's fetchMarketBySlug/searchMarketByText return a
+ * MultiCandidateEvent instead of a GammaMarket, and index.ts routes that to
+ * analyzeMultiCandidateMarket above instead of here — answering a
+ * multi-candidate query with a Yes/No verdict about an arbitrary candidate
+ * is exactly the bug that split this into two paths.
+ *
+ * Falls back to a generic Oui/Non pair only for the rare malformed-market
+ * case where Gamma didn't return two real outcome labels, so the schema
+ * (and the rest of the pipeline) never breaks on that edge case. */
 function effectiveOutcomes(market: GammaMarket): [string, string] {
   const [a, b] = market.outcomes;
   if (a && b) return [a, b];
@@ -185,6 +208,190 @@ La probabilité de marché actuelle pour l'issue "${outcomes[0]}" est d'environ 
   }%.
 
 Produis ton verdict structuré. Pour "decision", réponds EXACTEMENT "${outcomes[0]}" ou "${outcomes[1]}" — aucune autre valeur n'est acceptée.`;
+}
+
+function buildMultiCandidateSchema(candidateLabels: string[]) {
+  return {
+    type: "object",
+    properties: {
+      decision: {
+        type: "string",
+        enum: candidateLabels,
+        description:
+          "Le candidat/l'option que tu estimes le plus probable de l'emporter, EXACTEMENT l'un des libellés réels fournis.",
+      },
+      aiProbability: {
+        type: "integer",
+        description:
+          "Ta probabilité estimée (0-100) que CE candidat précis (celui choisi dans \"decision\") l'emporte réellement.",
+      },
+      opportunityScore: {
+        type: "integer",
+        description:
+          "Score d'opportunité (0-100) combinant l'edge (ta probabilité vs celle implicite du marché pour ce candidat), la confiance et la liquidité.",
+      },
+      confidence: { type: "string", enum: ["Faible", "Moyenne", "Élevée"] },
+      explanation: {
+        type: "string",
+        description:
+          "Explication détaillée (3-5 phrases) justifiant pourquoi ce candidat précis est le plus probable, citant des éléments concrets sur lui et ses principaux rivaux.",
+      },
+      favorableFactors: {
+        type: "array",
+        items: { type: "string" },
+        description: "3 à 5 facteurs concrets qui soutiennent ce candidat.",
+      },
+      risks: {
+        type: "array",
+        items: { type: "string" },
+        description: "2 à 4 risques/scénarios concrets qui pourraient invalider ce pronostic.",
+      },
+      whatCouldChange: {
+        type: "string",
+        description: "Un événement concret et plausible qui changerait significativement cette analyse.",
+      },
+    },
+    required: [
+      "decision",
+      "aiProbability",
+      "opportunityScore",
+      "confidence",
+      "explanation",
+      "favorableFactors",
+      "risks",
+      "whatCouldChange",
+    ],
+    additionalProperties: false,
+  } as const;
+}
+
+const MULTI_CANDIDATE_SYSTEM_PROMPT = `Tu es l'analyste IA de Polypips, un outil d'aide à la décision pour des marchés de prédiction Polymarket.
+
+Ce marché est un événement À CHOIX MULTIPLE : plusieurs candidats/options s'affrontent (par exemple une élection avec plusieurs candidats), chacun coté séparément par le marché. Ta tâche n'est PAS de répondre par Oui/Non — c'est de désigner LEQUEL de ces candidats/options tu juges le plus probable de l'emporter.
+
+Règles impératives :
+- "decision" doit être EXACTEMENT l'un des libellés de candidats fournis dans le message utilisateur, jamais une réponse binaire.
+- Ne présente JAMAIS ta prédiction comme une garantie de résultat. C'est une estimation probabiliste, pas une certitude.
+- Compare explicitement le candidat que tu retiens à ses principaux rivaux (au moins les 2-3 mieux cotés par le marché) dans ton explication.
+- Base ton analyse sur les cotes actuelles du marché pour chaque candidat (probabilités implicites) ET tes connaissances factuelles pertinentes sur le sujet.
+- "aiProbability" est ta propre estimation de la probabilité que LE CANDIDAT CHOISI l'emporte — pas une copie du prix de marché.
+- Si l'information disponible est insuffisante pour trancher avec confiance, dis-le explicitement dans "explanation" et choisis un niveau de confiance "Faible".`;
+
+function buildMultiCandidateUserPrompt(
+  eventTitle: string,
+  candidates: GammaMarket[],
+  marketUrl: string | null
+): string {
+  const sorted = [...candidates].sort(
+    (a, b) => (b.outcomePrices[0] ?? 0) - (a.outcomePrices[0] ?? 0)
+  );
+  const candidateLines = sorted
+    .map((c) => {
+      const label = c.groupItemTitle || c.question;
+      const price = c.outcomePrices[0];
+      const pct = Number.isFinite(price) ? `${Math.round(price * 100)}%` : "inconnu";
+      return `- ${label} : probabilité implicite du marché ${pct} (volume ${c.volume.toLocaleString("fr-FR")} $)`;
+    })
+    .join("\n");
+
+  return `Analyse cet événement Polymarket réel à choix multiple :
+
+ÉVÉNEMENT : ${eventTitle}
+
+CANDIDATS/OPTIONS ET LEUR COTE ACTUELLE (triés par probabilité de marché décroissante) :
+${candidateLines}
+
+${marketUrl ? `LIEN : ${marketUrl}` : ""}
+
+Désigne le candidat/l'option le plus probable de l'emporter. Pour "decision", réponds EXACTEMENT avec l'un des libellés listés ci-dessus — aucune autre valeur n'est acceptée.`;
+}
+
+async function requestMultiCandidateVerdictOnce(
+  eventTitle: string,
+  candidates: GammaMarket[],
+  marketUrl: string | null
+): Promise<AiMultiCandidateVerdict> {
+  const candidateLabels = candidates.map((c) => c.groupItemTitle || c.question);
+  let response;
+  try {
+    response = await client.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 8192,
+      output_config: {
+        format: {
+          type: "json_schema",
+          schema: buildMultiCandidateSchema(candidateLabels),
+        },
+      },
+      system: MULTI_CANDIDATE_SYSTEM_PROMPT,
+      messages: [
+        { role: "user", content: buildMultiCandidateUserPrompt(eventTitle, candidates, marketUrl) },
+      ],
+    });
+  } catch (error) {
+    logAnthropicError("analyzeMultiCandidateMarket", error);
+    throw new AiServiceError("Échec de l'appel à l'API Anthropic pour le verdict d'analyse.");
+  }
+
+  if (response.stop_reason === "refusal") {
+    console.error(
+      `[anthropic:analyzeMultiCandidateMarket] refus de contenu — category=${response.stop_details?.category ?? "inconnue"}`
+    );
+    throw new AiServiceError(
+      "L'IA a refusé d'analyser ce marché (contenu potentiellement sensible)."
+    );
+  }
+
+  const textBlock = response.content.find((b) => b.type === "text");
+  if (!textBlock || textBlock.type !== "text") {
+    console.error("[anthropic:analyzeMultiCandidateMarket] réponse sans bloc texte exploitable", response);
+    throw new AiServiceError("Réponse de l'IA vide ou inattendue.");
+  }
+
+  if (hasDegenerateRepetition(textBlock.text)) {
+    console.error(
+      "[anthropic:analyzeMultiCandidateMarket] répétition dégénérée détectée dans la réponse:",
+      truncateForLog(textBlock.text)
+    );
+    throw new MalformedVerdictError("Réponse de l'IA dégénérée (répétition anormale détectée).");
+  }
+
+  try {
+    return JSON.parse(textBlock.text) as AiMultiCandidateVerdict;
+  } catch (error) {
+    console.error(
+      "[anthropic:analyzeMultiCandidateMarket] JSON invalide dans la réponse:",
+      truncateForLog(textBlock.text),
+      error
+    );
+    throw new MalformedVerdictError("Réponse de l'IA mal formée (JSON invalide).");
+  }
+}
+
+/** Same one-retry-on-malformed-response policy as analyzeMarket, for the
+ * multi-candidate path. */
+export async function analyzeMultiCandidateMarket(
+  eventTitle: string,
+  candidates: GammaMarket[],
+  marketUrl: string | null
+): Promise<AiMultiCandidateVerdict> {
+  try {
+    return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl);
+  } catch (error) {
+    if (!(error instanceof MalformedVerdictError)) throw error;
+
+    console.warn(
+      `[anthropic:analyzeMultiCandidateMarket] réponse inexploitable (${error.message}) — nouvelle tentative`
+    );
+    try {
+      return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl);
+    } catch (retryError) {
+      if (retryError instanceof MalformedVerdictError) {
+        throw new AiServiceError(retryError.message);
+      }
+      throw retryError;
+    }
+  }
 }
 
 /** One attempt at getting a usable verdict. Throws AiServiceError for a

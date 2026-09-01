@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import { isPrimaryDecision, polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
+import { isPrimaryDecision, resolvedMarketUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function AnalysisResult({
@@ -35,6 +35,7 @@ export function AnalysisResult({
   const locale = useLocale();
   const isPrimary = isPrimaryDecision(analysis.decision, analysis.outcomes);
   const decisionTone = isPrimary ? "text-emerald-400" : "text-rose-400";
+  const marketUrl = resolvedMarketUrl(analysis);
 
   const handleUnlock = async () => {
     if (unlocking) return;
@@ -67,9 +68,9 @@ export function AnalysisResult({
         <h1 className="font-display text-xl font-bold leading-snug text-white sm:text-2xl">
           {analysis.question}
         </h1>
-        {analysis.marketSlug && (
+        {marketUrl && (
           <a
-            href={polymarketEventUrl(analysis.marketSlug)}
+            href={marketUrl}
             target="_blank"
             rel="noreferrer"
             className="inline-flex w-fit items-center gap-1 text-xs font-medium text-white/40 transition-colors hover:text-white/70"

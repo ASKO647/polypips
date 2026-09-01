@@ -50,6 +50,23 @@ export function polymarketEventUrl(slug: string): string {
   return `https://polymarket.com/event/${slug}`;
 }
 
+/** The link to actually send the user to for this analysis. Prefers
+ * `sources[0].url` when it's a specific market link (the analyze-market
+ * Edge Function fills this with the user's own pasted link, or — for a
+ * multi-candidate event resolved from a screenshot — a URL it builds from
+ * the event slug + the chosen candidate's own sub-market slug) over
+ * reconstructing one from `marketSlug` alone: for a sub-market of a
+ * multi-candidate event, `marketSlug` is just that candidate's own raw
+ * Gamma slug (needed as-is for resolve-markets' lookups), which is NOT the
+ * same as the event's URL slug — polymarketEventUrl(marketSlug) alone
+ * would build a 404. Falls back to marketSlug-based construction only when
+ * sources doesn't have a specific link (Edge Function couldn't build one). */
+export function resolvedMarketUrl(analysis: Pick<MarketAnalysis, "marketSlug" | "sources">): string | null {
+  const sourceUrl = analysis.sources[0]?.url;
+  if (sourceUrl && sourceUrl.includes("/event/")) return sourceUrl;
+  return analysis.marketSlug ? polymarketEventUrl(analysis.marketSlug) : null;
+}
+
 /**
  * Every UI surface that colors/positions a decision by "which of the two
  * real outcomes" (emerald for the first-listed one, rose for the second)
@@ -65,7 +82,11 @@ export function polymarketEventUrl(slug: string): string {
  * than rendering unstyled.
  */
 export function isPrimaryDecision(decision: string, outcomes: string[]): boolean {
-  if (outcomes.length < 2) return true;
+  // A multi-candidate decision (more than 2 real outcomes — see
+  // analyze-market's MultiCandidateEvent) has no "opposite" outcome to
+  // color as rose; it's just the AI's single pick among many, always
+  // styled as the positive/primary color.
+  if (outcomes.length !== 2) return true;
   return decision.trim().toLowerCase() !== outcomes[1].trim().toLowerCase();
 }
 

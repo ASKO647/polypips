@@ -16,7 +16,33 @@ export type GammaMarket = {
    * market's top holders via the Polymarket Data API's /holders
    * endpoint, which is keyed by condition ID rather than slug. */
   conditionId?: string;
+  /** Present when this market is one option inside a grouped multi-outcome
+   * event (e.g. "Donald Trump" inside the "Presidential Election Winner"
+   * event's per-candidate Yes/No sub-markets) — Gamma's own clean label for
+   * that option, distinct from the sub-market's own Yes/No question text.
+   * Absent for a plain standalone (or true binary, e.g. Up/Down) market. */
+  groupItemTitle?: string;
 };
+
+/** A single market resolved to one specific, analyzable outcome pair (the
+ * existing, still-default case: Yes/No, Up/Down, or one explicitly-named
+ * sub-market of a grouped event). */
+export type ResolvedMarket = { kind: "single"; market: GammaMarket };
+
+/** A grouped event with more than two real options (e.g. "who wins the
+ * election") where no single option was targeted — pasting the event's own
+ * link, or a screenshot of its overview rather than one candidate's row.
+ * Silently picking markets[0] here (the previous behavior) produces a
+ * nonsensical Yes/No verdict about an arbitrary candidate; this case must
+ * be handed to the dedicated multi-candidate analysis path instead. */
+export type MultiCandidateEvent = {
+  kind: "multi";
+  eventSlug: string;
+  eventTitle: string;
+  candidates: GammaMarket[];
+};
+
+export type MarketResolution = ResolvedMarket | MultiCandidateEvent;
 
 export class MarketNotFoundError extends Error {}
 export class GammaUnavailableError extends Error {}
@@ -51,7 +77,19 @@ function toGammaMarket(raw: Record<string, unknown>): GammaMarket {
     category: typeof raw.category === "string" ? raw.category : undefined,
     slug: String(raw.slug ?? ""),
     conditionId: typeof raw.conditionId === "string" ? raw.conditionId : undefined,
+    groupItemTitle: typeof raw.groupItemTitle === "string" && raw.groupItemTitle ? raw.groupItemTitle : undefined,
   };
+}
+
+/** More than 2 sub-markets, each with its own real groupItemTitle, is
+ * Polymarket's own signal for "this is a multi-candidate/multi-option
+ * event" (a true binary event — even an unusually-worded one — is always
+ * exactly 2 markets). Fewer than 3 labeled markets is treated as the
+ * regular single-market case rather than risk misclassifying a genuine
+ * binary market as "multi" over a data quirk. */
+function isMultiCandidateEvent(markets: Array<Record<string, unknown>>): boolean {
+  if (markets.length <= 2) return false;
+  return markets.every((m) => typeof m.groupItemTitle === "string" && m.groupItemTitle);
 }
 
 async function gammaFetch(path: string): Promise<unknown> {
@@ -101,7 +139,7 @@ export function extractSlugFromUrl(
 export async function fetchMarketBySlug(
   eventSlug: string,
   marketSlug: string | null
-): Promise<GammaMarket> {
+): Promise<MarketResolution> {
   const events = (await gammaFetch(
     `/events?slug=${encodeURIComponent(eventSlug)}`
   )) as Array<Record<string, unknown>>;
@@ -111,21 +149,39 @@ export async function fetchMarketBySlug(
     const markets = (event.markets as Array<Record<string, unknown>>) ?? [];
     if (markets.length > 0) {
       // A URL that names a specific sub-market (multi-outcome event) picks
-      // that exact one; otherwise (or if it isn't found) fall back to the
-      // first market, same as before.
-      const targeted = marketSlug
-        ? markets.find((m) => m.slug === marketSlug)
-        : undefined;
+      // that exact one — analyzable on its own regardless of how many
+      // other candidates the event has.
+      const targeted = marketSlug ? markets.find((m) => m.slug === marketSlug) : undefined;
       if (marketSlug && !targeted) {
         console.warn(
-          `[gamma:fetchMarketBySlug] sous-marché "${marketSlug}" introuvable dans l'événement "${eventSlug}" (${markets.length} marché(s) disponible(s)) — repli sur le premier`
+          `[gamma:fetchMarketBySlug] sous-marché "${marketSlug}" introuvable dans l'événement "${eventSlug}" (${markets.length} marché(s) disponible(s))`
         );
       }
-      const market = toGammaMarket(targeted ?? markets[0]);
+      if (targeted) {
+        const market = toGammaMarket(targeted);
+        if (!market.category && typeof event.category === "string") {
+          market.category = event.category;
+        }
+        return { kind: "single", market };
+      }
+      // No specific sub-market named (a link to the event's own overview
+      // page, or an unresolved sub-market slug): a genuine multi-candidate
+      // event (>2 labeled options) must go to the dedicated flow instead of
+      // silently defaulting to an arbitrary candidate — see
+      // isMultiCandidateEvent's comment.
+      if (isMultiCandidateEvent(markets)) {
+        return {
+          kind: "multi",
+          eventSlug,
+          eventTitle: String(event.title ?? event.question ?? eventSlug),
+          candidates: markets.map(toGammaMarket),
+        };
+      }
+      const market = toGammaMarket(markets[0]);
       if (!market.category && typeof event.category === "string") {
         market.category = event.category;
       }
-      return market;
+      return { kind: "single", market };
     }
   }
 
@@ -134,7 +190,7 @@ export async function fetchMarketBySlug(
   )) as Array<Record<string, unknown>>;
 
   if (Array.isArray(marketsDirect) && marketsDirect.length > 0) {
-    return toGammaMarket(marketsDirect[0]);
+    return { kind: "single", market: toGammaMarket(marketsDirect[0]) };
   }
 
   throw new MarketNotFoundError(
@@ -164,7 +220,7 @@ function tokenize(text: string): string[] {
  * was already reasonably tolerant of imprecise wording. */
 export async function searchMarketByText(
   query: string
-): Promise<GammaMarket | null> {
+): Promise<MarketResolution | null> {
   let results: unknown;
   try {
     results = await gammaFetch(
@@ -214,15 +270,57 @@ export async function searchMarketByText(
     return null;
   }
 
+  const eventSlug = String(best.event.slug ?? "");
+  const eventCategory = typeof best.event.category === "string" ? best.event.category : undefined;
+
+  // A screenshot naming one specific candidate (its own row, own price) —
+  // e.g. "Will Donald Trump win the presidency?" — must resolve to THAT
+  // candidate, not an arbitrary one, so score the extracted text against
+  // each sub-market's own question/groupItemTitle before falling back to
+  // "this is a general multi-candidate query" (see isMultiCandidateEvent's
+  // comment for why silently defaulting to markets[0] instead produces a
+  // nonsensical Yes/No verdict about the wrong candidate).
+  if (markets.length > 1) {
+    let bestSub: { market: Record<string, unknown>; score: number } | null = null;
+    for (const m of markets) {
+      const label = String(m.groupItemTitle ?? m.question ?? "");
+      if (!label) continue;
+      const labelWords = tokenize(label);
+      const score = queryWords.filter((w) => labelWords.includes(w)).length;
+      if (!bestSub || score > bestSub.score) bestSub = { market: m, score };
+    }
+    const minSubMatches = Math.max(1, Math.ceil(queryWords.length * 0.3));
+    if (bestSub && bestSub.score >= minSubMatches) {
+      const market = toGammaMarket(bestSub.market);
+      if (!market.category && eventCategory) market.category = eventCategory;
+      console.log(
+        `[gamma:searchMarketByText] correspondance retenue pour "${query}": candidat "${market.groupItemTitle ?? market.question}" de l'événement "${best.title}" (score ${bestSub.score}/${minSubMatches})`
+      );
+      return { kind: "single", market };
+    }
+  }
+
+  if (isMultiCandidateEvent(markets)) {
+    console.log(
+      `[gamma:searchMarketByText] correspondance retenue pour "${query}": événement multi-candidats "${best.title}" (aucun candidat spécifique identifié, ${markets.length} candidats)`
+    );
+    return {
+      kind: "multi",
+      eventSlug,
+      eventTitle: best.title,
+      candidates: markets.map(toGammaMarket),
+    };
+  }
+
   console.log(
     `[gamma:searchMarketByText] correspondance retenue pour "${query}": "${best.title}" (score ${best.score}/${minConfidentMatches})`
   );
 
   const market = toGammaMarket(markets[0]);
-  if (!market.category && typeof best.event.category === "string") {
-    market.category = best.event.category as string;
+  if (!market.category && eventCategory) {
+    market.category = eventCategory;
   }
-  return market;
+  return { kind: "single", market };
 }
 
 /** Floor below which a market is considered too thin/obscure to bother

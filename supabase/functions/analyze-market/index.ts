@@ -7,10 +7,12 @@ import {
   MarketNotFoundError,
   GammaUnavailableError,
   type GammaMarket,
+  type MarketResolution,
 } from "./gamma.ts";
 import {
   AiServiceError,
   analyzeMarket,
+  analyzeMultiCandidateMarket,
   extractMarketQuestionFromImage,
 } from "./anthropic-analysis.ts";
 
@@ -170,7 +172,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      let market: GammaMarket;
+      let resolution: MarketResolution;
       let marketUrl: string | null = null;
 
       emitProgress("fetching_market");
@@ -187,7 +189,7 @@ Deno.serve(async (req) => {
           return;
         }
         try {
-          market = await fetchMarketBySlug(slugs.eventSlug, slugs.marketSlug);
+          resolution = await fetchMarketBySlug(slugs.eventSlug, slugs.marketSlug);
         } catch (error) {
           if (error instanceof MarketNotFoundError) {
             console.error(
@@ -242,7 +244,7 @@ Deno.serve(async (req) => {
 
         // Step 2: look the question up on Gamma — this is a Polymarket call,
         // so its failures are reported as gamma_unavailable.
-        let found: GammaMarket | null;
+        let found: MarketResolution | null;
         try {
           found = await searchMarketByText(question);
         } catch (error) {
@@ -260,42 +262,121 @@ Deno.serve(async (req) => {
           );
           return;
         }
-        market = found;
+        resolution = found;
       }
 
       emitProgress("calling_ai");
 
-      let verdict;
-      try {
-        verdict = await analyzeMarket(market, marketUrl);
-      } catch (error) {
-        // logAnthropicError already logged the precise cause (status, type,
-        // message) inside anthropic-analysis.ts for diagnosis in the
-        // Supabase function logs — the user only ever sees a generic message.
-        console.error(
-          `[analyze-market] échec IA pendant la génération du verdict (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
-        );
-        emitErrorAndClose(
-          "ai_error",
-          "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
-        );
-        return;
+      // A multi-candidate event (see gamma.ts's MultiCandidateEvent) has no
+      // Yes/No framing to answer with — the AI must name which candidate it
+      // judges most likely instead. Both branches converge on the same
+      // `analysis` shape below so the rest of the pipeline (persistence,
+      // frontend rendering) doesn't need to know which path produced it.
+      let market: GammaMarket;
+      let decision: string;
+      let outcomes: string[];
+      let aiProbability: number;
+      let marketProbabilityPct: number;
+      let opportunityScore: number;
+      let confidence: ReturnType<typeof confidenceLabel>;
+      let explanation: string;
+      let favorableFactors: string[];
+      let risks: string[];
+      let whatCouldChange: string;
+      let analysisQuestion: string;
+      let analysisCategory: string;
+      let analysisMarketSlug: string | null;
+
+      if (resolution.kind === "multi") {
+        const { eventSlug, eventTitle, candidates } = resolution;
+        let verdict;
+        try {
+          verdict = await analyzeMultiCandidateMarket(eventTitle, candidates, marketUrl);
+        } catch (error) {
+          console.error(
+            `[analyze-market] échec IA pendant la génération du verdict multi-candidats (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
+          );
+          emitErrorAndClose(
+            "ai_error",
+            "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
+          );
+          return;
+        }
+
+        const chosen =
+          candidates.find((c) => (c.groupItemTitle || c.question) === verdict.decision) ??
+          candidates[0];
+
+        market = chosen;
+        decision = verdict.decision;
+        // Every candidate's real label, not just two — this is what tells
+        // the frontend (outcomes.length > 2) that this is a multi-candidate
+        // decision rather than a binary one, so it doesn't try to color it
+        // as "primary vs opposite" the way a Yes/No verdict is.
+        outcomes = candidates.map((c) => c.groupItemTitle || c.question);
+        aiProbability = Math.max(0, Math.min(100, Math.round(verdict.aiProbability)));
+        marketProbabilityPct = Number.isFinite(chosen.outcomePrices[0])
+          ? Math.round(chosen.outcomePrices[0] * 100)
+          : 50;
+        opportunityScore = Math.max(0, Math.min(100, Math.round(verdict.opportunityScore)));
+        confidence = confidenceLabel(verdict.confidence);
+        explanation = verdict.explanation;
+        favorableFactors = verdict.favorableFactors;
+        risks = verdict.risks;
+        whatCouldChange = verdict.whatCouldChange;
+        analysisQuestion = eventTitle;
+        analysisCategory = chosen.category || "Marché";
+        analysisMarketSlug = chosen.slug || null;
+        // The image flow never has a marketUrl (no link was pasted) — build
+        // one from the event + chosen candidate so the result still links
+        // somewhere real instead of falling back to the generic homepage.
+        if (!marketUrl && eventSlug && chosen.slug) {
+          marketUrl = `https://polymarket.com/event/${eventSlug}/${chosen.slug}`;
+        }
+      } else {
+        market = resolution.market;
+        let verdict;
+        try {
+          verdict = await analyzeMarket(market, marketUrl);
+        } catch (error) {
+          // logAnthropicError already logged the precise cause (status, type,
+          // message) inside anthropic-analysis.ts for diagnosis in the
+          // Supabase function logs — the user only ever sees a generic message.
+          console.error(
+            `[analyze-market] échec IA pendant la génération du verdict (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
+          );
+          emitErrorAndClose(
+            "ai_error",
+            "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
+          );
+          return;
+        }
+
+        decision = verdict.decision;
+        // The market's own two real outcome labels, in Gamma's order —
+        // stored so the frontend can tell "decision" apart from a
+        // hardcoded YES/NO without re-fetching Gamma (see
+        // src/lib/data/analysis.ts's isPrimaryDecision). Empty when Gamma
+        // itself didn't return two real labels for this market.
+        outcomes = market.outcomes;
+        marketProbabilityPct = Number.isFinite(market.outcomePrices[0])
+          ? Math.round(market.outcomePrices[0] * 100)
+          : 50;
+        aiProbability = Math.max(0, Math.min(100, Math.round(verdict.aiProbability)));
+        opportunityScore = Math.max(0, Math.min(100, Math.round(verdict.opportunityScore)));
+        confidence = confidenceLabel(verdict.confidence);
+        explanation = verdict.explanation;
+        favorableFactors = verdict.favorableFactors;
+        risks = verdict.risks;
+        whatCouldChange = verdict.whatCouldChange;
+        analysisQuestion = market.question;
+        analysisCategory = market.category || "Marché";
+        analysisMarketSlug = market.slug || null;
       }
 
       emitProgress("receiving_result");
 
-      const marketProbabilityPct = Number.isFinite(market.outcomePrices[0])
-        ? Math.round(market.outcomePrices[0] * 100)
-        : 50;
-      const aiProbability = Math.max(
-        0,
-        Math.min(100, Math.round(verdict.aiProbability))
-      );
       const edge = aiProbability - marketProbabilityPct;
-      const opportunityScore = Math.max(
-        0,
-        Math.min(100, Math.round(verdict.opportunityScore))
-      );
 
       const sources = [
         {
@@ -312,26 +393,21 @@ Deno.serve(async (req) => {
 
       const analysis = {
         id: crypto.randomUUID(),
-        question: market.question,
-        category: market.category || "Marché",
+        question: analysisQuestion,
+        category: analysisCategory,
         analyzedAt: new Date().toISOString(),
-        marketSlug: market.slug || null,
-        decision: verdict.decision,
-        // The market's own two real outcome labels, in Gamma's order —
-        // stored so the frontend can tell "decision" apart from a
-        // hardcoded YES/NO without re-fetching Gamma (see
-        // src/lib/data/analysis.ts's isPrimaryDecision). Empty when Gamma
-        // itself didn't return two real labels for this market.
-        outcomes: market.outcomes,
+        marketSlug: analysisMarketSlug,
+        decision,
+        outcomes,
         aiProbability,
         marketProbability: marketProbabilityPct,
         edge,
         opportunityScore,
-        confidence: confidenceLabel(verdict.confidence),
-        explanation: verdict.explanation,
-        favorableFactors: verdict.favorableFactors,
-        risks: verdict.risks,
-        whatCouldChange: verdict.whatCouldChange,
+        confidence,
+        explanation,
+        favorableFactors,
+        risks,
+        whatCouldChange,
         sources,
       };
 
