@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
   listCandidateMarkets,
+  marketPageUrl,
   GammaUnavailableError,
   type GammaMarket,
 } from "../analyze-market/gamma.ts";
@@ -59,7 +60,27 @@ const MIN_ABS_EDGE = 8;
  * (e.g. Politique) monopolize every slot. If fewer than N qualify this
  * run in total, the table ends up with fewer than N rows rather than
  * padding it out with sub-threshold picks just to hit the round number. */
-const SELECTION_SIZE = 10;
+const SELECTION_SIZE = 9;
+
+/** Only markets resolving very soon are worth surfacing here — a market
+ * that closes in three weeks isn't "select now, check back shortly" the
+ * way this page is meant to work. Generous enough to include same-day
+ * markets close to closing (a few hours out) up through roughly two days
+ * ahead, never further. A market missing endDate entirely is excluded
+ * rather than assumed short-horizon — Gamma just not returning a close
+ * date isn't evidence the market resolves soon. */
+const MAX_HOURS_TO_RESOLUTION = 48;
+
+function resolvesSoon(market: GammaMarket, now: number): boolean {
+  if (!market.endDate) return false;
+  const endMs = Date.parse(market.endDate);
+  if (!Number.isFinite(endMs)) return false;
+  const hoursUntil = (endMs - now) / (1000 * 60 * 60);
+  // Excludes markets that already look closed (endDate in the past) even
+  // though listCandidateMarkets already filters on closed:false — Gamma's
+  // own `closed` flag can lag the actual end date by a little.
+  return hoursUntil > 0 && hoursUntil <= MAX_HOURS_TO_RESOLUTION;
+}
 
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
   if (value === "Faible" || value === "Moyenne" || value === "Élevée") {
@@ -191,9 +212,12 @@ Deno.serve(async (req) => {
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
+  const now = Date.now();
+  const maxEndDate = new Date(now + MAX_HOURS_TO_RESOLUTION * 60 * 60 * 1000);
+
   let candidates: GammaMarket[];
   try {
-    candidates = await listCandidateMarkets(CANDIDATE_FETCH_POOL);
+    candidates = await listCandidateMarkets(CANDIDATE_FETCH_POOL, maxEndDate);
   } catch (error) {
     console.error(
       "[scan-markets] failed to list candidate markets",
@@ -208,7 +232,12 @@ Deno.serve(async (req) => {
     );
   }
 
-  const toScan = candidates.slice(0, MAX_CANDIDATES_PER_RUN);
+  // Gamma's end_date_max is a best-effort narrowing hint (see
+  // listCandidateMarkets) — this is the actual guarantee that nothing
+  // resolving weeks or months out ever gets selected here.
+  const resolvingSoon = candidates.filter((m) => resolvesSoon(m, now));
+
+  const toScan = resolvingSoon.slice(0, MAX_CANDIDATES_PER_RUN);
   const scannedAt = new Date().toISOString();
 
   // Evaluate every candidate first and hold the qualifying ones in memory —
@@ -216,7 +245,7 @@ Deno.serve(async (req) => {
   // every verdict is in so the top SELECTION_SIZE can be picked from the
   // full qualifying pool, not just "whichever N happened to qualify first."
   const outcomes = await mapWithConcurrency(toScan, CONCURRENCY, async (market) => {
-    const marketUrl = `https://polymarket.com/event/${market.slug}`;
+    const marketUrl = marketPageUrl(market);
 
     let verdict;
     try {
@@ -301,6 +330,8 @@ Deno.serve(async (req) => {
   }
 
   const summary = {
+    candidatesFetched: candidates.length,
+    resolvingSoon: resolvingSoon.length,
     scanned: outcomes.length,
     qualified: outcomes.filter((o) => o.status === "qualified").length,
     selected: top.length,

@@ -4,6 +4,7 @@ import {
   extractSlugFromUrl,
   fetchMarketBySlug,
   searchMarketByText,
+  marketPageUrl,
   MarketNotFoundError,
   GammaUnavailableError,
   type GammaMarket,
@@ -328,10 +329,12 @@ Deno.serve(async (req) => {
         analysisCategory = chosen.category || "Marché";
         analysisMarketSlug = chosen.slug || null;
         // The image flow never has a marketUrl (no link was pasted) — build
-        // one from the event + chosen candidate so the result still links
-        // somewhere real instead of falling back to the generic homepage.
-        if (!marketUrl && eventSlug && chosen.slug) {
-          marketUrl = `https://polymarket.com/event/${eventSlug}/${chosen.slug}`;
+        // the real event+candidate URL so the result still links somewhere
+        // real instead of falling back to the generic homepage. Uses
+        // eventSlug directly (rather than chosen.eventSlug) since it's the
+        // one already confirmed to resolve for this exact event.
+        if (!marketUrl && chosen.slug) {
+          marketUrl = eventSlug ? `https://polymarket.com/event/${eventSlug}/${chosen.slug}` : marketPageUrl(chosen);
         }
       } else {
         market = resolution.market;
@@ -372,6 +375,13 @@ Deno.serve(async (req) => {
         analysisQuestion = market.question;
         analysisCategory = market.category || "Marché";
         analysisMarketSlug = market.slug || null;
+        // Same fill-in as the multi-candidate branch above: the image flow
+        // never has a marketUrl from user input, so build the real page
+        // link instead of leaving `sources` pointing at the generic
+        // homepage.
+        if (!marketUrl && market.slug) {
+          marketUrl = marketPageUrl(market);
+        }
       }
 
       emitProgress("receiving_result");

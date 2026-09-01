@@ -22,6 +22,15 @@ export type GammaMarket = {
    * that option, distinct from the sub-market's own Yes/No question text.
    * Absent for a plain standalone (or true binary, e.g. Up/Down) market. */
   groupItemTitle?: string;
+  /** The parent event's own slug, from the market object's own `events`
+   * array (every Gamma market belongs to exactly one event, even a
+   * standalone one). Needed to build a real, always-resolving Polymarket
+   * URL: for a sub-market of a multi-outcome event, market.slug is the
+   * CANDIDATE's own slug, not the event's — `/event/{market.slug}` alone
+   * 404s for that case (see marketPageUrl). Falls back to market.slug
+   * itself when Gamma didn't return an events array (the same page either
+   * way for a standalone market, where the two slugs are equal). */
+  eventSlug: string;
 };
 
 /** A single market resolved to one specific, analyzable outcome pair (the
@@ -60,7 +69,21 @@ function parseJsonArray(value: unknown): string[] {
   return [];
 }
 
-function toGammaMarket(raw: Record<string, unknown>): GammaMarket {
+/** Best-effort read of a market's own parent-event slug from its `events`
+ * array (present on results from the flat /markets listing, which — unlike
+ * fetchMarketBySlug/searchMarketByText — has no already-known event to pull
+ * from). Falls back to the market's own slug when absent, matching how a
+ * standalone market's two slugs are the same page anyway. */
+function eventSlugFromRawMarket(raw: Record<string, unknown>): string {
+  const events = raw.events;
+  if (Array.isArray(events) && events.length > 0) {
+    const first = events[0] as Record<string, unknown>;
+    if (typeof first.slug === "string" && first.slug) return first.slug;
+  }
+  return String(raw.slug ?? "");
+}
+
+function toGammaMarket(raw: Record<string, unknown>, eventSlugHint?: string): GammaMarket {
   const outcomes = parseJsonArray(raw.outcomes);
   const outcomePrices = parseJsonArray(raw.outcomePrices).map((p) => Number(p));
 
@@ -78,7 +101,20 @@ function toGammaMarket(raw: Record<string, unknown>): GammaMarket {
     slug: String(raw.slug ?? ""),
     conditionId: typeof raw.conditionId === "string" ? raw.conditionId : undefined,
     groupItemTitle: typeof raw.groupItemTitle === "string" && raw.groupItemTitle ? raw.groupItemTitle : undefined,
+    eventSlug: eventSlugHint ?? eventSlugFromRawMarket(raw),
   };
+}
+
+/** The real, always-resolving Polymarket page for a market: the parent
+ * event's own URL, with the market's own slug appended only when it's a
+ * distinct sub-market (a grouped multi-outcome event's specific
+ * candidate) — appending it for a standalone market, where the two slugs
+ * are identical, would just duplicate the segment. */
+export function marketPageUrl(market: GammaMarket): string {
+  const base = market.eventSlug || market.slug;
+  return market.slug && market.slug !== base
+    ? `https://polymarket.com/event/${base}/${market.slug}`
+    : `https://polymarket.com/event/${base}`;
 }
 
 /** More than 2 sub-markets, each with its own real groupItemTitle, is
@@ -158,7 +194,7 @@ export async function fetchMarketBySlug(
         );
       }
       if (targeted) {
-        const market = toGammaMarket(targeted);
+        const market = toGammaMarket(targeted, eventSlug);
         if (!market.category && typeof event.category === "string") {
           market.category = event.category;
         }
@@ -174,10 +210,10 @@ export async function fetchMarketBySlug(
           kind: "multi",
           eventSlug,
           eventTitle: String(event.title ?? event.question ?? eventSlug),
-          candidates: markets.map(toGammaMarket),
+          candidates: markets.map((m) => toGammaMarket(m, eventSlug)),
         };
       }
-      const market = toGammaMarket(markets[0]);
+      const market = toGammaMarket(markets[0], eventSlug);
       if (!market.category && typeof event.category === "string") {
         market.category = event.category;
       }
@@ -291,7 +327,7 @@ export async function searchMarketByText(
     }
     const minSubMatches = Math.max(1, Math.ceil(queryWords.length * 0.3));
     if (bestSub && bestSub.score >= minSubMatches) {
-      const market = toGammaMarket(bestSub.market);
+      const market = toGammaMarket(bestSub.market, eventSlug);
       if (!market.category && eventCategory) market.category = eventCategory;
       console.log(
         `[gamma:searchMarketByText] correspondance retenue pour "${query}": candidat "${market.groupItemTitle ?? market.question}" de l'événement "${best.title}" (score ${bestSub.score}/${minSubMatches})`
@@ -308,7 +344,7 @@ export async function searchMarketByText(
       kind: "multi",
       eventSlug,
       eventTitle: best.title,
-      candidates: markets.map(toGammaMarket),
+      candidates: markets.map((m) => toGammaMarket(m, eventSlug)),
     };
   }
 
@@ -316,7 +352,7 @@ export async function searchMarketByText(
     `[gamma:searchMarketByText] correspondance retenue pour "${query}": "${best.title}" (score ${best.score}/${minConfidentMatches})`
   );
 
-  const market = toGammaMarket(markets[0]);
+  const market = toGammaMarket(markets[0], eventSlug);
   if (!market.category && eventCategory) {
     market.category = eventCategory;
   }
@@ -336,12 +372,25 @@ const MIN_CANDIDATE_LIQUIDITY_USD = 1000;
  * supported `order` values isn't something this function can verify
  * against live docs from every environment, so the client-side sort is
  * the actual guarantee, not just an optimization.
+ *
+ * `maxEndDate`, when given, is passed to Gamma as an `end_date_max` hint
+ * (server-side narrowing, so a short-horizon request doesn't have to hope
+ * enough near-term markets happen to land in the top-`fetchLimit`-by-volume
+ * sample) — but same as the ordering, the caller must still filter the
+ * result on the real endDate itself; this is a hint to fetch a more useful
+ * sample, not a guarantee every returned market qualifies.
  */
-export async function listCandidateMarkets(fetchLimit: number): Promise<GammaMarket[]> {
+export async function listCandidateMarkets(
+  fetchLimit: number,
+  maxEndDate?: Date
+): Promise<GammaMarket[]> {
   let raw: unknown;
   try {
+    const endDateParam = maxEndDate
+      ? `&end_date_max=${encodeURIComponent(maxEndDate.toISOString())}`
+      : "";
     raw = await gammaFetch(
-      `/markets?active=true&closed=false&order=volume24hr&ascending=false&limit=${fetchLimit}`
+      `/markets?active=true&closed=false&order=volume24hr&ascending=false&limit=${fetchLimit}${endDateParam}`
     );
   } catch (error) {
     if (error instanceof GammaUnavailableError) throw error;
@@ -353,7 +402,7 @@ export async function listCandidateMarkets(fetchLimit: number): Promise<GammaMar
   if (!Array.isArray(raw)) return [];
 
   return (raw as Array<Record<string, unknown>>)
-    .map(toGammaMarket)
+    .map((m) => toGammaMarket(m))
     .filter(
       (m) =>
         m.active &&
