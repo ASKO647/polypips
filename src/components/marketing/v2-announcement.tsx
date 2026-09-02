@@ -5,27 +5,27 @@ import { V2Badge } from "@/components/marketing/v2-badge";
 
 /** Sales-facing rewrite of what actually shipped recently, not an internal
  * changelog copy-paste — a first-time visitor reading this has never heard
- * of "Smart Money" or "Fomo X Axiom" yet, so each line leads with the
- * concrete win rather than the feature's internal name. */
+ * of "Smart Wallet" yet, so each line leads with the concrete win rather
+ * than the feature's internal name. */
 const V2_HIGHLIGHTS = [
-  "Analyse IA sur 4 sports — foot, basket, tennis, rugby",
-  "Smart Money basé sur le vrai classement mensuel des meilleurs traders",
-  "Copy Trading validé par l'IA avant chaque suggestion",
-  "Wallets crypto Fomo & Axiom suivis en temps réel",
+  "Analyse IA Sport — recherchez 2 équipes, l'IA trouve leurs prochaines confrontations réelles",
+  "9 marchés Polymarket sélectionnés par l'IA, actualisés toutes les 12h",
+  "Smart Wallet — recherchez et suivez n'importe quel portefeuille Polymarket",
+  "Notification instantanée dès qu'un wallet suivi ouvre une nouvelle position",
   "Coach IA qui connaît tout l'historique de vos analyses",
-  "Compétitions classées par pays, avec les vrais logos",
+  "Historique complet de vos pronostics sport, accessible à tout moment",
 ];
 
 /**
  * Sits right before Pricing (id="tarifs"), not right after the Hero: every
- * line here names a specific feature (Smart Money, Copy Trading, Fomo X
- * Axiom, Coach IA) that only means something once FeatureSection/HowItWorks/
- * ProductDemo have already explained the product below — a first-time
- * visitor hitting this straight after the headline would read a list of
- * unexplained jargon. Placed here instead, it works as a value-stack right
- * before the purchase decision: "look how much is already included, and we
- * just added more" is exactly the reminder that belongs immediately before
- * pricing, not before the visitor even knows what Polypips does.
+ * line here names a specific feature (Smart Wallet, Analyse IA Sport, Coach
+ * IA) that only means something once FeatureSection/HowItWorks/ProductDemo
+ * have already explained the product below — a first-time visitor hitting
+ * this straight after the headline would read a list of unexplained
+ * jargon. Placed here instead, it works as a value-stack right before the
+ * purchase decision: "look how much is already included, and we just added
+ * more" is exactly the reminder that belongs immediately before pricing,
+ * not before the visitor even knows what Polypips does.
  */
 export function V2Announcement() {
   return (
@@ -40,9 +40,10 @@ export function V2Announcement() {
             </h2>
 
             <p className="max-w-2xl text-balance text-base leading-relaxed text-body sm:text-lg">
-              Le plus gros lancement depuis les débuts de Polypips&nbsp;: plus
-              de sports, de vrais wallets crypto à suivre, une IA encore plus
-              affûtée. Tout est déjà actif sur votre compte.
+              Le plus gros lancement depuis les débuts de Polypips&nbsp;: une
+              nouvelle Analyse IA Sport, de vrais wallets Polymarket à
+              suivre, une IA encore plus affûtée. Tout est déjà actif sur
+              votre compte.
             </p>
           </div>
 
