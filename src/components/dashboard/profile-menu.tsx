@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type ComponentType } from "react";
-import { ChevronDown, User, Settings, CreditCard, Palette, Globe, LifeBuoy } from "lucide-react";
+import { ChevronDown, User, CreditCard, Palette, Globe, LifeBuoy } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { routing } from "@/i18n/routing";
@@ -36,13 +36,13 @@ function MenuLink({
   );
 }
 
-/** Header dropdown consolidating everything that used to live under the
- * sidebar's "Ressources" section (Paramètres, FAQ/Support) plus the
- * account identity, plan shortcut, real theme toggle, and language
- * switcher — all in one place instead of scattered across the sidebar.
- * Same click-outside dropdown pattern as NotificationsBell, restyled with
- * dashboard theme tokens rather than the marketing site's LanguageSelector
- * styling (which is locked to forced-light tokens). */
+/** Header dropdown — quick shortcuts to the Profil page (now a single
+ * merged page, no more tabs — see settings-flow.tsx) and its subscription
+ * page, FAQ/Support, plus the account identity, real theme toggle, and
+ * language switcher, all in one place instead of scattered across the
+ * sidebar. Same click-outside dropdown pattern as NotificationsBell,
+ * restyled with dashboard theme tokens rather than the marketing site's
+ * LanguageSelector styling (which is locked to forced-light tokens). */
 export function ProfileMenu({
   displayName,
   email,
@@ -121,17 +121,11 @@ export function ProfileMenu({
           </div>
 
           <div className="flex flex-col py-1.5">
-            <MenuLink href="/dashboard/settings?tab=profile" icon={User} label="Profil" onNavigate={close} />
+            <MenuLink href="/dashboard/settings" icon={User} label="Profil" onNavigate={close} />
             <MenuLink
-              href="/dashboard/settings?tab=notifications"
-              icon={Settings}
-              label="Paramètres"
-              onNavigate={close}
-            />
-            <MenuLink
-              href="/dashboard/settings?tab=subscription"
+              href="/dashboard/subscription"
               icon={CreditCard}
-              label="Plan"
+              label="Abonnement"
               value={planLabel}
               onNavigate={close}
             />

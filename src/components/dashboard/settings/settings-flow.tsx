@@ -1,20 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { Sparkles, Wallet } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { PLAN_ICONS } from "@/components/dashboard/account-status-card";
 import { StatusBadge } from "@/components/dashboard/settings/status-badge";
-import { SettingsTabs, type SettingsTabId } from "@/components/dashboard/settings/settings-tabs";
 import { ProfileTab } from "@/components/dashboard/settings/profile-tab";
-import { PasswordTab } from "@/components/dashboard/settings/password-tab";
-import { SubscriptionTab } from "@/components/dashboard/settings/subscription-tab";
-import { NotificationsTab } from "@/components/dashboard/settings/notifications-tab";
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
-import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
 
@@ -38,8 +32,6 @@ export function SettingsFlow({
   analysesToday,
   dailyAnalysisLimit,
   trialDaysRemaining,
-  walletQuotaCount,
-  walletQuotaMax,
 }: {
   email: string;
   initialUsername: string;
@@ -56,33 +48,14 @@ export function SettingsFlow({
   dailyAnalysisLimit: number | null;
   /** Days left in the discovery trial, or null when not currently trialing. */
   trialDaysRemaining: number | null;
-  walletQuotaCount: number;
-  /** null = unlimited (both plans are unlimited on this quota now). */
-  walletQuotaMax: number | null;
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const requestedTab = searchParams.get("tab");
-  const isValidTab = (value: string | null): value is SettingsTabId =>
-    value === "profile" || value === "password" || value === "subscription" || value === "notifications";
-  const [activeTab, setActiveTab] = useState<SettingsTabId>(
-    isValidTab(requestedTab) ? requestedTab : "profile"
-  );
-  const [notifications, setNotifications] = useState(
-    DEFAULT_NOTIFICATION_PREFERENCES
-  );
   const [subscription, setSubscription] = useState(initialSubscription);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
-
-  const toggleNotification = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, enabled: !n.enabled } : n))
-    );
-  };
 
   const handleConfirmCancel = async () => {
     setCancelling(true);
@@ -119,14 +92,13 @@ export function SettingsFlow({
   const PlanIcon = PLAN_ICONS[plan.id] ?? PLAN_ICONS.pro;
   const planBadgeValue = trialDaysRemaining !== null ? `${trialDaysRemaining}J d'essai` : plan.name;
   const analysesRemaining = dailyAnalysisLimit !== null ? dailyAnalysisLimit - analysesToday : null;
-  const walletsLocked = walletQuotaMax !== null && walletQuotaCount >= walletQuotaMax;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
-            Paramètres
+            Profil
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
             Gérez votre compte, votre abonnement et vos préférences.
@@ -145,57 +117,26 @@ export function SettingsFlow({
             }
             tone={analysesRemaining !== null && analysesRemaining <= 0 ? "amber" : "emerald"}
           />
-          <StatusBadge
-            icon={Wallet}
-            label="Smart Money"
-            value={
-              walletQuotaMax !== null
-                ? `${walletQuotaCount}/${walletQuotaMax} wallets`
-                : "Illimité"
-            }
-            tone={walletsLocked ? "amber" : "neutral"}
-          />
         </div>
       </div>
 
-      <SettingsTabs active={activeTab} onChange={setActiveTab} />
-
-      <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
-        {activeTab === "profile" && (
-          <ProfileTab
-            email={email}
-            initialUsername={initialUsername}
-            initialPseudo={initialPseudo}
-            initialAvatarUrl={initialAvatarUrl}
-            memberSince={memberSince}
-            googleConnected={googleConnected}
-            mfaEnabled={mfaEnabled}
-            currentPlan={currentPlan}
-            subscription={subscription}
-            periodEndLabel={periodEndLabel}
-            activity={activity}
-            onOpenCancelModal={() => setCancelModalOpen(true)}
-            onOpenDeleteModal={() => setDeleteModalOpen(true)}
-            deletionRequested={deletionRequested}
-          />
-        )}
-        {activeTab === "password" && <PasswordTab email={email} />}
-        {activeTab === "subscription" && (
-          <SubscriptionTab
-            subscription={subscription}
-            plan={currentPlan}
-            periodEndLabel={periodEndLabel}
-            actionError={actionError}
-            onOpenCancelModal={() => setCancelModalOpen(true)}
-          />
-        )}
-        {activeTab === "notifications" && (
-          <NotificationsTab
-            notifications={notifications}
-            onToggle={toggleNotification}
-          />
-        )}
-      </div>
+      <ProfileTab
+        email={email}
+        initialUsername={initialUsername}
+        initialPseudo={initialPseudo}
+        initialAvatarUrl={initialAvatarUrl}
+        memberSince={memberSince}
+        googleConnected={googleConnected}
+        mfaEnabled={mfaEnabled}
+        currentPlan={currentPlan}
+        subscription={subscription}
+        periodEndLabel={periodEndLabel}
+        activity={activity}
+        onOpenCancelModal={() => setCancelModalOpen(true)}
+        onOpenDeleteModal={() => setDeleteModalOpen(true)}
+        deletionRequested={deletionRequested}
+        actionError={actionError}
+      />
 
       <CancelSubscriptionModal
         open={cancelModalOpen}

@@ -7,15 +7,14 @@ import {
   getTrialDaysRemaining,
 } from "@/lib/supabase/subscriptions";
 import { countAnalysesToday } from "@/lib/supabase/analyses";
-import { getQuotaLockState } from "@/lib/supabase/quota-cycles";
-import { getDailyAnalysisLimit, getMaxTrackedWallets, PRICING_PLANS } from "@/lib/data/pricing";
+import { getDailyAnalysisLimit, PRICING_PLANS } from "@/lib/data/pricing";
 import {
   fetchProfileActivityStats,
   EMPTY_PROFILE_ACTIVITY_STATS,
 } from "@/lib/supabase/profile-activity";
 
 export const metadata: Metadata = {
-  title: "Paramètres — Polypips",
+  title: "Profil — Polypips",
 };
 
 const MEMBER_SINCE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
@@ -50,8 +49,6 @@ export default async function SettingsPage() {
         analysesToday={0}
         dailyAnalysisLimit={null}
         trialDaysRemaining={null}
-        walletQuotaCount={0}
-        walletQuotaMax={null}
       />
     );
   }
@@ -63,14 +60,6 @@ export default async function SettingsPage() {
     fetchProfileActivityStats(supabase, user.id),
     supabase.auth.mfa.listFactors(),
   ]);
-
-  const maxTrackedWallets = getMaxTrackedWallets(plan);
-  const walletQuota = await getQuotaLockState(
-    supabase,
-    user.id,
-    "wallets",
-    maxTrackedWallets
-  );
 
   const memberSince = user.created_at
     ? MEMBER_SINCE_FORMATTER.format(new Date(user.created_at))
@@ -95,8 +84,6 @@ export default async function SettingsPage() {
       analysesToday={analysesToday}
       dailyAnalysisLimit={getDailyAnalysisLimit(plan)}
       trialDaysRemaining={getTrialDaysRemaining(subscription)}
-      walletQuotaCount={walletQuota.count}
-      walletQuotaMax={maxTrackedWallets}
     />
   );
 }

@@ -7,8 +7,6 @@ import {
   Lock,
   ShieldCheck,
   Smartphone,
-  Bell,
-  Mail,
   Palette,
   Coins,
   Clock,
@@ -25,11 +23,13 @@ import { GoogleIcon } from "@/components/auth/google-icon";
 import { createClient } from "@/lib/supabase/client";
 import { uploadAvatar, validateAvatarFile } from "@/lib/supabase/avatar";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
+import { SettingsToggle } from "@/components/dashboard/settings/settings-toggle";
 import { useDashboardTheme } from "@/providers/dashboard-theme-provider";
 import { useCurrency, SUPPORTED_CURRENCIES, type CurrencyCode } from "@/providers/currency-provider";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import type { PricingPlan } from "@/lib/data/pricing";
+import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
 
@@ -140,28 +140,6 @@ function PreferenceRow({
   );
 }
 
-function RedToggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={onChange}
-      className={cn(
-        "relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200",
-        checked ? "bg-brand-500" : "bg-dash-surface-strong"
-      )}
-    >
-      <span
-        className={cn(
-          "absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200",
-          checked && "translate-x-5"
-        )}
-      />
-    </button>
-  );
-}
-
 function PreferenceSelect({
   value,
   onChange,
@@ -233,6 +211,7 @@ export function ProfileTab({
   onOpenCancelModal,
   onOpenDeleteModal,
   deletionRequested,
+  actionError,
 }: {
   email: string;
   initialUsername: string;
@@ -249,6 +228,9 @@ export function ProfileTab({
   onOpenCancelModal: () => void;
   onOpenDeleteModal: () => void;
   deletionRequested: boolean;
+  /** Set only when a cancel-subscription attempt (triggered via
+   * onOpenCancelModal's modal) just failed. */
+  actionError: string | null;
 }) {
   const [username, setUsername] = useState(initialUsername);
   const [pseudo, setPseudo] = useState(initialPseudo);
@@ -261,9 +243,14 @@ export function ProfileTab({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [notifications, setNotifications] = useState(true);
-  const [emailAlerts, setEmailAlerts] = useState(true);
+  const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFERENCES);
   const [timezone, setTimezone] = useState("Europe/Paris");
+
+  const toggleNotificationPref = (id: string) => {
+    setNotificationPrefs((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, enabled: !n.enabled } : n))
+    );
+  };
 
   const { theme, setTheme } = useDashboardTheme();
   const { currency, setCurrency, formatAmount, ratesUnavailable } = useCurrency();
@@ -346,8 +333,9 @@ export function ProfileTab({
     }
   };
 
-  // Same cut-off rule as SubscriptionTab: a cancellation blurs access
-  // immediately, so the CTA switches to "se réabonner" right away.
+  // A cancellation blurs access immediately (see hasActiveAccess in
+  // lib/supabase/subscriptions.ts), so the CTA switches to "se réabonner"
+  // right away rather than waiting for the paid period to actually end.
   const hasAccess =
     (subscription?.status === "active" || subscription?.status === "trialing") &&
     !subscription?.cancelAtPeriodEnd;
@@ -522,19 +510,18 @@ export function ProfileTab({
           />
         </Card>
 
+        <Card title="Notifications">
+          {notificationPrefs.map((pref) => (
+            <SettingsToggle
+              key={pref.id}
+              label={pref.label}
+              checked={pref.enabled}
+              onChange={() => toggleNotificationPref(pref.id)}
+            />
+          ))}
+        </Card>
+
         <Card title="Préférences">
-          <PreferenceRow
-            icon={Bell}
-            label="Notifications"
-            description="Recevoir des alertes et mises à jour"
-            control={<RedToggle checked={notifications} onChange={() => setNotifications((v) => !v)} />}
-          />
-          <PreferenceRow
-            icon={Mail}
-            label="Alertes par e-mail"
-            description="Recevoir les alertes importantes par e-mail"
-            control={<RedToggle checked={emailAlerts} onChange={() => setEmailAlerts((v) => !v)} />}
-          />
           <PreferenceRow
             icon={Palette}
             label="Thème"
@@ -611,6 +598,7 @@ export function ProfileTab({
                     : `Prochain renouvellement : ${periodEndLabel}`}
                 </p>
               )}
+              {actionError && <p className="text-xs text-rose-400">{actionError}</p>}
               {hasAccess ? (
                 <button
                   type="button"
@@ -621,27 +609,27 @@ export function ProfileTab({
                 </button>
               ) : (
                 <Link
-                  href="/pricing"
+                  href="/dashboard/subscription"
                   className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
                 >
                   Se réabonner
                 </Link>
               )}
               <Link
-                href="/pricing"
+                href="/dashboard/subscription"
                 className="text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
               >
-                Voir tous les plans →
+                Voir tous les abonnements →
               </Link>
             </>
           ) : (
             <>
               <p className="text-sm text-dash-text-tertiary">Vous n&apos;avez pas d&apos;abonnement actif.</p>
               <Link
-                href="/pricing"
+                href="/dashboard/subscription"
                 className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
               >
-                Voir les offres
+                Voir les abonnements
               </Link>
             </>
           )}

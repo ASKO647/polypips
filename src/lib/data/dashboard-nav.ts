@@ -4,9 +4,9 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LineChart,
-  Settings,
   Sparkles,
   Trophy,
+  User,
   Users,
   Wallet,
 } from "lucide-react";
@@ -48,7 +48,10 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
 
 /** Global tools that aren't specific to either universe — Coach IA answers
  * questions about analyses from both, Statistiques tracks performance
- * across both. */
+ * across both. Profil (still at /dashboard/settings — same URL Stripe
+ * checkout already redirects back to) is here too, as a normal sidebar
+ * entry rather than tucked into a header-only menu, so it participates in
+ * the sidebar's own active-link matching like every other section. */
 export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
   { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
   { label: "Statistiques", href: "/dashboard/stats", icon: BarChart3 },
@@ -56,6 +59,7 @@ export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
   // can span either interest, so this lives alongside Coach IA/
   // Statistiques rather than inside one universe group.
   { label: "Communauté", href: "/dashboard/community", icon: Users },
+  { label: "Profil", href: "/dashboard/settings", icon: User },
 ];
 
 /** Not rendered directly in the sidebar — the Sport universe group
@@ -70,7 +74,9 @@ export const SPORTS_TITLE_ITEM: DashboardNavItem = {
   icon: Trophy,
 };
 
+/** Header-menu-only entries — Profil moved into DASHBOARD_GLOBAL_ITEMS
+ * (a real sidebar section now, see its own comment), so only FAQ/Support
+ * is left here. Still feeds DashboardHeader's title lookup. */
 export const DASHBOARD_RESOURCE_ITEMS: DashboardNavItem[] = [
-  { label: "Paramètres", href: "/dashboard/settings", icon: Settings },
   { label: "FAQ / Support", href: "/support", icon: LifeBuoy },
 ];

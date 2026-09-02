@@ -13,7 +13,7 @@ export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreference[] = [
   { id: "weekly-summary", label: "Résumé hebdomadaire", enabled: true },
   {
     id: "smart-money-moves",
-    label: "Mouvements Smart Money importants",
+    label: "Mouvements Smart Wallet importants",
     enabled: false,
   },
 ];
