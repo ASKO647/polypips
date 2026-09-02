@@ -14,7 +14,7 @@ import {
   countAnalysesAllTime,
   fetchAnalysisTimestamps,
 } from "@/lib/supabase/analyses";
-import { fetchSelectedMarkets } from "@/lib/supabase/selected-markets";
+import { fetchSelectedMarkets, countSelectedMarkets } from "@/lib/supabase/selected-markets";
 import {
   countConversations,
   countCoachMessagesAllTime,
@@ -25,6 +25,17 @@ import {
   countFollowedWallets,
   fetchWalletFollowTimestamps,
 } from "@/lib/supabase/wallets";
+import {
+  countSportAnalysesToday,
+  countSportAnalysesAllTime,
+  fetchSportAnalysisTimestamps,
+} from "@/lib/supabase/sports-analyses";
+import {
+  countTradingAnalysesToday,
+  countTradingAnalysesAllTime,
+  fetchTradingAnalysisTimestamps,
+} from "@/lib/supabase/trading-analyses";
+import { fetchMyGroups } from "@/lib/supabase/community";
 import {
   fetchResolvedAnalyses,
   computePerformanceStats,
@@ -69,6 +80,7 @@ export default async function DashboardPage() {
   const [
     analysesToday,
     recentMarkets,
+    selectedMarketsCount,
     conversationCount,
     notifications,
     analysisTimestamps,
@@ -78,9 +90,17 @@ export default async function DashboardPage() {
     coachMessageTimestamps,
     coachMessagesAllTime,
     resolvedAnalyses,
+    sportAnalysesToday,
+    sportAnalysisTimestamps,
+    sportAnalysesAllTime,
+    tradingAnalysesToday,
+    tradingAnalysisTimestamps,
+    tradingAnalysesAllTime,
+    myGroups,
   ] = await Promise.all([
     countAnalysesToday(supabase, user.id),
     fetchSelectedMarkets(supabase, 5),
+    countSelectedMarkets(supabase),
     countConversations(supabase),
     fetchNotifications(supabase, 5),
     fetchAnalysisTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
@@ -90,26 +110,41 @@ export default async function DashboardPage() {
     fetchCoachMessageTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
     countCoachMessagesAllTime(supabase, user.id),
     fetchResolvedAnalyses(supabase, user.id),
+    countSportAnalysesToday(supabase, user.id),
+    fetchSportAnalysisTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
+    countSportAnalysesAllTime(supabase, user.id),
+    countTradingAnalysesToday(supabase, user.id),
+    fetchTradingAnalysisTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
+    countTradingAnalysesAllTime(supabase, user.id),
+    fetchMyGroups(supabase),
   ]);
 
   const analysesSparkline = bucketCountsByDay(analysisTimestamps, SPARKLINE_DAYS);
-  const smartMoneySparkline = bucketCountsByDay(walletFollowTimestamps, SPARKLINE_DAYS);
+  const walletsSparkline = bucketCountsByDay(walletFollowTimestamps, SPARKLINE_DAYS);
   const coachSparkline = bucketCountsByDay(coachMessageTimestamps, SPARKLINE_DAYS);
+  const sportSparkline = bucketCountsByDay(sportAnalysisTimestamps, SPARKLINE_DAYS);
+  const tradingSparkline = bucketCountsByDay(tradingAnalysisTimestamps, SPARKLINE_DAYS);
 
   const activityPeriods: Record<ActivityPeriodKey, ActivityPeriodCounts> = {
     "7j": {
       analyses: sum(analysesSparkline),
-      smartMoney: sum(smartMoneySparkline),
+      wallets: sum(walletsSparkline),
+      sport: sum(sportSparkline),
+      trading: sum(tradingSparkline),
       coach: sum(coachSparkline),
     },
     "30j": {
       analyses: analysisTimestamps.length,
-      smartMoney: walletFollowTimestamps.length,
+      wallets: walletFollowTimestamps.length,
+      sport: sportAnalysisTimestamps.length,
+      trading: tradingAnalysisTimestamps.length,
       coach: coachMessageTimestamps.length,
     },
     tout: {
       analyses: analysesAllTime,
-      smartMoney: walletsFollowedTotal,
+      wallets: walletsFollowedTotal,
+      sport: sportAnalysesAllTime,
+      trading: tradingAnalysesAllTime,
       coach: coachMessagesAllTime,
     },
   };
@@ -127,13 +162,19 @@ export default async function DashboardPage() {
         plan={plan}
         analysesToday={analysesToday}
         dailyAnalysisLimit={getDailyAnalysisLimit(plan)}
+        selectedMarketsCount={selectedMarketsCount}
         walletsFollowed={walletsFollowedTotal}
         walletsMax={maxTrackedWallets}
+        sportAnalysesToday={sportAnalysesToday}
+        tradingAnalysesToday={tradingAnalysesToday}
         conversationCount={conversationCount}
+        groupsJoinedCount={myGroups.length}
         recentMarkets={recentMarkets}
         notifications={notifications}
         analysesSparkline={analysesSparkline}
-        smartMoneySparkline={smartMoneySparkline}
+        walletsSparkline={walletsSparkline}
+        sportSparkline={sportSparkline}
+        tradingSparkline={tradingSparkline}
         coachSparkline={coachSparkline}
         activityPeriods={activityPeriods}
         performanceStats={computePerformanceStats(resolvedAnalyses)}

@@ -35,13 +35,13 @@ export function MarketsTable({
     <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-base font-bold text-dash-text">
-          Marchés en ce moment
+          Marchés sélectionnés par l&apos;IA
         </h2>
         <Link
           href="/dashboard/markets"
           className="text-xs font-semibold text-brand-400 transition-colors hover:text-brand-300"
         >
-          Voir tous les marchés →
+          Voir tous les marchés sélectionnés →
         </Link>
       </div>
 

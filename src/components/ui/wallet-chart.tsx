@@ -7,6 +7,9 @@ const TONE_CLASSES = {
   brand: "text-brand-400",
   emerald: "text-emerald-400",
   amber: "text-amber-400",
+  sky: "text-sky-400",
+  violet: "text-violet-400",
+  rose: "text-rose-400",
   neutral: "text-white/30",
 } as const;
 

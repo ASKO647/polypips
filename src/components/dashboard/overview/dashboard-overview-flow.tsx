@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Sparkles, Wallet } from "lucide-react";
+import {
+  CandlestickChart,
+  GraduationCap,
+  LineChart,
+  Sparkles,
+  Trophy,
+  Users,
+  Wallet,
+} from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { QuickAccessCard } from "@/components/dashboard/overview/quick-access-card";
@@ -28,13 +36,19 @@ export function DashboardOverviewFlow({
   plan,
   analysesToday,
   dailyAnalysisLimit,
+  selectedMarketsCount,
   walletsFollowed,
   walletsMax,
+  sportAnalysesToday,
+  tradingAnalysesToday,
   conversationCount,
+  groupsJoinedCount,
   recentMarkets,
   notifications,
   analysesSparkline,
-  smartMoneySparkline,
+  walletsSparkline,
+  sportSparkline,
+  tradingSparkline,
   coachSparkline,
   activityPeriods,
   performanceStats,
@@ -50,15 +64,25 @@ export function DashboardOverviewFlow({
   plan: PricingPlan;
   analysesToday: number;
   dailyAnalysisLimit: number | null;
+  /** Total rows currently in selected_markets — shared across all users
+   * (scan-markets' own picks), not a personal count. */
+  selectedMarketsCount: number;
   walletsFollowed: number;
   walletsMax: number | null;
+  sportAnalysesToday: number;
+  tradingAnalysesToday: number;
   conversationCount: number;
+  /** Community groups this user is currently a member of (real count from
+   * community_group_members via fetchMyGroups). */
+  groupsJoinedCount: number;
   recentMarkets: MarketAnalysis[];
   notifications: NotificationItem[];
   /** Real daily counts (oldest→newest, 7 days) for each quick-access
    * card's sparkline — all-zero when there's no real activity. */
   analysesSparkline: number[];
-  smartMoneySparkline: number[];
+  walletsSparkline: number[];
+  sportSparkline: number[];
+  tradingSparkline: number[];
   coachSparkline: number[];
   activityPeriods: Record<ActivityPeriodKey, ActivityPeriodCounts>;
   /** null (or resolvedCount === 0) until resolve-markets has confirmed at
@@ -101,7 +125,7 @@ export function DashboardOverviewFlow({
           <QuickAccessCard
             href="/dashboard/analyse-ia"
             icon={Sparkles}
-            title="Analyse IA"
+            title="Analyse IA Polymarket"
             stat={
               dailyAnalysisLimit !== null
                 ? `${analysesToday}/${dailyAnalysisLimit} aujourd'hui`
@@ -111,24 +135,54 @@ export function DashboardOverviewFlow({
             sparklinePoints={analysesSparkline}
           />
           <QuickAccessCard
+            href="/dashboard/markets"
+            icon={LineChart}
+            title="Marchés sélectionnés"
+            stat={`${selectedMarketsCount} marché${selectedMarketsCount > 1 ? "s" : ""} sélectionné${selectedMarketsCount > 1 ? "s" : ""}`}
+            tone="sky"
+          />
+          <QuickAccessCard
             href="/dashboard/copy-trading"
             icon={Wallet}
-            title="Copy Trading"
+            title="Smart Wallet"
             stat={
               walletsMax !== null
                 ? `${walletsFollowed}/${walletsMax} wallets suivis`
                 : `${walletsFollowed} wallet${walletsFollowed > 1 ? "s" : ""} suivi${walletsFollowed > 1 ? "s" : ""}`
             }
             tone="emerald"
-            sparklinePoints={smartMoneySparkline}
+            sparklinePoints={walletsSparkline}
+          />
+          <QuickAccessCard
+            href="/dashboard/sports"
+            icon={Trophy}
+            title="Analyse IA Sport"
+            stat={`${sportAnalysesToday} analyse${sportAnalysesToday > 1 ? "s" : ""} aujourd'hui`}
+            tone="violet"
+            sparklinePoints={sportSparkline}
+          />
+          <QuickAccessCard
+            href="/dashboard/trading"
+            icon={CandlestickChart}
+            title="Analyse IA Trading"
+            stat={`${tradingAnalysesToday} analyse${tradingAnalysesToday > 1 ? "s" : ""} aujourd'hui`}
+            tone="amber"
+            sparklinePoints={tradingSparkline}
           />
           <QuickAccessCard
             href="/dashboard/coach"
             icon={GraduationCap}
             title="Coach IA"
             stat={`${conversationCount} conversation${conversationCount > 1 ? "s" : ""}`}
-            tone="amber"
+            tone="rose"
             sparklinePoints={coachSparkline}
+          />
+          <QuickAccessCard
+            href="/dashboard/community"
+            icon={Users}
+            title="Communauté"
+            stat={`${groupsJoinedCount} groupe${groupsJoinedCount > 1 ? "s" : ""} rejoint${groupsJoinedCount > 1 ? "s" : ""}`}
+            tone="neutral"
           />
           <SubscriptionQuickCard subscription={subscription} plan={plan} />
         </div>

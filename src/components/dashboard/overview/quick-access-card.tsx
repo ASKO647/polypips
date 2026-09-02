@@ -16,7 +16,7 @@ export function QuickAccessCard({
   icon: ComponentType<{ className?: string; strokeWidth?: number }>;
   title: string;
   stat: string;
-  tone?: "brand" | "emerald" | "amber" | "neutral";
+  tone?: "brand" | "emerald" | "amber" | "sky" | "violet" | "rose" | "neutral";
   badge?: string;
   /** Real daily activity counts (oldest→newest) — an all-zero array (no
    * real trend to show) renders as a flat neutral line, never a fabricated
@@ -28,6 +28,9 @@ export function QuickAccessCard({
     brand: "bg-brand-500/15 text-brand-400",
     emerald: "bg-emerald-500/15 text-emerald-400",
     amber: "bg-amber-500/15 text-amber-400",
+    sky: "bg-sky-500/15 text-sky-400",
+    violet: "bg-violet-500/15 text-violet-400",
+    rose: "bg-rose-500/15 text-rose-400",
     neutral: "bg-dash-surface-strong text-dash-text-secondary",
   }[tone];
 

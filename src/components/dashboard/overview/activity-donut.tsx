@@ -7,7 +7,9 @@ export type ActivityPeriodKey = "7j" | "30j" | "tout";
 
 export type ActivityPeriodCounts = {
   analyses: number;
-  smartMoney: number;
+  wallets: number;
+  sport: number;
+  trading: number;
   coach: number;
 };
 
@@ -18,9 +20,11 @@ const PERIOD_OPTIONS: { key: ActivityPeriodKey; label: string }[] = [
 ];
 
 const SEGMENTS = [
-  { key: "analyses" as const, label: "Analyses IA", stroke: "#e52323", dot: "bg-brand-500" },
-  { key: "smartMoney" as const, label: "Smart Money", stroke: "#34d399", dot: "bg-emerald-400" },
-  { key: "coach" as const, label: "Coach IA", stroke: "#fbbf24", dot: "bg-amber-400" },
+  { key: "analyses" as const, label: "Analyses Polymarket", stroke: "#e52323", dot: "bg-brand-500" },
+  { key: "wallets" as const, label: "Wallets suivis", stroke: "#34d399", dot: "bg-emerald-400" },
+  { key: "sport" as const, label: "Analyses Sport", stroke: "#38bdf8", dot: "bg-sky-400" },
+  { key: "trading" as const, label: "Analyses Trading", stroke: "#fbbf24", dot: "bg-amber-400" },
+  { key: "coach" as const, label: "Messages Coach IA", stroke: "#a78bfa", dot: "bg-violet-400" },
 ];
 
 const SIZE = 160;
@@ -40,7 +44,7 @@ export function ActivityDonut({
 }) {
   const [period, setPeriod] = useState<ActivityPeriodKey>("30j");
   const counts = periods[period];
-  const total = counts.analyses + counts.smartMoney + counts.coach;
+  const total = counts.analyses + counts.wallets + counts.sport + counts.trading + counts.coach;
 
   let cumulative = 0;
   const arcs = SEGMENTS.map((seg) => {
