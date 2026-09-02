@@ -84,8 +84,17 @@ async function mapWithConcurrency<T, R>(
 
 async function fetchOutcomeForSlug(slug: string): Promise<string | null> {
   try {
-    const market = await fetchMarketBySlug(slug, null);
-    return resolveOutcomeFromMarket(market);
+    const resolution = await fetchMarketBySlug(slug, null);
+    // A row's stored market_slug always names one specific, already-known
+    // market (never a bare multi-candidate event with no candidate
+    // picked — that only happens when no slug was targeted at all, see
+    // gamma.ts's own fetchMarketBySlug), so "multi" here should be
+    // unreachable in practice. Still handled explicitly rather than
+    // assumed: `resolution.market` doesn't exist on that branch, and
+    // resolveOutcomeFromMarket needs a single GammaMarket, not a set of
+    // per-candidate ones with no single "the outcome" to report.
+    if (resolution.kind !== "single") return null;
+    return resolveOutcomeFromMarket(resolution.market);
   } catch (error) {
     if (error instanceof MarketNotFoundError) return null;
     console.error(
@@ -200,7 +209,14 @@ Deno.serve(async (req) => {
 
     let market: GammaMarket;
     try {
-      market = await fetchMarketBySlug(parsed.eventSlug, parsed.marketSlug);
+      const resolution = await fetchMarketBySlug(parsed.eventSlug, parsed.marketSlug);
+      // A legacy market_url with no specific sub-market segment can point
+      // at a genuine multi-candidate event's overview page — there's no
+      // single real "the outcome" to backfill from that (see the
+      // fast-path lookup above for the same reasoning), so this row is
+      // left as-is and simply retried on a later run rather than guessed.
+      if (resolution.kind !== "single") return;
+      market = resolution.market;
     } catch (error) {
       if (!(error instanceof MarketNotFoundError)) {
         console.error(

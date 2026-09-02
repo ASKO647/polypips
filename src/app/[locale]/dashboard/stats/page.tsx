@@ -73,7 +73,7 @@ export default async function StatsPage() {
         }
       >
         {resolvedAnalyses.length === 0 ? (
-          <StatsEmptyState />
+          <StatsEmptyState unresolvedCount={unresolvedCount} />
         ) : (
           <>
             <p className="text-xs leading-relaxed text-white/35">
