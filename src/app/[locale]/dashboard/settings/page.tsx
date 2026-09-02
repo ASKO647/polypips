@@ -7,7 +7,8 @@ import {
   getTrialDaysRemaining,
 } from "@/lib/supabase/subscriptions";
 import { countAnalysesToday } from "@/lib/supabase/analyses";
-import { getDailyAnalysisLimit, PRICING_PLANS } from "@/lib/data/pricing";
+import { getTranslations } from "next-intl/server";
+import { getDailyAnalysisLimit, getPricingPlans } from "@/lib/data/pricing";
 import {
   fetchProfileActivityStats,
   EMPTY_PROFILE_ACTIVITY_STATS,
@@ -34,6 +35,7 @@ export default async function SettingsPage() {
   const initialAvatarUrl = (user?.user_metadata?.avatar_url as string | undefined) ?? null;
 
   if (!user) {
+    const t = await getTranslations("Plans");
     return (
       <SettingsFlow
         email={email}
@@ -45,7 +47,7 @@ export default async function SettingsPage() {
         mfaEnabled={false}
         activity={EMPTY_PROFILE_ACTIVITY_STATS}
         initialSubscription={null}
-        plan={PRICING_PLANS[0]}
+        plan={getPricingPlans(t)[0]}
         analysesToday={0}
         dailyAnalysisLimit={null}
         trialDaysRemaining={null}

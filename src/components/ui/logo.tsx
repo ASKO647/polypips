@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ export function Logo({
   className?: string;
   markOnly?: boolean;
 }) {
+  const t = useTranslations("UI");
   return (
     <Link
       href="/"
@@ -16,7 +18,7 @@ export function Logo({
         "inline-flex items-center gap-2 font-display text-xl font-bold tracking-tight text-brand-500",
         className
       )}
-      aria-label="Polypips — accueil"
+      aria-label={t("logoAriaLabel")}
     >
       <Image
         src="/polypips-mark.png"

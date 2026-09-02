@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
@@ -20,6 +20,7 @@ export function PricingPlanButton({
 }) {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("PricingPlanButton");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,11 +47,11 @@ export function PricingPlanButton({
       });
       const data = await response.json();
       if (!response.ok || !data.url) {
-        throw new Error(data.message || "Checkout indisponible.");
+        throw new Error(data.message || t("checkoutUnavailable"));
       }
       window.location.href = data.url;
     } catch {
-      setError("Impossible de démarrer le paiement. Réessayez.");
+      setError(t("genericError"));
       setLoading(false);
     }
   };
@@ -65,7 +66,7 @@ export function PricingPlanButton({
         onClick={handleClick}
         disabled={loading}
       >
-        {loading ? "Redirection..." : label}
+        {loading ? t("redirecting") : label}
         <ButtonIcon variant={variant}>→</ButtonIcon>
       </Button>
       {error && <p className="text-center text-xs text-rose-600">{error}</p>}

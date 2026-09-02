@@ -1,4 +1,12 @@
 {
+  "UI": {
+    "logoAriaLabel": "Polypips — accueil",
+    "socialProofSuffix": "utilisateurs nous font déjà confiance",
+    "ratingOutOf": "sur",
+    "trustNoCard": "Aucune carte requise",
+    "trustCancelAnytime": "Annulation à tout moment",
+    "trustInstant": "Accès instantané"
+  },
   "Metadata": {
     "title": "Polypips — L'IA qui analyse. Vous décidez. Le marché suit.",
     "description": "Polypips analyse les marchés Polymarket en profondeur, vous indique quelle position présente le meilleur signal et vous explique pourquoi."
@@ -11,7 +19,7 @@
   },
   "Header": {
     "login": "Se connecter",
-    "cta": "Débutez pour 0,99 €",
+    "cta": "Débutez pour 0,99 €",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu"
   },
@@ -47,12 +55,6 @@
       }
     }
   },
-  "AuthHeader": {
-    "noAccount": "Pas encore de compte ?",
-    "createAccount": "Créer un compte",
-    "hasAccount": "Déjà un compte ?",
-    "login": "Se connecter"
-  },
   "ChatButton": {
     "title": "Besoin d'aide ?",
     "description": "Notre équipe support est disponible pour répondre à vos questions sur Polypips.",
@@ -61,7 +63,7 @@
   },
   "AnnouncementBar": {
     "badge": "Offre limitée",
-    "text": "L'offre à 0,99 € se termine dans"
+    "text": "L'offre à 0,99 € se termine dans"
   },
   "Hero": {
     "title1": "L'IA qui analyse.",
@@ -69,7 +71,7 @@
     "title3": "Le marché suit.",
     "description": "Polypips analyse les marchés Polymarket en profondeur, vous indique quelle position présente le meilleur signal et vous explique pourquoi.",
     "tagline": "Plus de recherches. Plus d'hésitations. Juste l'avantage que vous cherchez.",
-    "ctaTrial": "Débutez pour 0,99 €",
+    "ctaTrial": "Débutez pour 0,99 €",
     "ctaDemo": "Voir la démo",
     "trust1": "Accès complet pendant 3 jours",
     "trust2": "Aucune carte requise",
@@ -85,25 +87,25 @@
         "title": "Analyse IA profonde",
         "description": "L'IA analyse chaque marché en profondeur et vous dit quoi parier et pourquoi."
       },
-      "smartMoney": {
-        "title": "Suivi Smart Money",
-        "description": "Suivez en temps réel les achats des meilleurs portefeuilles de Polymarket."
+      "smartWallet": {
+        "title": "Smart Wallet",
+        "description": "Recherchez n'importe quel portefeuille Polymarket et suivez ses positions en temps réel."
       },
-      "copyTrading": {
-        "title": "Copy Trading",
-        "description": "Laissez notre IA parier pour vous, automatiquement, sur les meilleurs marchés."
+      "sport": {
+        "title": "Analyse IA Sport",
+        "description": "Recherchez un match, obtenez un pronostic IA complet avec les facteurs clés et les risques."
+      },
+      "trading": {
+        "title": "Analyse IA Trading",
+        "description": "Déposez une capture de graphique et recevez une lecture claire de la tendance et des niveaux clés."
       },
       "aiSelected": {
-        "title": "Paris sélectionnés",
-        "description": "Découvrez chaque jour les meilleurs paris sélectionnés par notre IA."
+        "title": "Marchés sélectionnés",
+        "description": "Découvrez plusieurs fois par jour les meilleures opportunités sélectionnées par notre IA."
       },
       "aiCoach": {
         "title": "Coach IA personnel",
         "description": "Posez toutes vos questions et obtenez des réponses claires de notre IA."
-      },
-      "stats": {
-        "title": "Statistiques avancées",
-        "description": "Suivez vos performances, vos gains et toutes vos statistiques clés."
       }
     }
   },
@@ -111,7 +113,7 @@
     "eyebrow": "Preuves & résultats",
     "title1": "Polypips en action :",
     "title2": "des analyses qui font la différence",
-    "description": "Découvrez comment nos utilisateurs prennent de meilleures décisions et maximisent leurs gains grâce à nos analyses IA.",
+    "description": "Découvrez comment nos utilisateurs prennent de meilleures décisions grâce à nos analyses IA.",
     "prev": "Précédent",
     "next": "Suivant",
     "watchTestimonial": "Lire le témoignage de {handle}",
@@ -133,7 +135,7 @@
       "marketAnalysis": {
         "appTitle": "Analyse de marché",
         "tabAi": "Analyse IA",
-        "tabSmartMoney": "Smart Money",
+        "tabSmartMoney": "Smart Wallet",
         "questionLabel": "Question analysée",
         "question": "Le Real Madrid remportera-t-il le prochain clasico ?",
         "tag": "LaLiga",
@@ -195,7 +197,7 @@
         "handle": "@football_invest"
       },
       "portfolio": {
-        "appTitle": "Portefeuille Smart Money",
+        "appTitle": "Smart Wallet suivi",
         "allocationLabel": "Allocation détectée",
         "allocationValue": "+12.4%",
         "allocationContext": "sur les 7 derniers jours",
@@ -230,7 +232,7 @@
       },
       "track": {
         "title": "Suivez les meilleures opportunités",
-        "description": "Marchés sélectionnés par l'IA et portefeuilles Smart Money, en continu."
+        "description": "Marchés sélectionnés par l'IA et portefeuilles Smart Wallet, en continu."
       },
       "act": {
         "title": "Prenez vos décisions",
@@ -247,7 +249,7 @@
       "decision": "Décision IA",
       "probability": "Probabilité & Edge",
       "explanation": "Explication détaillée",
-      "smartMoney": "Smart Money",
+      "smartMoney": "Smart Wallet",
       "coach": "Coach IA"
     },
     "ctaLabel": "Voir la démo (2:15)",
@@ -286,7 +288,7 @@
     "description": "Pas de paliers, pas de fonctionnalités verrouillées derrière un plan supérieur : un abonnement Polypips Pro, avec un essai à prix réduit pour commencer.",
     "offerLimited": "Offre limitée",
     "cardTitle": "Accès complet Polypips",
-    "cardDescription": "Débloquez toutes les fonctionnalités : Analyse IA, Marchés sélectionnés, Smart Money, Copy Trading, Coach IA, Statistiques.",
+    "cardDescription": "Débloquez toutes les fonctionnalités : Analyse IA, Marchés sélectionnés, Smart Wallet, Sport, Trading, Coach IA.",
     "thenPrefix": "Puis",
     "thenSuffix": "— annulez à tout moment avant la fin de l'essai pour ne rien payer de plus.",
     "ctaPrefix": "Débuter pour",
@@ -296,10 +298,10 @@
     "features": {
       "analyses": "Analyses IA illimitées",
       "selectedMarkets": "Marchés sélectionnés par l'IA",
-      "smartMoney": "Suivi Smart Money en temps réel",
-      "copyTrading": "Copy Trading intelligent",
+      "smartMoney": "Smart Wallet — recherche & suivi de portefeuilles",
+      "copyTrading": "Analyse IA Sport & Trading",
       "coach": "Coach IA personnel",
-      "stats": "Statistiques avancées"
+      "stats": "Communauté & historique complet"
     }
   },
   "FAQ": {
@@ -325,24 +327,24 @@
       },
       "markets": {
         "question": "Quels marchés sont couverts ?",
-        "answer": "La V1 de Polypips est principalement orientée vers les marchés Polymarket. D'autres plateformes de prediction markets seront intégrées progressivement."
+        "answer": "Polypips couvre les marchés Polymarket, ainsi que l'analyse de matchs sportifs (Football, Basketball, Tennis) et la lecture de graphiques Trading. D'autres plateformes seront intégrées progressivement."
       },
       "copyTrading": {
-        "question": "Polypips touche-t-il à mon portefeuille ? Comment fonctionne le Copy Trading ?",
-        "answer": "Non, sauf si vous activez explicitement le Copy Trading. Vous choisissez alors une stratégie et définissez vos propres paramètres de risque (montant maximum par position, exposition maximale, nombre de positions) : aucun rendement n'est garanti, il s'agit d'une automatisation de vos règles, pas d'une promesse de gain. Vous gardez le contrôle à tout moment."
+        "question": "Polypips touche-t-il à mon portefeuille ? Comment fonctionne le Smart Wallet ?",
+        "answer": "Non, Polypips n'a jamais accès à votre portefeuille ni à vos fonds. Le Smart Wallet vous permet de rechercher n'importe quelle adresse Polymarket et de suivre ses positions et nouveaux paris — c'est un outil d'observation, pas d'exécution automatique. Aucun rendement n'est garanti."
       }
     }
   },
   "FinalCTA": {
     "title1": "Prêt à prendre l'avantage",
-    "title2": "sur Polymarket ?",
+    "title2": "sur Polymarket ?",
     "arg1": "0,99 € pendant 3 jours",
     "arg2": "Accès immédiat",
     "arg3": "Annulation à tout moment",
-    "cta": "Débutez pour 0,99 €"
+    "cta": "Débutez pour 0,99 €"
   },
   "SmartMoneyPopup": {
-    "label": "Activité Smart Money",
+    "label": "Activité Smart Wallet",
     "close": "Masquer les notifications d'activité"
   },
   "ComingSoon": {
@@ -352,116 +354,5 @@
   "LanguageSelector": {
     "fr": "Français",
     "en": "English"
-  },
-  "Auth": {
-    "or": "ou",
-    "terms": "Conditions d'utilisation",
-    "privacy": "Politique de confidentialité",
-    "errorGeneric": "Une erreur est survenue. Merci de réessayer.",
-    "oauthError": "La connexion avec Google a échoué. Merci de réessayer.",
-    "GoogleButton": {
-      "redirecting": "Redirection vers Google...",
-      "cta": "Continuer avec Google"
-    },
-    "Signup": {
-      "metaTitle": "Créer un compte — Polypips",
-      "metaDescription": "Créez votre compte Polypips et prenez l'avantage sur le marché.",
-      "heroTitle1": "Créez votre compte",
-      "heroTitle2": "et prenez l'avantage",
-      "heroTitle3": "sur le marché.",
-      "heroDescription": "Rejoignez les utilisateurs qui utilisent l'IA pour analyser, comprendre et prendre de meilleures décisions sur les marchés.",
-      "cardTitle": "Créer un compte",
-      "cardSubtitle": "Accès immédiat à toutes les fonctionnalités",
-      "emailLabel": "Adresse email",
-      "emailPlaceholder": "votre@email.com",
-      "passwordLabel": "Mot de passe",
-      "passwordPlaceholder": "••••••••••••",
-      "passwordStrengthPrefix": "Mot de passe",
-      "termsPrefix": "J'accepte les",
-      "termsAnd": "et la",
-      "termsSuffix": "de Polypips.",
-      "submit": "Créer mon compte",
-      "emailNotice": "En créant un compte, vous acceptez de recevoir des emails de la part de Polypips.",
-      "alreadyHaveAccount": "Un compte existe déjà avec cet email.",
-      "loginInstead": "Connectez-vous plutôt.",
-      "weakPasswordPrefix": "Mot de passe trop faible :",
-      "successMessage": "Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter."
-    },
-    "Login": {
-      "metaTitle": "Connexion — Polypips",
-      "metaDescription": "Connectez-vous à votre compte Polypips.",
-      "cardTitle": "Connexion à votre compte",
-      "cardSubtitle": "Accédez à vos analyses IA, Smart Money et paris sélectionnés.",
-      "emailLabel": "Adresse e-mail",
-      "emailPlaceholder": "vous@email.com",
-      "passwordLabel": "Mot de passe",
-      "passwordPlaceholder": "••••••••••••",
-      "rememberMe": "Se souvenir de moi",
-      "forgotPassword": "Mot de passe oublié ?",
-      "submit": "Se connecter →",
-      "noAccount": "Pas encore de compte ?",
-      "createAccount": "Créer un compte",
-      "invalidCredentials": "Email ou mot de passe incorrect.",
-      "termsPrefix": "En continuant, vous acceptez les",
-      "termsAnd": "et la",
-      "termsSuffix": "."
-    },
-    "ForgotPassword": {
-      "metaTitle": "Mot de passe oublié — Polypips",
-      "metaDescription": "Réinitialisez le mot de passe de votre compte Polypips.",
-      "titleIdle": "Mot de passe oublié ?",
-      "titleSuccess": "Email envoyé !",
-      "descriptionIdle": "Pas de souci. Entrez votre adresse e-mail, on vous envoie un lien pour réinitialiser votre mot de passe.",
-      "descriptionSuccess": "Vérifiez votre boîte de réception (et vos spams) pour réinitialiser votre mot de passe.",
-      "emailLabel": "Adresse e-mail",
-      "emailPlaceholder": "vous@email.com",
-      "submit": "Envoyer le lien de réinitialisation →",
-      "backToLogin": "Retour à la connexion",
-      "otherIssues": "Vous avez d'autres problèmes ?",
-      "contactSupport": "Contactez notre support",
-      "invalidEmail": "Adresse email invalide.",
-      "rateLimited": "Trop de tentatives. Merci de réessayer dans quelques minutes."
-    },
-    "SignupBenefits": {
-      "precision": {
-        "title": "Analyses ultra-précises",
-        "description": "Une IA qui décortique chaque marché en profondeur pour un signal fiable."
-      },
-      "time": {
-        "title": "Gagnez du temps",
-        "description": "Fini les heures de recherche : une décision claire, expliquée."
-      },
-      "secure": {
-        "title": "100% sécurisé",
-        "description": "Vos données et vos accès sont protégés à chaque étape."
-      },
-      "support": {
-        "title": "Support dédié",
-        "description": "Une équipe disponible pour vous accompagner à tout moment."
-      }
-    },
-    "LoginTrustRow": {
-      "secure": { "label": "Sécurisé", "sublabel": "Données protégées" },
-      "instant": { "label": "Accès instantané", "sublabel": "En quelques secondes" },
-      "analyses": { "label": "Analyses avancées", "sublabel": "IA & Smart Money" },
-      "support": { "label": "Support réactif", "sublabel": "7j/7" }
-    },
-    "TrustStrip": {
-      "noCard": "Aucune carte requise",
-      "cancelAnytime": "Annulation à tout moment",
-      "instant": "Accès instantané"
-    },
-    "LaunchOfferCard": {
-      "badge": "Offre de lancement",
-      "duration": "pendant 3 jours",
-      "afterOffer": "Puis 29,99 € / mois pendant 30 jours"
-    },
-    "PasswordStrength": {
-      "veryWeak": "très faible",
-      "weak": "faible",
-      "medium": "moyen",
-      "strong": "fort",
-      "veryStrong": "très fort"
-    }
   }
 }

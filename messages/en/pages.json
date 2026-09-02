@@ -1,0 +1,14 @@
+{
+  "Pages": {
+    "Pricing": {
+      "metaTitle": "Pricing — Polypips",
+      "metaDescription": "The $0.99 discovery offer for 3 days, then the Pro subscription at $29.99/month.",
+      "eyebrow": "Pricing",
+      "title": "One plan, every feature",
+      "description": "No tiers, no feature locked behind a higher plan: start with the discovery offer, or go straight to the Pro subscription.",
+      "indicative": "for reference",
+      "guarantees": ["Instant access", "Cancel anytime", "Secure payment via Stripe"],
+      "disclaimer": "The analyses Polypips provides are for informational purposes only and do not constitute financial or investment advice. No order is ever automatically executed on your behalf — Smart Wallet is an observation tool, not automatic execution."
+    }
+  }
+}

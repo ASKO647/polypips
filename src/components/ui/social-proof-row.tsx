@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { SOCIAL_PROOF } from "@/lib/data/social-proof";
 
@@ -15,6 +16,7 @@ export function SocialProofRow({
   align?: "start" | "center";
   className?: string;
 }) {
+  const t = useTranslations("UI");
   return (
     <div
       className={cn(
@@ -32,7 +34,7 @@ export function SocialProofRow({
         <p className="text-sm font-semibold text-ink">
           +{userCount}{" "}
           <span className="font-normal text-body">
-            utilisateurs nous font déjà confiance
+            {t("socialProofSuffix")}
           </span>
         </p>
         <div className="flex items-center gap-1.5">
@@ -45,7 +47,7 @@ export function SocialProofRow({
             ))}
           </div>
           <span className="text-xs font-medium text-body-soft">
-            {rating} sur {ratingSource}
+            {rating} {t("ratingOutOf")} {ratingSource}
           </span>
         </div>
       </div>

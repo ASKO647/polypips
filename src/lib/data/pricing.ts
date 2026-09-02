@@ -1,82 +1,96 @@
-export type PricingPlan = {
-  id: string;
+/**
+ * Plan display copy (name/tagline/price/features/cta) lives in the "plans"
+ * message namespace (messages/{locale}/plans.json), never as hardcoded
+ * strings here — getPricingPlans(t) merges it with the plan metadata below
+ * at render time. `t` must be scoped to the "Plans" namespace, e.g.
+ * `useTranslations("Plans")` (client) or `getTranslations("Plans")`
+ * (server).
+ *
+ * Quota numbers (dailyAnalysisLimit etc.) used to be regex-parsed out of
+ * the French feature label strings — that broke the instant those labels
+ * became translatable, since the regex only matched French phrasing. They
+ * are now plain numeric fields on PLAN_METADATA, decoupled from display
+ * copy in either language.
+ */
+
+export type PlanId = "decouverte" | "pro";
+
+export type PlanMeta = {
+  id: PlanId;
+  priceEur: number;
+  hasCountdown?: boolean;
+  highlighted?: boolean;
+  dailyAnalysisLimit: number | null;
+  weeklyCoachMessageLimit: number | null;
+  maxTrackedWallets: number | null;
+};
+
+/** Both current plans are unlimited on every quota — these fields exist so
+ * a future numeric cap never has to go back through display-text parsing
+ * again, not because a limit exists today. */
+export const PLAN_METADATA: PlanMeta[] = [
+  {
+    id: "decouverte",
+    priceEur: 0.99,
+    hasCountdown: true,
+    highlighted: true,
+    dailyAnalysisLimit: null,
+    weeklyCoachMessageLimit: null,
+    maxTrackedWallets: null,
+  },
+  {
+    id: "pro",
+    priceEur: 29.99,
+    dailyAnalysisLimit: null,
+    weeklyCoachMessageLimit: null,
+    maxTrackedWallets: null,
+  },
+];
+
+export function getPlanMeta(id: string): PlanMeta {
+  return PLAN_METADATA.find((p) => p.id === id) ?? PLAN_METADATA[0];
+}
+
+export type PricingPlan = PlanMeta & {
   name: string;
   tagline: string;
   price: string;
-  /** Numeric EUR value backing `price` — Stripe always bills in EUR, but
-   * the dashboard's currency preference needs a real number to convert
-   * for display rather than parsing the localized `price` string. */
-  priceEur: number;
   priceSuffix: string;
   afterOffer?: string;
   originalPrice?: string;
   features: string[];
   cta: string;
-  highlighted?: boolean;
-  badge?: string;
-  hasCountdown?: boolean;
 };
 
-export const PRICING_PLANS: PricingPlan[] = [
-  {
-    id: "decouverte",
-    name: "Offre découverte",
-    tagline: "L'entrée idéale pour tester Polypips",
-    price: "0,99 €",
-    priceEur: 0.99,
-    priceSuffix: "pendant 3 jours",
-    afterOffer: "Puis 29,99 € / mois",
-    features: [
-      "Accès complet à toutes les fonctionnalités",
-      "Analyses IA illimitées",
-      "Portefeuilles suivis illimités",
-      "Copy trading illimité",
-      "Messages Coach IA illimités",
-      "Sélections IA illimitées",
-    ],
-    cta: "Débutez pour 0,99 €",
-    hasCountdown: true,
-    highlighted: true,
-  },
-  {
-    id: "pro",
-    name: "Polypips Pro",
-    tagline: "L'accès complet à Polypips, sans limites",
-    price: "29,99 €",
-    priceEur: 29.99,
-    priceSuffix: "/ mois",
-    originalPrice: "49,99 €",
-    features: [
-      "Analyses IA illimitées",
-      "Portefeuilles suivis illimités",
-      "Copy trading illimité",
-      "Messages Coach IA illimités",
-      "Sélections IA illimitées",
-      "Statistiques avancées",
-    ],
-    cta: "Choisir Pro",
-  },
-];
+type PlansTranslator = {
+  (key: string): string;
+  raw: (key: string) => unknown;
+};
 
-/** Derives a plan's daily analysis cap from its own feature list, so the
- * dashboard never hardcodes a number that could drift from the pricing page.
- * Returns null when the plan has no such line (i.e. unlimited analyses). */
-export function getDailyAnalysisLimit(plan: PricingPlan): number | null {
-  for (const feature of plan.features) {
-    const match = feature.match(/^(\d+)\s+analyses?\s+IA\s+par\s+jour$/i);
-    if (match) return Number(match[1]);
-  }
-  return null;
+/** Builds the locale-aware plan list — call with a translator scoped to
+ * the "Plans" namespace so every plan's copy renders in the current
+ * locale. Never import a static plan array directly; call this at render
+ * time in every component/page that needs plan display copy. */
+export function getPricingPlans(t: PlansTranslator): PricingPlan[] {
+  return PLAN_METADATA.map((meta) => ({
+    ...meta,
+    name: t(`${meta.id}.name`),
+    tagline: t(`${meta.id}.tagline`),
+    price: t(`${meta.id}.price`),
+    priceSuffix: t(`${meta.id}.priceSuffix`),
+    afterOffer: meta.id === "decouverte" ? t(`${meta.id}.afterOffer`) : undefined,
+    originalPrice: meta.id === "pro" ? t(`${meta.id}.originalPrice`) : undefined,
+    features: t.raw(`${meta.id}.features`) as string[],
+    cta: t(`${meta.id}.cta`),
+  }));
 }
 
-/** Same idea as getDailyAnalysisLimit, for the Coach IA weekly message cap.
- * Returns null when the plan has no such line (i.e. unlimited messages). */
-export function getWeeklyCoachMessageLimit(plan: PricingPlan): number | null {
-  for (const feature of plan.features) {
-    const match = feature.match(/^(\d+)\s+messages?\s+Coach\s+IA\s+par\s+semaine$/i);
-    if (match) return Number(match[1]);
-  }
-  return null;
+export function getDailyAnalysisLimit(plan: PlanMeta): number | null {
+  return plan.dailyAnalysisLimit;
+}
+
+export function getWeeklyCoachMessageLimit(plan: PlanMeta): number | null {
+  return plan.weeklyCoachMessageLimit;
 }
 
 /**
@@ -86,11 +100,6 @@ export function getWeeklyCoachMessageLimit(plan: PricingPlan): number | null {
  * different one until the subscription renews (see
  * lib/supabase/quota-cycles.ts). Returns null when unlimited.
  */
-export function getMaxTrackedWallets(plan: PricingPlan): number | null {
-  for (const feature of plan.features) {
-    const match = feature.match(/^(\d+)\s+portefeuilles?\s+suivis?\s+par\s+mois$/i);
-    if (match) return Number(match[1]);
-  }
-  return null;
+export function getMaxTrackedWallets(plan: PlanMeta): number | null {
+  return plan.maxTrackedWallets;
 }
-

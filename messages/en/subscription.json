@@ -1,0 +1,11 @@
+{
+  "SubscriptionPlans": {
+    "currentPlan": "Current plan",
+    "cancelledNotice": "Your subscription is cancelled — access stays active until {date}.",
+    "cancelledNoticeFallback": "the end of the paid period",
+    "activeNotice": "You already have an active subscription. Choosing a plan below replaces your current subscription.",
+    "genericError": "Something went wrong.",
+    "checkoutError": "Unable to start checkout.",
+    "backToProfile": "← Back to profile"
+  }
+}

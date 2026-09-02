@@ -1,4 +1,5 @@
 import { Check, Sparkles, TrendingUp } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { CheckItem } from "@/components/ui/check-item";
@@ -6,21 +7,7 @@ import { Countdown } from "@/components/ui/countdown";
 import { SocialProofRow } from "@/components/ui/social-proof-row";
 import { PricingPlanButton } from "@/components/marketing/pricing-plan-button";
 import { getDefaultLaunchDeadline } from "@/lib/deadline";
-import { PRICING_PLANS } from "@/lib/data/pricing";
-
-/** Product names kept identical to how they're already labeled elsewhere
- * (dashboard nav, lib/data/features.ts) so this list never invents new
- * terminology for the same features. */
-const INCLUDED_FEATURES = [
-  "Analyses IA illimitées",
-  "Marchés sélectionnés par l'IA",
-  "Suivi Smart Money en temps réel",
-  "Copy Trading intelligent",
-  "Coach IA personnel",
-  "Statistiques avancées",
-];
-
-const GUARANTEES = ["Accès instantané", "Annulez à tout moment", "Paiement sécurisé"];
+import { getPricingPlans } from "@/lib/data/pricing";
 
 /**
  * Single-plan pricing card — there is only one real subscription
@@ -28,27 +15,32 @@ const GUARANTEES = ["Accès instantané", "Annulez à tout moment", "Paiement s�
  * automatically into 29,99 €/mois. Checkout still targets the
  * "decouverte" plan id (see lib/stripe/plans + the webhook's own
  * upsertSubscription, which transitions plan/status once the trial
- * period ends) — PRICING_PLANS still holds both entries for that
- * reason, this section just no longer displays them as two competing
- * tiers.
+ * period ends) — the "plans" namespace still holds both entries for
+ * that reason, this section just no longer displays them as two
+ * competing tiers.
  */
-export function Pricing() {
+export async function Pricing() {
   const deadline = getDefaultLaunchDeadline();
-  const plan = PRICING_PLANS.find((p) => p.id === "decouverte") ?? PRICING_PLANS[0];
-  const proPlan = PRICING_PLANS.find((p) => p.id === "pro") ?? PRICING_PLANS[1];
+  const t = await getTranslations("Pricing");
+  const tPlans = await getTranslations("Plans");
+  const plans = getPricingPlans(tPlans);
+  const plan = plans.find((p) => p.id === "decouverte") ?? plans[0];
+  const proPlan = plans.find((p) => p.id === "pro") ?? plans[1];
+  const includedFeatures = Object.values(t.raw("features") as Record<string, string>);
+  const guarantees = [t("guarantee1"), t("guarantee2"), t("guarantee3")];
 
   return (
     <section id="tarifs" className="reveal py-10 sm:py-12">
       <Container className="flex flex-col items-center gap-8">
         <SectionHeading
-          eyebrow="Tarifs"
-          title="Un seul accès, toutes les fonctionnalités"
-          description="Pas de paliers, pas de fonctionnalités verrouillées derrière un plan supérieur : un abonnement Polypips Pro, avec un essai à prix réduit pour commencer."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("description")}
         />
 
         <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-brand-600">
           <Sparkles className="h-3.5 w-3.5" strokeWidth={2.5} />
-          Offre limitée
+          {t("offerLimited")}
           <Countdown deadline={deadline} variant="inline" />
         </span>
 
@@ -62,15 +54,11 @@ export function Pricing() {
               </span>
               <div>
                 <h3 className="font-display text-lg font-semibold text-ink">
-                  Accès complet Polypips
+                  {t("cardTitle")}
                 </h3>
               </div>
             </div>
-            <p className="text-sm leading-relaxed text-body">
-              Débloquez toutes les fonctionnalités : Analyse IA, Marchés
-              sélectionnés, Smart Money, Copy Trading, Coach IA,
-              Statistiques.
-            </p>
+            <p className="text-sm leading-relaxed text-body">{t("cardDescription")}</p>
 
             <div className="flex flex-col gap-1">
               <span className="font-display text-5xl font-bold tracking-tight text-ink">
@@ -80,21 +68,20 @@ export function Pricing() {
                 {plan.priceSuffix}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-body-soft">
-                Puis {proPlan.price}
-                {proPlan.priceSuffix} — annulez à tout moment avant la
-                fin de l&apos;essai pour ne rien payer de plus.
+                {t("thenPrefix")} {proPlan.price}
+                {proPlan.priceSuffix} {t("thenSuffix")}
               </p>
             </div>
 
             <PricingPlanButton
               planId="decouverte"
-              label={`Débuter pour ${plan.price}`}
+              label={`${t("ctaPrefix")} ${plan.price}`}
               variant="primary"
               className="h-[54px] w-full"
             />
 
             <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5">
-              {GUARANTEES.map((item) => (
+              {guarantees.map((item) => (
                 <span
                   key={item}
                   className="flex items-center gap-1.5 text-xs font-medium text-body-soft"
@@ -108,7 +95,7 @@ export function Pricing() {
 
           <div className="rounded-[28px] border border-border bg-surface p-8">
             <ul className="flex flex-col gap-3">
-              {INCLUDED_FEATURES.map((feature) => (
+              {includedFeatures.map((feature) => (
                 <CheckItem key={feature}>{feature}</CheckItem>
               ))}
             </ul>

@@ -1,0 +1,14 @@
+{
+  "Pages": {
+    "Pricing": {
+      "metaTitle": "Tarifs — Polypips",
+      "metaDescription": "L'offre découverte à 0,99 € pendant 3 jours, puis l'abonnement Pro à 29,99 €/mois.",
+      "eyebrow": "Tarifs",
+      "title": "Un seul accès, toutes les fonctionnalités",
+      "description": "Pas de paliers, pas de fonctionnalité verrouillée derrière un plan supérieur : commencez par l'offre découverte, ou passez directement à l'abonnement Pro.",
+      "indicative": "à titre indicatif",
+      "guarantees": ["Accès instantané", "Annulez à tout moment", "Paiement sécurisé par Stripe"],
+      "disclaimer": "Les analyses fournies par Polypips sont à titre informatif et ne constituent pas un conseil financier ou d'investissement. Aucun ordre n'est jamais exécuté automatiquement pour votre compte — Smart Wallet est un outil d'observation, pas d'exécution."
+    }
+  }
+}

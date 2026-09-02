@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCurrency } from "@/providers/currency-provider";
-import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
+import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import { hasActiveAccess, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,8 @@ export function SubscriptionPlans({
   periodEndLabel: string | null;
 }) {
   const locale = useLocale();
+  const t = useTranslations("SubscriptionPlans");
+  const tPlans = useTranslations("Plans");
   const hasAccess = hasActiveAccess(subscription);
   const cancelAtPeriodEnd = subscription?.cancelAtPeriodEnd ?? false;
   const currentPlanId = subscription?.plan ?? null;
@@ -41,7 +43,7 @@ export function SubscriptionPlans({
   // current plan rather than a new purchase.
   const isCurrentlyOnDiscoveryTrial = hasAccess && currentPlanId === "decouverte";
   const hasSubscribedBefore = subscription !== null;
-  const visiblePlans = PRICING_PLANS.filter(
+  const visiblePlans = getPricingPlans(tPlans).filter(
     (plan) => plan.id !== "decouverte" || !hasSubscribedBefore || isCurrentlyOnDiscoveryTrial
   );
 
@@ -57,11 +59,11 @@ export function SubscriptionPlans({
       });
       const data = await response.json();
       if (!response.ok || !data.url) {
-        throw new Error(data.message || "Impossible de démarrer le paiement.");
+        throw new Error(data.message || t("checkoutError"));
       }
       window.location.assign(data.url);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      setError(err instanceof Error ? err.message : t("genericError"));
       setPendingPlan(null);
     }
   };
@@ -71,8 +73,8 @@ export function SubscriptionPlans({
       {hasAccess && (
         <p className="rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3 text-sm text-dash-text-secondary">
           {cancelAtPeriodEnd
-            ? `Votre abonnement est annulé — l'accès reste actif jusqu'au ${periodEndLabel ?? "terme de la période payée"}.`
-            : "Vous avez déjà un abonnement actif. Choisir un plan ci-dessous remplace votre abonnement en cours."}
+            ? t("cancelledNotice", { date: periodEndLabel ?? t("cancelledNoticeFallback") })
+            : t("activeNotice")}
         </p>
       )}
 
@@ -96,7 +98,7 @@ export function SubscriptionPlans({
                   <h2 className="font-display text-lg font-bold text-dash-text">{plan.name}</h2>
                   {isCurrent && (
                     <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
-                      Plan actuel
+                      {t("currentPlan")}
                     </span>
                   )}
                 </div>
@@ -136,7 +138,7 @@ export function SubscriptionPlans({
                 {pendingPlan === plan.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : isCurrent ? (
-                  "Plan actuel"
+                  t("currentPlan")
                 ) : (
                   plan.cta
                 )}
@@ -150,7 +152,7 @@ export function SubscriptionPlans({
         href="/dashboard/settings"
         className="text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
       >
-        ← Retour au profil
+        {t("backToProfile")}
       </Link>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Sparkles } from "lucide-react";
 import { PLAN_ICONS } from "@/components/dashboard/account-status-card";
@@ -8,7 +9,7 @@ import { StatusBadge } from "@/components/dashboard/settings/status-badge";
 import { ProfileTab } from "@/components/dashboard/settings/profile-tab";
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
-import { PRICING_PLANS, type PricingPlan } from "@/lib/data/pricing";
+import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
 
@@ -50,6 +51,7 @@ export function SettingsFlow({
   trialDaysRemaining: number | null;
 }) {
   const router = useRouter();
+  const tPlans = useTranslations("Plans");
   const [subscription, setSubscription] = useState(initialSubscription);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
@@ -83,7 +85,7 @@ export function SettingsFlow({
   };
 
   const currentPlan = subscription
-    ? (PRICING_PLANS.find((p) => p.id === subscription.plan) ?? null)
+    ? (getPricingPlans(tPlans).find((p) => p.id === subscription.plan) ?? null)
     : null;
   const periodEndLabel = subscription?.currentPeriodEnd
     ? DATE_FORMATTER.format(new Date(subscription.currentPeriodEnd))

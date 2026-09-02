@@ -1,0 +1,41 @@
+{
+  "Plans": {
+    "decouverte": {
+      "name": "Offre découverte",
+      "tagline": "L'entrée idéale pour tester Polypips",
+      "price": "0,99 €",
+      "priceSuffix": "pendant 3 jours",
+      "afterOffer": "Puis 29,99 € / mois",
+      "features": [
+        "Accès complet à toutes les fonctionnalités",
+        "Analyses IA illimitées",
+        "Portefeuilles suivis illimités",
+        "Analyse IA Sport & Trading",
+        "Messages Coach IA illimités",
+        "Sélections IA illimitées"
+      ],
+      "cta": "Débutez pour 0,99 €"
+    },
+    "pro": {
+      "name": "Polypips Pro",
+      "tagline": "L'accès complet à Polypips, sans limites",
+      "price": "29,99 €",
+      "priceSuffix": "/ mois",
+      "originalPrice": "49,99 €",
+      "features": [
+        "Analyses IA illimitées",
+        "Portefeuilles suivis illimités",
+        "Analyse IA Sport & Trading",
+        "Messages Coach IA illimités",
+        "Sélections IA illimitées",
+        "Communauté & historique complet"
+      ],
+      "cta": "Choisir Pro"
+    }
+  },
+  "PricingPlanButton": {
+    "redirecting": "Redirection...",
+    "checkoutUnavailable": "Checkout indisponible.",
+    "genericError": "Impossible de démarrer le paiement. Réessayez."
+  }
+}

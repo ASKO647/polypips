@@ -1,28 +1,32 @@
 import type { Metadata } from "next";
 import { Check } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Container } from "@/components/ui/container";
 import { CheckItem } from "@/components/ui/check-item";
 import { PricingPlanButton } from "@/components/marketing/pricing-plan-button";
-import { PRICING_PLANS } from "@/lib/data/pricing";
+import { getPricingPlans } from "@/lib/data/pricing";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Tarifs — Polypips",
-  description: "L'offre découverte à 0,99 € pendant 3 jours, puis l'abonnement Pro à 29,99 €/mois.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Pages.Pricing");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
-export default function PricingPage() {
-  const decouverte = PRICING_PLANS.find((p) => p.id === "decouverte") ?? PRICING_PLANS[0];
-  const pro = PRICING_PLANS.find((p) => p.id === "pro") ?? PRICING_PLANS[1];
+export default async function PricingPage() {
+  const t = await getTranslations("Pages.Pricing");
+  const tPlans = await getTranslations("Plans");
+  const plans = getPricingPlans(tPlans);
+  const decouverte = plans.find((p) => p.id === "decouverte") ?? plans[0];
+  const pro = plans.find((p) => p.id === "pro") ?? plans[1];
 
   return (
     <MarketingPageShell>
       <PageHero
-        eyebrow="Tarifs"
-        title="Un seul accès, toutes les fonctionnalités"
-        description="Pas de paliers, pas de fonctionnalité verrouillée derrière un plan supérieur : commencez par l'offre découverte, ou passez directement à l'abonnement Pro."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        description={t("description")}
       />
 
       <Container className="pb-20 sm:pb-28">
@@ -52,7 +56,7 @@ export default function PricingPage() {
                 )}
                 {plan.originalPrice && (
                   <p className="mt-1 text-xs leading-relaxed text-body-soft">
-                    <span className="line-through">{plan.originalPrice}</span> à titre indicatif
+                    <span className="line-through">{plan.originalPrice}</span> {t("indicative")}
                   </p>
                 )}
               </div>
@@ -74,26 +78,19 @@ export default function PricingPage() {
         </div>
 
         <div className="mx-auto mt-10 flex max-w-4xl flex-wrap items-center justify-center gap-x-8 gap-y-2">
-          {["Accès instantané", "Annulez à tout moment", "Paiement sécurisé par Stripe"].map(
-            (item) => (
-              <span
-                key={item}
-                className="flex items-center gap-1.5 text-xs font-medium text-body-soft"
-              >
-                <Check className="h-3.5 w-3.5 text-brand-500" strokeWidth={2.5} />
-                {item}
-              </span>
-            )
-          )}
+          {(t.raw("guarantees") as string[]).map((item) => (
+            <span
+              key={item}
+              className="flex items-center gap-1.5 text-xs font-medium text-body-soft"
+            >
+              <Check className="h-3.5 w-3.5 text-brand-500" strokeWidth={2.5} />
+              {item}
+            </span>
+          ))}
         </div>
 
         <div className="mx-auto mt-16 max-w-2xl rounded-[24px] border border-border bg-surface-muted p-6 text-center sm:p-8">
-          <p className="text-sm leading-relaxed text-body">
-            Les analyses fournies par Polypips sont à titre informatif et ne constituent pas un
-            conseil financier ou d&apos;investissement. Le module Copy Trading fonctionne
-            exclusivement en simulation : aucun ordre réel n&apos;est jamais exécuté pour votre
-            compte.
-          </p>
+          <p className="text-sm leading-relaxed text-body">{t("disclaimer")}</p>
         </div>
       </Container>
     </MarketingPageShell>

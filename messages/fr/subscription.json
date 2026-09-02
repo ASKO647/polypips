@@ -1,0 +1,11 @@
+{
+  "SubscriptionPlans": {
+    "currentPlan": "Plan actuel",
+    "cancelledNotice": "Votre abonnement est annulé — l'accès reste actif jusqu'au {date}.",
+    "cancelledNoticeFallback": "terme de la période payée",
+    "activeNotice": "Vous avez déjà un abonnement actif. Choisir un plan ci-dessous remplace votre abonnement en cours.",
+    "genericError": "Une erreur est survenue.",
+    "checkoutError": "Impossible de démarrer le paiement.",
+    "backToProfile": "← Retour au profil"
+  }
+}

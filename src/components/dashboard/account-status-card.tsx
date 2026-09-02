@@ -1,14 +1,12 @@
 "use client";
 
 import { Crown, Rocket } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCurrency } from "@/providers/currency-provider";
-import { PRICING_PLANS } from "@/lib/data/pricing";
+import { getPricingPlans } from "@/lib/data/pricing";
 import { getTrialDaysRemaining, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { formatResetDate } from "@/lib/utils";
-
-const DECOUVERTE_PLAN = PRICING_PLANS.find((p) => p.id === "decouverte") ?? PRICING_PLANS[0];
-const PRO_PLAN = PRICING_PLANS.find((p) => p.id === "pro") ?? PRICING_PLANS[0];
 
 export const PLAN_ICONS: Record<string, typeof Crown> = {
   decouverte: Rocket,
@@ -27,6 +25,10 @@ export function AccountStatusCard({
   subscription: SubscriptionRow | null;
 }) {
   const { formatAmount } = useCurrency();
+  const tPlans = useTranslations("Plans");
+  const plans = getPricingPlans(tPlans);
+  const DECOUVERTE_PLAN = plans.find((p) => p.id === "decouverte") ?? plans[0];
+  const PRO_PLAN = plans.find((p) => p.id === "pro") ?? plans[0];
 
   if (!subscription) {
     return (
