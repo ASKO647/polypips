@@ -2,15 +2,21 @@
  * mirrors _shared/api-sports.ts's ScheduleItem, but only the fields the UI
  * actually renders (no external IDs beyond what's needed to key a list). */
 
-export type Sport = "football" | "basketball";
+export type Sport = "football" | "basketball" | "tennis";
 
 export const SPORT_LABELS: Record<Sport, string> = {
   football: "Football",
   basketball: "Basketball",
+  tennis: "Tennis",
 };
 
 export type SportFixture = {
-  externalFixtureId: number;
+  /** A real numeric ID for football/basketball (API-Sports' own fixture
+   * id). Tennis (The Odds API) only has a string event id — never
+   * fabricated into a fake number, just kept as the string it is; nothing
+   * downstream does arithmetic on this, it's only ever used as a list
+   * key. */
+  externalFixtureId: number | string;
   kickoffAt: string;
   competitionName: string | null;
   homeTeamName: string;

@@ -127,6 +127,7 @@ export function SportAnalyseIaFlow() {
           </p>
         )}
         <FixturePicker
+          sport={sport}
           result={searchResult}
           onSelectFixture={handleSelectFixture}
           onBack={handleNewSearch}

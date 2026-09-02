@@ -2,7 +2,10 @@
  * Client for the API-Sports ecosystem (api-football.com's direct account
  * also unlocks the sibling per-sport APIs — basketball, hockey, rugby,
  * baseball, american-football — under the same account/key, each on its
- * own host).
+ * own host). Used on-demand by sport-match-search/index.ts (team search +
+ * head-to-head lookup), not by any background sync anymore — the old
+ * browse-everything Sport module (and its sync-sports-data Edge Function)
+ * was replaced by the current search-driven "Analyse IA" (2026-09).
  *
  * IMPORTANT — unverified against a live response: this sandbox's network
  * egress blocks api-sports.io/api-football.com outright, and no real
@@ -15,18 +18,19 @@
  * sport's exact response shape degrades that one sport's sync to "found
  * nothing this run" rather than crashing the whole function. If a sport
  * comes back consistently empty after a real deploy, start by checking
- * this run's Edge Function logs — see the console.log calls in
- * sync-sports-data/index.ts — against a manual curl of the same endpoint.
+ * this run's Edge Function logs against a manual curl of the same
+ * endpoint.
  *
  * Auth: a direct (non-RapidAPI) api-football.com/api-sports.io account
  * uses the `x-apisports-key` header — NOT `x-rapidapi-key` +
  * `x-rapidapi-host`, which is only for RapidAPI-issued keys.
  *
  * Tennis is NOT part of the API-Sports ecosystem at all (no v1.tennis host
- * exists there) — not included below, and not selectable anywhere in the
- * Sports module until a real tennis data source is connected (a separate
- * vendor/API key entirely — see src/lib/sports/nav.ts's SPORT_CATEGORIES
- * comment). Rugby was covered before the Sport universe's "Analyse IA"
+ * exists there) — not included below. It's covered instead via
+ * _shared/odds-api.ts (The Odds API), a structurally different query
+ * shape (no player search, no real match history — see that file's own
+ * header comment) that sport-match-search/index.ts branches to
+ * separately. Rugby was covered before the Sport universe's "Analyse IA"
  * rebuild (2026-09, product decision: Football/Basketball/Tennis only) —
  * removed here along with it, not deactivated. Hockey and NFL/american
  * football products do exist on API-Sports but PolyPips doesn't cover them

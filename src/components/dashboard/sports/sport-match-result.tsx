@@ -4,6 +4,7 @@ import { ArrowRight, Check, RefreshCw, TrendingUp, TriangleAlert, ShieldAlert } 
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
 import type { SportMatchAnalysis } from "@/lib/data/sports-analysis";
+import { SPORT_LABELS } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
@@ -28,7 +29,7 @@ export function SportMatchResult({
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold capitalize text-white/60">
-            {analysis.sport === "football" ? "Football" : "Basketball"}
+            {SPORT_LABELS[analysis.sport]}
           </span>
           {analysis.competition && (
             <span className="text-xs text-white/35">{analysis.competition}</span>

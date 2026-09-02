@@ -5,7 +5,7 @@ import { Button, ButtonIcon } from "@/components/ui/button";
 import { SPORT_LABELS, type Sport } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
-const SPORTS: Sport[] = ["football", "basketball"];
+const SPORTS: Sport[] = ["football", "basketball", "tennis"];
 
 export function SportMatchSearchPanel({
   sport,

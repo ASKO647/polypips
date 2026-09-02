@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowLeft, Calendar } from "lucide-react";
+import { ArrowLeft, Calendar, Info } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import type { SportFixture, SportSearchResult } from "@/lib/sports/types";
+import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long",
@@ -64,14 +64,18 @@ function RecentMeetingRow({ meeting }: { meeting: SportFixture }) {
 }
 
 export function FixturePicker({
+  sport,
   result,
   onSelectFixture,
   onBack,
 }: {
+  sport: Sport;
   result: SportSearchResult;
   onSelectFixture: (fixture: SportFixture) => void;
   onBack: () => void;
 }) {
+  const isTennis = sport === "tennis";
+
   return (
     <div className="flex flex-col gap-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
@@ -92,7 +96,7 @@ export function FixturePicker({
         </p>
         {result.upcomingFixtures.length === 0 ? (
           <p className="rounded-xl border border-dashed border-white/10 px-4 py-6 text-center text-xs text-white/35">
-            Aucune confrontation à venir trouvée entre ces deux équipes.
+            Aucune confrontation à venir trouvée entre ces deux {isTennis ? "joueurs" : "équipes"}.
           </p>
         ) : (
           <div className="flex flex-col gap-2">
@@ -105,19 +109,35 @@ export function FixturePicker({
             ))}
           </div>
         )}
+        {isTennis && (
+          <p className="mt-2.5 flex items-start gap-1.5 text-[11px] leading-relaxed text-white/35">
+            <Info className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2} />
+            Au tennis, une rencontre n&apos;apparaît qu&apos;une fois le tableau du tournoi publié
+            (généralement 1 à 3 jours avant) — un duel à venir peut donc ne pas encore être visible
+            ici même s&apos;il aura bien lieu.
+          </p>
+        )}
       </div>
 
-      {result.recentMeetings.length > 0 && (
-        <div>
-          <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-white/40">
-            Confrontations récentes
-          </p>
-          <div className="flex flex-col gap-2">
-            {result.recentMeetings.map((meeting) => (
-              <RecentMeetingRow key={meeting.externalFixtureId} meeting={meeting} />
-            ))}
+      {isTennis ? (
+        <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-white/35">
+          <Info className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2} />
+          Historique des confrontations non disponible pour le tennis — la source de données ne
+          couvre pas les résultats passés pour ce sport.
+        </p>
+      ) : (
+        result.recentMeetings.length > 0 && (
+          <div>
+            <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-white/40">
+              Confrontations récentes
+            </p>
+            <div className="flex flex-col gap-2">
+              {result.recentMeetings.map((meeting) => (
+                <RecentMeetingRow key={meeting.externalFixtureId} meeting={meeting} />
+              ))}
+            </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );

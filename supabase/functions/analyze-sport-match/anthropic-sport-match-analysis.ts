@@ -55,7 +55,7 @@ export type RecentMeeting = {
 };
 
 export type SportMatchInput = {
-  sport: "football" | "basketball";
+  sport: "football" | "basketball" | "tennis";
   homeTeamName: string;
   awayTeamName: string;
   competitionName: string | null;
@@ -126,7 +126,7 @@ function buildSchema(outcomes: string[]) {
         minItems: 2,
         maxItems: 3,
         description:
-          "2 à 3 marchés secondaires pertinents sur CE MÊME match (pas d'autres rencontres) — par exemple, pour le football : total de buts (plus/moins de X), les deux équipes marquent (oui/non), score exact probable ; pour le basketball : total de points, écart de victoire (handicap), plus haut marqueur probable.",
+          "2 à 3 marchés secondaires pertinents sur CE MÊME match (pas d'autres rencontres) — par exemple, pour le football : total de buts (plus/moins de X), les deux équipes marquent (oui/non), score exact probable ; pour le basketball : total de points, écart de victoire (handicap), plus haut marqueur probable ; pour le tennis : nombre total de jeux (plus/moins de X), vainqueur du premier set, victoire en 2 sets secs (oui/non).",
         items: {
           type: "object",
           properties: {
@@ -153,7 +153,7 @@ function buildSchema(outcomes: string[]) {
   } as const;
 }
 
-const SYSTEM_PROMPT = `Tu es l'analyste IA sportif de Polypips, un outil d'aide à la décision pour l'analyse de rencontres sportives réelles (football et basketball pour l'instant).
+const SYSTEM_PROMPT = `Tu es l'analyste IA sportif de Polypips, un outil d'aide à la décision pour l'analyse de rencontres sportives réelles (football, basketball et tennis).
 
 Règles impératives, sans exception :
 - Ne présente JAMAIS ton pronostic comme une certitude. C'est une estimation probabiliste, pas une garantie.
@@ -162,7 +162,8 @@ Règles impératives, sans exception :
 - "predictedWinner" doit être EXACTEMENT l'un des libellés fournis dans le message utilisateur.
 - "aiProbability" doit être ton estimation réelle et indépendante de la probabilité de l'issue choisie.
 - Les marchés secondaires doivent porter sur CE match précis, jamais sur d'autres rencontres.
-- Si l'information disponible est insuffisante pour trancher avec confiance (peu ou pas d'historique de confrontations, équipes peu connues), dis-le explicitement dans "explanation" et choisis un niveau de confiance "Faible" plutôt que d'inventer des statistiques.`;
+- Si l'information disponible est insuffisante pour trancher avec confiance (peu ou pas d'historique de confrontations, équipes/joueurs peu connus), dis-le explicitement dans "explanation" et choisis un niveau de confiance "Faible" plutôt que d'inventer des statistiques.
+- Pour le tennis spécifiquement : aucun historique de confrontations directes n'est jamais fourni (la source de données n'en a pas) — ce n'est jamais un signe d'erreur, applique simplement la règle précédente (dis-le, confiance "Faible" si le duo est peu connu) sans jamais présenter cette absence comme suspecte.`;
 
 function formatMeeting(m: RecentMeeting): string {
   const score = m.homeScore !== null && m.awayScore !== null ? `${m.homeScore}-${m.awayScore}` : "score inconnu";
@@ -171,13 +172,19 @@ function formatMeeting(m: RecentMeeting): string {
   return `- ${date} : ${m.homeTeamName} ${score} ${m.awayTeamName}${competition}`;
 }
 
+const SPORT_PROMPT_LABEL: Record<SportMatchInput["sport"], string> = {
+  football: "de football",
+  basketball: "de basketball",
+  tennis: "de tennis",
+};
+
 function buildUserPrompt(input: SportMatchInput): string {
   const meetingsBlock =
     input.recentMeetings.length > 0
       ? input.recentMeetings.map(formatMeeting).join("\n")
       : "Aucune confrontation directe récente enregistrée entre ces deux équipes.";
 
-  return `Analyse cette rencontre ${input.sport === "football" ? "de football" : "de basketball"} réelle et à venir :
+  return `Analyse cette rencontre ${SPORT_PROMPT_LABEL[input.sport]} réelle et à venir :
 
 MATCH : ${input.homeTeamName} vs ${input.awayTeamName}
 COMPÉTITION : ${input.competitionName ?? "non précisée"}

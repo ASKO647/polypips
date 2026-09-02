@@ -44,7 +44,7 @@ function isValidInput(body: unknown): body is SportMatchInput {
   if (!body || typeof body !== "object") return false;
   const b = body as Record<string, unknown>;
   return (
-    (b.sport === "football" || b.sport === "basketball") &&
+    (b.sport === "football" || b.sport === "basketball" || b.sport === "tennis") &&
     typeof b.homeTeamName === "string" &&
     b.homeTeamName.trim() !== "" &&
     typeof b.awayTeamName === "string" &&
