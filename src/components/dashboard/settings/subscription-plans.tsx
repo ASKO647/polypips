@@ -32,6 +32,19 @@ export function SubscriptionPlans({
   const [pendingPlan, setPendingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // The discovery offer is one-shot: `subscription !== null` means this user
+  // has already had a subscription at some point (rows are never deleted,
+  // only marked "canceled" — see /api/stripe/checkout and
+  // /api/stripe/webhook). Hide the card so nobody sees a 0,99 € price they'd
+  // actually be charged 29,99 € for — except while they're still mid-way
+  // through an active discovery trial, where it correctly reads as their
+  // current plan rather than a new purchase.
+  const isCurrentlyOnDiscoveryTrial = hasAccess && currentPlanId === "decouverte";
+  const hasSubscribedBefore = subscription !== null;
+  const visiblePlans = PRICING_PLANS.filter(
+    (plan) => plan.id !== "decouverte" || !hasSubscribedBefore || isCurrentlyOnDiscoveryTrial
+  );
+
   const handleChoose = async (plan: PricingPlan) => {
     if (pendingPlan) return;
     setPendingPlan(plan.id);
@@ -66,7 +79,7 @@ export function SubscriptionPlans({
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        {PRICING_PLANS.map((plan) => {
+        {visiblePlans.map((plan) => {
           const isCurrent = hasAccess && !cancelAtPeriodEnd && plan.id === currentPlanId;
           return (
             <div

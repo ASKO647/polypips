@@ -73,23 +73,62 @@ export async function POST(request: Request) {
   }
 
   // Reuse the Stripe customer if this user already has one (e.g. they
-  // cancelled and are resubscribing) instead of creating a duplicate.
+  // cancelled and are resubscribing) instead of creating a duplicate. The
+  // row's mere existence — regardless of status, even "canceled" — is also
+  // the primary signal that this user has already had a subscription:
+  // rows are upserted on user_id and never deleted (see
+  // /api/stripe/webhook's handleSubscriptionDeleted, which only flips
+  // status to "canceled"), so a returning row here reliably means the
+  // discovery offer was already consumed once.
   const { data: existing } = await supabase
     .from("subscriptions")
     .select("stripe_customer_id")
     .eq("user_id", user.id)
     .maybeSingle();
-  const existingCustomerId = existing?.stripe_customer_id as string | null | undefined;
+  let existingCustomerId = existing?.stripe_customer_id as string | null | undefined;
+  let hasSubscribedBefore = existing !== null;
+
+  const stripe = getStripe();
+
+  // Defense-in-depth: only when the local table has no row at all (e.g. a
+  // webhook delivery was missed) fall back to asking Stripe directly by
+  // email, so the discovery offer can't be re-triggered just because the
+  // local row is missing or was never written. Skipped in the common case
+  // (a row already exists) to avoid an extra Stripe round-trip on every
+  // checkout.
+  if (!hasSubscribedBefore) {
+    try {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const stripeCustomer = customers.data[0];
+      if (stripeCustomer) {
+        existingCustomerId = stripeCustomer.id;
+        const subscriptions = await stripe.subscriptions.list({
+          customer: stripeCustomer.id,
+          status: "all",
+          limit: 1,
+        });
+        if (subscriptions.data.length > 0) {
+          hasSubscribedBefore = true;
+        }
+      }
+    } catch (error) {
+      console.error("[stripe/checkout] Stripe-side history check failed", error);
+    }
+  }
+
+  // A user who has ever had a subscription always pays full price
+  // directly, regardless of what the client requested — the discovery
+  // offer can only ever be granted once per user.
+  const effectivePlan: PlanId = hasSubscribedBefore ? "pro" : plan;
 
   const origin = new URL(request.url).origin;
 
   try {
-    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
         { price: PLAN_PRICE_IDS.pro, quantity: 1 },
-        ...(plan === "decouverte"
+        ...(effectivePlan === "decouverte"
           ? [
               {
                 price_data: {
@@ -107,10 +146,10 @@ export async function POST(request: Request) {
           : []),
       ],
       subscription_data: {
-        ...(plan === "decouverte" ? { trial_period_days: 3 } : {}),
-        metadata: { supabase_user_id: user.id, plan },
+        ...(effectivePlan === "decouverte" ? { trial_period_days: 3 } : {}),
+        metadata: { supabase_user_id: user.id, plan: effectivePlan },
       },
-      ...(plan === "decouverte"
+      ...(effectivePlan === "decouverte"
         ? { custom_text: { submit: { message: DISCOVERY_SUBMIT_MESSAGE } } }
         : {}),
       client_reference_id: user.id,
