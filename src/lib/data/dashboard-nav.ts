@@ -1,6 +1,7 @@
 import {
   CandlestickChart,
   GraduationCap,
+  History,
   LayoutDashboard,
   LifeBuoy,
   LineChart,
@@ -48,13 +49,13 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
 
 /** The "Trading" universe group — a third product domain alongside
  * Polymarket and Sport, same collapsible-group pattern (own accent color
- * in SidebarNavContent). Single item for now (chart screenshot → AI
- * recommendation); no "Mes analyses" browsing page was requested this
- * round, unlike Sport's — trading_chart_analyses still persists every
- * result (quota counting needs it regardless), just nothing reads it back
- * yet beyond the single most recent one on the page itself. */
+ * in SidebarNavContent). Mirrors Sport's own Analyse IA + Mes analyses
+ * pair (SPORTS_SUB_NAV) — "Mes analyses" reads back every row already
+ * persisted in trading_chart_analyses (previously only quota counting
+ * read that table). */
 export const TRADING_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Analyse IA", href: "/dashboard/trading", icon: CandlestickChart },
+  { label: "Mes analyses", href: "/dashboard/trading/mes-analyses", icon: History },
 ];
 
 /** Global tools that aren't specific to any universe — Coach IA answers
