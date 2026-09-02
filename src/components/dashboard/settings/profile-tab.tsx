@@ -639,12 +639,6 @@ export function ProfileTab({
           <ActivityRow icon={Sparkles} label="Analyses effectuées" value={activity.analysesCount} />
           <ActivityRow icon={Star} label="Marchés suivis" value={activity.marketsFollowedCount} />
           <ActivityRow icon={Wallet} label="Smart Wallets suivis" value={activity.walletsFollowedCount} />
-          <Link
-            href="/dashboard/stats"
-            className="mt-1 text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
-          >
-            Voir toutes mes statistiques →
-          </Link>
         </Card>
 
         <Card title="Invitez vos amis">

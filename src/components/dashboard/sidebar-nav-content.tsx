@@ -8,6 +8,7 @@ import {
   DASHBOARD_GLOBAL_ITEMS,
   DASHBOARD_TOP_ITEM,
   POLYMARKET_NAV_ITEMS,
+  TRADING_NAV_ITEMS,
   type DashboardNavItem,
 } from "@/lib/data/dashboard-nav";
 import { SPORTS_SUB_NAV } from "@/lib/sports/nav";
@@ -15,12 +16,12 @@ import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { findActiveHref } from "@/lib/dashboard-nav-active";
 import { cn } from "@/lib/utils";
 
-/** The dashboard has two distinct "universes" — Polymarket (prediction
- * markets) and Sport (real-world sports analysis) — each rendered as its
- * own collapsible sidebar group with a clearly different accent color, so
- * a user always knows which product they're in. Tableau de bord/Coach
- * IA/Statistiques/Profil aren't scoped to either and stay outside both
- * groups. */
+/** The dashboard has three distinct "universes" — Polymarket (prediction
+ * markets), Sport (real-world sports analysis), and Trading (chart
+ * screenshot analysis) — each rendered as its own collapsible sidebar
+ * group with a clearly different accent color, so a user always knows
+ * which product they're in. Tableau de bord/Coach IA/Communauté/Profil
+ * aren't scoped to any one and stay outside all three groups. */
 type UniverseGroup = {
   id: string;
   label: string;
@@ -46,6 +47,7 @@ export function SidebarNavContent({
     DASHBOARD_TOP_ITEM.href,
     ...POLYMARKET_NAV_ITEMS.map((i) => i.href),
     ...SPORTS_SUB_NAV.map((i) => i.href),
+    ...TRADING_NAV_ITEMS.map((i) => i.href),
     ...DASHBOARD_GLOBAL_ITEMS.map((i) => i.href),
   ]);
 
@@ -143,8 +145,15 @@ export function SidebarNavContent({
             id: "sport",
             label: "Sport",
             accentClass: "bg-emerald-400",
-            badge: "NOUVEAU",
             items: SPORTS_SUB_NAV,
+          })}
+
+          {renderUniverseGroup({
+            id: "trading",
+            label: "Trading",
+            accentClass: "bg-amber-400",
+            badge: "NOUVEAU",
+            items: TRADING_NAV_ITEMS,
           })}
         </div>
 

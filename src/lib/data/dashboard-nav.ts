@@ -1,5 +1,5 @@
 import {
-  BarChart3,
+  CandlestickChart,
   GraduationCap,
   LayoutDashboard,
   LifeBuoy,
@@ -46,18 +46,32 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
   { label: "Smart Wallet", href: "/dashboard/copy-trading", icon: Wallet },
 ];
 
-/** Global tools that aren't specific to either universe — Coach IA answers
- * questions about analyses from both, Statistiques tracks performance
- * across both. Profil (still at /dashboard/settings — same URL Stripe
- * checkout already redirects back to) is here too, as a normal sidebar
- * entry rather than tucked into a header-only menu, so it participates in
- * the sidebar's own active-link matching like every other section. */
+/** The "Trading" universe group — a third product domain alongside
+ * Polymarket and Sport, same collapsible-group pattern (own accent color
+ * in SidebarNavContent). Single item for now (chart screenshot → AI
+ * recommendation); no "Mes analyses" browsing page was requested this
+ * round, unlike Sport's — trading_chart_analyses still persists every
+ * result (quota counting needs it regardless), just nothing reads it back
+ * yet beyond the single most recent one on the page itself. */
+export const TRADING_NAV_ITEMS: DashboardNavItem[] = [
+  { label: "Analyse IA", href: "/dashboard/trading", icon: CandlestickChart },
+];
+
+/** Global tools that aren't specific to any universe — Coach IA answers
+ * questions about analyses from all three, and Communauté/Profil aren't
+ * scoped to a single product domain either. Statistiques used to live
+ * here too; removed as its own page (product decision) — its one still-
+ * live consumer, the dashboard overview's PerformanceCard, keeps reading
+ * lib/supabase/performance.ts directly, untouched by that removal.
+ * Profil (still at /dashboard/settings — same URL Stripe checkout already
+ * redirects back to) is a normal sidebar entry rather than tucked into a
+ * header-only menu, so it participates in the sidebar's own active-link
+ * matching like every other section. */
 export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
   { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
-  { label: "Statistiques", href: "/dashboard/stats", icon: BarChart3 },
-  // Groups/chat aren't scoped to Polymarket or Sport — a user's community
-  // can span either interest, so this lives alongside Coach IA/
-  // Statistiques rather than inside one universe group.
+  // Groups/chat aren't scoped to any one universe — a user's community can
+  // span several interests, so this lives here rather than inside one
+  // universe group.
   { label: "Communauté", href: "/dashboard/community", icon: Users },
   { label: "Profil", href: "/dashboard/settings", icon: User },
 ];

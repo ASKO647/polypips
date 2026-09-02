@@ -12,6 +12,7 @@ import {
   DASHBOARD_TOP_ITEM,
   POLYMARKET_NAV_ITEMS,
   SPORTS_TITLE_ITEM,
+  TRADING_NAV_ITEMS,
 } from "@/lib/data/dashboard-nav";
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
@@ -23,6 +24,7 @@ function pageTitleFor(pathname: string): string | null {
     DASHBOARD_TOP_ITEM,
     ...POLYMARKET_NAV_ITEMS,
     SPORTS_TITLE_ITEM,
+    ...TRADING_NAV_ITEMS,
     ...DASHBOARD_GLOBAL_ITEMS,
     ...DASHBOARD_RESOURCE_ITEMS,
   ];

@@ -1,6 +1,5 @@
 "use client";
 
-import { Link } from "@/i18n/navigation";
 import { TrendingUp } from "lucide-react";
 import { useCurrency } from "@/providers/currency-provider";
 import type { PerformanceStats } from "@/lib/supabase/performance";
@@ -40,13 +39,6 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
             confirmée.
           </p>
         </div>
-
-        <Link
-          href="/dashboard/stats"
-          className="mt-4 flex w-full items-center justify-center rounded-xl border border-dash-border bg-dash-surface-alt py-2.5 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-border-strong hover:text-dash-text"
-        >
-          Voir toutes les statistiques →
-        </Link>
       </div>
     );
   }
@@ -97,13 +89,6 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
           <p className="mt-0.5 text-[11px] text-dash-text-quaternary">P&amp;L simulé</p>
         </div>
       </div>
-
-      <Link
-        href="/dashboard/stats"
-        className="mt-4 flex w-full items-center justify-center rounded-xl border border-dash-border bg-dash-surface-alt py-2.5 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-border-strong hover:text-dash-text"
-      >
-        Voir toutes les statistiques →
-      </Link>
     </div>
   );
 }

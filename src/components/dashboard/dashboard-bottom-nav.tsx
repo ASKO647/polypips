@@ -14,11 +14,11 @@ const TABS = [
 
 /**
  * Real bottom tab bar for mobile, not just a hamburger — the dashboard has
- * two separate "universes" (Polymarket/Sport) plus global tools, too much
- * to fit in 5 tabs, so this surfaces only the busiest entry point per
- * universe plus one global tool, and a trailing "Menu" tab that opens the
- * existing full drawer (DashboardMobileNav) for everything else (Smart
- * Wallet, Coach IA, Statistiques, Profil, ...).
+ * three separate "universes" (Polymarket/Sport/Trading) plus global tools,
+ * too much to fit in 5 tabs, so this surfaces only the busiest entry point
+ * per universe plus one global tool, and a trailing "Menu" tab that opens
+ * the existing full drawer (DashboardMobileNav) for everything else (Smart
+ * Wallet, Trading, Coach IA, Profil, ...).
  */
 export function DashboardBottomNav({
   onOpenMenu,
