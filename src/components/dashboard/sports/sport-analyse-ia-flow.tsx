@@ -16,7 +16,7 @@ import {
   runSportMatchAnalysis,
 } from "@/lib/supabase/analyze-sport-match-client";
 import {
-  sportMatchErrorMessage,
+  sportMatchErrorLabel,
   type SportMatchAnalysis,
   type SportMatchProgressStep,
 } from "@/lib/data/sports-analysis";
@@ -24,11 +24,15 @@ import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types"
 
 type FlowState = "search" | "fixtures" | "loading" | "result";
 
-function errorContentFor(error: unknown, changePlanLabel: string): React.ReactNode {
+function errorContentFor(
+  error: unknown,
+  changePlanLabel: string,
+  tErrors: (key: string) => string
+): React.ReactNode {
   if (error instanceof SportMatchAnalysisError && error.code === "limit_reached") {
     return (
       <>
-        {error.message}{" "}
+        {sportMatchErrorLabel(error.code, tErrors)}{" "}
         <Link
           href="/dashboard/settings"
           className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
@@ -39,13 +43,14 @@ function errorContentFor(error: unknown, changePlanLabel: string): React.ReactNo
     );
   }
   if (error instanceof SportMatchSearchError || error instanceof SportMatchAnalysisError) {
-    return error.message;
+    return sportMatchErrorLabel(error.code, tErrors);
   }
-  return sportMatchErrorMessage("unknown");
+  return sportMatchErrorLabel("unknown", tErrors);
 }
 
 export function SportAnalyseIaFlow() {
   const t = useTranslations("Sport.Flow");
+  const tErrors = useTranslations("Sport.Errors");
   const [state, setState] = useState<FlowState>("search");
   const [sport, setSport] = useState<Sport>("football");
   const [team1, setTeam1] = useState("");
@@ -64,7 +69,7 @@ export function SportAnalyseIaFlow() {
       setSearchResult(found);
       setState("fixtures");
     } catch (error) {
-      setErrorMessage(errorContentFor(error, t("changePlan")));
+      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors));
     } finally {
       setSearchLoading(false);
     }
@@ -90,7 +95,7 @@ export function SportAnalyseIaFlow() {
       setResult(analysis);
       setState("result");
     } catch (error) {
-      setErrorMessage(errorContentFor(error, t("changePlan")));
+      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors));
       setState("fixtures");
     }
   };

@@ -63,6 +63,20 @@
       "backToList": "Retour à la liste",
       "emptyTitle": "Aucune analyse pour le moment",
       "emptyDescription": "Lancez une recherche depuis Analyse IA pour voir vos pronostics apparaître ici."
+    },
+    "Loading": {
+      "calling_ai": "Envoi à l'IA pour pronostic...",
+      "receiving_result": "Réception du pronostic..."
+    },
+    "Errors": {
+      "invalid_input": "Merci de renseigner les deux équipes.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
+      "team_not_found": "Équipe introuvable. Vérifiez l'orthographe et réessayez.",
+      "sports_api_unavailable": "La source de données sportives est momentanément indisponible. Réessayez dans quelques instants.",
+      "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
+      "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
+      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
+      "unknown": "Une erreur inattendue est survenue. Réessayez."
     }
   }
 }

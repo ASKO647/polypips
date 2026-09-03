@@ -63,6 +63,20 @@
       "backToList": "Back to list",
       "emptyTitle": "No analysis yet",
       "emptyDescription": "Run a search from AI Analysis to see your forecasts appear here."
+    },
+    "Loading": {
+      "calling_ai": "Sending to the AI for a forecast...",
+      "receiving_result": "Receiving the forecast..."
+    },
+    "Errors": {
+      "invalid_input": "Please fill in both teams.",
+      "unauthorized": "Your session has expired. Please sign in again and retry.",
+      "team_not_found": "Team not found. Check the spelling and try again.",
+      "sports_api_unavailable": "The sports data source is temporarily unavailable. Please try again shortly.",
+      "ai_error": "The AI analysis service is temporarily unavailable. Please try again shortly.",
+      "network_error": "Connection failed. Check your connection and try again.",
+      "limit_reached": "You've reached your free daily analysis limit. Start for €0.99 for unlimited analyses.",
+      "unknown": "An unexpected error occurred. Please try again."
     }
   }
 }

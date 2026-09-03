@@ -125,7 +125,11 @@
       "noPositions": "Aucune position ouverte pour le moment.",
       "movementsTitle": "Mouvements récents",
       "noMovements": "Aucun mouvement récent détecté.",
-      "historyTitle": "Historique"
+      "historyTitle": "Historique",
+      "movementType": {
+        "buy": "Achat",
+        "sell": "Vente"
+      }
     }
   }
 }

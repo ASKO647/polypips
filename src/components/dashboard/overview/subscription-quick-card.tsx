@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/i18n/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Crown, Rocket } from "lucide-react";
 import { getTrialDaysRemaining, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { PricingPlan } from "@/lib/data/pricing";
@@ -28,6 +28,7 @@ export function SubscriptionQuickCard({
     subscription !== null &&
     (subscription.cancelAtPeriodEnd || subscription.status === "canceled");
   const t = useTranslations("Dashboard.SubscriptionQuickCard");
+  const locale = useLocale();
 
   let statusLine: string;
   if (!subscription) {
@@ -36,10 +37,10 @@ export function SubscriptionQuickCard({
     statusLine = t("expiresIn", { days: trialDays });
   } else if (cancelled) {
     statusLine = subscription.currentPeriodEnd
-      ? t("endsOn", { date: formatResetDate(subscription.currentPeriodEnd) })
+      ? t("endsOn", { date: formatResetDate(subscription.currentPeriodEnd, locale) })
       : t("cancelled");
   } else if (subscription.currentPeriodEnd) {
-    statusLine = t("renewsOn", { date: formatResetDate(subscription.currentPeriodEnd) });
+    statusLine = t("renewsOn", { date: formatResetDate(subscription.currentPeriodEnd, locale) });
   } else {
     statusLine = t("active");
   }

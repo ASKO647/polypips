@@ -33,11 +33,6 @@ export type SportMatchAnalysis = {
 
 export type SportMatchProgressStep = "calling_ai" | "receiving_result";
 
-export const SPORT_MATCH_LOADING_STEPS: Record<SportMatchProgressStep, string> = {
-  calling_ai: "Envoi à l'IA pour pronostic...",
-  receiving_result: "Réception du pronostic...",
-};
-
 export const SPORT_MATCH_STEP_ORDER: SportMatchProgressStep[] = ["calling_ai", "receiving_result"];
 
 export type SportMatchErrorCode =
@@ -50,20 +45,51 @@ export type SportMatchErrorCode =
   | "limit_reached"
   | "unknown";
 
-const ERROR_MESSAGES: Record<SportMatchErrorCode, string> = {
-  invalid_input: "Merci de renseigner les deux équipes.",
-  unauthorized: "Votre session a expiré. Reconnectez-vous et réessayez.",
-  team_not_found: "Équipe introuvable. Vérifiez l'orthographe et réessayez.",
-  sports_api_unavailable:
-    "La source de données sportives est momentanément indisponible. Réessayez dans quelques instants.",
-  ai_error:
-    "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
-  network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
-  limit_reached:
-    "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
-  unknown: "Une erreur inattendue est survenue. Réessayez.",
-};
-
+/** French fallback used only for errors thrown from non-React client code
+ * (sport-match-search-client.ts / analyze-sport-match-client.ts), which
+ * can't call a translator. The UI never renders this — it always re-derives
+ * the message from the error's `code` via sportMatchErrorLabel(code, t), so
+ * this fallback only matters if an error is ever logged outside the UI. */
 export function sportMatchErrorMessage(code: string): string {
-  return ERROR_MESSAGES[code as SportMatchErrorCode] ?? ERROR_MESSAGES.unknown;
+  const FALLBACK: Record<SportMatchErrorCode, string> = {
+    invalid_input: "Merci de renseigner les deux équipes.",
+    unauthorized: "Votre session a expiré. Reconnectez-vous et réessayez.",
+    team_not_found: "Équipe introuvable. Vérifiez l'orthographe et réessayez.",
+    sports_api_unavailable:
+      "La source de données sportives est momentanément indisponible. Réessayez dans quelques instants.",
+    ai_error:
+      "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
+    network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
+    limit_reached:
+      "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
+    unknown: "Une erreur inattendue est survenue. Réessayez.",
+  };
+  return FALLBACK[code as SportMatchErrorCode] ?? FALLBACK.unknown;
+}
+
+type SportTranslator = (key: string) => string;
+
+/** Locale-aware loading-step label — call with a translator scoped to
+ * "Sport.Loading". */
+export function sportMatchLoadingStepLabel(step: SportMatchProgressStep, t: SportTranslator): string {
+  return t(step);
+}
+
+/** Locale-aware error label, keyed by the same codes as
+ * sportMatchErrorMessage — call with a translator scoped to "Sport.Errors"
+ * so the UI always renders in the active locale regardless of what
+ * language the thrown error's own `.message` happens to carry. */
+export function sportMatchErrorLabel(code: string, t: SportTranslator): string {
+  const KNOWN_CODES: SportMatchErrorCode[] = [
+    "invalid_input",
+    "unauthorized",
+    "team_not_found",
+    "sports_api_unavailable",
+    "ai_error",
+    "network_error",
+    "limit_reached",
+    "unknown",
+  ];
+  const key = KNOWN_CODES.includes(code as SportMatchErrorCode) ? code : "unknown";
+  return t(key);
 }

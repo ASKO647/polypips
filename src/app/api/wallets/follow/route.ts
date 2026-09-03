@@ -116,7 +116,7 @@ export async function POST(request: Request) {
   const lock = await getQuotaLockState(supabase, user.id, "wallets", maxWallets);
   if (lock.locked) {
     const resetLine = lock.periodEnd
-      ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd)}.`
+      ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd, "fr-FR")}.`
       : "";
     return NextResponse.json(
       {
@@ -179,7 +179,7 @@ export async function DELETE(request: Request) {
   const lock = await getQuotaLockState(supabase, user.id, "wallets", maxWallets);
   if (lock.locked) {
     const resetLine = lock.periodEnd
-      ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd)}.`
+      ? ` Elle sera réinitialisée le ${formatResetDate(lock.periodEnd, "fr-FR")}.`
       : "";
     return NextResponse.json(
       {

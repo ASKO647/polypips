@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { Flag, SmilePlus } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
@@ -47,6 +47,7 @@ export function MessageBubble({
   onToggleReaction: (emoji: MessageReactionEmoji) => void;
 }) {
   const t = useTranslations("Community.MessageBubble");
+  const locale = useLocale();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPlacement, setPickerPlacement] = useState<"above" | "below">("above");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -67,7 +68,7 @@ export function MessageBubble({
     setPickerOpen(true);
   };
 
-  const time = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(
+  const time = new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit" }).format(
     new Date(message.createdAt)
   );
 

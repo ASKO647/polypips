@@ -17,16 +17,14 @@ export function formatSignedEUR(value: number) {
   return `${value >= 0 ? "+" : ""}${formatEUR(value)}`;
 }
 
-const RESET_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
-  day: "numeric",
-  month: "long",
-});
-
 /** Formats a subscription's current_period_end for the quota-lock reset
- * messages ("le 14 septembre"), so the date shown always matches the
- * user's real Stripe renewal instead of an arbitrary calendar month. */
-export function formatResetDate(periodEnd: string) {
-  return RESET_DATE_FORMATTER.format(new Date(periodEnd));
+ * messages ("le 14 septembre" / "September 14"), so the date shown always
+ * matches the user's real Stripe renewal instead of an arbitrary calendar
+ * month. Takes the active locale so the format follows the UI language. */
+export function formatResetDate(periodEnd: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long" }).format(
+    new Date(periodEnd),
+  );
 }
 
 /** Buckets ISO timestamps into `days` calendar-day counts (UTC, matching

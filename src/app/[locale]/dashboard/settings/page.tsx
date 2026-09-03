@@ -7,7 +7,7 @@ import {
   getTrialDaysRemaining,
 } from "@/lib/supabase/subscriptions";
 import { countAnalysesToday } from "@/lib/supabase/analyses";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getDailyAnalysisLimit, getPricingPlans } from "@/lib/data/pricing";
 import {
   fetchProfileActivityStats,
@@ -18,12 +18,6 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Profile.SettingsPage");
   return { title: t("metaTitle") };
 }
-
-const MEMBER_SINCE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -64,8 +58,11 @@ export default async function SettingsPage() {
     supabase.auth.mfa.listFactors(),
   ]);
 
+  const locale = await getLocale();
   const memberSince = user.created_at
-    ? MEMBER_SINCE_FORMATTER.format(new Date(user.created_at))
+    ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(
+        new Date(user.created_at),
+      )
     : null;
   const googleConnected = (user.app_metadata?.providers as string[] | undefined)?.includes(
     "google"

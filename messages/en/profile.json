@@ -53,7 +53,12 @@
         "connect": "Connect"
       },
       "notifications": {
-        "title": "Notifications"
+        "title": "Notifications",
+        "prefs": {
+          "new-opportunities": "New opportunity alerts",
+          "weekly-summary": "Weekly summary",
+          "smart-money-moves": "Major Smart Wallet moves"
+        }
       },
       "preferences": {
         "title": "Preferences",

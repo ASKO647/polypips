@@ -525,7 +525,7 @@ export function ProfileTab({
           {notificationPrefs.map((pref) => (
             <SettingsToggle
               key={pref.id}
-              label={pref.label}
+              label={t(`notifications.prefs.${pref.id}`)}
               checked={pref.enabled}
               onChange={() => toggleNotificationPref(pref.id)}
             />

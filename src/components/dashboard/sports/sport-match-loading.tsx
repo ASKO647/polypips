@@ -1,9 +1,10 @@
 "use client";
 
 import { Check, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
-  SPORT_MATCH_LOADING_STEPS,
   SPORT_MATCH_STEP_ORDER,
+  sportMatchLoadingStepLabel,
   type SportMatchProgressStep,
 } from "@/lib/data/sports-analysis";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ export function SportMatchLoading({
 }: {
   currentStep: SportMatchProgressStep | null;
 }) {
+  const t = useTranslations("Sport.Loading");
   const currentIndex = currentStep ? SPORT_MATCH_STEP_ORDER.indexOf(currentStep) : -1;
 
   return (
@@ -47,7 +49,7 @@ export function SportMatchLoading({
                   !complete && !current && "text-white/25"
                 )}
               >
-                {SPORT_MATCH_LOADING_STEPS[step]}
+                {sportMatchLoadingStepLabel(step, t)}
               </span>
             </div>
           );

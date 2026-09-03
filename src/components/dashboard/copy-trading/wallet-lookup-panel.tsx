@@ -18,12 +18,13 @@ function MovementRow({
   movement: WalletMovement;
   formatAmount: (amountEur: number) => string;
 }) {
+  const t = useTranslations("Polymarket.WalletLookup.movementType");
   const positive = movement.type === "Achat";
   return (
     <div className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className={cn("text-xs font-semibold", positive ? "text-emerald-400" : "text-rose-400")}>
-          {movement.type}
+          {positive ? t("buy") : t("sell")}
         </span>
         <p className="truncate text-sm text-white/75">{movement.market}</p>
       </div>

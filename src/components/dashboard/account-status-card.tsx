@@ -1,7 +1,7 @@
 "use client";
 
 import { Crown, Rocket } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCurrency } from "@/providers/currency-provider";
 import { getPricingPlans } from "@/lib/data/pricing";
@@ -25,6 +25,7 @@ export function AccountStatusCard({
   subscription: SubscriptionRow | null;
 }) {
   const { formatAmount } = useCurrency();
+  const locale = useLocale();
   const tPlans = useTranslations("Plans");
   const t = useTranslations("Dashboard.AccountStatusCard");
   const plans = getPricingPlans(tPlans);
@@ -93,13 +94,13 @@ export function AccountStatusCard({
       ) : cancelled ? (
         <p className="text-xs font-semibold text-dash-text-secondary">
           {subscription.currentPeriodEnd
-            ? t("endsOn", { date: formatResetDate(subscription.currentPeriodEnd) })
+            ? t("endsOn", { date: formatResetDate(subscription.currentPeriodEnd, locale) })
             : t("cancelled")}
         </p>
       ) : (
         <p className="text-xs text-dash-text-tertiary">
           {subscription.currentPeriodEnd
-            ? t("renewsOn", { date: formatResetDate(subscription.currentPeriodEnd) })
+            ? t("renewsOn", { date: formatResetDate(subscription.currentPeriodEnd, locale) })
             : t("active")}
         </p>
       )}
