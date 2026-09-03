@@ -21,14 +21,6 @@ type ActivityRow = {
   occurred_at: string;
 };
 
-const currencyFormatter = new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 0 });
-
-function formatMessage(row: ActivityRow): string {
-  const amountLabel = `${currencyFormatter.format(row.amount)}€`;
-  const action = row.movement_type === "Vente" ? "a clôturé une position" : "a ouvert une position";
-  return `${row.wallet_label} ${action} de ${amountLabel} sur "${row.market}"`;
-}
-
 export async function GET() {
   const supabase = await createClient();
 
@@ -39,15 +31,18 @@ export async function GET() {
   });
 
   if (error) {
-    return NextResponse.json(
-      { error: "db_error", message: "Impossible de charger l'activité récente." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "db_error" }, { status: 500 });
   }
 
+  // Returns raw fields rather than a pre-built sentence so the client can
+  // render the message in the active locale via SmartMoneyPopup.message —
+  // this route has no locale context of its own.
   const movements = ((data ?? []) as ActivityRow[]).map((row) => ({
     id: `${row.wallet_label}-${row.occurred_at}-${row.market}`,
-    message: formatMessage(row),
+    wallet: row.wallet_label,
+    action: row.movement_type === "Vente" ? ("sell" as const) : ("buy" as const),
+    amount: Math.round(row.amount),
+    market: row.market,
     occurredAt: row.occurred_at,
   }));
 

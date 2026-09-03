@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { TrendingUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ActivityMovement = {
   id: string;
-  message: string;
+  wallet: string;
+  action: "buy" | "sell";
+  amount: number;
+  market: string;
   occurredAt: string;
 };
 
@@ -23,6 +26,7 @@ const FIRST_APPEARANCE_DELAY_MS = 1_500;
  * anywhere near /dashboard. */
 export function SmartMoneyActivityPopup() {
   const t = useTranslations("SmartMoneyPopup");
+  const locale = useLocale();
 
   // Lazy initializer: dismissed only ever changes the render output once
   // `current` is also set (elsewhere, post-mount), so this never causes a
@@ -35,7 +39,7 @@ export function SmartMoneyActivityPopup() {
   const [current, setCurrent] = useState<ActivityMovement | null>(null);
   const [visible, setVisible] = useState(false);
   const movementsRef = useRef<ActivityMovement[]>([]);
-  const lastMessageRef = useRef<string | null>(null);
+  const lastIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (dismissed) return;
@@ -63,11 +67,11 @@ export function SmartMoneyActivityPopup() {
       }
       let next = pool[Math.floor(Math.random() * pool.length)];
       if (pool.length > 1) {
-        while (next.message === lastMessageRef.current) {
+        while (next.id === lastIdRef.current) {
           next = pool[Math.floor(Math.random() * pool.length)];
         }
       }
-      lastMessageRef.current = next.message;
+      lastIdRef.current = next.id;
       setCurrent(next);
       setVisible(true);
     }
@@ -115,7 +119,14 @@ export function SmartMoneyActivityPopup() {
           <p className="text-[11px] font-semibold uppercase tracking-wide text-body/60">
             {t("label")}
           </p>
-          <p className="mt-1 text-sm leading-snug text-ink">{current.message}</p>
+          <p className="mt-1 text-sm leading-snug text-ink">
+            {t("message", {
+              wallet: current.wallet,
+              action: t(`action.${current.action}`),
+              amount: current.amount.toLocaleString(locale),
+              market: current.market,
+            })}
+          </p>
         </div>
         <button
           type="button"

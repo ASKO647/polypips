@@ -346,7 +346,12 @@
   },
   "SmartMoneyPopup": {
     "label": "Activité Smart Wallet",
-    "close": "Masquer les notifications d'activité"
+    "close": "Masquer les notifications d'activité",
+    "action": {
+      "buy": "a ouvert une position",
+      "sell": "a clôturé une position"
+    },
+    "message": "{wallet} {action} de {amount} € sur « {market} »"
   },
   "ComingSoon": {
     "badge": "Bientôt disponible",
