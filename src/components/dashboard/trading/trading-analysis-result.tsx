@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   ArrowDown,
   ArrowUp,
@@ -11,7 +12,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import { TRADING_DISCLAIMER, type TradingChartAnalysis } from "@/lib/data/trading-analysis";
+import {
+  getConfidenceLabel,
+  getKeyLevelTypeLabel,
+  getRecommendationLabel,
+  getTradingDisclaimer,
+  type TradingChartAnalysis,
+} from "@/lib/data/trading-analysis";
 import { cn } from "@/lib/utils";
 
 const RECOMMENDATION_STYLE: Record<
@@ -26,12 +33,14 @@ const RECOMMENDATION_STYLE: Record<
 export function TradingAnalysisResult({
   analysis,
   onBack,
-  backLabel = "Nouvelle analyse",
+  backLabel,
 }: {
   analysis: TradingChartAnalysis;
   onBack: () => void;
   backLabel?: string;
 }) {
+  const t = useTranslations("Trading.Result");
+  const tTrading = useTranslations("Trading");
   const { icon: RecoIcon, tone, bg } = RECOMMENDATION_STYLE[analysis.recommendation];
 
   return (
@@ -46,7 +55,7 @@ export function TradingAnalysisResult({
           {analysis.timeframe && <span className="text-xs text-white/35">{analysis.timeframe}</span>}
         </div>
         <h1 className="font-display text-xl font-bold leading-snug text-white sm:text-2xl">
-          Lecture du graphique
+          {t("heading")}
         </h1>
       </div>
 
@@ -55,7 +64,7 @@ export function TradingAnalysisResult({
        * rule, applied even more strictly here given leveraged trading risk. */}
       <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] px-4 py-3.5">
         <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" strokeWidth={2} />
-        <p className="text-xs leading-relaxed text-amber-200/90">{TRADING_DISCLAIMER}</p>
+        <p className="text-xs leading-relaxed text-amber-200/90">{getTradingDisclaimer(tTrading)}</p>
       </div>
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
@@ -72,17 +81,21 @@ export function TradingAnalysisResult({
             </span>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                Recommandation IA
+                {t("recommendationLabel")}
               </p>
-              <p className={cn("font-display text-2xl font-bold", tone)}>{analysis.recommendation}</p>
+              <p className={cn("font-display text-2xl font-bold", tone)}>
+                {getRecommendationLabel(tTrading, analysis.recommendation)}
+              </p>
             </div>
           </div>
 
           <div className="text-right">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Niveau de confiance
+              {t("confidenceLabel")}
             </p>
-            <p className="mt-1 text-xl font-bold text-white">{analysis.confidence}</p>
+            <p className="mt-1 text-xl font-bold text-white">
+              {getConfidenceLabel(tTrading, analysis.confidence)}
+            </p>
             <ConfidenceMeter level={analysis.confidence} className="mt-2.5 w-32" />
           </div>
         </div>
@@ -92,14 +105,14 @@ export function TradingAnalysisResult({
             <div className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-400">
                 <Target className="h-3.5 w-3.5" strokeWidth={2.25} />
-                Take Profit
+                {t("takeProfit")}
               </p>
               <p className="mt-1 text-lg font-bold text-white">{analysis.takeProfit ?? "—"}</p>
             </div>
             <div className="rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-rose-400">
                 <Target className="h-3.5 w-3.5" strokeWidth={2.25} />
-                Stop Loss
+                {t("stopLoss")}
               </p>
               <p className="mt-1 text-lg font-bold text-white">{analysis.stopLoss ?? "—"}</p>
             </div>
@@ -110,7 +123,7 @@ export function TradingAnalysisResult({
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/40">
           <TrendingUp className="h-3.5 w-3.5" strokeWidth={2.25} />
-          Analyse de tendance
+          {t("trendAnalysis")}
         </p>
         <p className="mt-3 text-sm leading-relaxed text-white/75 sm:text-[15px]">
           {analysis.trendAnalysis}
@@ -120,7 +133,7 @@ export function TradingAnalysisResult({
       {analysis.keyLevels.length > 0 && (
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-            Niveaux clés
+            {t("keyLevels")}
           </p>
           <div className="mt-3 flex flex-col gap-2">
             {analysis.keyLevels.map((kl, i) => (
@@ -134,7 +147,7 @@ export function TradingAnalysisResult({
                     kl.type === "support" ? "text-emerald-400" : "text-rose-400"
                   )}
                 >
-                  {kl.type === "support" ? "Support" : "Résistance"}
+                  {getKeyLevelTypeLabel(tTrading, kl.type)}
                 </span>
                 <span className="text-sm font-bold text-white">{kl.level}</span>
               </div>
@@ -146,7 +159,7 @@ export function TradingAnalysisResult({
       {analysis.indicatorsObserved.length > 0 && (
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-            Indicateurs observés
+            {t("indicatorsObserved")}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {analysis.indicatorsObserved.map((indicator) => (
@@ -162,7 +175,9 @@ export function TradingAnalysisResult({
       )}
 
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Explication</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+          {t("explanation")}
+        </p>
         <p className="mt-3 text-sm leading-relaxed text-white/75 sm:text-[15px]">
           {analysis.explanation}
         </p>
@@ -172,7 +187,7 @@ export function TradingAnalysisResult({
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-400">
             <TriangleAlert className="h-3.5 w-3.5" strokeWidth={2.25} />
-            Risques
+            {t("risks")}
           </p>
           <ul className="mt-3 flex flex-col gap-2.5">
             {analysis.risks.map((risk) => (
@@ -187,7 +202,7 @@ export function TradingAnalysisResult({
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">
         <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1">
-          {backLabel}
+          {backLabel ?? tTrading("backLabel")}
         </Button>
       </div>
     </div>

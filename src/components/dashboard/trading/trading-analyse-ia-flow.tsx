@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { TradingChartInput } from "@/components/dashboard/trading/trading-chart-input";
 import { TradingAnalysisLoading } from "@/components/dashboard/trading/trading-analysis-loading";
@@ -17,7 +18,9 @@ import {
 
 type FlowState = "input" | "loading" | "result";
 
-function errorContentFor(error: unknown): React.ReactNode {
+type TradingTranslator = ReturnType<typeof useTranslations>;
+
+function errorContentFor(error: unknown, t: TradingTranslator): React.ReactNode {
   if (error instanceof TradingAnalysisError && error.code === "limit_reached") {
     return (
       <>
@@ -26,15 +29,16 @@ function errorContentFor(error: unknown): React.ReactNode {
           href="/dashboard/settings"
           className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
         >
-          Changer de plan →
+          {t("changePlanCta")}
         </Link>
       </>
     );
   }
-  return tradingErrorMessage(error instanceof TradingAnalysisError ? error.code : "unknown");
+  return tradingErrorMessage(t, error instanceof TradingAnalysisError ? error.code : "unknown");
 }
 
 export function TradingAnalyseIaFlow() {
+  const t = useTranslations("Trading");
   const [state, setState] = useState<FlowState>("input");
   const [result, setResult] = useState<TradingChartAnalysis | null>(null);
   const [currentStep, setCurrentStep] = useState<TradingProgressStep | null>(null);
@@ -51,7 +55,7 @@ export function TradingAnalyseIaFlow() {
       setFile(null);
       setState("result");
     } catch (error) {
-      setErrorMessage(errorContentFor(error));
+      setErrorMessage(errorContentFor(error, t));
       setState("input");
     }
   };

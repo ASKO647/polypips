@@ -1,14 +1,17 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Check, Loader2 } from "lucide-react";
 import {
-  TRADING_LOADING_STEPS,
   TRADING_STEP_ORDER,
+  getTradingLoadingSteps,
   type TradingProgressStep,
 } from "@/lib/data/trading-analysis";
 import { cn } from "@/lib/utils";
 
 export function TradingAnalysisLoading({ currentStep }: { currentStep: TradingProgressStep | null }) {
+  const t = useTranslations("Trading");
+  const loadingSteps = getTradingLoadingSteps(t);
   const currentIndex = currentStep ? TRADING_STEP_ORDER.indexOf(currentStep) : -1;
 
   return (
@@ -43,7 +46,7 @@ export function TradingAnalysisLoading({ currentStep }: { currentStep: TradingPr
                   !complete && !current && "text-white/25"
                 )}
               >
-                {TRADING_LOADING_STEPS[step]}
+                {loadingSteps[step]}
               </span>
             </div>
           );

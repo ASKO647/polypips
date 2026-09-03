@@ -1,0 +1,62 @@
+{
+  "Trading": {
+    "disclaimer": "This analysis is an estimate based on the provided image, not a guarantee of outcome. Leveraged trading carries a high risk of capital loss.",
+    "changePlanCta": "Change plan →",
+    "backLabel": "New analysis",
+    "backToListLabel": "Back to list",
+    "loading": {
+      "calling_ai": "Sending chart to the AI...",
+      "receiving_result": "Receiving analysis..."
+    },
+    "errors": {
+      "invalid_input": "Please provide a valid chart image.",
+      "unauthorized": "Your session has expired. Please log back in and try again.",
+      "ai_error": "The AI analysis service is temporarily unavailable. Please try again shortly.",
+      "network_error": "Unable to connect. Check your connection and try again.",
+      "limit_reached": "You've reached your free daily analysis limit. Start for €0.99 for unlimited analyses.",
+      "unknown": "An unexpected error occurred. Please try again."
+    },
+    "recommendation": {
+      "Acheter": "Buy",
+      "Vendre": "Sell",
+      "Attendre": "Wait"
+    },
+    "confidenceLevel": {
+      "Faible": "Low",
+      "Moyenne": "Medium",
+      "Élevée": "High"
+    },
+    "keyLevelType": {
+      "support": "Support",
+      "resistance": "Resistance"
+    },
+    "ChartInput": {
+      "title": "Trading — AI Analysis",
+      "description": "Drop a chart screenshot (TradingView, MT5, or any other platform) for an AI reading of the trend, key levels, and a recommendation.",
+      "dropzoneCta": "Drag and drop a chart screenshot",
+      "dropzoneBrowse": "or click to browse your files",
+      "removeFile": "Remove file",
+      "submit": "Analyze chart",
+      "preparing": "Preparing..."
+    },
+    "Result": {
+      "heading": "Chart reading",
+      "recommendationLabel": "AI recommendation",
+      "confidenceLabel": "Confidence level",
+      "takeProfit": "Take Profit",
+      "stopLoss": "Stop Loss",
+      "trendAnalysis": "Trend analysis",
+      "keyLevels": "Key levels",
+      "indicatorsObserved": "Indicators observed",
+      "explanation": "Explanation",
+      "risks": "Risks"
+    },
+    "History": {
+      "pageTitle": "My analyses",
+      "pageDescription": "Your complete history of Trading chart analyses, with access to every detailed analysis.",
+      "unknownInstrument": "Instrument not identified",
+      "emptyTitle": "No analyses yet",
+      "emptyDescription": "Drop a chart screenshot from AI Analysis to see your analyses appear here."
+    }
+  }
+}

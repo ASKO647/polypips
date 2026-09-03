@@ -1,9 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import { TRADING_DISCLAIMER } from "@/lib/data/trading-analysis";
+import { getTradingDisclaimer } from "@/lib/data/trading-analysis";
 import { cn } from "@/lib/utils";
 
 function fileToBase64(file: File): Promise<string> {
@@ -30,6 +31,8 @@ export function TradingChartInput({
   onFileChange: (file: File | null) => void;
   onAnalyze: (request: { imageBase64: string; imageMediaType: string }) => void;
 }) {
+  const t = useTranslations("Trading.ChartInput");
+  const tTrading = useTranslations("Trading");
   const [dragOver, setDragOver] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -51,12 +54,9 @@ export function TradingChartInput({
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Trading — Analyse IA
+          {t("title")}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          Déposez une capture d&apos;écran de graphique (TradingView, MT5, ou toute autre
-          plateforme) pour une lecture IA de la tendance, des niveaux clés et une recommandation.
-        </p>
+        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">{t("description")}</p>
       </div>
 
       {errorMessage && (
@@ -113,7 +113,7 @@ export function TradingChartInput({
               <p className="max-w-[240px] truncate text-sm font-medium text-white">{file.name}</p>
               <button
                 type="button"
-                aria-label="Retirer le fichier"
+                aria-label={t("removeFile")}
                 onClick={(e) => {
                   e.stopPropagation();
                   onFileChange(null);
@@ -126,10 +126,8 @@ export function TradingChartInput({
             </div>
           ) : (
             <>
-              <p className="text-sm font-medium text-white">
-                Glissez-déposez une capture de graphique
-              </p>
-              <p className="text-xs text-white/40">ou cliquez pour parcourir vos fichiers</p>
+              <p className="text-sm font-medium text-white">{t("dropzoneCta")}</p>
+              <p className="text-xs text-white/40">{t("dropzoneBrowse")}</p>
             </>
           )}
         </div>
@@ -140,14 +138,14 @@ export function TradingChartInput({
           onClick={handleSubmit}
           className="w-full sm:w-auto sm:self-end"
         >
-          {preparing ? "Préparation..." : "Analyser le graphique"}
+          {preparing ? t("preparing") : t("submit")}
           <ButtonIcon>
             <ArrowRight className="h-4 w-4" />
           </ButtonIcon>
         </Button>
       </div>
 
-      <p className="text-xs leading-relaxed text-white/35">{TRADING_DISCLAIMER}</p>
+      <p className="text-xs leading-relaxed text-white/35">{getTradingDisclaimer(tTrading)}</p>
     </div>
   );
 }

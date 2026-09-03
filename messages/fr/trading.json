@@ -1,0 +1,62 @@
+{
+  "Trading": {
+    "disclaimer": "Cette analyse est une estimation basée sur l'image fournie, pas une garantie de résultat. Le trading avec effet de levier comporte des risques élevés de perte en capital.",
+    "changePlanCta": "Changer de plan →",
+    "backLabel": "Nouvelle analyse",
+    "backToListLabel": "Retour à la liste",
+    "loading": {
+      "calling_ai": "Envoi du graphique à l'IA...",
+      "receiving_result": "Réception de l'analyse..."
+    },
+    "errors": {
+      "invalid_input": "Merci de fournir une image de graphique valide.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
+      "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
+      "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
+      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
+      "unknown": "Une erreur inattendue est survenue. Réessayez."
+    },
+    "recommendation": {
+      "Acheter": "Acheter",
+      "Vendre": "Vendre",
+      "Attendre": "Attendre"
+    },
+    "confidenceLevel": {
+      "Faible": "Faible",
+      "Moyenne": "Moyenne",
+      "Élevée": "Élevée"
+    },
+    "keyLevelType": {
+      "support": "Support",
+      "resistance": "Résistance"
+    },
+    "ChartInput": {
+      "title": "Trading — Analyse IA",
+      "description": "Déposez une capture d'écran de graphique (TradingView, MT5, ou toute autre plateforme) pour une lecture IA de la tendance, des niveaux clés et une recommandation.",
+      "dropzoneCta": "Glissez-déposez une capture de graphique",
+      "dropzoneBrowse": "ou cliquez pour parcourir vos fichiers",
+      "removeFile": "Retirer le fichier",
+      "submit": "Analyser le graphique",
+      "preparing": "Préparation..."
+    },
+    "Result": {
+      "heading": "Lecture du graphique",
+      "recommendationLabel": "Recommandation IA",
+      "confidenceLabel": "Niveau de confiance",
+      "takeProfit": "Take Profit",
+      "stopLoss": "Stop Loss",
+      "trendAnalysis": "Analyse de tendance",
+      "keyLevels": "Niveaux clés",
+      "indicatorsObserved": "Indicateurs observés",
+      "explanation": "Explication",
+      "risks": "Risques"
+    },
+    "History": {
+      "pageTitle": "Mes analyses",
+      "pageDescription": "L'historique complet de vos analyses de graphiques Trading, avec accès à chaque analyse détaillée.",
+      "unknownInstrument": "Instrument non identifié",
+      "emptyTitle": "Aucune analyse pour le moment",
+      "emptyDescription": "Déposez une capture de graphique depuis Analyse IA pour voir vos analyses apparaître ici."
+    }
+  }
+}
