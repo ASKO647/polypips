@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { AuthHeader } from "@/components/layout/auth-header";
 import { MinimalFooter } from "@/components/layout/minimal-footer";
@@ -7,10 +8,10 @@ import { LoginTrustRow } from "@/components/auth/login-trust-row";
 import { AuthBackground } from "@/components/auth/auth-background";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Connexion — Polypips",
-  description: "Connectez-vous à votre compte Polypips.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth.Login");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
 export default async function LoginPage(props: PageProps<"/[locale]/login">) {
   const { locale } = await props.params;

@@ -1,25 +1,23 @@
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Container } from "@/components/ui/container";
 import { Link } from "@/i18n/navigation";
 import { BLOG_ARTICLES } from "@/lib/data/blog";
 
-export const metadata: Metadata = {
-  title: "Blog — Polypips",
-  description:
-    "Analyses de marché, copy trading et bases de l'IA appliquée aux paris et aux prediction markets.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Pages.Blog");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const t = await getTranslations("Pages.Blog");
+
   return (
     <MarketingPageShell>
-      <PageHero
-        eyebrow="Blog"
-        title="Le blog Polypips"
-        description="Des articles informatifs sur les prediction markets, le copy trading et l'analyse IA — pas de promesses, juste des explications."
-      />
+      <PageHero eyebrow={t("eyebrow")} title={t("title")} description={t("description")} />
 
       <Container className="pb-20 sm:pb-28">
         <div className="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2">
@@ -36,7 +34,7 @@ export default function BlogPage() {
               <p className="text-sm leading-relaxed text-body">{article.excerpt}</p>
               <div className="mt-auto flex items-center justify-between text-xs font-medium text-body-soft">
                 <span>
-                  {article.date} · {article.readMinutes} min de lecture
+                  {article.date} · {article.readMinutes} {t("readMinutesLabel")}
                 </span>
                 <ArrowRight
                   className="h-4 w-4 text-brand-500 transition-transform duration-200 group-hover:translate-x-1"

@@ -1,42 +1,45 @@
 import { UserPlus, Compass, Sparkles, LineChart, type LucideIcon } from "lucide-react";
 
-export type OnboardingStep = {
+export type OnboardingStepMeta = {
   number: string;
+  key: string;
   icon: LucideIcon;
-  title: string;
-  description: string;
 };
 
 /** The account-level journey shown on /how-it-works — distinct from
  * HOW_IT_WORKS_STEPS (lib/data/how-it-works.ts), which walks through a
- * single Analyse IA request rather than the full onboarding path. */
-export const ONBOARDING_STEPS: OnboardingStep[] = [
-  {
-    number: "01",
-    icon: UserPlus,
-    title: "Créez votre compte",
-    description:
-      "Inscrivez-vous en quelques secondes avec votre email ou votre compte Google, puis choisissez votre offre.",
-  },
-  {
-    number: "02",
-    icon: Compass,
-    title: "Choisissez vos marchés et vos suivis",
-    description:
-      "Sélectionnez les marchés Polymarket ou les matchs sportifs qui vous intéressent, et suivez les portefeuilles Smart Money de votre choix.",
-  },
-  {
-    number: "03",
-    icon: Sparkles,
-    title: "Recevez vos analyses IA",
-    description:
-      "Obtenez une décision argumentée, une probabilité estimée et une explication détaillée pour chaque marché ou match analysé.",
-  },
-  {
-    number: "04",
-    icon: LineChart,
-    title: "Suivez vos performances",
-    description:
-      "Retrouvez l'historique de vos décisions et l'évolution de votre performance simulée dans l'onglet Statistiques.",
-  },
+ * single Analyse IA request rather than the full onboarding path.
+ *
+ * Display copy (title/description) lives in `Pages.HowItWorks.steps`
+ * (messages/{locale}/pages.json), never as hardcoded strings here — this
+ * file only holds the ordered, language-neutral number/icon metadata.
+ * `key` is the camelCase segment used under `Pages.HowItWorks.steps` for
+ * each entry. Call getOnboardingSteps(t) with a translator scoped to
+ * "Pages.HowItWorks" to get the locale-aware list at render time. */
+export const ONBOARDING_STEPS_META: OnboardingStepMeta[] = [
+  { number: "01", key: "create", icon: UserPlus },
+  { number: "02", key: "choose", icon: Compass },
+  { number: "03", key: "receive", icon: Sparkles },
+  { number: "04", key: "track", icon: LineChart },
 ];
+
+export type OnboardingStep = OnboardingStepMeta & {
+  title: string;
+  description: string;
+};
+
+type OnboardingTranslator = {
+  (key: string): string;
+};
+
+/** Builds the locale-aware onboarding step list — call with a translator
+ * scoped to "Pages.HowItWorks" so every step's copy renders in the current
+ * locale. Never import a static step array directly; call this at render
+ * time in the how-it-works page. */
+export function getOnboardingSteps(t: OnboardingTranslator): OnboardingStep[] {
+  return ONBOARDING_STEPS_META.map((meta) => ({
+    ...meta,
+    title: t(`steps.${meta.key}.title`),
+    description: t(`steps.${meta.key}.description`),
+  }));
+}

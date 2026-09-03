@@ -1,15 +1,18 @@
+import { useTranslations } from "next-intl";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { FEATURES } from "@/lib/data/features";
 
 export function FeatureSection() {
+  const t = useTranslations("Features");
+
   return (
     <section id="fonctionnalites" className="reveal py-10 sm:py-12">
       <Container className="flex flex-col gap-8">
         <SectionHeading
-          eyebrow="Fonctionnalités"
-          title="Tout ce dont vous avez besoin pour prendre l'avantage"
-          description="Une plateforme complète pour analyser, suivre et décider — sans jongler entre dix outils."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("description")}
         />
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -22,10 +25,10 @@ export function FeatureSection() {
                 <feature.icon className="h-5 w-5" strokeWidth={2} />
               </div>
               <h3 className="mt-5 font-display text-[22px] font-bold text-ink">
-                {feature.title}
+                {t(`items.${feature.id}.title`)}
               </h3>
               <p className="mt-2 text-base leading-[1.6] text-body">
-                {feature.description}
+                {t(`items.${feature.id}.description`)}
               </p>
             </article>
           ))}

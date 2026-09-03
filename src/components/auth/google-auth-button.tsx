@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { createClient } from "@/lib/supabase/client";
-
-const OAUTH_ERROR_MESSAGE =
-  "La connexion avec Google a échoué. Merci de réessayer.";
 
 /**
  * Shared "Continuer avec Google" button for /signup and /login. The
@@ -29,6 +26,8 @@ export function GoogleAuthButton({
 }) {
   const [loading, setLoading] = useState(false);
   const locale = useLocale();
+  const t = useTranslations("Auth");
+  const tButton = useTranslations("Auth.GoogleButton");
 
   const handleClick = async () => {
     onError(null);
@@ -50,13 +49,13 @@ export function GoogleAuthButton({
       });
 
       if (error) {
-        onError(OAUTH_ERROR_MESSAGE);
+        onError(t("oauthError"));
         setLoading(false);
       }
       // On success the browser is redirected to Google, so no further
       // state update happens here.
     } catch {
-      onError(OAUTH_ERROR_MESSAGE);
+      onError(t("oauthError"));
       setLoading(false);
     }
   };
@@ -73,7 +72,7 @@ export function GoogleAuthButton({
       ) : (
         <GoogleIcon className="h-4.5 w-4.5" />
       )}
-      {loading ? "Redirection vers Google..." : "Continuer avec Google"}
+      {loading ? tButton("redirecting") : tButton("cta")}
     </button>
   );
 }

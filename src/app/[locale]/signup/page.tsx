@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { AuthHeader } from "@/components/layout/auth-header";
 import { MinimalFooter } from "@/components/layout/minimal-footer";
@@ -10,11 +11,10 @@ import { SignupForm } from "@/components/auth/signup-form";
 import { AuthBackground } from "@/components/auth/auth-background";
 import { createClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
-  title: "Créer un compte — Polypips",
-  description:
-    "Créez votre compte Polypips et prenez l'avantage sur le marché.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth.Signup");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
 export default async function SignupPage(props: PageProps<"/[locale]/signup">) {
   const { locale } = await props.params;
@@ -30,6 +30,7 @@ export default async function SignupPage(props: PageProps<"/[locale]/signup">) {
   const { error, plan } = await props.searchParams;
   const oauthError = typeof error === "string" ? error : undefined;
   const intendedPlan = typeof plan === "string" ? plan : undefined;
+  const t = await getTranslations("Auth.Signup");
 
   return (
     <>
@@ -44,16 +45,18 @@ export default async function SignupPage(props: PageProps<"/[locale]/signup">) {
 
             <div className="flex flex-col gap-4">
               <h1 className="text-balance font-display text-4xl font-bold leading-[1.12] tracking-tight text-ink sm:text-[2.75rem]">
-                Créez votre compte
+                {t("heroTitle1")}
                 <br />
-                et prenez l&apos;avantage
+                {t("heroTitle2")}
                 <br />
-                sur <span className="text-brand-500">le marché.</span>
+                {t.rich("heroTitle3", {
+                  highlight: (chunks) => (
+                    <span className="text-brand-500">{chunks}</span>
+                  ),
+                })}
               </h1>
               <p className="max-w-md text-balance text-base leading-relaxed text-body">
-                Rejoignez les utilisateurs qui utilisent l&apos;IA pour
-                analyser, comprendre et prendre de meilleures décisions sur
-                les marchés.
+                {t("heroDescription")}
               </p>
             </div>
 

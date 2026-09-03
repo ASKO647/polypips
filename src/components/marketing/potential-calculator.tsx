@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Button, ButtonIcon } from "@/components/ui/button";
@@ -68,12 +69,10 @@ function indexForValue(tickValues: number[], value: number): number {
 }
 
 const STAKE_TICK_VALUES = [10, 25, 50, 100, 250, 500];
-const STAKE_TICK_LABELS = ["10 €", "25 €", "50 €", "100 €", "250 €", "500 € et plus"];
 const STAKE_ROUND_TO = 5;
 const STAKE_DEFAULT = 50;
 
 const OPPORTUNITIES_TICK_VALUES = [10, 25, 50, 100, 200, 500];
-const OPPORTUNITIES_TICK_LABELS = ["10", "25", "50", "100", "200", "Plus de 500"];
 const OPPORTUNITIES_ROUND_TO = 5;
 const OPPORTUNITIES_DEFAULT = 80;
 
@@ -121,6 +120,10 @@ function AmountSlider({
 }
 
 export function PotentialCalculator() {
+  const t = useTranslations("Calculator");
+  const stakeTickLabels = t.raw("stakeTicks") as string[];
+  const opportunitiesTickLabels = t.raw("opportunitiesTicks") as string[];
+
   const stakeScale = useMemo(
     () => buildScale(STAKE_TICK_VALUES, STAKE_ROUND_TO),
     []
@@ -160,34 +163,34 @@ export function PotentialCalculator() {
     <section className="reveal py-10 sm:py-12">
       <Container className="flex flex-col gap-8">
         <SectionHeading
-          eyebrow="Simulateur"
-          title="Découvrez votre potentiel avec Polypips"
-          description="Ajustez vos paramètres et visualisez votre potentiel mensuel."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("description")}
         />
 
         <div className="mx-auto w-full max-w-2xl rounded-[28px] border border-border bg-surface p-6 shadow-[0_20px_50px_-28px_rgba(18,5,7,0.14)] sm:p-10">
           <div className="flex flex-col gap-8">
             <AmountSlider
-              label="Mise moyenne par opportunité"
+              label={t("stakeLabel")}
               scale={stakeScale}
               index={stakeIndex}
               onIndexChange={setStakeIndex}
-              ticks={STAKE_TICK_LABELS}
+              ticks={stakeTickLabels}
               valueLabel={formatEUR(stake)}
             />
             <AmountSlider
-              label="Opportunités analysées par mois"
+              label={t("opportunitiesLabel")}
               scale={opportunitiesScale}
               index={opportunitiesIndex}
               onIndexChange={setOpportunitiesIndex}
-              ticks={OPPORTUNITIES_TICK_LABELS}
+              ticks={opportunitiesTickLabels}
               valueLabel={String(opportunities)}
             />
           </div>
 
           <div className="relative mt-9 overflow-hidden rounded-2xl border border-brand-100 bg-[linear-gradient(135deg,var(--color-brand-50)_0%,var(--color-surface)_65%)] px-6 py-8 text-center sm:px-10 sm:py-10">
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-600">
-              Votre potentiel mensuel
+              {t("resultLabel")}
             </p>
             <p
               className={cn(
@@ -198,8 +201,7 @@ export function PotentialCalculator() {
               {formatSignedEUR(potential)}
             </p>
             <p className="mx-auto mt-4 max-w-sm text-xs leading-relaxed text-body-soft">
-              Simulation indicative basée sur les paramètres sélectionnés. Les
-              performances réelles peuvent varier.
+              {t("disclaimer")}
             </p>
           </div>
 
@@ -208,7 +210,7 @@ export function PotentialCalculator() {
             size="lg"
             className="mt-6 w-full"
           >
-            Bénéficiez de l&apos;avantage Polypips
+            {t("cta")}
             <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
@@ -10,6 +11,8 @@ import { NAV_LINKS } from "@/lib/data/nav";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const tNav = useTranslations("Nav");
+  const tHeader = useTranslations("Header");
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
@@ -23,7 +26,7 @@ export function SiteHeader() {
               href={link.href}
               className="text-sm font-medium text-body transition-colors hover:text-ink"
             >
-              {link.label}
+              {tNav(link.id)}
             </Link>
           ))}
         </nav>
@@ -34,17 +37,17 @@ export function SiteHeader() {
             href="/login"
             className="text-sm font-medium text-body transition-colors hover:text-ink"
           >
-            Se connecter
+            {tHeader("login")}
           </Link>
           <Button href="/signup" size="md" className="h-[52px]">
-            Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
+            {tHeader("cta")} <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>
 
         <button
           type="button"
           className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border-strong text-ink transition-all duration-150 ease-out hover:scale-105 active:scale-95 lg:hidden"
-          aria-label="Ouvrir le menu"
+          aria-label={tHeader("openMenu")}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
         >
@@ -62,7 +65,7 @@ export function SiteHeader() {
                 onClick={() => setOpen(false)}
                 className="rounded-lg px-3 py-3 text-[15px] font-medium text-ink transition-colors hover:bg-brand-50"
               >
-                {link.label}
+                {tNav(link.id)}
               </Link>
             ))}
           </nav>
@@ -74,10 +77,10 @@ export function SiteHeader() {
             onClick={() => setOpen(false)}
             className="mt-5 flex items-center justify-center rounded-lg px-3 py-3 text-[15px] font-medium text-ink transition-colors hover:bg-brand-50"
           >
-            Se connecter
+            {tHeader("login")}
           </Link>
           <Button href="/signup" size="lg" className="mt-2 w-full">
-            Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
+            {tHeader("cta")} <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>
       )}

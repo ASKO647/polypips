@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { TrendingUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,8 @@ const FIRST_APPEARANCE_DELAY_MS = 1_500;
  * get_public_smart_money_activity, never invented data). Not mounted
  * anywhere near /dashboard. */
 export function SmartMoneyActivityPopup() {
+  const t = useTranslations("SmartMoneyPopup");
+
   // Lazy initializer: dismissed only ever changes the render output once
   // `current` is also set (elsewhere, post-mount), so this never causes a
   // server/client hydration mismatch even though sessionStorage is
@@ -110,14 +113,14 @@ export function SmartMoneyActivityPopup() {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-body/60">
-            Activité Smart Money
+            {t("label")}
           </p>
           <p className="mt-1 text-sm leading-snug text-ink">{current.message}</p>
         </div>
         <button
           type="button"
           onClick={handleClose}
-          aria-label="Masquer les notifications d'activité"
+          aria-label={t("close")}
           className="shrink-0 rounded-full p-1 text-body/50 transition-colors hover:bg-black/5 hover:text-ink"
         >
           <X className="h-4 w-4" strokeWidth={2.25} />

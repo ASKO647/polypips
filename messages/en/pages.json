@@ -89,6 +89,197 @@
           ]
         }
       }
+    },
+    "Features": {
+      "metaTitle": "Features — Polypips",
+      "metaDescription": "AI analysis for Polymarket and Sport, curated markets, Smart Wallet, AI Coach, and stats — everything Polypips offers.",
+      "eyebrow": "Features",
+      "title": "Everything you need to get an edge",
+      "description": "A complete platform to analyze, track, and decide — without juggling ten different tools.",
+      "previewLabel": "Interface preview — coming soon",
+      "footerNote": "All these features are included in a single subscription, with no tiers and nothing locked behind a higher plan.",
+      "ctaLabel": "Start for $0.99",
+      "items": {
+        "aiAnalysis": {
+          "eyebrow": "AI Analysis",
+          "title": "Polymarket and Sport, scrutinized by AI",
+          "description": "Upload a screenshot or paste the link to a Polymarket market, or describe a sports match: the AI analyzes the question, the resolution rules, the current probabilities, and the available data to give you a reasoned decision.",
+          "points": [
+            "Decision (YES/NO or winner), estimated probability, and opportunity score",
+            "Detailed explanation of the factors considered, in plain language",
+            "Provided for informational purposes — the final call is always yours"
+          ]
+        },
+        "selectedMarkets": {
+          "eyebrow": "Curated markets",
+          "title": "A focused selection, every day",
+          "description": "Polypips continuously scans available Polymarket markets and presents you with a focused selection, along with the AI's reasoning behind each pick — not a raw list of every existing market.",
+          "points": [
+            "Selection refreshed several times a day",
+            "Reasoning shown for every market included",
+            "Filterable so you can focus on the categories you care about"
+          ]
+        },
+        "copyTrading": {
+          "eyebrow": "Smart Wallet",
+          "title": "Follow the wallets you care about",
+          "description": "Search for a Polymarket address and follow it in one click: Smart Wallet notifies you of its new positions, in pure observation mode — your funds are never committed or moved.",
+          "points": [
+            "Manual address search, follow and unfollow at any time",
+            "Notifications whenever a followed wallet opens a new position",
+            "No real order is ever placed on your behalf — observation only"
+          ]
+        },
+        "aiCoach": {
+          "eyebrow": "AI Coach",
+          "title": "An assistant for your questions",
+          "description": "Ask our conversational assistant about a market, an analysis, or a strategy — it draws on your account's context to answer simply, without unnecessary jargon.",
+          "points": [
+            "Answers tailored to your analyses and follows",
+            "Conversation history kept from one session to the next",
+            "Available directly from the dashboard"
+          ]
+        },
+        "stats": {
+          "eyebrow": "Stats",
+          "title": "Track your decisions over time",
+          "description": "See your activity, the breakdown of your decisions by category, and how your simulated performance evolves, to identify what works for you.",
+          "points": [
+            "Decision breakdown by market category",
+            "Simulated performance over time",
+            "Full history of your past analyses"
+          ]
+        }
+      }
+    },
+    "HowItWorks": {
+      "metaTitle": "How it works — Polypips",
+      "metaDescription": "From signup to tracking your performance, the Polypips journey in 4 steps.",
+      "eyebrow": "Process",
+      "title": "How does it work?",
+      "description": "From signup to tracking your performance, in four clear steps.",
+      "stepLabel": "Step {number}",
+      "ctaLabel": "Start for $0.99",
+      "steps": {
+        "create": {
+          "title": "Create your account",
+          "description": "Sign up in seconds with your email or Google account, then choose your plan."
+        },
+        "choose": {
+          "title": "Choose your markets and follows",
+          "description": "Select the Polymarket markets or sports matches you're interested in, and follow the Smart Wallet portfolios of your choice."
+        },
+        "receive": {
+          "title": "Get your AI analyses",
+          "description": "Get a reasoned decision, an estimated probability, and a detailed explanation for every market or match you analyze."
+        },
+        "track": {
+          "title": "Track your performance",
+          "description": "Find the history of your decisions and how your simulated performance evolves, right from your dashboard."
+        }
+      }
+    },
+    "Developers": {
+      "metaTitle": "API — Polypips",
+      "metaDescription": "The public Polypips API is currently in development, coming soon.",
+      "eyebrow": "API",
+      "title": "The public Polypips API",
+      "description": "Integrate Polypips' analyses and market data directly into your own tools.",
+      "comingSoonBanner": "API in development — coming soon.",
+      "capabilities": {
+        "aiAnalyses": {
+          "title": "AI analyses",
+          "description": "Retrieve a decision, an estimated probability, and an explanation for a given market or match."
+        },
+        "marketData": {
+          "title": "Market data",
+          "description": "Access the AI-curated market selection and its metadata (category, deadline, probability)."
+        },
+        "smartWalletActivity": {
+          "title": "Smart Wallet activity",
+          "description": "Check the activity of followed wallets, to feed an external signal into your own tools."
+        }
+      },
+      "checklist": [
+        "API key authentication",
+        "Documented REST endpoints",
+        "Quotas aligned with your Polypips subscription"
+      ],
+      "notifyHeading": "Get notified the moment it opens",
+      "notifyDescription": "Write to us and we'll personally let you know as soon as the API is available.",
+      "notifyButton": "Notify me by email",
+      "mailtoSubject": "Polypips API notification",
+      "mailtoBody": "Hello,\n\nI'd like to be notified when the Polypips API becomes available.\n\nMy email address: "
+    },
+    "Support": {
+      "metaTitle": "Support — Polypips",
+      "metaDescription": "Frequently asked questions about billing, wallet tracking, and how the AI works.",
+      "eyebrow": "Support",
+      "title": "Help center",
+      "description": "The most frequently asked questions about Polypips — and how to reach us if you can't find your answer.",
+      "noAnswerHeading": "Can't find your answer?",
+      "chatHint": "or the chat bubble in the bottom right",
+      "items": {
+        "discoveryOffer": {
+          "question": "How does the discovery offer work?",
+          "answer": "The discovery offer gives you full access to Polypips for 3 days for $0.99. Unless you cancel before the end of that period, it automatically converts into a Pro subscription at $29.99 per month."
+        },
+        "cancelSubscription": {
+          "question": "How do I cancel my subscription?",
+          "answer": "From Settings → Subscription, click \"Cancel my subscription.\" Cancellation takes effect at the end of the period you've already paid for — no minimum commitment is required."
+        },
+        "paymentMethods": {
+          "question": "What payment methods are accepted?",
+          "answer": "Payments are processed by Stripe and accept all major cards. Polypips never stores your card details."
+        },
+        "connectWallet": {
+          "question": "Do I need to connect my own crypto wallet to Polypips?",
+          "answer": "No. Polypips never asks for your private key or access to a real wallet. Wallet tracking (\"Smart Wallet\") works purely by watching public addresses and their on-chain activity, already visible to anyone."
+        },
+        "howAiWorks": {
+          "question": "How does the AI analysis work?",
+          "answer": "You upload a screenshot of a Polymarket market (or describe a sports match): the AI analyzes the question, the resolution rules, the available data, and gives you a decision, an estimated probability, and an explanation. It's an informational estimate, not a guaranteed outcome."
+        },
+        "copyTradingReal": {
+          "question": "Does Copy Trading place real orders for me?",
+          "answer": "No, never. Smart Wallet works purely through observation: you search for and follow the wallets of your choice to get notified of their new positions, and no real order is ever placed on your behalf."
+        },
+        "financialAdvice": {
+          "question": "Are Polypips' analyses financial advice?",
+          "answer": "No. The analyses are provided strictly for informational and educational purposes. They do not constitute investment advice or a personalized recommendation. You remain solely responsible for your decisions."
+        },
+        "forgotPassword": {
+          "question": "I forgot my password, what do I do?",
+          "answer": "From the login page, click \"Forgot password\" and follow the instructions sent by email to set a new one."
+        },
+        "deleteAccount": {
+          "question": "How do I delete my account?",
+          "answer": "From Settings → Profile, the \"Danger zone\" section lets you request deletion of your account. Our team will then contact you by email to confirm and finalize the deletion."
+        },
+        "contactSupport": {
+          "question": "How do I contact support?",
+          "answer": "Write to us at the address shown at the bottom of this page, or use the chat bubble in the bottom right of the screen. We reply Monday through Friday."
+        }
+      }
+    },
+    "Blog": {
+      "metaTitle": "Blog — Polypips",
+      "metaDescription": "Market analysis, Smart Wallet, and AI fundamentals applied to betting and prediction markets.",
+      "eyebrow": "Blog",
+      "title": "The Polypips blog",
+      "description": "Informative articles about prediction markets, wallet tracking, and AI analysis — no promises, just explanations.",
+      "readMinutesLabel": "min read",
+      "backToBlog": "Back to blog",
+      "articleFallbackTitle": "Article"
+    },
+    "Guides": {
+      "metaTitle": "Guides — Polypips",
+      "metaDescription": "Step-by-step guides to get started, follow a wallet, and use the AI Coach.",
+      "eyebrow": "Guides",
+      "title": "Practical guides",
+      "description": "Step-by-step tutorials to get the most out of Polypips.",
+      "backToGuides": "Back to guides",
+      "guideFallbackTitle": "Guide"
     }
   }
 }

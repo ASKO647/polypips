@@ -1,24 +1,23 @@
 import type { Metadata } from "next";
 import { ArrowRight, BookOpen } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Container } from "@/components/ui/container";
 import { Link } from "@/i18n/navigation";
 import { GUIDES } from "@/lib/data/guides";
 
-export const metadata: Metadata = {
-  title: "Guides — Polypips",
-  description: "Des guides pas à pas pour bien démarrer, suivre un wallet et utiliser le Coach IA.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Pages.Guides");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
-export default function GuidesPage() {
+export default async function GuidesPage() {
+  const t = await getTranslations("Pages.Guides");
+
   return (
     <MarketingPageShell>
-      <PageHero
-        eyebrow="Guides"
-        title="Guides pratiques"
-        description="Des tutoriels pas à pas pour tirer le meilleur de Polypips."
-      />
+      <PageHero eyebrow={t("eyebrow")} title={t("title")} description={t("description")} />
 
       <Container className="pb-20 sm:pb-28">
         <div className="mx-auto flex max-w-3xl flex-col gap-4">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   AlertCircle,
   CheckCircle2,
@@ -33,8 +33,13 @@ const STRENGTH_COLORS = [
   "bg-emerald-500",
 ];
 
-const OAUTH_ERROR_MESSAGE =
-  "La connexion avec Google a échoué. Merci de réessayer.";
+const STRENGTH_KEYS = [
+  "veryWeak",
+  "weak",
+  "medium",
+  "strong",
+  "veryStrong",
+] as const;
 
 export function SignupForm({
   oauthError,
@@ -48,6 +53,8 @@ export function SignupForm({
 }) {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("Auth.Signup");
+  const tAuth = useTranslations("Auth");
   const next = plan && isPlanId(plan) ? `/dashboard?checkout=${plan}` : undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,7 +66,7 @@ export function SignupForm({
     "idle" | "checking" | "valid" | "invalid"
   >("idle");
   const [error, setError] = useState<React.ReactNode>(
-    oauthError ? OAUTH_ERROR_MESSAGE : null
+    oauthError ? tAuth("oauthError") : null
   );
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -114,24 +121,24 @@ export function SignupForm({
         ) {
           setError(
             <>
-              Un compte existe déjà avec cet email.{" "}
+              {t("alreadyHaveAccount")}{" "}
               <Link
                 href="/login"
                 className="font-semibold text-brand-600 hover:text-brand-700"
               >
-                Connectez-vous plutôt.
+                {t("loginInstead")}
               </Link>
             </>
           );
         } else if (signUpError.code === "weak_password") {
-          setError(`Mot de passe trop faible : ${signUpError.message}`);
+          setError(`${t("weakPasswordPrefix")} ${signUpError.message}`);
         } else {
           console.error("[signup] signUp failed", {
             code: signUpError.code,
             status: signUpError.status,
             message: signUpError.message,
           });
-          setError(signUpError.message || "Une erreur est survenue. Merci de réessayer.");
+          setError(signUpError.message || tAuth("errorGeneric"));
         }
         return;
       }
@@ -141,12 +148,12 @@ export function SignupForm({
       if (data.user && data.user.identities && data.user.identities.length === 0) {
         setError(
           <>
-            Un compte existe déjà avec cet email.{" "}
+            {t("alreadyHaveAccount")}{" "}
             <Link
               href="/login"
               className="font-semibold text-brand-600 hover:text-brand-700"
             >
-              Connectez-vous plutôt.
+              {t("loginInstead")}
             </Link>
           </>
         );
@@ -172,11 +179,9 @@ export function SignupForm({
       }
 
       // No session means email confirmation is required before sign-in.
-      setSuccessMessage(
-        "Compte créé ! Vérifiez votre boîte mail pour confirmer votre adresse avant de vous connecter."
-      );
+      setSuccessMessage(t("successMessage"));
     } catch {
-      setError("Une erreur est survenue. Merci de réessayer.");
+      setError(tAuth("errorGeneric"));
     } finally {
       setSubmitting(false);
     }
@@ -185,10 +190,10 @@ export function SignupForm({
   return (
     <div className="w-full rounded-[2rem] border border-border bg-surface p-7 shadow-[0_30px_70px_-30px_rgba(23,11,13,0.18)] sm:p-9">
       <h2 className="font-display text-2xl font-semibold text-ink">
-        Créer un compte
+        {t("cardTitle")}
       </h2>
       <p className="mt-1.5 text-sm text-body">
-        Accès immédiat à toutes les fonctionnalités
+        {t("cardSubtitle")}
       </p>
 
       {error && (
@@ -214,7 +219,7 @@ export function SignupForm({
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-border" />
         <span className="text-xs font-medium uppercase tracking-wide text-body-soft">
-          ou
+          {tAuth("or")}
         </span>
         <span className="h-px flex-1 bg-border" />
       </div>
@@ -225,7 +230,7 @@ export function SignupForm({
             htmlFor="email"
             className="text-sm font-semibold text-ink"
           >
-            Adresse email
+            {t("emailLabel")}
           </label>
           <div className="relative">
             <Mail className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-body-soft" />
@@ -233,7 +238,7 @@ export function SignupForm({
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="votre@email.com"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="h-12 w-full rounded-xl border border-border-strong bg-surface pl-11 pr-4 text-sm text-ink placeholder:text-body-soft/70 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
@@ -246,7 +251,7 @@ export function SignupForm({
             htmlFor="password"
             className="text-sm font-semibold text-ink"
           >
-            Mot de passe
+            {t("passwordLabel")}
           </label>
           <div className="relative">
             <Lock className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-body-soft" />
@@ -254,7 +259,7 @@ export function SignupForm({
               id="password"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
-              placeholder="••••••••••••"
+              placeholder={t("passwordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="h-12 w-full rounded-xl border border-border-strong bg-surface pl-11 pr-11 text-sm text-ink placeholder:text-body-soft/70 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
@@ -264,8 +269,8 @@ export function SignupForm({
               onClick={() => setShowPassword((v) => !v)}
               aria-label={
                 showPassword
-                  ? "Masquer le mot de passe"
-                  : "Afficher le mot de passe"
+                  ? tAuth("hidePassword")
+                  : tAuth("showPassword")
               }
               className="absolute right-4 top-1/2 -translate-y-1/2 text-body-soft transition-colors hover:text-ink"
             >
@@ -293,7 +298,8 @@ export function SignupForm({
                 ))}
               </div>
               <span className="text-xs font-medium text-body-soft">
-                Mot de passe {strength.label.toLowerCase()}
+                {t("passwordStrengthPrefix")}{" "}
+                {tAuth(`PasswordStrength.${STRENGTH_KEYS[strength.score]}`)}
               </span>
             </div>
           )}
@@ -301,8 +307,8 @@ export function SignupForm({
 
         <div className="flex flex-col gap-2">
           <label htmlFor="promo-code" className="text-sm font-semibold text-ink">
-            Code promo{" "}
-            <span className="font-normal text-body-soft">(optionnel)</span>
+            {t("promoCodeLabel")}{" "}
+            <span className="font-normal text-body-soft">{t("promoCodeOptional")}</span>
           </label>
           <div className="relative">
             <Tag className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-body-soft" />
@@ -310,7 +316,7 @@ export function SignupForm({
               id="promo-code"
               type="text"
               autoComplete="off"
-              placeholder="Ex : SARAH20"
+              placeholder={t("promoCodePlaceholder")}
               value={promoCode}
               onChange={(e) => {
                 setPromoCode(e.target.value);
@@ -322,12 +328,12 @@ export function SignupForm({
           </div>
           {promoCodeStatus === "valid" && (
             <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-600">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Code reconnu
+              <CheckCircle2 className="h-3.5 w-3.5" /> {t("promoCodeValid")}
             </span>
           )}
           {promoCodeStatus === "invalid" && (
             <span className="text-xs font-medium text-body-soft">
-              Code non reconnu — vous pouvez continuer sans, ou vérifier l&apos;orthographe.
+              {t("promoCodeInvalid")}
             </span>
           )}
         </div>
@@ -340,15 +346,15 @@ export function SignupForm({
             className="mt-0.5 h-4 w-4 shrink-0 rounded border-border-strong text-brand-500 accent-brand-500 focus:ring-brand-300"
           />
           <span>
-            J&apos;accepte les{" "}
+            {t("termsPrefix")}{" "}
             <a href="#" className="font-semibold text-brand-600 hover:text-brand-700">
-              Conditions d&apos;utilisation
+              {tAuth("terms")}
             </a>{" "}
-            et la{" "}
+            {t("termsAnd")}{" "}
             <a href="#" className="font-semibold text-brand-600 hover:text-brand-700">
-              Politique de confidentialité
+              {tAuth("privacy")}
             </a>{" "}
-            de Polypips.
+            {t("termsSuffix")}
           </span>
         </label>
 
@@ -361,13 +367,12 @@ export function SignupForm({
           {submitting ? (
             <Loader2 className="h-4.5 w-4.5 animate-spin" />
           ) : (
-            "Créer mon compte"
+            t("submit")
           )}
         </Button>
 
         <p className="text-center text-xs leading-relaxed text-body-soft">
-          En créant un compte, vous acceptez de recevoir des emails de la
-          part de Polypips.
+          {t("emailNotice")}
         </p>
       </form>
     </div>

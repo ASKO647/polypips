@@ -1,29 +1,28 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Container } from "@/components/ui/container";
 import { CheckItem } from "@/components/ui/check-item";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import { FEATURES_DETAIL } from "@/lib/data/features-detail";
+import { getFeaturesDetail } from "@/lib/data/features-detail";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Fonctionnalités — Polypips",
-  description:
-    "Analyse IA Polymarket et Sport, marchés sélectionnés, copy trading en simulation, Coach IA et statistiques : tout ce que propose Polypips.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Pages.Features");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
-export default function FeaturesPage() {
+export default async function FeaturesPage() {
+  const t = await getTranslations("Pages.Features");
+  const featuresDetail = getFeaturesDetail(t);
+
   return (
     <MarketingPageShell>
-      <PageHero
-        eyebrow="Fonctionnalités"
-        title="Tout ce dont vous avez besoin pour prendre l'avantage"
-        description="Une plateforme complète pour analyser, suivre et décider — sans jongler entre dix outils."
-      />
+      <PageHero eyebrow={t("eyebrow")} title={t("title")} description={t("description")} />
 
       <Container className="flex flex-col gap-16 pb-20 sm:gap-20 sm:pb-28">
-        {FEATURES_DETAIL.map((feature, index) => {
+        {featuresDetail.map((feature, index) => {
           const reversed = index % 2 === 1;
           return (
             <article
@@ -58,7 +57,7 @@ export default function FeaturesPage() {
                     <feature.icon className="h-9 w-9" strokeWidth={1.75} />
                   </div>
                   <span className="absolute bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium text-body-soft">
-                    Aperçu de l&apos;interface — bientôt disponible
+                    {t("previewLabel")}
                   </span>
                 </div>
               </div>
@@ -68,11 +67,10 @@ export default function FeaturesPage() {
 
         <div className="flex flex-col items-center gap-5 pt-4 text-center">
           <p className="max-w-md text-balance text-base leading-relaxed text-body">
-            Toutes ces fonctionnalités sont incluses dans un seul abonnement, sans palier ni
-            fonctionnalité verrouillée.
+            {t("footerNote")}
           </p>
           <Button href="/signup" size="lg">
-            Débutez pour 0,99&nbsp;€ <ButtonIcon>→</ButtonIcon>
+            {t("ctaLabel")} <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>
       </Container>

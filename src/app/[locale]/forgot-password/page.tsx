@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AuthHeader } from "@/components/layout/auth-header";
 import { MinimalFooter } from "@/components/layout/minimal-footer";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
 import { LoginTrustRow } from "@/components/auth/login-trust-row";
 import { AuthBackground } from "@/components/auth/auth-background";
 
-export const metadata: Metadata = {
-  title: "Mot de passe oublié — Polypips",
-  description: "Réinitialisez le mot de passe de votre compte Polypips.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Auth.ForgotPassword");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
   return (
     <>
       <AuthHeader />

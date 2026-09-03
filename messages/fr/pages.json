@@ -89,6 +89,197 @@
           ]
         }
       }
+    },
+    "Features": {
+      "metaTitle": "Fonctionnalités — Polypips",
+      "metaDescription": "Analyse IA Polymarket et Sport, marchés sélectionnés, Smart Wallet, Coach IA et statistiques : tout ce que propose Polypips.",
+      "eyebrow": "Fonctionnalités",
+      "title": "Tout ce dont vous avez besoin pour prendre l'avantage",
+      "description": "Une plateforme complète pour analyser, suivre et décider — sans jongler entre dix outils.",
+      "previewLabel": "Aperçu de l'interface — bientôt disponible",
+      "footerNote": "Toutes ces fonctionnalités sont incluses dans un seul abonnement, sans palier ni fonctionnalité verrouillée.",
+      "ctaLabel": "Débutez pour 0,99 €",
+      "items": {
+        "aiAnalysis": {
+          "eyebrow": "Analyse IA",
+          "title": "Polymarket et Sport, passés au crible par l'IA",
+          "description": "Déposez une capture d'écran ou collez le lien d'un marché Polymarket, ou décrivez un match sportif : l'IA analyse la question, les règles de résolution, les probabilités actuelles et les données disponibles pour vous proposer une décision argumentée.",
+          "points": [
+            "Décision (YES/NO ou vainqueur), probabilité estimée et score d'opportunité",
+            "Explication détaillée des facteurs pris en compte, en langage clair",
+            "Fournie à titre informatif — la décision finale vous appartient toujours"
+          ]
+        },
+        "selectedMarkets": {
+          "eyebrow": "Marchés sélectionnés",
+          "title": "Une sélection resserrée, chaque jour",
+          "description": "Polypips scanne en continu les marchés Polymarket disponibles et vous présente une sélection resserrée, accompagnée du raisonnement de l'IA derrière chaque choix — pas une liste brute de tous les marchés existants.",
+          "points": [
+            "Sélection actualisée plusieurs fois par jour",
+            "Raisonnement affiché pour chaque marché retenu",
+            "Filtrable pour se concentrer sur les catégories qui vous intéressent"
+          ]
+        },
+        "copyTrading": {
+          "eyebrow": "Smart Wallet",
+          "title": "Suivez les portefeuilles qui vous intéressent",
+          "description": "Recherchez une adresse Polymarket et suivez-la en un clic : Smart Wallet vous notifie de ses nouvelles positions, en pure observation — vos fonds ne sont jamais engagés ni déplacés.",
+          "points": [
+            "Recherche manuelle par adresse, suivi et arrêt du suivi à tout moment",
+            "Notifications dès qu'un portefeuille suivi ouvre une nouvelle position",
+            "Aucun ordre réel n'est jamais transmis en votre nom — observation uniquement"
+          ]
+        },
+        "aiCoach": {
+          "eyebrow": "Coach IA",
+          "title": "Un assistant pour poser vos questions",
+          "description": "Posez vos questions sur un marché, une analyse ou une stratégie à notre assistant conversationnel, qui s'appuie sur le contexte de votre compte pour répondre simplement, sans jargon inutile.",
+          "points": [
+            "Réponses contextualisées à vos analyses et suivis",
+            "Historique de conversation conservé d'une session à l'autre",
+            "Disponible directement depuis le tableau de bord"
+          ]
+        },
+        "stats": {
+          "eyebrow": "Statistiques",
+          "title": "Suivez vos décisions dans le temps",
+          "description": "Retrouvez votre activité, la répartition de vos décisions par catégorie et l'évolution de votre performance simulée, pour identifier ce qui fonctionne pour vous.",
+          "points": [
+            "Répartition des décisions par catégorie de marché",
+            "Évolution de la performance simulée dans le temps",
+            "Historique complet de vos analyses passées"
+          ]
+        }
+      }
+    },
+    "HowItWorks": {
+      "metaTitle": "Comment ça marche — Polypips",
+      "metaDescription": "De l'inscription au suivi de vos performances, le parcours Polypips en 4 étapes.",
+      "eyebrow": "Processus",
+      "title": "Comment ça marche ?",
+      "description": "De l'inscription au suivi de vos performances, en quatre étapes claires.",
+      "stepLabel": "Étape {number}",
+      "ctaLabel": "Débutez pour 0,99 €",
+      "steps": {
+        "create": {
+          "title": "Créez votre compte",
+          "description": "Inscrivez-vous en quelques secondes avec votre email ou votre compte Google, puis choisissez votre offre."
+        },
+        "choose": {
+          "title": "Choisissez vos marchés et vos suivis",
+          "description": "Sélectionnez les marchés Polymarket ou les matchs sportifs qui vous intéressent, et suivez les portefeuilles Smart Wallet de votre choix."
+        },
+        "receive": {
+          "title": "Recevez vos analyses IA",
+          "description": "Obtenez une décision argumentée, une probabilité estimée et une explication détaillée pour chaque marché ou match analysé."
+        },
+        "track": {
+          "title": "Suivez vos performances",
+          "description": "Retrouvez l'historique de vos décisions et l'évolution de votre performance simulée directement depuis votre tableau de bord."
+        }
+      }
+    },
+    "Developers": {
+      "metaTitle": "API — Polypips",
+      "metaDescription": "L'API publique Polypips est en cours de développement, disponible prochainement.",
+      "eyebrow": "API",
+      "title": "L'API publique Polypips",
+      "description": "Intégrez les analyses et les données de marché de Polypips directement dans vos propres outils.",
+      "comingSoonBanner": "API en cours de développement — disponible prochainement.",
+      "capabilities": {
+        "aiAnalyses": {
+          "title": "Analyses IA",
+          "description": "Récupérer une décision, une probabilité estimée et une explication pour un marché ou un match donné."
+        },
+        "marketData": {
+          "title": "Données de marché",
+          "description": "Accéder à la sélection de marchés établie par l'IA et à leurs métadonnées (catégorie, échéance, probabilité)."
+        },
+        "smartWalletActivity": {
+          "title": "Activité Smart Wallet",
+          "description": "Consulter l'activité des portefeuilles suivis, pour intégrer un signal externe dans vos propres outils."
+        }
+      },
+      "checklist": [
+        "Authentification par clé d'API",
+        "Endpoints REST documentés",
+        "Quotas alignés sur votre abonnement Polypips"
+      ],
+      "notifyHeading": "Soyez averti(e) dès son ouverture",
+      "notifyDescription": "Écrivez-nous et nous vous préviendrons personnellement dès que l'API sera disponible.",
+      "notifyButton": "Être notifié par email",
+      "mailtoSubject": "Notification API Polypips",
+      "mailtoBody": "Bonjour,\n\nJe souhaite être notifié(e) de la disponibilité de l'API Polypips.\n\nMon adresse email : "
+    },
+    "Support": {
+      "metaTitle": "Support — Polypips",
+      "metaDescription": "Questions fréquentes sur la facturation, le suivi de wallets et le fonctionnement de l'IA.",
+      "eyebrow": "Support",
+      "title": "Centre d'aide",
+      "description": "Les questions les plus fréquentes sur Polypips — et comment nous contacter si vous ne trouvez pas votre réponse.",
+      "noAnswerHeading": "Vous ne trouvez pas votre réponse ?",
+      "chatHint": "ou la bulle de chat en bas à droite",
+      "items": {
+        "discoveryOffer": {
+          "question": "Comment fonctionne l'offre découverte ?",
+          "answer": "L'offre découverte donne un accès complet à Polypips pendant 3 jours pour 0,99 €. Sauf résiliation avant la fin de cette période, elle se transforme automatiquement en abonnement Pro à 29,99 € par mois."
+        },
+        "cancelSubscription": {
+          "question": "Comment annuler mon abonnement ?",
+          "answer": "Depuis Paramètres → Abonnement, cliquez sur « Annuler mon abonnement ». L'annulation prend effet à la fin de la période déjà payée — aucun engagement de durée n'est requis."
+        },
+        "paymentMethods": {
+          "question": "Quels moyens de paiement sont acceptés ?",
+          "answer": "Les paiements sont traités par Stripe et acceptent les principales cartes bancaires. Polypips ne stocke jamais vos coordonnées de carte bancaire."
+        },
+        "connectWallet": {
+          "question": "Dois-je connecter mon propre portefeuille crypto à Polypips ?",
+          "answer": "Non. Polypips ne vous demande jamais votre clé privée ni un accès à un portefeuille réel. Le suivi de portefeuilles (« Smart Wallet ») se fait uniquement en consultant des adresses publiques et leur activité on-chain, déjà visibles par n'importe qui."
+        },
+        "howAiWorks": {
+          "question": "Comment fonctionne l'analyse IA ?",
+          "answer": "Vous déposez une capture d'écran d'un marché Polymarket (ou décrivez un match sportif) : l'IA analyse la question, les règles de résolution, les données disponibles et vous propose une décision, une probabilité estimée et une explication. C'est une estimation informative, pas une garantie de résultat."
+        },
+        "copyTradingReal": {
+          "question": "Le Copy Trading exécute-t-il de vrais ordres pour moi ?",
+          "answer": "Non, jamais. Smart Wallet fonctionne exclusivement en observation : vous recherchez et suivez les portefeuilles de votre choix pour être notifié de leurs nouvelles positions, sans qu'aucun ordre réel ne soit jamais transmis en votre nom."
+        },
+        "financialAdvice": {
+          "question": "Les analyses de Polypips sont-elles un conseil financier ?",
+          "answer": "Non. Les analyses sont fournies à titre strictement informatif et éducatif. Elles ne constituent ni un conseil en investissement, ni une recommandation personnalisée. Vous restez seul responsable de vos décisions."
+        },
+        "forgotPassword": {
+          "question": "J'ai oublié mon mot de passe, que faire ?",
+          "answer": "Depuis la page de connexion, cliquez sur « Mot de passe oublié » et suivez les instructions envoyées par email pour en définir un nouveau."
+        },
+        "deleteAccount": {
+          "question": "Comment supprimer mon compte ?",
+          "answer": "Depuis Paramètres → Profil, la section « Zone danger » permet de demander la suppression de votre compte. Notre équipe vous contacte ensuite par email pour confirmer et finaliser la suppression."
+        },
+        "contactSupport": {
+          "question": "Comment contacter le support ?",
+          "answer": "Écrivez-nous à l'adresse indiquée en bas de cette page, ou utilisez la bulle de chat en bas à droite de l'écran. Nous répondons du lundi au vendredi."
+        }
+      }
+    },
+    "Blog": {
+      "metaTitle": "Blog — Polypips",
+      "metaDescription": "Analyses de marché, Smart Wallet et bases de l'IA appliquée aux paris et aux prediction markets.",
+      "eyebrow": "Blog",
+      "title": "Le blog Polypips",
+      "description": "Des articles informatifs sur les prediction markets, le suivi de portefeuilles et l'analyse IA — pas de promesses, juste des explications.",
+      "readMinutesLabel": "min de lecture",
+      "backToBlog": "Retour au blog",
+      "articleFallbackTitle": "Article"
+    },
+    "Guides": {
+      "metaTitle": "Guides — Polypips",
+      "metaDescription": "Des guides pas à pas pour bien démarrer, suivre un wallet et utiliser le Coach IA.",
+      "eyebrow": "Guides",
+      "title": "Guides pratiques",
+      "description": "Des tutoriels pas à pas pour tirer le meilleur de Polypips.",
+      "backToGuides": "Retour aux guides",
+      "guideFallbackTitle": "Guide"
     }
   }
 }

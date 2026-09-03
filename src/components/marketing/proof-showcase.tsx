@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
   ArrowDownRight,
@@ -17,10 +18,14 @@ import {
   PROOF_PHONES,
   PROOF_PILLS,
   PROOF_STATS,
-  type PhoneScreen,
+  type PhoneScreenData,
   type ProofPhone,
 } from "@/lib/data/proof";
 import { cn } from "@/lib/utils";
+
+/** Shape of the `Proof.phones.<id>` translation object — every field is a
+ * plain string, keyed identically to messages/<locale>/marketing.json. */
+type ProofPhoneText = Record<string, string>;
 
 function MiniSparkline({ className }: { className?: string }) {
   return (
@@ -73,22 +78,28 @@ function ScreenTabs({
   );
 }
 
-function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
+function PhoneScreenContent({
+  screen,
+  text,
+}: {
+  screen: PhoneScreenData;
+  text: ProofPhoneText;
+}) {
   if (screen.kind === "market-analysis") {
     return (
       <div className="flex flex-col gap-2.5">
-        <ScreenTabs active={screen.tab} items={["Analyse IA", "Smart Money"]} />
+        <ScreenTabs active={text.tabAi} items={[text.tabAi, text.tabSmartMoney]} />
 
         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
           <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-            Question analysée
+            {text.questionLabel}
           </p>
           <p className="mt-1 text-[11px] font-medium leading-snug text-white/85">
-            {screen.question}
+            {text.question}
           </p>
           <span className="mt-2 inline-flex items-center gap-1 text-[9.5px] font-medium text-white/45">
             <span className="h-1 w-1 rounded-full bg-brand-400" />
-            {screen.tag}
+            {text.tag}
           </span>
         </div>
 
@@ -96,7 +107,7 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-                Décision IA
+                {text.decisionLabel}
               </p>
               <p className="mt-1 text-lg font-bold text-emerald-400">
                 {screen.decision}
@@ -104,7 +115,7 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
             </div>
             <div className="text-right">
               <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-                Probabilité
+                {text.probabilityLabel}
               </p>
               <p className="mt-1 text-lg font-bold text-white">
                 {screen.probability}%
@@ -116,7 +127,7 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
           <div className="flex items-center justify-between">
             <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-              Score d&apos;opportunité
+              {text.scoreLabel}
             </p>
             <p className="text-[11px] font-bold text-white">
               {screen.opportunityScore}/100
@@ -130,12 +141,12 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
           </div>
           <span className="mt-2 inline-flex items-center gap-1 text-[9.5px] font-medium text-white/45">
             <ShieldCheck className="h-3 w-3 text-emerald-400" />
-            {screen.confidenceLabel}
+            {text.confidenceLabel}
           </span>
         </div>
 
         <div className="mt-1 rounded-full bg-emerald-500 py-2 text-center text-[10.5px] font-semibold text-white">
-          {screen.cta}
+          {text.cta}
         </div>
       </div>
     );
@@ -144,17 +155,17 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
   if (screen.kind === "history") {
     return (
       <div className="flex flex-col gap-2.5">
-        <ScreenTabs active="Tous" items={["Tous", "Gagnantes"]} />
+        <ScreenTabs active={text.tabAll} items={[text.tabAll, text.tabWinning]} />
 
         <div className="flex flex-col gap-2">
-          {screen.items.map((item) => (
+          {screen.items.map((item, i) => (
             <div
-              key={item.match}
+              key={i}
               className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-2.5"
             >
               <div className="flex flex-col gap-1">
                 <p className="text-[10px] font-medium leading-snug text-white/85">
-                  {item.match}
+                  {text[`item${i + 1}Match`]}
                 </p>
                 <p
                   className={cn(
@@ -174,7 +185,9 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
                 >
                   {item.amount}
                 </p>
-                <p className="text-[9px] text-white/35">{item.date}</p>
+                <p className="text-[9px] text-white/35">
+                  {text[`item${i + 1}Date`]}
+                </p>
               </div>
             </div>
           ))}
@@ -188,17 +201,17 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between rounded-full border border-white/15 px-3 py-1.5">
           <span className="text-[10px] font-medium text-white/70">
-            {screen.period}
+            {text.period}
           </span>
           <ChevronDown className="h-3 w-3 text-white/40" />
         </div>
 
         <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
           <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-            {screen.totalGainLabel}
+            {text.totalGainLabel}
           </p>
           <p className="mt-1 text-2xl font-bold text-white">
-            {screen.totalGain}
+            {text.totalGain}
           </p>
           <MiniSparkline className="mt-2" />
         </div>
@@ -206,13 +219,13 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
         <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-3">
           {screen.stats.map((stat, i) => (
             <div
-              key={stat.label}
+              key={stat.key}
               className={cn(
                 "flex items-center justify-between",
                 i > 0 && "border-t border-white/10 pt-2"
               )}
             >
-              <span className="text-[10.5px] text-white/50">{stat.label}</span>
+              <span className="text-[10.5px] text-white/50">{text[stat.key]}</span>
               <span className="text-[11px] font-semibold text-white">
                 {stat.value}
               </span>
@@ -246,17 +259,20 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
           </div>
         </div>
 
-        <ScreenTabs active="Résumé" items={["Résumé", "Probabilités", "Contexte"]} />
+        <ScreenTabs
+          active={text.tabSummary}
+          items={[text.tabSummary, text.tabProbabilities, text.tabContext]}
+        />
 
         <p className="rounded-xl border border-white/10 bg-white/[0.04] p-3 text-[10.5px] leading-snug text-white/75">
-          {screen.analysisText}
+          {text.analysisText}
         </p>
 
         <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.04] p-3">
           {screen.probabilities.map((p) => (
-            <div key={p.label} className="flex flex-col gap-1">
+            <div key={p.key} className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-[10px]">
-                <span className="text-white/60">{p.label}</span>
+                <span className="text-white/60">{text[p.key]}</span>
                 <span className="font-semibold text-white">{p.percent}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
@@ -280,24 +296,24 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
       <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2.5">
         <div className="flex items-center justify-between">
           <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-            {screen.allocationLabel}
+            {text.allocationLabel}
           </p>
           <ChevronRight className="h-3 w-3 text-white/30" />
         </div>
         <p className="mt-1 text-xl font-bold text-emerald-400">
-          {screen.allocationValue}
+          {text.allocationValue}
         </p>
-        <p className="text-[9.5px] text-white/45">{screen.allocationContext}</p>
+        <p className="text-[9.5px] text-white/45">{text.allocationContext}</p>
         <MiniSparkline className="mt-1.5 h-6" />
       </div>
 
       <p className="text-[9px] font-semibold uppercase tracking-wide text-white/40">
-        Mouvements clés
+        {text.movementsLabel}
       </p>
       <div className="flex flex-col gap-1.5">
         {screen.movements.map((m) => (
           <div
-            key={m.label}
+            key={m.key}
             className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-2"
           >
             <div className="flex items-center gap-1.5">
@@ -314,7 +330,7 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
                 )}
               </span>
               <span className="text-[9.5px] font-medium leading-snug text-white/80">
-                {m.label}
+                {text[m.key]}
               </span>
             </div>
             <span
@@ -332,7 +348,7 @@ function PhoneScreenContent({ screen }: { screen: PhoneScreen }) {
   );
 }
 
-function PhoneMockup({ phone }: { phone: ProofPhone }) {
+function PhoneMockup({ phone, text }: { phone: ProofPhone; text: ProofPhoneText }) {
   return (
     <div className="w-[196px] shrink-0 overflow-hidden rounded-[32px] border-[6px] border-black bg-black shadow-[0_20px_45px_-16px_rgba(18,5,7,0.35)]">
       <div className="flex h-[446px] flex-col overflow-hidden rounded-[26px] bg-[#160b0c]">
@@ -353,27 +369,28 @@ function PhoneMockup({ phone }: { phone: ProofPhone }) {
         </div>
 
         <h3 className="px-3.5 pb-2.5 pt-2 font-display text-[13px] font-bold text-white">
-          {phone.appTitle}
+          {text.appTitle}
         </h3>
 
         <div className="flex-1 overflow-hidden px-3.5 pb-3.5">
-          <PhoneScreenContent screen={phone.screen} />
+          <PhoneScreenContent screen={phone.screen} text={text} />
         </div>
       </div>
     </div>
   );
 }
 
-function ProofResultCard({ phone }: { phone: ProofPhone }) {
+function ProofResultCard({ phone, text }: { phone: ProofPhone; text: ProofPhoneText }) {
+  const t = useTranslations("Proof");
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   return (
     <div className="flex w-[196px] shrink-0 flex-col gap-1.5">
-      <p className="text-[13px] font-semibold text-ink">{phone.resultHeadline}</p>
+      <p className="text-[13px] font-semibold text-ink">{text.resultHeadline}</p>
       <p className="font-display text-[26px] font-bold leading-none text-brand-500">
-        {phone.resultGain}
+        {text.resultGain}
       </p>
-      <p className="text-xs text-body-soft">{phone.resultContext}</p>
+      <p className="text-xs text-body-soft">{text.resultContext}</p>
 
       <div className="relative mt-1.5 flex items-center justify-between">
         <span className="flex items-center gap-2">
@@ -383,11 +400,11 @@ function ProofResultCard({ phone }: { phone: ProofPhone }) {
               phone.avatarGradient
             )}
           />
-          <span className="text-sm font-medium text-body">{phone.handle}</span>
+          <span className="text-sm font-medium text-body">{text.handle}</span>
         </span>
         <button
           type="button"
-          aria-label={`Lire le témoignage de ${phone.handle}`}
+          aria-label={t("watchTestimonial", { handle: text.handle })}
           onClick={() => {
             setShowComingSoon(true);
             window.setTimeout(() => setShowComingSoon(false), 2200);
@@ -399,7 +416,7 @@ function ProofResultCard({ phone }: { phone: ProofPhone }) {
 
         {showComingSoon && (
           <div className="absolute right-0 top-11 z-10 animate-fade-up whitespace-nowrap rounded-full bg-ink-solid px-3 py-1.5 text-[11px] font-semibold text-white shadow-lg">
-            Vidéo bientôt disponible
+            {t("videoComingSoon")}
           </div>
         )}
       </div>
@@ -408,6 +425,7 @@ function ProofResultCard({ phone }: { phone: ProofPhone }) {
 }
 
 export function ProofShowcase() {
+  const t = useTranslations("Proof");
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const scrollBy = (direction: -1 | 1) => {
@@ -423,18 +441,15 @@ export function ProofShowcase() {
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
           <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-600">
             <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-            Preuves &amp; résultats
+            {t("eyebrow")}
           </span>
           <h2 className="font-display text-balance text-3xl font-semibold leading-[1.15] tracking-tight text-ink sm:text-4xl lg:text-[2.75rem]">
-            Polypips en action :
+            {t("title1")}
             <br />
-            <span className="text-brand-500">
-              des analyses qui font la différence
-            </span>
+            <span className="text-brand-500">{t("title2")}</span>
           </h2>
           <p className="text-balance text-base leading-relaxed text-body sm:text-lg">
-            Découvrez comment nos utilisateurs prennent de meilleures
-            décisions et maximisent leurs gains grâce à nos analyses IA.
+            {t("description")}
           </p>
         </div>
 
@@ -449,10 +464,10 @@ export function ProofShowcase() {
               </span>
               <span className="flex flex-col">
                 <span className="font-display text-xl font-bold text-ink">
-                  {stat.value}
+                  {t(`stats.${stat.id}.value`)}
                 </span>
                 <span className="text-xs font-medium text-body-soft">
-                  {stat.label}
+                  {t(`stats.${stat.id}.label`)}
                 </span>
               </span>
             </div>
@@ -463,7 +478,7 @@ export function ProofShowcase() {
           <button
             type="button"
             onClick={() => scrollBy(-1)}
-            aria-label="Précédent"
+            aria-label={t("prev")}
             className="absolute left-2 top-[229px] z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_8px_20px_-6px_rgba(18,5,7,0.18)] transition-all duration-150 ease-out hover:scale-105 active:scale-95 sm:flex"
           >
             <ChevronLeft className="h-4.5 w-4.5" />
@@ -471,7 +486,7 @@ export function ProofShowcase() {
           <button
             type="button"
             onClick={() => scrollBy(1)}
-            aria-label="Suivant"
+            aria-label={t("next")}
             className="absolute right-2 top-[229px] z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-ink shadow-[0_8px_20px_-6px_rgba(18,5,7,0.18)] transition-all duration-150 ease-out hover:scale-105 active:scale-95 sm:flex"
           >
             <ChevronRight className="h-4.5 w-4.5" />
@@ -481,15 +496,18 @@ export function ProofShowcase() {
             ref={scrollerRef}
             className="-mx-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-6 pb-2 scroll-pl-6 scroll-pr-6 [scrollbar-width:none] sm:px-[56px] sm:scroll-pl-[56px] sm:scroll-pr-[56px] lg:-mx-8 lg:px-[56px] lg:scroll-pl-[56px] lg:scroll-pr-[56px] [&::-webkit-scrollbar]:hidden"
           >
-            {PROOF_PHONES.map((phone) => (
-              <div
-                key={phone.id}
-                className="flex shrink-0 snap-start flex-col items-center gap-5"
-              >
-                <PhoneMockup phone={phone} />
-                <ProofResultCard phone={phone} />
-              </div>
-            ))}
+            {PROOF_PHONES.map((phone) => {
+              const text = t.raw(`phones.${phone.id}`) as ProofPhoneText;
+              return (
+                <div
+                  key={phone.id}
+                  className="flex shrink-0 snap-start flex-col items-center gap-5"
+                >
+                  <PhoneMockup phone={phone} text={text} />
+                  <ProofResultCard phone={phone} text={text} />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -500,7 +518,7 @@ export function ProofShowcase() {
               className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-body"
             >
               <pill.icon className="h-4 w-4 text-brand-500" strokeWidth={2.25} />
-              {pill.label}
+              {t(`pills.${pill.id}`)}
             </span>
           ))}
         </div>

@@ -6,55 +6,60 @@ import {
 } from "@/components/ui/social-icons";
 import type { ComponentType } from "react";
 
+/** Structural data only — labels live in the `Nav` / `Footer` translation
+ * namespaces, keyed by `id`. */
 export const NAV_LINKS = [
-  { label: "Fonctionnalités", href: "#fonctionnalites" },
-  { label: "Tarifs", href: "#tarifs" },
-  { label: "À propos", href: "/about" },
-  { label: "FAQ", href: "#faq" },
-];
+  { id: "features", href: "#fonctionnalites" },
+  { id: "pricing", href: "#tarifs" },
+  { id: "about", href: "/about" },
+  { id: "faq", href: "#faq" },
+] as const;
 
 export type FooterColumn = {
-  title: string;
-  links: { label: string; href: string }[];
+  id: "product" | "resources" | "legal" | "company";
+  links: { id: string; href: string }[];
 };
 
 export const FOOTER_COLUMNS: FooterColumn[] = [
   {
-    title: "Produit",
+    id: "product",
     links: [
-      { label: "Fonctionnalités", href: "/features" },
-      { label: "Tarifs", href: "/pricing" },
-      { label: "Comment ça marche", href: "/how-it-works" },
-      { label: "Mises à jour", href: "/changelog" },
+      { id: "features", href: "/features" },
+      { id: "pricing", href: "/pricing" },
+      { id: "howItWorks", href: "/how-it-works" },
+      { id: "changelog", href: "/changelog" },
     ],
   },
   {
-    title: "Ressources",
+    id: "resources",
     links: [
-      { label: "Blog", href: "/blog" },
-      { label: "Guides", href: "/guides" },
-      { label: "API", href: "/developers" },
-      { label: "Support", href: "/support" },
+      { id: "blog", href: "/blog" },
+      { id: "guides", href: "/guides" },
+      { id: "api", href: "/developers" },
+      { id: "support", href: "/support" },
     ],
   },
   {
-    title: "Légal",
+    id: "legal",
     links: [
-      { label: "Conditions d'utilisation", href: "/terms" },
-      { label: "Politique de confidentialité", href: "/privacy" },
-      { label: "Mentions légales", href: "/legal" },
+      { id: "terms", href: "/terms" },
+      { id: "privacy", href: "/privacy" },
+      { id: "legal", href: "/legal" },
+      { id: "cookies", href: "/cookies" },
     ],
   },
   {
-    title: "Entreprise",
+    id: "company",
     links: [
-      { label: "À propos", href: "/about" },
-      { label: "Contact", href: "/contact" },
-      { label: "Partenaires", href: "/partners" },
+      { id: "about", href: "/about" },
+      { id: "contact", href: "/contact" },
+      { id: "partners", href: "/partners" },
     ],
   },
 ];
 
+// Platform names are proper nouns — identical in every locale, so they stay
+// as plain data rather than translation keys.
 export const SOCIAL_LINKS: {
   label: string;
   href: string;

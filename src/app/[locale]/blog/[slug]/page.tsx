@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { Container } from "@/components/ui/container";
 import { ContentBlocks } from "@/components/marketing/content-blocks";
@@ -18,7 +19,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const article = getBlogArticle(slug);
-  return { title: article ? `${article.title} — Polypips` : "Article — Polypips" };
+  const t = await getTranslations("Pages.Blog");
+  return { title: `${article ? article.title : t("articleFallbackTitle")} — Polypips` };
 }
 
 export default async function BlogArticlePage({
@@ -29,6 +31,7 @@ export default async function BlogArticlePage({
   const { slug } = await params;
   const article = getBlogArticle(slug);
   if (!article) notFound();
+  const t = await getTranslations("Pages.Blog");
 
   return (
     <MarketingPageShell>
@@ -38,7 +41,7 @@ export default async function BlogArticlePage({
             href="/blog"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-body transition-colors hover:text-brand-600"
           >
-            <ArrowLeft className="h-4 w-4" /> Retour au blog
+            <ArrowLeft className="h-4 w-4" /> {t("backToBlog")}
           </Link>
 
           <span className="mt-6 inline-flex w-fit items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-600">
@@ -48,7 +51,7 @@ export default async function BlogArticlePage({
             {article.title}
           </h1>
           <p className="mt-3 text-sm text-body-soft">
-            {article.date} · {article.readMinutes} min de lecture
+            {article.date} · {article.readMinutes} {t("readMinutesLabel")}
           </p>
 
           <div className="mt-8">

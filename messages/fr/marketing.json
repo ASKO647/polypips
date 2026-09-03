@@ -45,7 +45,8 @@
         "title": "Légal",
         "terms": "Conditions d'utilisation",
         "privacy": "Politique de confidentialité",
-        "legal": "Mentions légales"
+        "legal": "Mentions légales",
+        "cookies": "Gérer mes cookies"
       },
       "company": {
         "title": "Entreprise",
@@ -119,10 +120,10 @@
     "watchTestimonial": "Lire le témoignage de {handle}",
     "videoComingSoon": "Vidéo bientôt disponible",
     "stats": {
-      "precision": "Précision moyenne",
-      "markets": "Marchés analysés",
-      "users": "Utilisateurs actifs",
-      "analyses": "Analyses réalisées"
+      "precision": { "label": "Précision moyenne", "value": "92,2 %" },
+      "markets": { "label": "Marchés analysés", "value": "879" },
+      "users": { "label": "Utilisateurs actifs", "value": "+12 000" },
+      "analyses": { "label": "Analyses réalisées", "value": "+68 000" }
     },
     "pills": {
       "ai": "IA spécialisée marchés",
@@ -350,6 +351,22 @@
   "ComingSoon": {
     "badge": "Bientôt disponible",
     "backHome": "Retour à l'accueil"
+  },
+  "V2Badge": {
+    "label": "Nouveau · V2.0"
+  },
+  "V2Announcement": {
+    "title": "La V2.0 est maintenant disponible 🎉",
+    "description": "Le plus gros lancement depuis les débuts de Polypips : une nouvelle Analyse IA Sport, de vrais wallets Polymarket à suivre, une IA encore plus affûtée. Tout est déjà actif sur votre compte.",
+    "highlights": [
+      "Analyse IA Sport — recherchez 2 équipes, l'IA trouve leurs prochaines confrontations réelles",
+      "9 marchés Polymarket sélectionnés par l'IA, actualisés toutes les 12h",
+      "Smart Wallet — recherchez et suivez n'importe quel portefeuille Polymarket",
+      "Notification instantanée dès qu'un wallet suivi ouvre une nouvelle position",
+      "Coach IA qui connaît tout l'historique de vos analyses",
+      "Historique complet de vos pronostics sport, accessible à tout moment"
+    ],
+    "cta": "Essayer la V2.0"
   },
   "LanguageSelector": {
     "fr": "Français",

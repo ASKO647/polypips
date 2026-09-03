@@ -1,9 +1,11 @@
 import { Gift } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Countdown } from "@/components/ui/countdown";
 import { getDefaultLaunchDeadline } from "@/lib/deadline";
 
-export function LaunchOfferCard() {
+export async function LaunchOfferCard() {
   const deadline = getDefaultLaunchDeadline();
+  const t = await getTranslations("Auth.LaunchOfferCard");
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-surface p-6">
@@ -12,21 +14,19 @@ export function LaunchOfferCard() {
           <Gift className="h-5 w-5" strokeWidth={2} />
         </span>
         <div>
-          <p className="text-sm font-semibold text-ink">Offre de lancement</p>
+          <p className="text-sm font-semibold text-ink">{t("badge")}</p>
           <p className="flex items-baseline gap-1.5">
             <span className="font-display text-2xl font-bold text-brand-600">
-              0,99 €
+              {t("price")}
             </span>
             <span className="text-xs font-medium text-body-soft">
-              pendant 3 jours
+              {t("duration")}
             </span>
           </p>
         </div>
       </div>
 
-      <p className="text-xs font-medium text-body-soft">
-        Puis 29,99&nbsp;€&nbsp;/&nbsp;mois pendant 30 jours
-      </p>
+      <p className="text-xs font-medium text-body-soft">{t("afterOffer")}</p>
 
       <Countdown deadline={deadline} variant="blocks" />
     </div>

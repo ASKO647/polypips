@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { Container } from "@/components/ui/container";
 import { Link } from "@/i18n/navigation";
@@ -17,7 +18,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const guide = getGuide(slug);
-  return { title: guide ? `${guide.title} — Polypips` : "Guide — Polypips" };
+  const t = await getTranslations("Pages.Guides");
+  return { title: `${guide ? guide.title : t("guideFallbackTitle")} — Polypips` };
 }
 
 export default async function GuidePage({
@@ -28,6 +30,7 @@ export default async function GuidePage({
   const { slug } = await params;
   const guide = getGuide(slug);
   if (!guide) notFound();
+  const t = await getTranslations("Pages.Guides");
 
   return (
     <MarketingPageShell>
@@ -37,7 +40,7 @@ export default async function GuidePage({
             href="/guides"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-body transition-colors hover:text-brand-600"
           >
-            <ArrowLeft className="h-4 w-4" /> Retour aux guides
+            <ArrowLeft className="h-4 w-4" /> {t("backToGuides")}
           </Link>
 
           <h1 className="mt-6 font-display text-3xl font-bold tracking-tight text-ink sm:text-4xl">

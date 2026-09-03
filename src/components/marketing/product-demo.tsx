@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Maximize2,
   Pause,
@@ -15,14 +16,14 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { CheckItem } from "@/components/ui/check-item";
 import { scrollToHashIfAlreadyThere } from "@/lib/hash-scroll";
 
-const DEMO_ITEMS = [
-  "Analyse d'un marché",
-  "Décision IA",
-  "Probabilité & Edge",
-  "Explication détaillée",
-  "Smart Money",
-  "Coach IA",
-];
+const DEMO_ITEM_KEYS = [
+  "analysis",
+  "decision",
+  "probability",
+  "explanation",
+  "smartMoney",
+  "coach",
+] as const;
 
 function MiniStat({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "brand" }) {
   return (
@@ -43,6 +44,7 @@ function MiniStat({ label, value, tone = "default" }: { label: string; value: st
 }
 
 function DemoPreview() {
+  const t = useTranslations("ProductDemo");
   const [showComingSoon, setShowComingSoon] = useState(false);
 
   return (
@@ -54,62 +56,62 @@ function DemoPreview() {
           <div className="flex items-center gap-2 text-white/70">
             <TrendingUp className="h-4 w-4 text-brand-400" strokeWidth={2} />
             <span className="text-xs font-semibold uppercase tracking-wide">
-              Analyse de marché
+              {t("marketAnalysisLabel")}
             </span>
           </div>
           <span className="flex items-center gap-1.5 text-[11px] font-medium text-white/40">
             <span className="h-1.5 w-1.5 animate-pulse-soft rounded-full bg-brand-500" />
-            En direct
+            {t("live")}
           </span>
         </div>
 
         <p className="max-w-sm text-[13px] font-medium leading-snug text-white/85 sm:text-sm">
-          « Le prix du BTC dépassera-t-il 120 000 $ avant le 31 décembre ? »
+          {t("question")}
         </p>
 
         <div className="flex flex-wrap gap-2 sm:gap-2.5">
           <div className="flex flex-col justify-center gap-0.5 rounded-xl bg-brand-500 px-3.5 py-2.5">
             <span className="text-[10px] font-medium uppercase tracking-wide text-white/70">
-              Décision IA
+              {t("aiDecisionLabel")}
             </span>
             <span className="font-display text-base font-bold text-white">
               YES
             </span>
           </div>
-          <MiniStat label="Probabilité IA" value="68%" tone="brand" />
-          <MiniStat label="Probabilité marché" value="51%" />
-          <MiniStat label="Edge" value="+17%" tone="brand" />
-          <MiniStat label="Score" value="87/100" />
+          <MiniStat label={t("aiProbLabel")} value="68%" tone="brand" />
+          <MiniStat label={t("marketProbLabel")} value="51%" />
+          <MiniStat label={t("edgeLabel")} value="+17%" tone="brand" />
+          <MiniStat label={t("scoreLabel")} value="87/100" />
         </div>
 
         <div className="hidden flex-1 grid-cols-2 gap-4 sm:grid">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
-              Facteurs favorables
+              {t("favorableFactorsLabel")}
             </p>
             <ul className="mt-2 space-y-1.5 text-xs text-white/70">
               <li className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                Accumulation on-chain soutenue
+                {t("favorableFactor1")}
               </li>
               <li className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                Momentum institutionnel haussier
+                {t("favorableFactor2")}
               </li>
             </ul>
           </div>
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40">
-              Risques principaux
+              {t("mainRisksLabel")}
             </p>
             <ul className="mt-2 space-y-1.5 text-xs text-white/70">
               <li className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-brand-400" />
-                Réglementation incertaine
+                {t("mainRisk1")}
               </li>
               <li className="flex items-center gap-1.5">
                 <span className="h-1 w-1 rounded-full bg-brand-400" />
-                Volatilité macro à court terme
+                {t("mainRisk2")}
               </li>
             </ul>
           </div>
@@ -131,7 +133,7 @@ function DemoPreview() {
 
       <button
         type="button"
-        aria-label="Lancer la démonstration"
+        aria-label={t("launchAria")}
         onClick={() => {
           setShowComingSoon(true);
           window.setTimeout(() => setShowComingSoon(false), 2600);
@@ -143,7 +145,7 @@ function DemoPreview() {
 
       {showComingSoon && (
         <div className="absolute left-1/2 top-1/2 mt-14 -translate-x-1/2 translate-y-6 animate-fade-up rounded-full bg-white px-4 py-2 text-xs font-semibold text-ink shadow-lg">
-          Vidéo bientôt disponible
+          {t("videoComingSoon")}
         </div>
       )}
     </div>
@@ -151,21 +153,22 @@ function DemoPreview() {
 }
 
 export function ProductDemo() {
+  const t = useTranslations("ProductDemo");
+
   return (
     <section id="demonstration" className="reveal py-10 sm:py-12">
       <Container className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div className="flex flex-col gap-6">
-          <Eyebrow>Voir Polypips en action</Eyebrow>
+          <Eyebrow>{t("eyebrow")}</Eyebrow>
           <h2 className="font-display text-balance text-3xl font-semibold leading-[1.15] tracking-tight text-ink sm:text-4xl">
-            Découvrez Polypips en 2 minutes
+            {t("title")}
           </h2>
           <p className="text-balance text-base leading-relaxed text-body sm:text-lg">
-            Voyez comment Polypips transforme un marché complexe en une
-            analyse claire.
+            {t("description")}
           </p>
           <ul className="grid grid-cols-2 gap-x-4 gap-y-3">
-            {DEMO_ITEMS.map((item) => (
-              <CheckItem key={item}>{item}</CheckItem>
+            {DEMO_ITEM_KEYS.map((key) => (
+              <CheckItem key={key}>{t(`items.${key}`)}</CheckItem>
             ))}
           </ul>
           <div>
@@ -178,7 +181,7 @@ export function ProductDemo() {
               <ButtonIcon>
                 <Play className="h-4 w-4 fill-current" />
               </ButtonIcon>
-              Voir la démo (2:15)
+              {t("ctaLabel")}
             </Button>
           </div>
         </div>

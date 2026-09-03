@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Footer } from "@/components/layout/footer";
@@ -11,6 +12,8 @@ export function ComingSoon({
   title: string;
   description: string;
 }) {
+  const t = useTranslations("ComingSoon");
+
   return (
     <>
       <SiteHeader />
@@ -18,7 +21,7 @@ export function ComingSoon({
         <Container className="flex min-h-[60vh] flex-col items-center justify-center gap-6 py-24 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide text-brand-600">
             <Sparkles className="h-3.5 w-3.5" strokeWidth={2.5} />
-            Bientôt disponible
+            {t("badge")}
           </span>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
             {title}
@@ -27,7 +30,7 @@ export function ComingSoon({
             {description}
           </p>
           <Button href="/" size="lg" className="mt-2">
-            Retour à l&apos;accueil
+            {t("backHome")}
           </Button>
         </Container>
       </main>

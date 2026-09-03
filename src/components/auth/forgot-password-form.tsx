@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   AlertCircle,
@@ -15,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
 export function ForgotPasswordForm() {
+  const t = useTranslations("Auth.ForgotPassword");
+  const tAuth = useTranslations("Auth");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,18 +44,18 @@ export function ForgotPasswordForm() {
       // keep it that way even on our own error handling below.
       if (resetError) {
         if (resetError.code === "email_address_invalid") {
-          setError("Adresse email invalide.");
+          setError(t("invalidEmail"));
         } else if (resetError.code === "over_email_send_rate_limit") {
-          setError("Trop de tentatives. Merci de réessayer dans quelques minutes.");
+          setError(t("rateLimited"));
         } else {
-          setError("Une erreur est survenue. Merci de réessayer.");
+          setError(tAuth("errorGeneric"));
         }
         return;
       }
 
       setSuccess(true);
     } catch {
-      setError("Une erreur est survenue. Merci de réessayer.");
+      setError(tAuth("errorGeneric"));
     } finally {
       setSubmitting(false);
     }
@@ -71,12 +74,10 @@ export function ForgotPasswordForm() {
       </div>
 
       <h2 className="mt-6 text-center font-display text-2xl font-semibold text-ink">
-        {success ? "Email envoyé !" : "Mot de passe oublié ?"}
+        {success ? t("titleSuccess") : t("titleIdle")}
       </h2>
       <p className="mt-1.5 text-center text-sm text-body">
-        {success
-          ? "Vérifiez votre boîte de réception (et vos spams) pour réinitialiser votre mot de passe."
-          : "Pas de souci. Entrez votre adresse e-mail, on vous envoie un lien pour réinitialiser votre mot de passe."}
+        {success ? t("descriptionSuccess") : t("descriptionIdle")}
       </p>
 
       {error && (
@@ -90,7 +91,7 @@ export function ForgotPasswordForm() {
         <form className="mt-7 flex flex-col gap-5" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-2">
             <label htmlFor="forgot-email" className="text-sm font-semibold text-ink">
-              Adresse e-mail
+              {t("emailLabel")}
             </label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-body-soft" />
@@ -98,7 +99,7 @@ export function ForgotPasswordForm() {
                 id="forgot-email"
                 type="email"
                 autoComplete="email"
-                placeholder="vous@email.com"
+                placeholder={t("emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-12 w-full rounded-xl border border-border-strong bg-surface pl-11 pr-4 text-sm text-ink placeholder:text-body-soft/70 outline-none transition-colors focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
@@ -110,7 +111,7 @@ export function ForgotPasswordForm() {
             {submitting ? (
               <Loader2 className="h-4.5 w-4.5 animate-spin" />
             ) : (
-              "Envoyer le lien de réinitialisation →"
+              t("submit")
             )}
           </Button>
         </form>
@@ -119,7 +120,7 @@ export function ForgotPasswordForm() {
       <div className="my-6 flex items-center gap-4">
         <span className="h-px flex-1 bg-border" />
         <span className="text-xs font-medium uppercase tracking-wide text-body-soft">
-          ou
+          {tAuth("or")}
         </span>
         <span className="h-px flex-1 bg-border" />
       </div>
@@ -129,19 +130,19 @@ export function ForgotPasswordForm() {
         className="flex h-12 w-full items-center justify-center gap-2.5 rounded-full border border-border-strong bg-surface text-sm font-semibold text-ink transition-colors hover:bg-ink/[0.03]"
       >
         <ArrowLeft className="h-4.5 w-4.5" />
-        Retour à la connexion
+        {t("backToLogin")}
       </Link>
 
       <p className="mt-6 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm text-body">
         <span className="inline-flex items-center gap-2">
           <HelpCircle className="h-4 w-4 shrink-0 text-brand-500" />
-          Vous avez d&apos;autres problèmes ?
+          {t("otherIssues")}
         </span>
         <Link
           href="/support"
           className="font-semibold text-brand-600 hover:text-brand-700"
         >
-          Contactez notre support
+          {t("contactSupport")}
         </Link>
       </p>
     </div>

@@ -1,15 +1,18 @@
+import { useTranslations } from "next-intl";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { HOW_IT_WORKS_STEPS } from "@/lib/data/how-it-works";
 
 export function HowItWorks() {
+  const t = useTranslations("HowItWorks");
+
   return (
     <section id="comment-ca-marche" className="reveal py-10 sm:py-12">
       <Container className="flex flex-col gap-12">
         <SectionHeading
-          eyebrow="Processus"
-          title="Comment ça marche ?"
-          description="De la question au marché jusqu'à la décision, en cinq étapes claires."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          description={t("description")}
         />
 
         {/* Desktop / tablet timeline */}
@@ -49,10 +52,10 @@ export function HowItWorks() {
                   />
                 </div>
                 <h3 className="relative mt-5 font-display text-[20px] font-bold text-ink">
-                  {step.title}
+                  {t(`steps.${step.id}.title`)}
                 </h3>
                 <p className="relative mt-2 text-[15px] leading-[1.6] text-body">
-                  {step.description}
+                  {t(`steps.${step.id}.description`)}
                 </p>
               </div>
             ))}
@@ -76,10 +79,10 @@ export function HowItWorks() {
                   {step.number}
                 </span>
                 <h3 className="mt-1 font-display text-base font-semibold text-ink">
-                  {step.title}
+                  {t(`steps.${step.id}.title`)}
                 </h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-body">
-                  {step.description}
+                  {t(`steps.${step.id}.description`)}
                 </p>
               </div>
             </div>

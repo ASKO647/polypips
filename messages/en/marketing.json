@@ -45,7 +45,8 @@
         "title": "Legal",
         "terms": "Terms of use",
         "privacy": "Privacy policy",
-        "legal": "Legal notice"
+        "legal": "Legal notice",
+        "cookies": "Manage cookies"
       },
       "company": {
         "title": "Company",
@@ -119,10 +120,10 @@
     "watchTestimonial": "Read {handle}'s testimonial",
     "videoComingSoon": "Video coming soon",
     "stats": {
-      "precision": "Average accuracy",
-      "markets": "Markets analyzed",
-      "users": "Active users",
-      "analyses": "Analyses run"
+      "precision": { "label": "Average accuracy", "value": "92.2%" },
+      "markets": { "label": "Markets analyzed", "value": "879" },
+      "users": { "label": "Active users", "value": "+12,000" },
+      "analyses": { "label": "Analyses run", "value": "+68,000" }
     },
     "pills": {
       "ai": "Specialized market AI",
@@ -350,6 +351,22 @@
   "ComingSoon": {
     "badge": "Coming soon",
     "backHome": "Back to home"
+  },
+  "V2Badge": {
+    "label": "New · V2.0"
+  },
+  "V2Announcement": {
+    "title": "V2.0 is here 🎉",
+    "description": "The biggest launch since Polypips started: a brand-new AI Sport Analysis, real Polymarket wallets to follow, and a sharper AI than ever. It's all already live on your account.",
+    "highlights": [
+      "AI Sport Analysis — search 2 teams, the AI finds their upcoming real matchups",
+      "9 AI-selected Polymarket markets, refreshed every 12 hours",
+      "Smart Wallet — look up and follow any Polymarket wallet",
+      "Instant notification the moment a followed wallet opens a new position",
+      "AI Coach that knows the full history of your analyses",
+      "Complete history of your sport picks, available anytime"
+    ],
+    "cta": "Try V2.0"
   },
   "LanguageSelector": {
     "fr": "Français",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
 export function SignOutButton({ className }: { className?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const t = useTranslations("Auth.SignOut");
 
   const handleSignOut = async () => {
     setLoading(true);
@@ -35,7 +37,7 @@ export function SignOutButton({ className }: { className?: string }) {
         className
       )}
     >
-      {loading ? "Déconnexion..." : "Se déconnecter"}
+      {loading ? t("loading") : t("cta")}
     </button>
   );
 }
