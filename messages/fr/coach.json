@@ -1,0 +1,46 @@
+{
+  "Coach": {
+    "metaTitle": "Coach IA — Polypips",
+    "changePlanLink": "Changer de plan →",
+    "headerTitle": "Coach IA",
+    "newConversationDefault": "Nouvelle conversation",
+    "historyButton": "Historique",
+    "removeContextAria": "Retirer le contexte",
+    "contextLabel": "Contexte : {question}",
+    "lockedMessage": "Débloquez le Coach IA — Débutez pour 0,99 €",
+    "lockedMessageCancelled": "Abonnement annulé — réabonnez-vous pour continuer à utiliser le Coach IA.",
+    "welcomeMessage": "Bonjour ! Je suis votre coach IA Polypips. Posez-moi une question sur vos analyses récentes.",
+    "errors": {
+      "invalid_input": "Message invalide.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
+      "ai_error": "Le service d'assistance IA est temporairement indisponible. Réessayez dans quelques instants.",
+      "limit_reached": "Vous avez atteint votre limite de messages Coach IA cette semaine.",
+      "subscription_required": "Le Coach IA est réservé aux abonnés. Débutez pour 0,99 € pour y accéder.",
+      "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
+      "unknown": "Une erreur inattendue est survenue. Réessayez."
+    },
+    "Sidebar": {
+      "newConversation": "Nouvelle conversation",
+      "empty": "Aucune conversation pour le moment."
+    },
+    "MobileHistory": {
+      "title": "Historique",
+      "closeAria": "Fermer",
+      "newConversation": "Nouvelle conversation",
+      "empty": "Aucune conversation pour le moment."
+    },
+    "ChatInput": {
+      "placeholder": "Posez votre question...",
+      "sendAria": "Envoyer",
+      "quickQuestions": {
+        "why-decision": "Pourquoi l'IA a pris cette décision ?",
+        "main-risks": "Quels sont les principaux risques ?",
+        "what-could-invalidate": "Qu'est-ce qui pourrait invalider cette analyse ?",
+        "compare-recent": "Compare mes analyses récentes."
+      }
+    },
+    "TypingIndicator": {
+      "ariaLabel": "Le coach IA écrit..."
+    }
+  }
+}

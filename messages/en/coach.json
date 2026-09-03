@@ -1,0 +1,46 @@
+{
+  "Coach": {
+    "metaTitle": "AI Coach — Polypips",
+    "changePlanLink": "Change plan →",
+    "headerTitle": "AI Coach",
+    "newConversationDefault": "New conversation",
+    "historyButton": "History",
+    "removeContextAria": "Remove context",
+    "contextLabel": "Context: {question}",
+    "lockedMessage": "Unlock the AI Coach — Get started for €0.99",
+    "lockedMessageCancelled": "Subscription cancelled — resubscribe to keep using the AI Coach.",
+    "welcomeMessage": "Hi! I'm your Polypips AI coach. Ask me anything about your recent analyses.",
+    "errors": {
+      "invalid_input": "Invalid message.",
+      "unauthorized": "Your session has expired. Sign in again and retry.",
+      "ai_error": "The AI assistance service is temporarily unavailable. Try again in a moment.",
+      "limit_reached": "You've reached your weekly AI Coach message limit.",
+      "subscription_required": "The AI Coach is reserved for subscribers. Get started for €0.99 to access it.",
+      "network_error": "Connection failed. Check your connection and try again.",
+      "unknown": "An unexpected error occurred. Please try again."
+    },
+    "Sidebar": {
+      "newConversation": "New conversation",
+      "empty": "No conversations yet."
+    },
+    "MobileHistory": {
+      "title": "History",
+      "closeAria": "Close",
+      "newConversation": "New conversation",
+      "empty": "No conversations yet."
+    },
+    "ChatInput": {
+      "placeholder": "Ask your question...",
+      "sendAria": "Send",
+      "quickQuestions": {
+        "why-decision": "Why did the AI make this decision?",
+        "main-risks": "What are the main risks?",
+        "what-could-invalidate": "What could invalidate this analysis?",
+        "compare-recent": "Compare my recent analyses."
+      }
+    },
+    "TypingIndicator": {
+      "ariaLabel": "The AI coach is typing..."
+    }
+  }
+}

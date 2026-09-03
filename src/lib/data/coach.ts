@@ -19,33 +19,16 @@ export type QuickQuestion = {
   label: string;
 };
 
-export const WELCOME_MESSAGE: Message = {
-  id: "welcome",
-  role: "assistant",
-  content:
-    "Bonjour ! Je suis votre coach IA Polypips. Posez-moi une question sur vos analyses récentes.",
-};
-
-/** Sent as real messages to the AI (with the usual analysis context
- * attached) — not canned responses. */
-export const QUICK_QUESTIONS: QuickQuestion[] = [
-  {
-    id: "why-decision",
-    label: "Pourquoi l'IA a pris cette décision ?",
-  },
-  {
-    id: "main-risks",
-    label: "Quels sont les principaux risques ?",
-  },
-  {
-    id: "what-could-invalidate",
-    label: "Qu'est-ce qui pourrait invalider cette analyse ?",
-  },
-  {
-    id: "compare-recent",
-    label: "Compare mes analyses récentes.",
-  },
-];
+/** Ids for the quick-suggestion chips in ChatInput — labels (sent as real
+ * messages to the AI, with the usual analysis context attached, not canned
+ * responses) live in "Coach.ChatInput.quickQuestions" so callers can build
+ * the localized QuickQuestion[] via t.raw(). */
+export const QUICK_QUESTION_IDS = [
+  "why-decision",
+  "main-risks",
+  "what-could-invalidate",
+  "compare-recent",
+] as const;
 
 export type CoachChatErrorCode =
   | "invalid_input"
@@ -56,18 +39,23 @@ export type CoachChatErrorCode =
   | "network_error"
   | "unknown";
 
-const COACH_ERROR_MESSAGES: Record<CoachChatErrorCode, string> = {
-  invalid_input: "Message invalide.",
-  unauthorized: "Votre session a expiré. Reconnectez-vous et réessayez.",
-  ai_error:
-    "Le service d'assistance IA est temporairement indisponible. Réessayez dans quelques instants.",
-  limit_reached:
-    "Vous avez atteint votre limite de messages Coach IA cette semaine.",
-  subscription_required: "Le Coach IA est réservé aux abonnés. Débutez pour 0,99 € pour y accéder.",
-  network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
-  unknown: "Une erreur inattendue est survenue. Réessayez.",
-};
+const KNOWN_ERROR_CODES: CoachChatErrorCode[] = [
+  "invalid_input",
+  "unauthorized",
+  "ai_error",
+  "limit_reached",
+  "subscription_required",
+  "network_error",
+];
 
-export function coachChatErrorMessage(code: string): string {
-  return COACH_ERROR_MESSAGES[code as CoachChatErrorCode] ?? COACH_ERROR_MESSAGES.unknown;
+type CoachTranslator = (key: string) => string;
+
+/** Error copy lives in "Coach.errors" — call with a translator scoped to
+ * "Coach". Codes the server sends that this UI doesn't recognize fall back
+ * to `errors.unknown`, same as before. */
+export function coachChatErrorMessage(code: string, t: CoachTranslator): string {
+  const key = KNOWN_ERROR_CODES.includes(code as CoachChatErrorCode)
+    ? (code as CoachChatErrorCode)
+    : "unknown";
+  return t(`errors.${key}`);
 }

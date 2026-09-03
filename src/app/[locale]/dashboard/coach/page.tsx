@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { CoachFlow } from "@/components/dashboard/coach/coach-flow";
 import { createClient } from "@/lib/supabase/server";
 import { fetchConversationSummaries } from "@/lib/supabase/coach";
@@ -9,9 +10,10 @@ import {
   isCancelledSubscription,
 } from "@/lib/supabase/subscriptions";
 
-export const metadata: Metadata = {
-  title: "Coach IA — Polypips",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Coach");
+  return { title: t("metaTitle") };
+}
 
 export default async function CoachPage({
   searchParams,

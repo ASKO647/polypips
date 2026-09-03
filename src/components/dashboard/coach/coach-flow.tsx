@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { History as HistoryIcon, Loader2, X } from "lucide-react";
 import { ChatInput } from "@/components/dashboard/coach/chat-input";
@@ -12,7 +13,6 @@ import { TypingIndicator } from "@/components/dashboard/coach/typing-indicator";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import {
   coachChatErrorMessage,
-  WELCOME_MESSAGE,
   type ConversationSummary,
   type Message,
   type QuickQuestion,
@@ -26,7 +26,10 @@ import { fetchConversationMessages } from "@/lib/supabase/coach";
 
 type FocusAnalysis = { id: string; question: string };
 
-function errorContentFor(error: unknown): React.ReactNode {
+function errorContentFor(
+  error: unknown,
+  t: (key: string) => string
+): React.ReactNode {
   if (error instanceof CoachChatError && error.code === "limit_reached") {
     return (
       <>
@@ -35,13 +38,14 @@ function errorContentFor(error: unknown): React.ReactNode {
           href="/dashboard/settings"
           className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
         >
-          Changer de plan →
+          {t("changePlanLink")}
         </Link>
       </>
     );
   }
   return coachChatErrorMessage(
-    error instanceof CoachChatError ? error.code : "unknown"
+    error instanceof CoachChatError ? error.code : "unknown",
+    t
   );
 }
 
@@ -58,13 +62,19 @@ export function CoachFlow({
    * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
   cancelled: boolean;
 }) {
+  const t = useTranslations("Coach");
+  const welcomeMessage: Message = {
+    id: "welcome",
+    role: "assistant",
+    content: t("welcomeMessage"),
+  };
   const [conversations, setConversations] = useState<ConversationSummary[]>(
     initialConversations
   );
   const [activeConversationId, setActiveConversationId] = useState<
     string | null
   >(null);
-  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
@@ -90,7 +100,7 @@ export function CoachFlow({
 
   const handleNewConversation = () => {
     setActiveConversationId(null);
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([welcomeMessage]);
     setInputValue("");
     setErrorMessage(null);
     setFocusAnalysis(null);
@@ -105,7 +115,7 @@ export function CoachFlow({
     try {
       const supabase = createClient();
       const msgs = await fetchConversationMessages(supabase, id);
-      setMessages(msgs.length > 0 ? msgs : [WELCOME_MESSAGE]);
+      setMessages(msgs.length > 0 ? msgs : [welcomeMessage]);
     } finally {
       setLoadingConversation(false);
     }
@@ -175,7 +185,7 @@ export function CoachFlow({
       }
       bumpConversation(result.conversationId, result.title);
     } catch (error) {
-      setErrorMessage(errorContentFor(error));
+      setErrorMessage(errorContentFor(error, t));
     } finally {
       setShowTyping(false);
       setSending(false);
@@ -199,9 +209,7 @@ export function CoachFlow({
         locked={!hasActiveSubscription}
         cancelled={cancelled}
         message={
-          cancelled
-            ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le Coach IA."
-            : "Débloquez le Coach IA — Débutez pour 0,99 €"
+          cancelled ? t("lockedMessageCancelled") : t("lockedMessage")
         }
         className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
         contentClassName="flex flex-1 flex-col overflow-hidden"
@@ -219,12 +227,12 @@ export function CoachFlow({
             </span>
             <div>
               <p className="font-display text-sm font-bold text-white">
-                Coach IA
+                {t("headerTitle")}
               </p>
               <p className="max-w-[220px] truncate text-[11px] text-white/40 sm:max-w-xs">
                 {activeConversation
                   ? activeConversation.title
-                  : "Nouvelle conversation"}
+                  : t("newConversationDefault")}
               </p>
             </div>
           </div>
@@ -234,7 +242,7 @@ export function CoachFlow({
             className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/60 transition-colors duration-150 hover:text-white lg:hidden"
           >
             <HistoryIcon className="h-3.5 w-3.5" />
-            Historique
+            {t("historyButton")}
           </button>
         </div>
 
@@ -256,12 +264,12 @@ export function CoachFlow({
         {focusAnalysis && !activeConversationId && (
           <div className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-xl border border-brand-500/20 bg-brand-500/[0.06] px-3.5 py-2.5 text-xs text-white/70 sm:mx-5">
             <span className="truncate">
-              Contexte : {focusAnalysis.question}
+              {t("contextLabel", { question: focusAnalysis.question })}
             </span>
             <button
               type="button"
               onClick={() => setFocusAnalysis(null)}
-              aria-label="Retirer le contexte"
+              aria-label={t("removeContextAria")}
               className="shrink-0 text-white/40 transition-colors hover:text-white"
             >
               <X className="h-3.5 w-3.5" />
