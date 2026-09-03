@@ -1,4 +1,9 @@
 {
+  "SubscriptionPage": {
+    "metaTitle": "Subscription — Polypips",
+    "title": "Subscription",
+    "description": "Choose the plan that fits you — the same full access to Polypips, with no feature locked behind a higher tier."
+  },
   "SubscriptionPlans": {
     "currentPlan": "Current plan",
     "cancelledNotice": "Your subscription is cancelled — access stays active until {date}.",

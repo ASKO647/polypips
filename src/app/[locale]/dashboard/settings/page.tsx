@@ -14,9 +14,10 @@ import {
   EMPTY_PROFILE_ACTIVITY_STATS,
 } from "@/lib/supabase/profile-activity";
 
-export const metadata: Metadata = {
-  title: "Profil — Polypips",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Profile.SettingsPage");
+  return { title: t("metaTitle") };
+}
 
 const MEMBER_SINCE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   day: "numeric",

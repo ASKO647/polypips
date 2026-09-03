@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type ComponentType, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   CheckCircle2,
   Camera,
@@ -104,11 +105,12 @@ function InlineActionButton({
  * external tool connections — clicking shows an honest "not built yet"
  * note instead of a button that silently does nothing. */
 function ComingSoonButton({ label }: { label: string }) {
+  const t = useTranslations("Profile.ProfileTab");
   const [showNote, setShowNote] = useState(false);
   return (
     <div className="flex shrink-0 flex-col items-end gap-1">
       <InlineActionButton onClick={() => setShowNote(true)}>{label}</InlineActionButton>
-      {showNote && <span className="text-[11px] text-dash-text-faint">Bientôt disponible</span>}
+      {showNote && <span className="text-[11px] text-dash-text-faint">{t("comingSoon")}</span>}
     </div>
   );
 }
@@ -189,12 +191,20 @@ function ActivityRow({
   );
 }
 
-const SUBSCRIPTION_STATUS_LABEL: Record<string, string> = {
-  trialing: "Essai",
-  active: "Actif",
-  past_due: "Paiement en échec",
-  canceled: "Terminé",
-};
+type ProfileTranslator = ReturnType<typeof useTranslations>;
+
+function getSubscriptionStatusLabel(
+  t: ProfileTranslator,
+  status: string
+): string | undefined {
+  const labels: Record<string, string> = {
+    trialing: t("subscription.statusTrialing"),
+    active: t("subscription.statusActive"),
+    past_due: t("subscription.statusPastDue"),
+    canceled: t("subscription.statusCanceled"),
+  };
+  return labels[status];
+}
 
 export function ProfileTab({
   email,
@@ -232,6 +242,7 @@ export function ProfileTab({
    * onOpenCancelModal's modal) just failed. */
   actionError: string | null;
 }) {
+  const t = useTranslations("Profile.ProfileTab");
   const [username, setUsername] = useState(initialUsername);
   const [pseudo, setPseudo] = useState(initialPseudo);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
@@ -273,7 +284,7 @@ export function ProfileTab({
       if (updateError) throw new Error(updateError.message);
       setSaved(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      setError(err instanceof Error ? err.message : t("personalInfo.genericError"));
     } finally {
       setSaving(false);
     }
@@ -299,11 +310,11 @@ export function ProfileTab({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Session expirée, reconnectez-vous.");
+      if (!user) throw new Error(t("avatarSessionExpired"));
       const newUrl = await uploadAvatar(supabase, user.id, file);
       setAvatarUrl(newUrl);
     } catch (err) {
-      setAvatarError(err instanceof Error ? err.message : "L'upload a échoué. Réessayez.");
+      setAvatarError(err instanceof Error ? err.message : t("avatarUploadFailed"));
     } finally {
       setAvatarUploading(false);
     }
@@ -318,11 +329,11 @@ export function ProfileTab({
     try {
       await setCurrency(next as CurrencyCode);
     } catch (err) {
-      setPrefError(err instanceof Error ? err.message : "Impossible d'enregistrer la devise.");
+      setPrefError(err instanceof Error ? err.message : t("preferences.currencyError"));
     }
   };
 
-  const referralLink = `polypips.app/ref/${pseudo.trim() || "vous"}`;
+  const referralLink = `polypips.app/ref/${pseudo.trim() || t("referral.fallbackPseudo")}`;
   const handleCopyReferral = async () => {
     try {
       await navigator.clipboard.writeText(`https://${referralLink}`);
@@ -340,9 +351,9 @@ export function ProfileTab({
     (subscription?.status === "active" || subscription?.status === "trialing") &&
     !subscription?.cancelAtPeriodEnd;
   const subscriptionBadgeLabel = subscription?.cancelAtPeriodEnd
-    ? "Annulé"
+    ? t("subscription.statusCancelledSoon")
     : subscription
-      ? SUBSCRIPTION_STATUS_LABEL[subscription.status]
+      ? getSubscriptionStatusLabel(t, subscription.status)
       : null;
 
   return (
@@ -357,7 +368,7 @@ export function ProfileTab({
                 type="button"
                 onClick={handleAvatarPick}
                 disabled={avatarUploading}
-                aria-label="Changer la photo de profil"
+                aria-label={t("changeAvatarAria")}
                 className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full border-2 border-dash-bg bg-dash-surface-strong text-dash-text-secondary transition-colors hover:text-dash-text disabled:pointer-events-none"
               >
                 {avatarUploading ? (
@@ -377,30 +388,30 @@ export function ProfileTab({
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-display text-lg font-bold text-dash-text">
-                  {username || "Utilisateur Polypips"}
+                  {username || t("defaultUsername")}
                 </span>
                 {currentPlan && currentPlan.id !== "decouverte" && (
                   <span className="rounded-full bg-brand-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-400">
-                    Premium
+                    {t("premiumBadge")}
                   </span>
                 )}
               </div>
               <span className="text-sm text-dash-text-tertiary">{email}</span>
               {memberSince && (
-                <span className="text-xs text-dash-text-quaternary">Membre depuis le {memberSince}</span>
+                <span className="text-xs text-dash-text-quaternary">{t("memberSince", { date: memberSince })}</span>
               )}
               <span className="mt-1 inline-flex w-fit items-center gap-1.5 text-xs font-medium text-emerald-400">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Compte vérifié
+                <CheckCircle2 className="h-3.5 w-3.5" /> {t("verifiedAccount")}
               </span>
             </div>
           </div>
           {avatarError && <p className="mt-3 text-xs text-rose-400">{avatarError}</p>}
         </div>
 
-        <Card title="Informations personnelles">
+        <Card title={t("personalInfo.title")}>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="profile-fullname" className="text-xs font-medium text-dash-text-tertiary">
-              Nom complet
+              {t("personalInfo.fullNameLabel")}
             </label>
             <input
               id="profile-fullname"
@@ -410,24 +421,24 @@ export function ProfileTab({
                 setUsername(e.target.value);
                 setSaved(false);
               }}
-              placeholder="Votre nom"
+              placeholder={t("personalInfo.fullNamePlaceholder")}
               className="rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-dash-border-strong focus:outline-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-dash-text-tertiary">Adresse e-mail</label>
+            <label className="text-xs font-medium text-dash-text-tertiary">{t("personalInfo.emailLabel")}</label>
             <div className="flex items-center gap-2 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-2.5">
               <span className="flex-1 truncate text-sm text-dash-text-secondary">{email}</span>
               <span className="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
-                Vérifié
+                {t("personalInfo.emailVerifiedBadge")}
               </span>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="profile-pseudo" className="text-xs font-medium text-dash-text-tertiary">
-              Pseudo
+              {t("personalInfo.pseudoLabel")}
             </label>
             <input
               id="profile-pseudo"
@@ -437,14 +448,14 @@ export function ProfileTab({
                 setPseudo(e.target.value);
                 setSaved(false);
               }}
-              placeholder="Votre pseudo"
+              placeholder={t("personalInfo.pseudoPlaceholder")}
               className="rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-dash-border-strong focus:outline-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="profile-language" className="text-xs font-medium text-dash-text-tertiary">
-              Langue
+              {t("personalInfo.languageLabel")}
             </label>
             <select
               id="profile-language"
@@ -452,15 +463,15 @@ export function ProfileTab({
               onChange={(e) => setLanguage(e.target.value)}
               className="rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text focus:border-dash-border-strong focus:outline-none sm:max-w-xs"
             >
-              <option value="fr">Français</option>
-              <option value="en">English</option>
+              <option value="fr">{t("personalInfo.languageFr")}</option>
+              <option value="en">{t("personalInfo.languageEn")}</option>
             </select>
           </div>
 
           <div className="flex flex-wrap items-center justify-end gap-3 pt-1">
             {saved && (
               <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-400">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Enregistré
+                <CheckCircle2 className="h-3.5 w-3.5" /> {t("personalInfo.saved")}
               </span>
             )}
             {error && <span className="text-xs text-rose-400">{error}</span>}
@@ -470,47 +481,47 @@ export function ProfileTab({
               disabled={saving || !dirty}
               className="rounded-full border border-rose-400/40 bg-rose-500/[0.06] px-5 py-2 text-sm font-semibold text-rose-300 transition-colors hover:border-rose-400/60 disabled:pointer-events-none disabled:opacity-40"
             >
-              {saving ? "Enregistrement..." : "Enregistrer les modifications"}
+              {saving ? t("personalInfo.saving") : t("personalInfo.save")}
             </button>
           </div>
         </Card>
 
-        <Card title="Sécurité">
+        <Card title={t("security.title")}>
           <SecurityRow
             icon={Lock}
-            label="Mot de passe"
+            label={t("security.passwordLabel")}
             value="••••••••••"
             action={<ChangePasswordButtonCompact email={email} />}
           />
           <SecurityRow
             icon={ShieldCheck}
-            label="Authentification à deux facteurs"
+            label={t("security.twoFactorLabel")}
             value={
               <span className={mfaEnabled ? "text-emerald-400" : "text-dash-text-quaternary"}>
-                {mfaEnabled ? "Activée" : "Non activée"}
+                {mfaEnabled ? t("security.twoFactorEnabled") : t("security.twoFactorDisabled")}
               </span>
             }
-            action={<ComingSoonButton label="Gérer" />}
+            action={<ComingSoonButton label={t("security.manage")} />}
           />
           <SecurityRow
             icon={Smartphone}
-            label="Sessions actives"
-            value="1 appareil connecté (celui-ci)"
-            action={<ComingSoonButton label="Voir" />}
+            label={t("security.activeSessionsLabel")}
+            value={t("security.activeSessionsValue")}
+            action={<ComingSoonButton label={t("security.view")} />}
           />
           <SecurityRow
             icon={GoogleIcon}
-            label="Connexion avec Google"
+            label={t("security.googleLabel")}
             value={
               <span className={googleConnected ? "text-emerald-400" : "text-dash-text-quaternary"}>
-                {googleConnected ? "Connecté" : "Non connecté"}
+                {googleConnected ? t("security.googleConnected") : t("security.googleNotConnected")}
               </span>
             }
-            action={googleConnected ? null : <ComingSoonButton label="Connecter" />}
+            action={googleConnected ? null : <ComingSoonButton label={t("security.connect")} />}
           />
         </Card>
 
-        <Card title="Notifications">
+        <Card title={t("notifications.title")}>
           {notificationPrefs.map((pref) => (
             <SettingsToggle
               key={pref.id}
@@ -521,29 +532,29 @@ export function ProfileTab({
           ))}
         </Card>
 
-        <Card title="Préférences">
+        <Card title={t("preferences.title")}>
           <PreferenceRow
             icon={Palette}
-            label="Thème"
-            description="Choisir votre thème d'affichage"
+            label={t("preferences.themeLabel")}
+            description={t("preferences.themeDescription")}
             control={
               <PreferenceSelect
                 value={theme}
                 onChange={handleThemeChange}
                 options={[
-                  { value: "dark", label: "Sombre" },
-                  { value: "light", label: "Clair" },
+                  { value: "dark", label: t("preferences.themeDark") },
+                  { value: "light", label: t("preferences.themeLight") },
                 ]}
               />
             }
           />
           <PreferenceRow
             icon={Coins}
-            label="Devise"
+            label={t("preferences.currencyLabel")}
             description={
               ratesUnavailable && currency !== "EUR"
-                ? "Taux de change indisponible — affichage en EUR pour l'instant"
-                : "Choisir votre devise d'affichage"
+                ? t("preferences.currencyRatesUnavailable")
+                : t("preferences.currencyDescription")
             }
             control={
               <PreferenceSelect
@@ -556,15 +567,15 @@ export function ProfileTab({
           {prefError && <p className="text-xs text-rose-400">{prefError}</p>}
           <PreferenceRow
             icon={Clock}
-            label="Fuseau horaire"
+            label={t("preferences.timezoneLabel")}
             control={
               <PreferenceSelect
                 value={timezone}
                 onChange={setTimezone}
                 options={[
-                  { value: "Europe/Paris", label: "(UTC+01:00) Paris" },
-                  { value: "UTC", label: "(UTC+00:00) UTC" },
-                  { value: "America/New_York", label: "(UTC-05:00) New York" },
+                  { value: "Europe/Paris", label: t("preferences.timezoneParis") },
+                  { value: "UTC", label: t("preferences.timezoneUtc") },
+                  { value: "America/New_York", label: t("preferences.timezoneNewYork") },
                 ]}
               />
             }
@@ -574,12 +585,12 @@ export function ProfileTab({
 
       {/* Colonne de droite */}
       <div className="flex flex-col gap-6">
-        <Card title="Mon abonnement">
+        <Card title={t("subscription.title")}>
           {currentPlan && subscription ? (
             <>
               <div className="flex items-center gap-3">
                 <span className="rounded-lg bg-brand-500/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-brand-400">
-                  {currentPlan.id === "pro" ? "Pro" : "Découverte"}
+                  {currentPlan.id === "pro" ? t("subscription.planPro") : t("subscription.planDecouverte")}
                 </span>
                 <span className="font-display text-xl font-bold text-dash-text">
                   {formatAmount(currentPlan.priceEur)}
@@ -594,8 +605,8 @@ export function ProfileTab({
               {periodEndLabel && (
                 <p className="text-xs text-dash-text-quaternary">
                   {subscription.cancelAtPeriodEnd
-                    ? `Accès coupé — période payée jusqu'au ${periodEndLabel}`
-                    : `Prochain renouvellement : ${periodEndLabel}`}
+                    ? t("subscription.accessCutOff", { date: periodEndLabel })
+                    : t("subscription.nextRenewal", { date: periodEndLabel })}
                 </p>
               )}
               {actionError && <p className="text-xs text-rose-400">{actionError}</p>}
@@ -605,52 +616,52 @@ export function ProfileTab({
                   onClick={onOpenCancelModal}
                   className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
                 >
-                  Gérer mon abonnement
+                  {t("subscription.manage")}
                 </button>
               ) : (
                 <Link
                   href="/dashboard/subscription"
                   className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
                 >
-                  Se réabonner
+                  {t("subscription.resubscribe")}
                 </Link>
               )}
               <Link
                 href="/dashboard/subscription"
                 className="text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
               >
-                Voir tous les abonnements →
+                {t("subscription.viewAll")}
               </Link>
             </>
           ) : (
             <>
-              <p className="text-sm text-dash-text-tertiary">Vous n&apos;avez pas d&apos;abonnement actif.</p>
+              <p className="text-sm text-dash-text-tertiary">{t("subscription.noActive")}</p>
               <Link
                 href="/dashboard/subscription"
                 className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
               >
-                Voir les abonnements
+                {t("subscription.viewPlans")}
               </Link>
             </>
           )}
         </Card>
 
-        <Card title="Mon activité">
-          <ActivityRow icon={Sparkles} label="Analyses effectuées" value={activity.analysesCount} />
-          <ActivityRow icon={Star} label="Marchés suivis" value={activity.marketsFollowedCount} />
-          <ActivityRow icon={Wallet} label="Smart Wallets suivis" value={activity.walletsFollowedCount} />
+        <Card title={t("activity.title")}>
+          <ActivityRow icon={Sparkles} label={t("activity.analysesDone")} value={activity.analysesCount} />
+          <ActivityRow icon={Star} label={t("activity.marketsFollowed")} value={activity.marketsFollowedCount} />
+          <ActivityRow icon={Wallet} label={t("activity.walletsFollowed")} value={activity.walletsFollowedCount} />
         </Card>
 
-        <Card title="Invitez vos amis">
+        <Card title={t("referral.title")}>
           <p className="text-sm leading-relaxed text-dash-text-tertiary">
-            Le programme de parrainage sera bientôt de retour.
+            {t("referral.comingBack")}
           </p>
           <div className="flex items-center gap-2 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-2.5">
             <span className="flex-1 truncate text-sm text-dash-text-tertiary">{referralLink}</span>
             <button
               type="button"
               onClick={handleCopyReferral}
-              aria-label="Copier le lien d'invitation"
+              aria-label={t("referral.copyAria")}
               className="shrink-0 text-dash-text-tertiary transition-colors hover:text-dash-text"
             >
               {referralCopied ? (
@@ -662,11 +673,11 @@ export function ProfileTab({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5">
-              <p className="text-[11px] font-medium text-dash-text-quaternary">Filleuls</p>
+              <p className="text-[11px] font-medium text-dash-text-quaternary">{t("referral.referrals")}</p>
               <p className="mt-0.5 text-sm font-bold text-dash-text">0</p>
             </div>
             <div className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5">
-              <p className="text-[11px] font-medium text-dash-text-quaternary">Gains générés</p>
+              <p className="text-[11px] font-medium text-dash-text-quaternary">{t("referral.earnings")}</p>
               <p className="mt-0.5 text-sm font-bold text-dash-text">{formatAmount(0)}</p>
             </div>
           </div>
@@ -674,27 +685,27 @@ export function ProfileTab({
             href="/partners"
             className="text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
           >
-            En attendant, découvrez notre programme partenaires sur candidature →
+            {t("referral.partnersCta")}
           </Link>
         </Card>
 
-        <Card title="Mes outils connectés">
+        <Card title={t("connectedTools.title")}>
           <div className="flex items-start gap-2.5 text-sm text-dash-text-tertiary">
             <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-dash-text-quaternary" strokeWidth={2} />
-            <p>Aucun outil connecté. Connectez vos comptes pour une expérience complète.</p>
+            <p>{t("connectedTools.empty")}</p>
           </div>
-          <ComingSoonInlineButton label="Gérer les connexions" />
+          <ComingSoonInlineButton label={t("connectedTools.manage")} />
         </Card>
 
-        <Card title="Zone dangereuse" className="border-rose-500/20">
-          <h3 className="-mt-2 text-sm font-bold text-rose-400">Supprimer mon compte</h3>
+        <Card title={t("dangerZone.title")} className="border-rose-500/20">
+          <h3 className="-mt-2 text-sm font-bold text-rose-400">{t("dangerZone.deleteTitle")}</h3>
           <p className="text-sm leading-relaxed text-dash-text-tertiary">
-            Cette action est irréversible. Toutes vos données seront définitivement supprimées.
+            {t("dangerZone.deleteDescription")}
           </p>
           {deletionRequested ? (
             <p className="flex items-center gap-2 text-sm font-medium text-dash-text-secondary">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
-              Demande de suppression enregistrée. Notre équipe vous contactera par email.
+              {t("dangerZone.deletionRequested")}
             </p>
           ) : (
             <button
@@ -702,7 +713,7 @@ export function ProfileTab({
               onClick={onOpenDeleteModal}
               className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-rose-500 text-sm font-semibold text-white transition-colors hover:bg-rose-600"
             >
-              <TriangleAlert className="h-4 w-4" /> Supprimer mon compte
+              <TriangleAlert className="h-4 w-4" /> {t("dangerZone.deleteButton")}
             </button>
           )}
         </Card>
@@ -717,6 +728,7 @@ export function ProfileTab({
  * component, since ChangePasswordButton is also used standalone on the
  * "Mot de passe" tab with its original styling. */
 function ChangePasswordButtonCompact({ email }: { email: string }) {
+  const t = useTranslations("Profile.ProfileTab.changePasswordCompact");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleClick = async () => {
@@ -734,20 +746,21 @@ function ChangePasswordButtonCompact({ email }: { email: string }) {
   };
 
   if (status === "sent") {
-    return <span className="text-xs font-medium text-emerald-400">Email envoyé</span>;
+    return <span className="text-xs font-medium text-emerald-400">{t("sent")}</span>;
   }
 
   return (
     <div className="flex flex-col items-end gap-1">
       <InlineActionButton onClick={handleClick} disabled={status === "sending"}>
-        {status === "sending" ? "Envoi..." : "Modifier"}
+        {status === "sending" ? t("sending") : t("modify")}
       </InlineActionButton>
-      {status === "error" && <span className="text-[11px] text-rose-400">Erreur, réessayez</span>}
+      {status === "error" && <span className="text-[11px] text-rose-400">{t("error")}</span>}
     </div>
   );
 }
 
 function ComingSoonInlineButton({ label }: { label: string }) {
+  const t = useTranslations("Profile.ProfileTab");
   const [showNote, setShowNote] = useState(false);
   return (
     <div className="flex flex-col items-start gap-1.5">
@@ -758,7 +771,7 @@ function ComingSoonInlineButton({ label }: { label: string }) {
       >
         {label}
       </button>
-      {showNote && <span className="text-xs text-dash-text-faint">Bientôt disponible</span>}
+      {showNote && <span className="text-xs text-dash-text-faint">{t("comingSoon")}</span>}
     </div>
   );
 }

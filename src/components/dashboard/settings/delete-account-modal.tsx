@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { TriangleAlert, X } from "lucide-react";
-
-const CONFIRM_WORD = "SUPPRIMER";
+import { useTranslations } from "next-intl";
 
 export function DeleteAccountModal({
   open,
@@ -14,7 +13,9 @@ export function DeleteAccountModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const t = useTranslations("Profile.DeleteAccountModal");
   const [value, setValue] = useState("");
+  const confirmWord = t("confirmWord");
 
   if (!open) return null;
 
@@ -33,7 +34,7 @@ export function DeleteAccountModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fermer"
+            aria-label={t("closeAria")}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dash-border text-dash-text-secondary transition-colors hover:text-dash-text"
           >
             <X className="h-4 w-4" />
@@ -41,20 +42,20 @@ export function DeleteAccountModal({
         </div>
 
         <h2 className="mt-4 font-display text-lg font-bold text-dash-text">
-          Supprimer définitivement votre compte ?
+          {t("title")}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-dash-text-secondary">
-          Cette action est irréversible. Toutes vos analyses, positions
-          suivies et préférences seront supprimées. Pour confirmer, tapez{" "}
-          <span className="font-semibold text-dash-text">{CONFIRM_WORD}</span>{" "}
-          ci-dessous.
+          {t.rich("body", {
+            b: (chunks) => <span className="font-semibold text-dash-text">{chunks}</span>,
+            word: confirmWord,
+          })}
         </p>
 
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={CONFIRM_WORD}
+          placeholder={confirmWord}
           className="mt-4 w-full rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-rose-400/50 focus:outline-none"
         />
 
@@ -64,15 +65,15 @@ export function DeleteAccountModal({
             onClick={onClose}
             className="flex h-11 items-center justify-center rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text sm:flex-1"
           >
-            Annuler
+            {t("cancel")}
           </button>
           <button
             type="button"
-            disabled={value.trim() !== CONFIRM_WORD}
+            disabled={value.trim() !== confirmWord}
             onClick={onConfirm}
             className="flex h-11 items-center justify-center rounded-full bg-rose-500 px-6 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 sm:flex-1"
           >
-            Supprimer mon compte
+            {t("delete")}
           </button>
         </div>
       </div>

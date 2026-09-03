@@ -51,6 +51,7 @@ export function SettingsFlow({
   trialDaysRemaining: number | null;
 }) {
   const router = useRouter();
+  const t = useTranslations("Profile.SettingsFlow");
   const tPlans = useTranslations("Plans");
   const [subscription, setSubscription] = useState(initialSubscription);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -92,7 +93,8 @@ export function SettingsFlow({
     : null;
 
   const PlanIcon = PLAN_ICONS[plan.id] ?? PLAN_ICONS.pro;
-  const planBadgeValue = trialDaysRemaining !== null ? `${trialDaysRemaining}J d'essai` : plan.name;
+  const planBadgeValue =
+    trialDaysRemaining !== null ? t("trialDaysBadge", { days: trialDaysRemaining }) : plan.name;
   const analysesRemaining = dailyAnalysisLimit !== null ? dailyAnalysisLimit - analysesToday : null;
 
   return (
@@ -100,22 +102,22 @@ export function SettingsFlow({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
-            Profil
+            {t("heading")}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
-            Gérez votre compte, votre abonnement et vos préférences.
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge icon={PlanIcon} label="Plan" value={planBadgeValue} tone="brand" />
+          <StatusBadge icon={PlanIcon} label={t("planBadgeLabel")} value={planBadgeValue} tone="brand" />
           <StatusBadge
             icon={Sparkles}
-            label="Analyses IA"
+            label={t("analysesBadgeLabel")}
             value={
               analysesRemaining !== null
-                ? `${Math.max(analysesRemaining, 0)} restantes`
-                : "Illimitées"
+                ? t("analysesRemaining", { count: Math.max(analysesRemaining, 0) })
+                : t("analysesUnlimited")
             }
             tone={analysesRemaining !== null && analysesRemaining <= 0 ? "amber" : "emerald"}
           />

@@ -1,0 +1,155 @@
+{
+  "Profile": {
+    "SettingsPage": {
+      "metaTitle": "Profile — Polypips"
+    },
+    "SettingsFlow": {
+      "heading": "Profile",
+      "subtitle": "Manage your account, subscription, and preferences.",
+      "planBadgeLabel": "Plan",
+      "trialDaysBadge": "{days}D trial",
+      "analysesBadgeLabel": "AI analyses",
+      "analysesRemaining": "{count} left",
+      "analysesUnlimited": "Unlimited"
+    },
+    "ProfileTab": {
+      "changeAvatarAria": "Change profile picture",
+      "defaultUsername": "Polypips user",
+      "premiumBadge": "Premium",
+      "memberSince": "Member since {date}",
+      "verifiedAccount": "Verified account",
+      "avatarSessionExpired": "Session expired, please sign in again.",
+      "avatarUploadFailed": "The upload failed. Please try again.",
+      "comingSoon": "Coming soon",
+      "personalInfo": {
+        "title": "Personal information",
+        "fullNameLabel": "Full name",
+        "fullNamePlaceholder": "Your name",
+        "emailLabel": "Email address",
+        "emailVerifiedBadge": "Verified",
+        "pseudoLabel": "Username",
+        "pseudoPlaceholder": "Your username",
+        "languageLabel": "Language",
+        "languageFr": "French",
+        "languageEn": "English",
+        "saved": "Saved",
+        "genericError": "Something went wrong.",
+        "saving": "Saving...",
+        "save": "Save changes"
+      },
+      "security": {
+        "title": "Security",
+        "passwordLabel": "Password",
+        "twoFactorLabel": "Two-factor authentication",
+        "twoFactorEnabled": "Enabled",
+        "twoFactorDisabled": "Not enabled",
+        "manage": "Manage",
+        "activeSessionsLabel": "Active sessions",
+        "activeSessionsValue": "1 device connected (this one)",
+        "view": "View",
+        "googleLabel": "Sign in with Google",
+        "googleConnected": "Connected",
+        "googleNotConnected": "Not connected",
+        "connect": "Connect"
+      },
+      "notifications": {
+        "title": "Notifications"
+      },
+      "preferences": {
+        "title": "Preferences",
+        "themeLabel": "Theme",
+        "themeDescription": "Choose your display theme",
+        "themeDark": "Dark",
+        "themeLight": "Light",
+        "currencyLabel": "Currency",
+        "currencyDescription": "Choose your display currency",
+        "currencyRatesUnavailable": "Exchange rates unavailable — showing EUR for now",
+        "currencyError": "Couldn't save your currency.",
+        "timezoneLabel": "Time zone",
+        "timezoneParis": "(UTC+01:00) Paris",
+        "timezoneUtc": "(UTC+00:00) UTC",
+        "timezoneNewYork": "(UTC-05:00) New York"
+      },
+      "subscription": {
+        "title": "My subscription",
+        "planPro": "Pro",
+        "planDecouverte": "Discovery",
+        "statusTrialing": "Trial",
+        "statusActive": "Active",
+        "statusPastDue": "Payment failed",
+        "statusCanceled": "Ended",
+        "statusCancelledSoon": "Cancelled",
+        "accessCutOff": "Access cut off — paid period runs until {date}",
+        "nextRenewal": "Next renewal: {date}",
+        "manage": "Manage my subscription",
+        "resubscribe": "Resubscribe",
+        "viewAll": "View all subscriptions →",
+        "noActive": "You don't have an active subscription.",
+        "viewPlans": "View subscriptions"
+      },
+      "activity": {
+        "title": "My activity",
+        "analysesDone": "Analyses run",
+        "marketsFollowed": "Markets followed",
+        "walletsFollowed": "Smart Wallets followed"
+      },
+      "referral": {
+        "title": "Invite your friends",
+        "fallbackPseudo": "you",
+        "comingBack": "The referral program will be back soon.",
+        "copyAria": "Copy invitation link",
+        "referrals": "Referrals",
+        "earnings": "Earnings generated",
+        "partnersCta": "In the meantime, check out our by-application partner program →"
+      },
+      "connectedTools": {
+        "title": "My connected tools",
+        "empty": "No tools connected. Connect your accounts for a complete experience.",
+        "manage": "Manage connections"
+      },
+      "dangerZone": {
+        "title": "Danger zone",
+        "deleteTitle": "Delete my account",
+        "deleteDescription": "This action is irreversible. All your data will be permanently deleted.",
+        "deletionRequested": "Deletion request recorded. Our team will contact you by email.",
+        "deleteButton": "Delete my account"
+      },
+      "changePasswordCompact": {
+        "sent": "Email sent",
+        "sending": "Sending...",
+        "modify": "Change",
+        "error": "Error, please try again"
+      }
+    },
+    "CancelSubscriptionModal": {
+      "title": "Cancel your subscription?",
+      "closeAria": "Close",
+      "body": "Your access will be cut off immediately, even if you still have paid time left in the current period{period} — no refund, but no access kept after cancellation either.",
+      "bodyPeriod": " (until {date})",
+      "back": "Back",
+      "confirming": "Cancelling...",
+      "confirm": "Confirm cancellation"
+    },
+    "DeleteAccountModal": {
+      "closeAria": "Close",
+      "title": "Permanently delete your account?",
+      "body": "This action is irreversible. All your analyses, followed positions, and preferences will be deleted. To confirm, type <b>{word}</b> below.",
+      "confirmWord": "DELETE",
+      "cancel": "Cancel",
+      "delete": "Delete my account"
+    },
+    "ChangeEmailButton": {
+      "sentTo": "Confirmation email sent to {email}",
+      "cta": "Change email",
+      "placeholder": "New address (current: {email})",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "genericError": "Something went wrong. Please try again."
+    },
+    "ChangePasswordButton": {
+      "sentTo": "Reset link sent to {email}",
+      "cta": "Change password",
+      "genericError": "Something went wrong. Please try again."
+    }
+  }
+}

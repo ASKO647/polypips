@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 
 export function ChangePasswordButton({ email }: { email: string }) {
+  const t = useTranslations("Profile.ChangePasswordButton");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle"
   );
@@ -27,7 +29,7 @@ export function ChangePasswordButton({ email }: { email: string }) {
     return (
       <p className="flex items-center gap-2 text-sm font-medium text-emerald-400">
         <CheckCircle2 className="h-4 w-4 shrink-0" />
-        Lien de réinitialisation envoyé à {email}
+        {t("sentTo", { email })}
       </p>
     );
   }
@@ -43,12 +45,12 @@ export function ChangePasswordButton({ email }: { email: string }) {
         {status === "sending" ? (
           <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          "Changer le mot de passe"
+          t("cta")
         )}
       </button>
       {status === "error" && (
         <p className="text-xs text-rose-400">
-          Une erreur est survenue. Merci de réessayer.
+          {t("genericError")}
         </p>
       )}
     </div>

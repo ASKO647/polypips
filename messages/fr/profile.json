@@ -1,0 +1,155 @@
+{
+  "Profile": {
+    "SettingsPage": {
+      "metaTitle": "Profil — Polypips"
+    },
+    "SettingsFlow": {
+      "heading": "Profil",
+      "subtitle": "Gérez votre compte, votre abonnement et vos préférences.",
+      "planBadgeLabel": "Plan",
+      "trialDaysBadge": "{days}J d'essai",
+      "analysesBadgeLabel": "Analyses IA",
+      "analysesRemaining": "{count} restantes",
+      "analysesUnlimited": "Illimitées"
+    },
+    "ProfileTab": {
+      "changeAvatarAria": "Changer la photo de profil",
+      "defaultUsername": "Utilisateur Polypips",
+      "premiumBadge": "Premium",
+      "memberSince": "Membre depuis le {date}",
+      "verifiedAccount": "Compte vérifié",
+      "avatarSessionExpired": "Session expirée, reconnectez-vous.",
+      "avatarUploadFailed": "L'upload a échoué. Réessayez.",
+      "comingSoon": "Bientôt disponible",
+      "personalInfo": {
+        "title": "Informations personnelles",
+        "fullNameLabel": "Nom complet",
+        "fullNamePlaceholder": "Votre nom",
+        "emailLabel": "Adresse e-mail",
+        "emailVerifiedBadge": "Vérifié",
+        "pseudoLabel": "Pseudo",
+        "pseudoPlaceholder": "Votre pseudo",
+        "languageLabel": "Langue",
+        "languageFr": "Français",
+        "languageEn": "English",
+        "saved": "Enregistré",
+        "genericError": "Une erreur est survenue.",
+        "saving": "Enregistrement...",
+        "save": "Enregistrer les modifications"
+      },
+      "security": {
+        "title": "Sécurité",
+        "passwordLabel": "Mot de passe",
+        "twoFactorLabel": "Authentification à deux facteurs",
+        "twoFactorEnabled": "Activée",
+        "twoFactorDisabled": "Non activée",
+        "manage": "Gérer",
+        "activeSessionsLabel": "Sessions actives",
+        "activeSessionsValue": "1 appareil connecté (celui-ci)",
+        "view": "Voir",
+        "googleLabel": "Connexion avec Google",
+        "googleConnected": "Connecté",
+        "googleNotConnected": "Non connecté",
+        "connect": "Connecter"
+      },
+      "notifications": {
+        "title": "Notifications"
+      },
+      "preferences": {
+        "title": "Préférences",
+        "themeLabel": "Thème",
+        "themeDescription": "Choisir votre thème d'affichage",
+        "themeDark": "Sombre",
+        "themeLight": "Clair",
+        "currencyLabel": "Devise",
+        "currencyDescription": "Choisir votre devise d'affichage",
+        "currencyRatesUnavailable": "Taux de change indisponible — affichage en EUR pour l'instant",
+        "currencyError": "Impossible d'enregistrer la devise.",
+        "timezoneLabel": "Fuseau horaire",
+        "timezoneParis": "(UTC+01:00) Paris",
+        "timezoneUtc": "(UTC+00:00) UTC",
+        "timezoneNewYork": "(UTC-05:00) New York"
+      },
+      "subscription": {
+        "title": "Mon abonnement",
+        "planPro": "Pro",
+        "planDecouverte": "Découverte",
+        "statusTrialing": "Essai",
+        "statusActive": "Actif",
+        "statusPastDue": "Paiement en échec",
+        "statusCanceled": "Terminé",
+        "statusCancelledSoon": "Annulé",
+        "accessCutOff": "Accès coupé — période payée jusqu'au {date}",
+        "nextRenewal": "Prochain renouvellement : {date}",
+        "manage": "Gérer mon abonnement",
+        "resubscribe": "Se réabonner",
+        "viewAll": "Voir tous les abonnements →",
+        "noActive": "Vous n'avez pas d'abonnement actif.",
+        "viewPlans": "Voir les abonnements"
+      },
+      "activity": {
+        "title": "Mon activité",
+        "analysesDone": "Analyses effectuées",
+        "marketsFollowed": "Marchés suivis",
+        "walletsFollowed": "Smart Wallets suivis"
+      },
+      "referral": {
+        "title": "Invitez vos amis",
+        "fallbackPseudo": "vous",
+        "comingBack": "Le programme de parrainage sera bientôt de retour.",
+        "copyAria": "Copier le lien d'invitation",
+        "referrals": "Filleuls",
+        "earnings": "Gains générés",
+        "partnersCta": "En attendant, découvrez notre programme partenaires sur candidature →"
+      },
+      "connectedTools": {
+        "title": "Mes outils connectés",
+        "empty": "Aucun outil connecté. Connectez vos comptes pour une expérience complète.",
+        "manage": "Gérer les connexions"
+      },
+      "dangerZone": {
+        "title": "Zone dangereuse",
+        "deleteTitle": "Supprimer mon compte",
+        "deleteDescription": "Cette action est irréversible. Toutes vos données seront définitivement supprimées.",
+        "deletionRequested": "Demande de suppression enregistrée. Notre équipe vous contactera par email.",
+        "deleteButton": "Supprimer mon compte"
+      },
+      "changePasswordCompact": {
+        "sent": "Email envoyé",
+        "sending": "Envoi...",
+        "modify": "Modifier",
+        "error": "Erreur, réessayez"
+      }
+    },
+    "CancelSubscriptionModal": {
+      "title": "Annuler votre abonnement ?",
+      "closeAria": "Fermer",
+      "body": "Votre accès sera coupé immédiatement, même s'il vous reste du temps payé sur la période en cours{period} — pas de remboursement, mais pas non plus d'accès maintenu après l'annulation.",
+      "bodyPeriod": " (jusqu'au {date})",
+      "back": "Retour",
+      "confirming": "Annulation en cours...",
+      "confirm": "Confirmer l'annulation"
+    },
+    "DeleteAccountModal": {
+      "closeAria": "Fermer",
+      "title": "Supprimer définitivement votre compte ?",
+      "body": "Cette action est irréversible. Toutes vos analyses, positions suivies et préférences seront supprimées. Pour confirmer, tapez <b>{word}</b> ci-dessous.",
+      "confirmWord": "SUPPRIMER",
+      "cancel": "Annuler",
+      "delete": "Supprimer mon compte"
+    },
+    "ChangeEmailButton": {
+      "sentTo": "Email de confirmation envoyé à {email}",
+      "cta": "Changer l'email",
+      "placeholder": "Nouvelle adresse (actuelle : {email})",
+      "confirm": "Confirmer",
+      "cancel": "Annuler",
+      "genericError": "Une erreur est survenue. Merci de réessayer."
+    },
+    "ChangePasswordButton": {
+      "sentTo": "Lien de réinitialisation envoyé à {email}",
+      "cta": "Changer le mot de passe",
+      "genericError": "Une erreur est survenue. Merci de réessayer."
+    }
+  }
+}

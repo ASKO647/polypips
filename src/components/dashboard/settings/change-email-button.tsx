@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
  * immediately — same "email does the confirming" pattern as
  * ChangePasswordButton's resetPasswordForEmail. */
 export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
+  const t = useTranslations("Profile.ChangeEmailButton");
   const [open, setOpen] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
@@ -34,7 +36,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
       }
       setStatus("sent");
     } catch {
-      setError("Une erreur est survenue. Merci de réessayer.");
+      setError(t("genericError"));
       setStatus("error");
     }
   };
@@ -43,7 +45,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
     return (
       <p className="flex items-center gap-2 text-sm font-medium text-emerald-400">
         <CheckCircle2 className="h-4 w-4 shrink-0" />
-        Email de confirmation envoyé à {newEmail}
+        {t("sentTo", { email: newEmail })}
       </p>
     );
   }
@@ -51,7 +53,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
   if (!open) {
     return (
       <Button type="button" variant="outline" onClick={() => setOpen(true)}>
-        Changer l&apos;email
+        {t("cta")}
       </Button>
     );
   }
@@ -63,7 +65,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
           type="email"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          placeholder={`Nouvelle adresse (actuelle : ${currentEmail})`}
+          placeholder={t("placeholder", { email: currentEmail })}
           className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none"
         />
         {error && <p className="text-xs text-rose-400">{error}</p>}
@@ -77,7 +79,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
           {status === "sending" ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            "Confirmer"
+            t("confirm")
           )}
         </Button>
         <Button
@@ -89,7 +91,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
             setError(null);
           }}
         >
-          Annuler
+          {t("cancel")}
         </Button>
       </div>
     </div>

@@ -9,9 +9,9 @@ const TONE_CLASSES = {
 } as const;
 
 /** Compact icon + label + value pill, used for the status row at the top
- * of Paramètres (plan/trial, daily AI quota, Smart Money monthly quota) —
- * same visual language as the pills already used in the dashboard header
- * and sidebar, just packing a label/value pair instead of a single line. */
+ * of Paramètres (plan/trial, daily AI quota) — same visual language as the
+ * pills already used in the dashboard header and sidebar, just packing a
+ * label/value pair instead of a single line. */
 export function StatusBadge({
   icon: Icon,
   label,
