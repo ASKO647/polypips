@@ -37,5 +37,16 @@
     "redirecting": "Redirecting...",
     "checkoutUnavailable": "Checkout unavailable.",
     "genericError": "Unable to start checkout. Please try again."
+  },
+  "StripeCheckout": {
+    "discoveryProductName": "Polypips — Discovery period (3 days)",
+    "discoveryProductDescription": "Full access to Polypips for 3 days, billed €0.99 today. Then €29.99/month unless cancelled before the 3 days end.",
+    "discoverySubmitMessage": "**€0.99 charged today** for your 3-day discovery period — this is not a free trial. Then €29.99/month, cancellable anytime before the 3 days end to pay nothing further.",
+    "errors": {
+      "invalid_input": "Invalid JSON request body.",
+      "unknown_plan": "Unknown plan.",
+      "unauthorized": "Please sign in to continue.",
+      "stripe_error": "Unable to start checkout. Please try again."
+    }
   }
 }

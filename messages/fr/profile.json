@@ -10,7 +10,8 @@
       "trialDaysBadge": "{days}J d'essai",
       "analysesBadgeLabel": "Analyses IA",
       "analysesRemaining": "{count} restantes",
-      "analysesUnlimited": "Illimitées"
+      "analysesUnlimited": "Illimitées",
+      "cancelError": "L'annulation a échoué. Réessayez."
     },
     "ProfileTab": {
       "changeAvatarAria": "Changer la photo de profil",

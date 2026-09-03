@@ -37,5 +37,16 @@
     "redirecting": "Redirection...",
     "checkoutUnavailable": "Checkout indisponible.",
     "genericError": "Impossible de démarrer le paiement. Réessayez."
+  },
+  "StripeCheckout": {
+    "discoveryProductName": "Polypips — Période découverte (3 jours)",
+    "discoveryProductDescription": "Accès complet à Polypips pendant 3 jours, facturé 0,99 € dès aujourd'hui. Puis 29,99 €/mois, sauf annulation avant la fin des 3 jours.",
+    "discoverySubmitMessage": "**0,99 € facturés aujourd'hui** pour votre période découverte de 3 jours — ce n'est pas un essai gratuit. Puis 29,99 €/mois, résiliable à tout moment avant la fin des 3 jours pour ne rien payer de plus.",
+    "errors": {
+      "invalid_input": "Corps de requête JSON invalide.",
+      "unknown_plan": "Plan inconnu.",
+      "unauthorized": "Connectez-vous pour continuer.",
+      "stripe_error": "Impossible de démarrer le paiement. Réessayez."
+    }
   }
 }

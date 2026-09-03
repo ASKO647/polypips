@@ -53,44 +53,29 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  // No `message` field on these error responses: the caller's locale isn't
+  // known server-side, so the client always renders its own translated
+  // copy for the `error` code instead (see wallet-lookup-panel.tsx).
   if (!user) {
-    return NextResponse.json(
-      { error: "unauthorized", message: "Connectez-vous pour continuer." },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   // UI blur is not a security boundary — same subscription check every
   // other Copy Trading / Smart Money mutating endpoint runs server-side.
   if (!(await userHasActiveAccess(supabase, user.id))) {
-    return NextResponse.json(
-      {
-        error: "subscription_required",
-        message: "Cette fonctionnalité est réservée aux abonnés. Débutez pour 0,99 €.",
-      },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: "subscription_required" }, { status: 403 });
   }
 
   let body: { address?: string };
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "invalid_input", message: "Corps de requête JSON invalide." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
 
   const address = (body.address ?? "").trim().toLowerCase();
   if (!WALLET_ADDRESS_RE.test(address)) {
-    return NextResponse.json(
-      {
-        error: "invalid_address",
-        message: "Adresse de portefeuille invalide. Format attendu : 0x suivi de 40 caractères hexadécimaux.",
-      },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "invalid_address" }, { status: 400 });
   }
 
   const [{ data: trackedRow }, positions, activity, liveValue] = await Promise.all([

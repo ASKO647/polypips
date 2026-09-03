@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { getStripe } from "@/lib/stripe/server";
 import { isPlanId, PLAN_PRICE_IDS, type PlanId } from "@/lib/stripe/plans";
 import { createClient } from "@/lib/supabase/server";
@@ -21,40 +22,23 @@ function resolveLocale(value: unknown): string {
  * one-off amount, not a reusable product. */
 const DISCOVERY_UPFRONT_AMOUNT_CENTS = 99;
 
-/**
- * Stripe's hosted Checkout page auto-generates its own "X days free" /
- * "free trial" copy the moment subscription_data.trial_period_days is set —
- * there is no Checkout Session parameter to reword or remove that specific
- * badge, even though a real 0,99 € invoice_item is being charged in the
- * same session (confirmed against Stripe's Checkout docs: trial_period_days
- * only controls the trial's length, and neither the Price/Product nor
- * subscription_data expose a "trial label" override). custom_text.submit
- * is the actual supported lever — it renders right next to the Pay button
- * on the Checkout page itself, which is the one place a customer's eye
- * lands right before paying, so it's used here instead of only adding more
- * text upstream on the Polypips site (the pricing card already does that
- * too — see components/marketing/pricing.tsx). Markdown bold/links only,
- * 1200 char max.
- */
-const DISCOVERY_SUBMIT_MESSAGE =
-  "**0,99 € facturés aujourd'hui** pour votre période découverte de 3 jours — ce n'est pas un essai gratuit. Puis 29,99 €/mois, résiliable à tout moment avant la fin des 3 jours pour ne rien payer de plus.";
-
 export async function POST(request: Request) {
   let body: { plan?: string; locale?: string };
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "invalid_input", message: "Corps de requête JSON invalide." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "invalid_input" }, { status: 400 });
   }
 
   const locale = resolveLocale(body.locale);
+  // Locale-aware even though this route lives outside [locale]: the caller
+  // passes its current locale in the body (see resolveLocale above), and
+  // getTranslations accepts it explicitly here.
+  const t = await getTranslations({ locale, namespace: "StripeCheckout" });
 
   if (!body.plan || !isPlanId(body.plan)) {
     return NextResponse.json(
-      { error: "invalid_input", message: "Plan inconnu." },
+      { error: "invalid_input", message: t("errors.unknown_plan") },
       { status: 400 }
     );
   }
@@ -67,7 +51,7 @@ export async function POST(request: Request) {
 
   if (!user || !user.email) {
     return NextResponse.json(
-      { error: "unauthorized", message: "Connectez-vous pour continuer." },
+      { error: "unauthorized", message: t("errors.unauthorized") },
       { status: 401 }
     );
   }
@@ -135,9 +119,8 @@ export async function POST(request: Request) {
                   currency: "eur",
                   unit_amount: DISCOVERY_UPFRONT_AMOUNT_CENTS,
                   product_data: {
-                    name: "Polypips — Période découverte (3 jours)",
-                    description:
-                      "Accès complet à Polypips pendant 3 jours, facturé 0,99 € dès aujourd'hui. Puis 29,99 €/mois, sauf annulation avant la fin des 3 jours.",
+                    name: t("discoveryProductName"),
+                    description: t("discoveryProductDescription"),
                   },
                 },
                 quantity: 1,
@@ -149,8 +132,13 @@ export async function POST(request: Request) {
         ...(effectivePlan === "decouverte" ? { trial_period_days: 3 } : {}),
         metadata: { supabase_user_id: user.id, plan: effectivePlan },
       },
+      // Stripe's hosted Checkout page auto-generates its own "X days free"
+      // copy the moment trial_period_days is set, with no parameter to
+      // reword it even though a real 0,99 € invoice_item is charged in the
+      // same session — custom_text.submit is the one supported lever,
+      // rendered right next to the Pay button. Markdown bold/links only.
       ...(effectivePlan === "decouverte"
-        ? { custom_text: { submit: { message: DISCOVERY_SUBMIT_MESSAGE } } }
+        ? { custom_text: { submit: { message: t("discoverySubmitMessage") } } }
         : {}),
       client_reference_id: user.id,
       ...(existingCustomerId
@@ -168,10 +156,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[stripe/checkout] failed to create session", error);
     return NextResponse.json(
-      {
-        error: "stripe_error",
-        message: "Impossible de démarrer le paiement. Réessayez.",
-      },
+      { error: "stripe_error", message: t("errors.stripe_error") },
       { status: 502 }
     );
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Sparkles } from "lucide-react";
 import { PLAN_ICONS } from "@/components/dashboard/account-status-card";
@@ -12,12 +12,6 @@ import { DeleteAccountModal } from "@/components/dashboard/settings/delete-accou
 import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
-
-const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
 
 export function SettingsFlow({
   email,
@@ -51,6 +45,7 @@ export function SettingsFlow({
   trialDaysRemaining: number | null;
 }) {
   const router = useRouter();
+  const locale = useLocale();
   const t = useTranslations("Profile.SettingsFlow");
   const tPlans = useTranslations("Plans");
   const [subscription, setSubscription] = useState(initialSubscription);
@@ -65,15 +60,12 @@ export function SettingsFlow({
     setActionError(null);
     try {
       const response = await fetch("/api/stripe/cancel", { method: "POST" });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
+      if (!response.ok) throw new Error(t("cancelError"));
       setSubscription((prev) => (prev ? { ...prev, cancelAtPeriodEnd: true } : prev));
       setCancelModalOpen(false);
       setTimeout(() => router.refresh(), 1500);
-    } catch (error) {
-      setActionError(
-        error instanceof Error ? error.message : "L'annulation a échoué. Réessayez."
-      );
+    } catch {
+      setActionError(t("cancelError"));
     } finally {
       setCancelling(false);
     }
@@ -89,7 +81,9 @@ export function SettingsFlow({
     ? (getPricingPlans(tPlans).find((p) => p.id === subscription.plan) ?? null)
     : null;
   const periodEndLabel = subscription?.currentPeriodEnd
-    ? DATE_FORMATTER.format(new Date(subscription.currentPeriodEnd))
+    ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(
+        new Date(subscription.currentPeriodEnd),
+      )
     : null;
 
   const PlanIcon = PLAN_ICONS[plan.id] ?? PLAN_ICONS.pro;

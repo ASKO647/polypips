@@ -10,7 +10,8 @@
       "trialDaysBadge": "{days}D trial",
       "analysesBadgeLabel": "AI analyses",
       "analysesRemaining": "{count} left",
-      "analysesUnlimited": "Unlimited"
+      "analysesUnlimited": "Unlimited",
+      "cancelError": "Cancellation failed. Please try again."
     },
     "ProfileTab": {
       "changeAvatarAria": "Change profile picture",

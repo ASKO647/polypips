@@ -17,11 +17,11 @@ export async function POST() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // No `message` field on these error responses: this route has no locale
+  // context (POST with no body), so the client always renders its own
+  // translated copy for the `error` code instead (see settings-flow.tsx).
   if (!user) {
-    return NextResponse.json(
-      { error: "unauthorized", message: "Connectez-vous pour continuer." },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const { data: subscription } = await supabase
@@ -32,10 +32,7 @@ export async function POST() {
 
   const subscriptionId = subscription?.stripe_subscription_id as string | null | undefined;
   if (!subscriptionId) {
-    return NextResponse.json(
-      { error: "no_subscription", message: "Aucun abonnement actif à annuler." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "no_subscription" }, { status: 400 });
   }
 
   try {
@@ -46,9 +43,6 @@ export async function POST() {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[stripe/cancel] failed", error);
-    return NextResponse.json(
-      { error: "stripe_error", message: "L'annulation a échoué. Réessayez." },
-      { status: 502 }
-    );
+    return NextResponse.json({ error: "stripe_error" }, { status: 502 });
   }
 }
