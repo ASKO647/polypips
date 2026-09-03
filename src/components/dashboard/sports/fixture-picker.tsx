@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ArrowLeft, Calendar, Info } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types";
@@ -74,6 +75,7 @@ export function FixturePicker({
   onSelectFixture: (fixture: SportFixture) => void;
   onBack: () => void;
 }) {
+  const t = useTranslations("Sport.FixturePicker");
   const isTennis = sport === "tennis";
 
   return (
@@ -86,17 +88,17 @@ export function FixturePicker({
           <ButtonIcon variant="outline">
             <ArrowLeft className="h-3.5 w-3.5" />
           </ButtonIcon>
-          Nouvelle recherche
+          {t("newSearch")}
         </Button>
       </div>
 
       <div>
         <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-white/40">
-          Prochaines confrontations — choisissez celle à analyser
+          {t("upcomingTitle")}
         </p>
         {result.upcomingFixtures.length === 0 ? (
           <p className="rounded-xl border border-dashed border-white/10 px-4 py-6 text-center text-xs text-white/35">
-            Aucune confrontation à venir trouvée entre ces deux {isTennis ? "joueurs" : "équipes"}.
+            {t("noUpcoming", { type: isTennis ? "tennis" : "team" })}
           </p>
         ) : (
           <div className="flex flex-col gap-2">
@@ -112,9 +114,7 @@ export function FixturePicker({
         {isTennis && (
           <p className="mt-2.5 flex items-start gap-1.5 text-[11px] leading-relaxed text-white/35">
             <Info className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2} />
-            Au tennis, une rencontre n&apos;apparaît qu&apos;une fois le tableau du tournoi publié
-            (généralement 1 à 3 jours avant) — un duel à venir peut donc ne pas encore être visible
-            ici même s&apos;il aura bien lieu.
+            {t("tennisDrawNotice")}
           </p>
         )}
       </div>
@@ -122,14 +122,13 @@ export function FixturePicker({
       {isTennis ? (
         <p className="flex items-start gap-1.5 text-[11px] leading-relaxed text-white/35">
           <Info className="mt-0.5 h-3 w-3 shrink-0" strokeWidth={2} />
-          Historique des confrontations non disponible pour le tennis — la source de données ne
-          couvre pas les résultats passés pour ce sport.
+          {t("tennisNoHistory")}
         </p>
       ) : (
         result.recentMeetings.length > 0 && (
           <div>
             <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-white/40">
-              Confrontations récentes
+              {t("recentMeetingsTitle")}
             </p>
             <div className="flex flex-col gap-2">
               {result.recentMeetings.map((meeting) => (

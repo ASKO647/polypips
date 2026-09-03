@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Clock } from "lucide-react";
 import { SportMatchResult } from "@/components/dashboard/sports/sport-match-result";
 import type { SportMatchAnalysis } from "@/lib/data/sports-analysis";
@@ -39,6 +40,7 @@ function HistoryRow({
 }
 
 export function SportAnalysesHistory({ analyses }: { analyses: SportMatchAnalysis[] }) {
+  const t = useTranslations("Sport.History");
   const [selected, setSelected] = useState<SportMatchAnalysis | null>(null);
 
   if (selected) {
@@ -46,7 +48,7 @@ export function SportAnalysesHistory({ analyses }: { analyses: SportMatchAnalysi
       <SportMatchResult
         analysis={selected}
         onBack={() => setSelected(null)}
-        backLabel="Retour à la liste"
+        backLabel={t("backToList")}
       />
     );
   }
@@ -54,10 +56,8 @@ export function SportAnalysesHistory({ analyses }: { analyses: SportMatchAnalysi
   if (analyses.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/10 px-6 py-16 text-center">
-        <p className="text-sm font-medium text-white/60">Aucune analyse pour le moment</p>
-        <p className="max-w-sm text-xs text-white/35">
-          Lancez une recherche depuis Analyse IA pour voir vos pronostics apparaître ici.
-        </p>
+        <p className="text-sm font-medium text-white/60">{t("emptyTitle")}</p>
+        <p className="max-w-sm text-xs text-white/35">{t("emptyDescription")}</p>
       </div>
     );
   }

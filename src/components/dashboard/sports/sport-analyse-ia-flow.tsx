@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { SportMatchSearchPanel } from "@/components/dashboard/sports/sport-match-search-panel";
 import { FixturePicker } from "@/components/dashboard/sports/fixture-picker";
@@ -23,7 +24,7 @@ import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types"
 
 type FlowState = "search" | "fixtures" | "loading" | "result";
 
-function errorContentFor(error: unknown): React.ReactNode {
+function errorContentFor(error: unknown, changePlanLabel: string): React.ReactNode {
   if (error instanceof SportMatchAnalysisError && error.code === "limit_reached") {
     return (
       <>
@@ -32,7 +33,7 @@ function errorContentFor(error: unknown): React.ReactNode {
           href="/dashboard/settings"
           className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
         >
-          Changer de plan →
+          {changePlanLabel}
         </Link>
       </>
     );
@@ -44,6 +45,7 @@ function errorContentFor(error: unknown): React.ReactNode {
 }
 
 export function SportAnalyseIaFlow() {
+  const t = useTranslations("Sport.Flow");
   const [state, setState] = useState<FlowState>("search");
   const [sport, setSport] = useState<Sport>("football");
   const [team1, setTeam1] = useState("");
@@ -62,7 +64,7 @@ export function SportAnalyseIaFlow() {
       setSearchResult(found);
       setState("fixtures");
     } catch (error) {
-      setErrorMessage(errorContentFor(error));
+      setErrorMessage(errorContentFor(error, t("changePlan")));
     } finally {
       setSearchLoading(false);
     }
@@ -88,7 +90,7 @@ export function SportAnalyseIaFlow() {
       setResult(analysis);
       setState("result");
     } catch (error) {
-      setErrorMessage(errorContentFor(error));
+      setErrorMessage(errorContentFor(error, t("changePlan")));
       setState("fixtures");
     }
   };
@@ -114,7 +116,7 @@ export function SportAnalyseIaFlow() {
 
   if (state === "result" && result) {
     return (
-      <SportMatchResult analysis={result} onBack={handleBackToFixtures} backLabel="Autre rencontre" />
+      <SportMatchResult analysis={result} onBack={handleBackToFixtures} backLabel={t("otherMatch")} />
     );
   }
 

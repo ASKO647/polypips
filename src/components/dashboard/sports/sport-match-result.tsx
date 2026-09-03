@@ -1,10 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ArrowRight, Check, RefreshCw, TrendingUp, TriangleAlert, ShieldAlert } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
 import type { SportMatchAnalysis } from "@/lib/data/sports-analysis";
-import { SPORT_LABELS } from "@/lib/sports/types";
+import type { Sport } from "@/lib/sports/types";
 import { cn } from "@/lib/utils";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
@@ -18,18 +19,20 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
 export function SportMatchResult({
   analysis,
   onBack,
-  backLabel = "Nouvelle analyse",
+  backLabel,
 }: {
   analysis: SportMatchAnalysis;
   onBack: () => void;
   backLabel?: string;
 }) {
+  const t = useTranslations("Sport");
+  const sportNames = t.raw("sportNames") as Record<Sport, string>;
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-xs font-semibold capitalize text-white/60">
-            {SPORT_LABELS[analysis.sport]}
+            {sportNames[analysis.sport]}
           </span>
           {analysis.competition && (
             <span className="text-xs text-white/35">{analysis.competition}</span>
@@ -51,7 +54,7 @@ export function SportMatchResult({
               </span>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                  Pronostic IA
+                  {t("Result.aiForecast")}
                 </p>
                 <p className="font-display text-3xl font-bold text-emerald-400">
                   {analysis.aiProbability}%
@@ -61,7 +64,7 @@ export function SportMatchResult({
 
             <div className="text-right">
               <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                Niveau de confiance
+                {t("Result.confidenceLevel")}
               </p>
               <p className="mt-1 text-xl font-bold text-white">{analysis.confidence}</p>
               <ConfidenceMeter level={analysis.confidence} className="mt-2.5 w-32" />
@@ -71,13 +74,13 @@ export function SportMatchResult({
 
         <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
           <ShieldAlert className="h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
-          <p className="text-xs leading-relaxed text-white/40">
-            Ce pronostic est une estimation probabiliste, pas une garantie de résultat.
-          </p>
+          <p className="text-xs leading-relaxed text-white/40">{t("Result.disclaimer")}</p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Explication</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
+            {t("Result.explanationTitle")}
+          </p>
           <p className="mt-3 text-sm leading-relaxed text-white/75 sm:text-[15px]">
             {analysis.explanation}
           </p>
@@ -87,7 +90,7 @@ export function SportMatchResult({
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-emerald-400">
               <TrendingUp className="h-3.5 w-3.5" strokeWidth={2.25} />
-              Facteurs favorables
+              {t("Result.favorableFactors")}
             </p>
             <ul className="mt-3 flex flex-col gap-2.5">
               {analysis.favorableFactors.map((factor) => (
@@ -102,7 +105,7 @@ export function SportMatchResult({
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-400">
               <TriangleAlert className="h-3.5 w-3.5" strokeWidth={2.25} />
-              Risques
+              {t("Result.risks")}
             </p>
             <ul className="mt-3 flex flex-col gap-2.5">
               {analysis.risks.map((risk) => (
@@ -118,7 +121,7 @@ export function SportMatchResult({
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/40">
             <RefreshCw className="h-3.5 w-3.5" strokeWidth={2.25} />
-            Ce qui pourrait faire changer le pronostic
+            {t("Result.whatCouldChangeTitle")}
           </p>
           <p className="mt-3 text-sm leading-relaxed text-white/70">{analysis.whatCouldChange}</p>
         </div>
@@ -126,7 +129,7 @@ export function SportMatchResult({
         {analysis.secondaryMarkets.length > 0 && (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Autres marchés pertinents sur ce match
+              {t("Result.otherMarketsTitle")}
             </p>
             <div className="mt-3 flex flex-col gap-3">
               {analysis.secondaryMarkets.map((m) => (
@@ -154,10 +157,10 @@ export function SportMatchResult({
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">
         <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1">
-          {backLabel}
+          {backLabel ?? t("Result.newAnalysis")}
         </Button>
         <Button href="/dashboard/coach" className="sm:flex-1">
-          Poser une question au Coach IA
+          {t("Result.askCoach")}
           <ButtonIcon>
             <ArrowRight className="h-4 w-4" />
           </ButtonIcon>

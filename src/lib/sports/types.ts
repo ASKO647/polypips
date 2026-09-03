@@ -4,12 +4,6 @@
 
 export type Sport = "football" | "basketball" | "tennis";
 
-export const SPORT_LABELS: Record<Sport, string> = {
-  football: "Football",
-  basketball: "Basketball",
-  tennis: "Tennis",
-};
-
 export type SportFixture = {
   /** A real numeric ID for football/basketball (API-Sports' own fixture
    * id). Tennis (The Odds API) only has a string event id — never

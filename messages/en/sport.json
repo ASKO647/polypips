@@ -1,0 +1,68 @@
+{
+  "Sport": {
+    "metaTitle": "Sport — AI Analysis — Polypips",
+    "sportNames": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis"
+    },
+    "SearchPanel": {
+      "title": "AI Analysis — Sport",
+      "subtitle": "Type two teams (or two players for tennis): the AI looks up their next real matchups and lets you pick which one to analyze.",
+      "fields": {
+        "football": {
+          "label1": "Team 1",
+          "label2": "Team 2",
+          "placeholder1": "Barcelona, PSG...",
+          "placeholder2": "Bayern, Real Madrid..."
+        },
+        "basketball": {
+          "label1": "Team 1",
+          "label2": "Team 2",
+          "placeholder1": "Lakers...",
+          "placeholder2": "Warriors..."
+        },
+        "tennis": {
+          "label1": "Player 1",
+          "label2": "Player 2",
+          "placeholder1": "Alcaraz...",
+          "placeholder2": "Sinner..."
+        }
+      },
+      "searching": "Searching...",
+      "searchCta": "Find the next matchups"
+    },
+    "FixturePicker": {
+      "newSearch": "New search",
+      "upcomingTitle": "Upcoming matchups — choose one to analyze",
+      "noUpcoming": "No upcoming matchup found between these two {type, select, tennis {players} other {teams}}.",
+      "tennisDrawNotice": "In tennis, a matchup only appears once the tournament draw is published (usually 1 to 3 days ahead) — so an upcoming clash may not be visible here yet even though it will take place.",
+      "tennisNoHistory": "Head-to-head history isn't available for tennis — the data source doesn't cover past results for this sport.",
+      "recentMeetingsTitle": "Recent meetings"
+    },
+    "Flow": {
+      "changePlan": "Change plan →",
+      "otherMatch": "Another matchup"
+    },
+    "Result": {
+      "aiForecast": "AI forecast",
+      "confidenceLevel": "Confidence level",
+      "disclaimer": "This forecast is a probabilistic estimate, not a guarantee of outcome.",
+      "explanationTitle": "Explanation",
+      "favorableFactors": "Favorable factors",
+      "risks": "Risks",
+      "whatCouldChangeTitle": "What could change the forecast",
+      "otherMarketsTitle": "Other relevant markets on this match",
+      "newAnalysis": "New analysis",
+      "askCoach": "Ask the AI Coach a question"
+    },
+    "History": {
+      "metaTitle": "Sport — My Analyses — Polypips",
+      "pageTitle": "My analyses",
+      "pageSubtitle": "The full history of your sport forecasts, with access to every detailed analysis.",
+      "backToList": "Back to list",
+      "emptyTitle": "No analysis yet",
+      "emptyDescription": "Run a search from AI Analysis to see your forecasts appear here."
+    }
+  }
+}

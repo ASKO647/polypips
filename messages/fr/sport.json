@@ -1,0 +1,68 @@
+{
+  "Sport": {
+    "metaTitle": "Sport — Analyse IA — Polypips",
+    "sportNames": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis"
+    },
+    "SearchPanel": {
+      "title": "Analyse IA — Sport",
+      "subtitle": "Tapez deux équipes (ou deux joueurs pour le tennis) : l'IA cherche leurs prochaines confrontations réelles et vous laisse choisir celle à analyser.",
+      "fields": {
+        "football": {
+          "label1": "Équipe 1",
+          "label2": "Équipe 2",
+          "placeholder1": "Barcelone, PSG...",
+          "placeholder2": "Bayern, Real Madrid..."
+        },
+        "basketball": {
+          "label1": "Équipe 1",
+          "label2": "Équipe 2",
+          "placeholder1": "Lakers...",
+          "placeholder2": "Warriors..."
+        },
+        "tennis": {
+          "label1": "Joueur 1",
+          "label2": "Joueur 2",
+          "placeholder1": "Alcaraz...",
+          "placeholder2": "Sinner..."
+        }
+      },
+      "searching": "Recherche...",
+      "searchCta": "Chercher les prochaines confrontations"
+    },
+    "FixturePicker": {
+      "newSearch": "Nouvelle recherche",
+      "upcomingTitle": "Prochaines confrontations — choisissez celle à analyser",
+      "noUpcoming": "Aucune confrontation à venir trouvée entre ces deux {type, select, tennis {joueurs} other {équipes}}.",
+      "tennisDrawNotice": "Au tennis, une rencontre n'apparaît qu'une fois le tableau du tournoi publié (généralement 1 à 3 jours avant) — un duel à venir peut donc ne pas encore être visible ici même s'il aura bien lieu.",
+      "tennisNoHistory": "Historique des confrontations non disponible pour le tennis — la source de données ne couvre pas les résultats passés pour ce sport.",
+      "recentMeetingsTitle": "Confrontations récentes"
+    },
+    "Flow": {
+      "changePlan": "Changer de plan →",
+      "otherMatch": "Autre rencontre"
+    },
+    "Result": {
+      "aiForecast": "Pronostic IA",
+      "confidenceLevel": "Niveau de confiance",
+      "disclaimer": "Ce pronostic est une estimation probabiliste, pas une garantie de résultat.",
+      "explanationTitle": "Explication",
+      "favorableFactors": "Facteurs favorables",
+      "risks": "Risques",
+      "whatCouldChangeTitle": "Ce qui pourrait faire changer le pronostic",
+      "otherMarketsTitle": "Autres marchés pertinents sur ce match",
+      "newAnalysis": "Nouvelle analyse",
+      "askCoach": "Poser une question au Coach IA"
+    },
+    "History": {
+      "metaTitle": "Sport — Mes analyses — Polypips",
+      "pageTitle": "Mes analyses",
+      "pageSubtitle": "L'historique complet de vos pronostics sport, avec accès à chaque analyse détaillée.",
+      "backToList": "Retour à la liste",
+      "emptyTitle": "Aucune analyse pour le moment",
+      "emptyDescription": "Lancez une recherche depuis Analyse IA pour voir vos pronostics apparaître ici."
+    }
+  }
+}
