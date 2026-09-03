@@ -1,33 +1,33 @@
 import type { Metadata } from "next";
 import { Rocket } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { MarketingPageShell } from "@/components/marketing/marketing-page-shell";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Container } from "@/components/ui/container";
-import { CHANGELOG_ENTRIES } from "@/lib/data/changelog";
+import { getChangelogEntries } from "@/lib/data/changelog";
 
-export const metadata: Metadata = {
-  title: "Mises à jour — Polypips",
-  description: "Toutes les nouveautés et améliorations de Polypips, listées par version.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Pages.Changelog");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
-export default function ChangelogPage() {
+export default async function ChangelogPage() {
+  const t = await getTranslations("Pages.Changelog");
+  const entries = getChangelogEntries(t);
+
   return (
     <MarketingPageShell>
-      <PageHero
-        eyebrow="Mises à jour"
-        title="Journal des mises à jour"
-        description="Chaque nouveauté et amélioration de Polypips, listée ici au fil des versions."
-      />
+      <PageHero eyebrow={t("eyebrow")} title={t("title")} description={t("description")} />
 
       <Container className="pb-20 sm:pb-28">
         <div className="mx-auto flex max-w-2xl flex-col gap-8">
-          {CHANGELOG_ENTRIES.map((entry, i) => (
+          {entries.map((entry, i) => (
             <div key={entry.version} className="relative flex gap-6">
               <div className="flex flex-col items-center">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#F3C7C7] bg-brand-50">
                   <Rocket className="h-5 w-5 text-brand-500" strokeWidth={1.75} />
                 </div>
-                {i < CHANGELOG_ENTRIES.length - 1 && (
+                {i < entries.length - 1 && (
                   <span className="mt-2 w-px flex-1 border-l-2 border-dashed border-brand-200" />
                 )}
               </div>
@@ -53,9 +53,7 @@ export default function ChangelogPage() {
             </div>
           ))}
 
-          <p className="text-center text-sm text-body-soft">
-            D&apos;autres mises à jour arriveront bientôt.
-          </p>
+          <p className="text-center text-sm text-body-soft">{t("moreComingSoon")}</p>
         </div>
       </Container>
     </MarketingPageShell>

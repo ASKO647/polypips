@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { CONTACT_EMAIL, buildMailto } from "@/lib/mailto";
 
@@ -9,6 +10,7 @@ import { CONTACT_EMAIL, buildMailto } from "@/lib/mailto";
  * mail client with everything pre-filled, rather than faking a submission
  * that would silently go nowhere. */
 export function ContactForm() {
+  const t = useTranslations("Pages.Contact.form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState("");
@@ -28,7 +30,7 @@ export function ContactForm() {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label htmlFor="contact-name" className="text-sm font-semibold text-ink">
-            Nom
+            {t("nameLabel")}
           </label>
           <input
             id="contact-name"
@@ -37,12 +39,12 @@ export function ContactForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-body-soft focus:border-brand-400 focus:outline-none"
-            placeholder="Votre nom"
+            placeholder={t("namePlaceholder")}
           />
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="contact-email" className="text-sm font-semibold text-ink">
-            Email
+            {t("emailLabel")}
           </label>
           <input
             id="contact-email"
@@ -51,14 +53,14 @@ export function ContactForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-body-soft focus:border-brand-400 focus:outline-none"
-            placeholder="vous@exemple.com"
+            placeholder={t("emailPlaceholder")}
           />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <label htmlFor="contact-subject" className="text-sm font-semibold text-ink">
-          Sujet
+          {t("subjectLabel")}
         </label>
         <input
           id="contact-subject"
@@ -67,13 +69,13 @@ export function ContactForm() {
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           className="rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-body-soft focus:border-brand-400 focus:outline-none"
-          placeholder="Objet de votre message"
+          placeholder={t("subjectPlaceholder")}
         />
       </div>
 
       <div className="flex flex-col gap-2">
         <label htmlFor="contact-message" className="text-sm font-semibold text-ink">
-          Message
+          {t("messageLabel")}
         </label>
         <textarea
           id="contact-message"
@@ -82,17 +84,16 @@ export function ContactForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className="resize-none rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm text-ink placeholder:text-body-soft focus:border-brand-400 focus:outline-none"
-          placeholder="Votre message"
+          placeholder={t("messagePlaceholder")}
         />
       </div>
 
       <Button type="submit" size="lg" disabled={!canSubmit} className="w-full sm:w-auto">
-        Envoyer <ButtonIcon><Send className="h-4 w-4" /></ButtonIcon>
+        {t("submitLabel")} <ButtonIcon><Send className="h-4 w-4" /></ButtonIcon>
       </Button>
 
       <p className="flex items-center gap-1.5 text-xs text-body-soft">
-        <Mail className="h-3.5 w-3.5" /> Ouvre votre client email avec le message pré-rempli, à
-        destination de {CONTACT_EMAIL}.
+        <Mail className="h-3.5 w-3.5" /> {t("mailtoHint", { email: CONTACT_EMAIL })}
       </p>
     </form>
   );
