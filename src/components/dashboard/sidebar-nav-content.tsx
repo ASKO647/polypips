@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { ChevronDown, Plus } from "lucide-react";
 import { AccountStatusCard } from "@/components/dashboard/account-status-card";
@@ -38,6 +39,7 @@ export function SidebarNavContent({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("Dashboard.Nav");
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
   const toggleGroup = (id: string) =>
@@ -71,7 +73,7 @@ export function SidebarNavContent({
           className={cn("h-[18px] w-[18px] shrink-0", active && "text-brand-400")}
           strokeWidth={2}
         />
-        <span className="flex-1">{item.label}</span>
+        <span className="flex-1">{t(item.label)}</span>
         {item.badge && (
           <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
             {item.badge}
@@ -136,23 +138,23 @@ export function SidebarNavContent({
         <div className="flex flex-col gap-4">
           {renderUniverseGroup({
             id: "polymarket",
-            label: "Polymarket",
+            label: t("polymarket.groupLabel"),
             accentClass: "bg-violet-400",
             items: POLYMARKET_NAV_ITEMS,
           })}
 
           {renderUniverseGroup({
             id: "sport",
-            label: "Sport",
+            label: t("sport.groupLabel"),
             accentClass: "bg-emerald-400",
             items: SPORTS_SUB_NAV,
           })}
 
           {renderUniverseGroup({
             id: "trading",
-            label: "Trading",
+            label: t("trading.groupLabel"),
             accentClass: "bg-amber-400",
-            badge: "NOUVEAU",
+            badge: t("trading.badge"),
             items: TRADING_NAV_ITEMS,
           })}
         </div>
@@ -168,7 +170,7 @@ export function SidebarNavContent({
           className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text"
         >
           <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Nouvelle analyse
+          {t("newAnalysis")}
         </Link>
       </div>
     </>

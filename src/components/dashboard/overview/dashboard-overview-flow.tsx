@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   CandlestickChart,
   GraduationCap,
@@ -90,6 +91,7 @@ export function DashboardOverviewFlow({
    * its honest empty state in that case. */
   performanceStats: PerformanceStats | null;
 }) {
+  const t = useTranslations("Dashboard.Overview");
   const [selectedMarket, setSelectedMarket] = useState<MarketAnalysis | null>(
     null
   );
@@ -99,24 +101,22 @@ export function DashboardOverviewFlow({
       <AnalysisResult
         analysis={selectedMarket}
         onBack={() => setSelectedMarket(null)}
-        backLabel="Retour au tableau de bord"
+        backLabel={t("backToDashboard")}
         locked={!hasActiveSubscription}
       />
     );
   }
 
-  const lockedMessage = cancelled
-    ? "Abonnement annulé — réabonnez-vous pour continuer à utiliser le tableau de bord."
-    : "Débloquez le tableau de bord complet — Débutez pour 0,99 €";
+  const lockedMessage = cancelled ? t("lockedCancelled") : t("lockedDefault");
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
-          {firstName ? `Bonjour, ${firstName} 👋` : "Bonjour 👋"}
+          {firstName ? t("greeting", { name: firstName }) : t("greetingNoName")}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
-          Vue d&apos;ensemble de votre activité et de vos accès rapides.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -125,11 +125,14 @@ export function DashboardOverviewFlow({
           <QuickAccessCard
             href="/dashboard/analyse-ia"
             icon={Sparkles}
-            title="Analyse IA Polymarket"
+            title={t("cards.analyseIAPolymarket.title")}
             stat={
               dailyAnalysisLimit !== null
-                ? `${analysesToday}/${dailyAnalysisLimit} aujourd'hui`
-                : "Analyses illimitées"
+                ? t("cards.analyseIAPolymarket.statLimited", {
+                    today: analysesToday,
+                    limit: dailyAnalysisLimit,
+                  })
+                : t("cards.analyseIAPolymarket.statUnlimited")
             }
             tone="brand"
             sparklinePoints={analysesSparkline}
@@ -137,18 +140,18 @@ export function DashboardOverviewFlow({
           <QuickAccessCard
             href="/dashboard/markets"
             icon={LineChart}
-            title="Marchés sélectionnés"
-            stat={`${selectedMarketsCount} marché${selectedMarketsCount > 1 ? "s" : ""} sélectionné${selectedMarketsCount > 1 ? "s" : ""}`}
+            title={t("cards.marchesSelectionnes.title")}
+            stat={t("cards.marchesSelectionnes.stat", { count: selectedMarketsCount })}
             tone="sky"
           />
           <QuickAccessCard
             href="/dashboard/copy-trading"
             icon={Wallet}
-            title="Smart Wallet"
+            title={t("cards.smartWallet.title")}
             stat={
               walletsMax !== null
-                ? `${walletsFollowed}/${walletsMax} wallets suivis`
-                : `${walletsFollowed} wallet${walletsFollowed > 1 ? "s" : ""} suivi${walletsFollowed > 1 ? "s" : ""}`
+                ? t("cards.smartWallet.statWithMax", { followed: walletsFollowed, max: walletsMax })
+                : t("cards.smartWallet.statNoMax", { count: walletsFollowed })
             }
             tone="emerald"
             sparklinePoints={walletsSparkline}
@@ -156,32 +159,32 @@ export function DashboardOverviewFlow({
           <QuickAccessCard
             href="/dashboard/sports"
             icon={Trophy}
-            title="Analyse IA Sport"
-            stat={`${sportAnalysesToday} analyse${sportAnalysesToday > 1 ? "s" : ""} aujourd'hui`}
+            title={t("cards.analyseIASport.title")}
+            stat={t("cards.analyseIASport.stat", { count: sportAnalysesToday })}
             tone="violet"
             sparklinePoints={sportSparkline}
           />
           <QuickAccessCard
             href="/dashboard/trading"
             icon={CandlestickChart}
-            title="Analyse IA Trading"
-            stat={`${tradingAnalysesToday} analyse${tradingAnalysesToday > 1 ? "s" : ""} aujourd'hui`}
+            title={t("cards.analyseIATrading.title")}
+            stat={t("cards.analyseIATrading.stat", { count: tradingAnalysesToday })}
             tone="amber"
             sparklinePoints={tradingSparkline}
           />
           <QuickAccessCard
             href="/dashboard/coach"
             icon={GraduationCap}
-            title="Coach IA"
-            stat={`${conversationCount} conversation${conversationCount > 1 ? "s" : ""}`}
+            title={t("cards.coachIA.title")}
+            stat={t("cards.coachIA.stat", { count: conversationCount })}
             tone="rose"
             sparklinePoints={coachSparkline}
           />
           <QuickAccessCard
             href="/dashboard/community"
             icon={Users}
-            title="Communauté"
-            stat={`${groupsJoinedCount} groupe${groupsJoinedCount > 1 ? "s" : ""} rejoint${groupsJoinedCount > 1 ? "s" : ""}`}
+            title={t("cards.communaute.title")}
+            stat={t("cards.communaute.stat", { count: groupsJoinedCount })}
             tone="neutral"
           />
           <SubscriptionQuickCard subscription={subscription} plan={plan} />

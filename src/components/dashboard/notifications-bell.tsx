@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Bell, BellOff } from "lucide-react";
 import type { NotificationItem } from "@/lib/data/notifications";
 import { createClient } from "@/lib/supabase/client";
@@ -11,6 +12,7 @@ export function NotificationsBell({
 }: {
   notifications: NotificationItem[];
 }) {
+  const t = useTranslations("Dashboard.NotificationsBell");
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
   const ref = useRef<HTMLDivElement>(null);
@@ -51,7 +53,7 @@ export function NotificationsBell({
     <div ref={ref} className="relative">
       <button
         type="button"
-        aria-label="Notifications"
+        aria-label={t("ariaLabel")}
         aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
@@ -71,15 +73,13 @@ export function NotificationsBell({
           className="absolute right-0 top-[calc(100%+10px)] z-50 w-80 max-w-[calc(100vw-2.5rem)] animate-fade-up overflow-hidden rounded-2xl border border-dash-border bg-dash-bg shadow-[0_20px_50px_-16px_rgba(0,0,0,0.6)]"
         >
           <div className="border-b border-dash-border px-4 py-3">
-            <p className="text-sm font-bold text-dash-text">Notifications</p>
+            <p className="text-sm font-bold text-dash-text">{t("title")}</p>
           </div>
 
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
               <BellOff className="h-6 w-6 text-dash-text-faint" />
-              <p className="text-sm text-dash-text-quaternary">
-                Aucune notification pour le moment.
-              </p>
+              <p className="text-sm text-dash-text-quaternary">{t("empty")}</p>
             </div>
           ) : (
             <ul className="flex max-h-80 flex-col overflow-y-auto">

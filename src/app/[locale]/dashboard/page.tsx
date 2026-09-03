@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { DashboardOverviewFlow } from "@/components/dashboard/overview/dashboard-overview-flow";
 import { CheckoutIntentRedirect } from "@/components/dashboard/checkout-intent-redirect";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
@@ -44,9 +45,10 @@ import { getDailyAnalysisLimit, getMaxTrackedWallets } from "@/lib/data/pricing"
 import { bucketCountsByDay, getFirstNameFromUser } from "@/lib/utils";
 import type { ActivityPeriodKey, ActivityPeriodCounts } from "@/components/dashboard/overview/activity-donut";
 
-export const metadata: Metadata = {
-  title: "Tableau de bord — Polypips",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Dashboard");
+  return { title: t("metaTitle") };
+}
 
 /** Window fetched for both the 7-day sparklines and the "30 jours" donut
  * period — the "7 jours" period is derived from the same fetch (summing

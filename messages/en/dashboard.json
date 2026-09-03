@@ -1,0 +1,204 @@
+{
+  "Dashboard": {
+    "metaTitle": "Dashboard — Polypips",
+    "Nav": {
+      "top": "Dashboard",
+      "polymarket": {
+        "groupLabel": "Polymarket",
+        "analyseIA": "AI Analysis",
+        "marches": "Selected markets",
+        "smartWallet": "Smart Wallet"
+      },
+      "sport": {
+        "groupLabel": "Sport",
+        "analyseIA": "AI Analysis",
+        "mesAnalyses": "My analyses"
+      },
+      "trading": {
+        "groupLabel": "Trading",
+        "badge": "NEW",
+        "analyseIA": "AI Analysis",
+        "mesAnalyses": "My analyses"
+      },
+      "global": {
+        "coach": "AI Coach",
+        "communaute": "Community",
+        "profil": "Profile"
+      },
+      "sportsTitle": "Sports",
+      "resources": {
+        "faqSupport": "FAQ / Support"
+      },
+      "newAnalysis": "New analysis"
+    },
+    "BottomNav": {
+      "ariaLabel": "Main navigation",
+      "accueil": "Home",
+      "analyseIA": "AI Analysis",
+      "sport": "Sport",
+      "communaute": "Community",
+      "menu": "Menu",
+      "menuAriaLabel": "Menu"
+    },
+    "Header": {
+      "backAriaLabel": "Back to dashboard",
+      "logoAriaLabel": "Polypips — dashboard",
+      "openMenuAriaLabel": "Open menu",
+      "closeMenuAriaLabel": "Close menu",
+      "planPill": {
+        "none": "No subscription",
+        "discovery": "Discovery offer",
+        "discoveryDaysRemaining": "Discovery offer · {days, plural, one {# day left} other {# days left}}",
+        "discoveryLastDay": "Discovery offer · last day",
+        "pastDue": "Payment failed",
+        "pro": "Polypips Pro"
+      }
+    },
+    "MobileNav": {
+      "title": "Menu",
+      "closeAriaLabel": "Close menu"
+    },
+    "Sidebar": {
+      "logoAriaLabel": "Polypips — dashboard"
+    },
+    "AccountStatusCard": {
+      "noSubscription": "No subscription",
+      "unlockDescription": "Unlock full analysis results.",
+      "viewOffers": "View plans",
+      "discoveryOffer": "Discovery offer",
+      "expiresIn": "Your discovery offer expires in:",
+      "daysCount": "{days, plural, one {# day} other {# days}}",
+      "fullAccess": "Full access to every feature",
+      "thenPrice": "Then {price}{suffix}",
+      "pastDue": "Payment failed",
+      "endsOn": "Ends on {date}",
+      "cancelled": "Subscription cancelled",
+      "renewsOn": "Renews on {date}",
+      "active": "Active subscription"
+    },
+    "NotificationsBell": {
+      "ariaLabel": "Notifications",
+      "title": "Notifications",
+      "empty": "No notifications yet."
+    },
+    "ProfileMenu": {
+      "ariaLabel": "Profile menu",
+      "defaultUserName": "Polypips user",
+      "profil": "Profile",
+      "subscription": "Subscription",
+      "theme": "Theme",
+      "dark": "Dark",
+      "light": "Light",
+      "language": "Language",
+      "faqSupport": "FAQ / Support"
+    },
+    "LockedOverlay": {
+      "redirecting": "Redirecting...",
+      "resubscribe": "Resubscribe",
+      "unlockCta": "Unlock — Start for $0.99"
+    },
+    "ComingSoonBlur": {
+      "eyebrow": "Coming soon"
+    },
+    "SyncCountdown": {
+      "defaultLabel": "Next markets in",
+      "refreshingImminent": "Refreshing shortly…"
+    },
+    "PlaceholderSection": {
+      "comingSoonBadge": "This section is coming soon"
+    },
+    "CheckoutIntentRedirect": {
+      "redirecting": "Redirecting to checkout..."
+    },
+    "Overview": {
+      "greeting": "Hi, {name} 👋",
+      "greetingNoName": "Hi 👋",
+      "subtitle": "An overview of your activity and quick access.",
+      "backToDashboard": "Back to dashboard",
+      "lockedCancelled": "Subscription cancelled — resubscribe to keep using the dashboard.",
+      "lockedDefault": "Unlock the full dashboard — Start for $0.99",
+      "cards": {
+        "analyseIAPolymarket": {
+          "title": "Polymarket AI Analysis",
+          "statLimited": "{today}/{limit} today",
+          "statUnlimited": "Unlimited analyses"
+        },
+        "marchesSelectionnes": {
+          "title": "Selected markets",
+          "stat": "{count, plural, one {# selected market} other {# selected markets}}"
+        },
+        "smartWallet": {
+          "title": "Smart Wallet",
+          "statWithMax": "{followed}/{max} wallets followed",
+          "statNoMax": "{count, plural, one {# wallet followed} other {# wallets followed}}"
+        },
+        "analyseIASport": {
+          "title": "Sport AI Analysis",
+          "stat": "{count, plural, one {# analysis today} other {# analyses today}}"
+        },
+        "analyseIATrading": {
+          "title": "Trading AI Analysis",
+          "stat": "{count, plural, one {# analysis today} other {# analyses today}}"
+        },
+        "coachIA": {
+          "title": "AI Coach",
+          "stat": "{count, plural, one {# conversation} other {# conversations}}"
+        },
+        "communaute": {
+          "title": "Community",
+          "stat": "{count, plural, one {# group joined} other {# groups joined}}"
+        }
+      }
+    },
+    "ActivityDonut": {
+      "title": "Your activity",
+      "periods": {
+        "7j": "7 days",
+        "30j": "30 days",
+        "tout": "All"
+      },
+      "segments": {
+        "analyses": "Polymarket analyses",
+        "wallets": "Wallets followed",
+        "sport": "Sport analyses",
+        "trading": "Trading analyses",
+        "coach": "AI Coach messages"
+      },
+      "total": "Total",
+      "empty": "No activity recorded for this period."
+    },
+    "MarketsTable": {
+      "title": "Markets selected by AI",
+      "viewAllShort": "View all selected markets →",
+      "emptyState": "No market selected yet. Our AI periodically scans the most active markets.",
+      "colMarket": "Market",
+      "colAiProbability": "AI probability",
+      "colMarketProbability": "Market probability",
+      "colDecision": "AI decision",
+      "viewAll": "View all markets"
+    },
+    "PerformanceCard": {
+      "title": "Overall performance",
+      "emptyTitle": "Not enough data yet",
+      "emptyDescription": "Performance tracking (ROI, P&L, win rate) builds up automatically as soon as a market you analyzed resolves — come back once at least one analysis has been confirmed.",
+      "resolvedCount": "{count, plural, one {# resolved} other {# resolved}}",
+      "simulationNote": "Simulation based on the AI's decisions — a theoretical €100 stake per analysis, never a real gain.",
+      "winRate": "Win rate",
+      "roiSimule": "Simulated ROI",
+      "pnlSimule": "Simulated P&L"
+    },
+    "RecentActivitySection": {
+      "title": "Recent activity",
+      "empty": "No notifications yet."
+    },
+    "SubscriptionQuickCard": {
+      "statusLabel": "Subscription status",
+      "noneActive": "No active subscription",
+      "expiresIn": "Expires in {days, plural, one {# day} other {# days}}",
+      "endsOn": "Ends on {date}",
+      "cancelled": "Subscription cancelled",
+      "renewsOn": "Renews on {date}",
+      "active": "Active"
+    }
+  }
+}

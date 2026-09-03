@@ -1,8 +1,11 @@
+"use client";
+
 import type { ComponentType, ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 /** Same blur-over-content visual language as LockedOverlay (the paywall
- * gate on Analyse IA/Marchés/Smart Money/Copy Trading) — reused here for a
+ * gate on Analyse IA/Marchés/Smart Wallet) — reused here for a
  * different reason: not "subscribe to unlock" but "not ready yet, no CTA
  * that leads anywhere real". No Stripe checkout, no unlock state — just a
  * permanent blurred placeholder with a message and an optional secondary
@@ -32,6 +35,8 @@ export function ComingSoonBlur({
   children?: ReactNode;
   className?: string;
 }) {
+  const t = useTranslations("Dashboard.ComingSoonBlur");
+
   return (
     <div className={cn("relative", className)}>
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-b from-dash-bg/50 via-dash-bg/80 to-dash-bg/95 px-6 py-10 text-center">
@@ -39,7 +44,7 @@ export function ComingSoonBlur({
           <Icon className="h-5 w-5" strokeWidth={2} />
         </span>
         <div className="flex flex-col gap-1.5">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-400">Bientôt disponible</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand-400">{t("eyebrow")}</p>
           <p className="max-w-sm text-lg font-bold text-dash-text">{title}</p>
           <p className="max-w-sm text-sm leading-relaxed text-dash-text-secondary">{description}</p>
         </div>

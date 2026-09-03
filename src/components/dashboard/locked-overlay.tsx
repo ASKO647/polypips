@@ -1,16 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Lock, RefreshCw } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 /** Same blur-behind-an-unlock-CTA pattern used on the Analyse IA / Marchés
  * detail views (see AnalysisResult's `locked` prop) — extracted here since
- * Smart Money and Copy Trading both need the same gate on content that
- * already rendered (proving the product works) but shouldn't be usable
- * without an active subscription. */
+ * Smart Wallet needs the same gate on content that already rendered
+ * (proving the product works) but shouldn't be usable without an active
+ * subscription. */
 export function LockedOverlay({
   locked,
   message,
@@ -39,6 +39,7 @@ export function LockedOverlay({
 }) {
   const [unlocking, setUnlocking] = useState(false);
   const locale = useLocale();
+  const t = useTranslations("Dashboard.LockedOverlay");
 
   const handleUnlock = async () => {
     if (unlocking) return;
@@ -92,10 +93,10 @@ export function LockedOverlay({
             disabled={unlocking}
           >
             {unlocking
-              ? "Redirection..."
+              ? t("redirecting")
               : cancelled
-                ? "Réabonnez-vous"
-                : "Débloquez — Débutez pour 0,99 €"}
+                ? t("resubscribe")
+                : t("unlockCta")}
             <ButtonIcon>→</ButtonIcon>
           </Button>
         </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { SidebarNavContent } from "@/components/dashboard/sidebar-nav-content";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
@@ -8,12 +11,14 @@ export function DashboardSidebar({
 }: {
   subscription: SubscriptionRow | null;
 }) {
+  const t = useTranslations("Dashboard.Sidebar");
+
   return (
     <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 flex-col overflow-y-auto border-r border-dash-border bg-dash-bg lg:flex">
       <Link
         href="/dashboard"
         className="flex h-[72px] shrink-0 items-center gap-2 px-6"
-        aria-label="Polypips — tableau de bord"
+        aria-label={t("logoAriaLabel")}
       >
         <Image
           src="/polypips-mark.png"

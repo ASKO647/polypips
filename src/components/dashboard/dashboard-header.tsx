@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Link, usePathname } from "@/i18n/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, Menu, X } from "lucide-react";
 import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 import { ProfileMenu } from "@/components/dashboard/profile-menu";
@@ -18,8 +19,10 @@ import type { NotificationItem } from "@/lib/data/notifications";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 /** Longest-prefix match so a sub-route like /dashboard/markets/abc123
- * still resolves to "Marchés sélectionnés" rather than falling through to null. */
-function pageTitleFor(pathname: string): string | null {
+ * still resolves to "Marchés sélectionnés" rather than falling through to
+ * null. Returns the nav item's translation KEY (relative to
+ * "Dashboard.Nav") — the caller resolves it with `t(item.label)`. */
+function pageTitleKeyFor(pathname: string): string | null {
   const items = [
     DASHBOARD_TOP_ITEM,
     ...POLYMARKET_NAV_ITEMS,
@@ -39,24 +42,28 @@ function daysRemainingFrom(trialEndsAt: string): number {
   return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
 }
 
+type PlanPillTranslator = (key: string, values?: Record<string, number>) => string;
+
 /** Merges the old full-width TrialBanner's "expire dans X jours" copy into
  * this same pill instead of a separate CTA banner — there is no higher paid
  * tier to upsell to (single-tier pricing: discovery trial rolls straight
- * into Pro), so the count is purely informational now, never a button. */
+ * into Pro), so the count is purely informational now, never a button.
+ * `t` must be scoped to the "Dashboard.Header.planPill" namespace. */
 function planPillLabel(
+  t: PlanPillTranslator,
   subscription: SubscriptionRow | null,
   cancelled: boolean,
   trialDaysRemaining: number | null
 ): string {
-  if (!subscription || cancelled) return "Aucun abonnement";
+  if (!subscription || cancelled) return t("none");
   if (subscription.status === "trialing") {
-    if (trialDaysRemaining === null) return "Offre découverte";
+    if (trialDaysRemaining === null) return t("discovery");
     return trialDaysRemaining > 0
-      ? `Offre découverte · ${trialDaysRemaining} j restant${trialDaysRemaining > 1 ? "s" : ""}`
-      : "Offre découverte · dernier jour";
+      ? t("discoveryDaysRemaining", { days: trialDaysRemaining })
+      : t("discoveryLastDay");
   }
-  if (subscription.status === "past_due") return "Paiement en échec";
-  return "Polypips Pro";
+  if (subscription.status === "past_due") return t("pastDue");
+  return t("pro");
 }
 
 export function DashboardHeader({
@@ -85,7 +92,10 @@ export function DashboardHeader({
   avatarUrl: string | null;
 }) {
   const pathname = usePathname();
-  const pageTitle = pageTitleFor(pathname);
+  const t = useTranslations("Dashboard.Header");
+  const tNav = useTranslations("Dashboard.Nav");
+  const tPlanPill = useTranslations("Dashboard.Header.planPill");
+  const pageTitleKey = pageTitleKeyFor(pathname);
   const showBack = pathname !== "/dashboard";
 
   const [tick, setTick] = useState(0);
@@ -106,14 +116,14 @@ export function DashboardHeader({
           <>
             <Link
               href="/dashboard"
-              aria-label="Retour au tableau de bord"
+              aria-label={t("backAriaLabel")}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-dash-border bg-dash-surface-alt text-dash-text-secondary transition-colors duration-150 hover:text-dash-text"
             >
               <ArrowLeft className="h-4 w-4" strokeWidth={2} />
             </Link>
-            {pageTitle && (
+            {pageTitleKey && (
               <span className="truncate font-display text-sm font-bold text-dash-text sm:text-base">
-                {pageTitle}
+                {tNav(pageTitleKey)}
               </span>
             )}
           </>
@@ -121,7 +131,7 @@ export function DashboardHeader({
           <Link
             href="/dashboard"
             className="flex items-center gap-2 lg:hidden"
-            aria-label="Polypips — tableau de bord"
+            aria-label={t("logoAriaLabel")}
           >
             <Image
               src="/polypips-mark.png"
@@ -137,7 +147,7 @@ export function DashboardHeader({
       <div className="flex items-center gap-2.5 sm:gap-3">
         <span className="hidden items-center gap-1.5 whitespace-nowrap rounded-full border border-dash-border bg-dash-surface-alt px-3 py-1.5 text-xs font-semibold text-dash-text-secondary sm:inline-flex">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
-          {planPillLabel(subscription, cancelled, trialDaysRemaining)}
+          {planPillLabel(tPlanPill, subscription, cancelled, trialDaysRemaining)}
         </span>
 
         <NotificationsBell notifications={notifications} />
@@ -146,12 +156,12 @@ export function DashboardHeader({
           displayName={displayName}
           email={userEmail}
           avatarUrl={avatarUrl}
-          planLabel={planPillLabel(subscription, cancelled, trialDaysRemaining)}
+          planLabel={planPillLabel(tPlanPill, subscription, cancelled, trialDaysRemaining)}
         />
 
         <button
           type="button"
-          aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-label={menuOpen ? t("closeMenuAriaLabel") : t("openMenuAriaLabel")}
           aria-expanded={menuOpen}
           onClick={onMenuToggle}
           className="flex h-11 w-11 items-center justify-center rounded-full border border-dash-border bg-dash-surface-alt text-dash-text-secondary transition-transform duration-150 ease-out hover:scale-105 hover:text-dash-text active:scale-95 lg:hidden"

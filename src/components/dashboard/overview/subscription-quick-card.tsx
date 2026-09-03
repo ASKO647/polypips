@@ -1,4 +1,7 @@
+"use client";
+
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Crown, Rocket } from "lucide-react";
 import { getTrialDaysRemaining, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { PricingPlan } from "@/lib/data/pricing";
@@ -24,20 +27,21 @@ export function SubscriptionQuickCard({
   const cancelled =
     subscription !== null &&
     (subscription.cancelAtPeriodEnd || subscription.status === "canceled");
+  const t = useTranslations("Dashboard.SubscriptionQuickCard");
 
   let statusLine: string;
   if (!subscription) {
-    statusLine = "Aucun abonnement actif";
+    statusLine = t("noneActive");
   } else if (trialDays !== null) {
-    statusLine = `Expire dans ${trialDays} jour${trialDays > 1 ? "s" : ""}`;
+    statusLine = t("expiresIn", { days: trialDays });
   } else if (cancelled) {
     statusLine = subscription.currentPeriodEnd
-      ? `Se termine le ${formatResetDate(subscription.currentPeriodEnd)}`
-      : "Abonnement annulé";
+      ? t("endsOn", { date: formatResetDate(subscription.currentPeriodEnd) })
+      : t("cancelled");
   } else if (subscription.currentPeriodEnd) {
-    statusLine = `Renouvellement le ${formatResetDate(subscription.currentPeriodEnd)}`;
+    statusLine = t("renewsOn", { date: formatResetDate(subscription.currentPeriodEnd) });
   } else {
-    statusLine = "Actif";
+    statusLine = t("active");
   }
 
   return (
@@ -55,7 +59,7 @@ export function SubscriptionQuickCard({
         <Icon className="h-5 w-5" strokeWidth={2} />
       </span>
       <div className="relative">
-        <p className="text-xs font-semibold text-dash-text-quaternary">Statut abonnement</p>
+        <p className="text-xs font-semibold text-dash-text-quaternary">{t("statusLabel")}</p>
         <p className="mt-1 text-sm font-bold text-brand-400">{plan.name}</p>
         <p className="mt-0.5 text-xs text-dash-text-quaternary">{statusLine}</p>
       </div>

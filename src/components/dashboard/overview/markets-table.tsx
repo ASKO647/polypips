@@ -1,4 +1,7 @@
+"use client";
+
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { isPrimaryDecision, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
@@ -31,27 +34,26 @@ export function MarketsTable({
   markets: MarketAnalysis[];
   onSelect: (market: MarketAnalysis) => void;
 }) {
+  const t = useTranslations("Dashboard.MarketsTable");
+
   return (
     <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-base font-bold text-dash-text">
-          Marchés sélectionnés par l&apos;IA
+          {t("title")}
         </h2>
         <Link
           href="/dashboard/markets"
           className="text-xs font-semibold text-brand-400 transition-colors hover:text-brand-300"
         >
-          Voir tous les marchés sélectionnés →
+          {t("viewAllShort")}
         </Link>
       </div>
 
       {markets.length === 0 ? (
         <div className="mt-4 flex flex-col items-center gap-2 rounded-xl border border-dashed border-dash-border px-6 py-10 text-center">
           <Sparkles className="h-5 w-5 text-dash-text-faint" />
-          <p className="text-sm text-dash-text-quaternary">
-            Aucun marché sélectionné pour le moment. Notre IA scanne
-            périodiquement les marchés les plus actifs.
-          </p>
+          <p className="text-sm text-dash-text-quaternary">{t("emptyState")}</p>
         </div>
       ) : (
         <>
@@ -59,10 +61,10 @@ export function MarketsTable({
             <table className="w-full min-w-[560px] border-collapse text-left">
               <thead>
                 <tr className="text-[11px] font-semibold uppercase tracking-wide text-dash-text-quaternary">
-                  <th className="pb-3 pr-3 font-semibold">Marché</th>
-                  <th className="pb-3 px-3 font-semibold">Probabilité IA</th>
-                  <th className="pb-3 px-3 font-semibold">Probabilité marché</th>
-                  <th className="pb-3 pl-3 font-semibold">Décision IA</th>
+                  <th className="pb-3 pr-3 font-semibold">{t("colMarket")}</th>
+                  <th className="pb-3 px-3 font-semibold">{t("colAiProbability")}</th>
+                  <th className="pb-3 px-3 font-semibold">{t("colMarketProbability")}</th>
+                  <th className="pb-3 pl-3 font-semibold">{t("colDecision")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -123,7 +125,7 @@ export function MarketsTable({
             href="/dashboard/markets"
             className="mt-4 flex w-full items-center justify-center rounded-xl border border-dash-border bg-dash-surface-alt py-2.5 text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-border-strong hover:text-dash-text"
           >
-            Voir tous les marchés
+            {t("viewAll")}
           </Link>
         </>
       )}

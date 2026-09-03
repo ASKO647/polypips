@@ -26,6 +26,7 @@ export function AccountStatusCard({
 }) {
   const { formatAmount } = useCurrency();
   const tPlans = useTranslations("Plans");
+  const t = useTranslations("Dashboard.AccountStatusCard");
   const plans = getPricingPlans(tPlans);
   const DECOUVERTE_PLAN = plans.find((p) => p.id === "decouverte") ?? plans[0];
   const PRO_PLAN = plans.find((p) => p.id === "pro") ?? plans[0];
@@ -33,15 +34,13 @@ export function AccountStatusCard({
   if (!subscription) {
     return (
       <div className="flex flex-col gap-3 rounded-2xl border border-dash-border bg-dash-surface-strong p-4">
-        <p className="text-sm font-semibold text-dash-text">Aucun abonnement</p>
-        <p className="text-xs text-dash-text-tertiary">
-          Débloquez les résultats d&apos;analyse en clair.
-        </p>
+        <p className="text-sm font-semibold text-dash-text">{t("noSubscription")}</p>
+        <p className="text-xs text-dash-text-tertiary">{t("unlockDescription")}</p>
         <Link
           href="/pricing"
           className="flex h-9 w-full items-center justify-center rounded-full bg-brand-500 text-xs font-semibold text-white transition-colors hover:bg-brand-600"
         >
-          Voir les offres
+          {t("viewOffers")}
         </Link>
       </div>
     );
@@ -56,24 +55,20 @@ export function AccountStatusCard({
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
             <Rocket className="h-4 w-4" strokeWidth={2} />
           </span>
-          <span className="text-sm font-semibold text-dash-text">Offre découverte</span>
+          <span className="text-sm font-semibold text-dash-text">{t("discoveryOffer")}</span>
         </div>
 
         <div>
-          <p className="text-xs text-dash-text-tertiary">
-            Votre offre découverte expire dans :
-          </p>
+          <p className="text-xs text-dash-text-tertiary">{t("expiresIn")}</p>
           <p className="mt-1 font-display text-3xl font-bold text-brand-400">
-            {trialDays} jour{trialDays > 1 ? "s" : ""}
+            {t("daysCount", { days: trialDays })}
           </p>
         </div>
 
-        <p className="text-xs text-dash-text-secondary">
-          Accès complet à toutes les fonctionnalités
-        </p>
+        <p className="text-xs text-dash-text-secondary">{t("fullAccess")}</p>
 
         <p className="text-[11px] text-dash-text-quaternary">
-          Puis {formatAmount(PRO_PLAN.priceEur)}{PRO_PLAN.priceSuffix}
+          {t("thenPrice", { price: formatAmount(PRO_PLAN.priceEur), suffix: PRO_PLAN.priceSuffix })}
         </p>
       </div>
     );
@@ -94,18 +89,18 @@ export function AccountStatusCard({
       </div>
 
       {pastDue ? (
-        <p className="text-xs font-semibold text-amber-400">Paiement en échec</p>
+        <p className="text-xs font-semibold text-amber-400">{t("pastDue")}</p>
       ) : cancelled ? (
         <p className="text-xs font-semibold text-dash-text-secondary">
           {subscription.currentPeriodEnd
-            ? `Se termine le ${formatResetDate(subscription.currentPeriodEnd)}`
-            : "Abonnement annulé"}
+            ? t("endsOn", { date: formatResetDate(subscription.currentPeriodEnd) })
+            : t("cancelled")}
         </p>
       ) : (
         <p className="text-xs text-dash-text-tertiary">
           {subscription.currentPeriodEnd
-            ? `Renouvellement le ${formatResetDate(subscription.currentPeriodEnd)}`
-            : "Abonnement actif"}
+            ? t("renewsOn", { date: formatResetDate(subscription.currentPeriodEnd) })
+            : t("active")}
         </p>
       )}
     </div>

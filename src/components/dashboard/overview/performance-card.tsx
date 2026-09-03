@@ -1,6 +1,7 @@
 "use client";
 
 import { TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useCurrency } from "@/providers/currency-provider";
 import type { PerformanceStats } from "@/lib/supabase/performance";
 import { cn } from "@/lib/utils";
@@ -17,12 +18,13 @@ import { cn } from "@/lib/utils";
  */
 export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
   const { formatAmount } = useCurrency();
+  const t = useTranslations("Dashboard.PerformanceCard");
 
   if (!stats || stats.resolvedCount === 0) {
     return (
       <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
         <h2 className="font-display text-base font-bold text-dash-text">
-          Performance globale
+          {t("title")}
         </h2>
 
         <div className="mt-4 flex flex-col items-center gap-3 rounded-xl border border-dashed border-dash-border px-6 py-10 text-center">
@@ -30,13 +32,10 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
             <TrendingUp className="h-5 w-5 text-dash-text-quaternary" />
           </span>
           <p className="text-sm font-semibold text-dash-text">
-            Pas encore assez de données
+            {t("emptyTitle")}
           </p>
           <p className="max-w-xs text-xs leading-relaxed text-dash-text-quaternary">
-            Le suivi de performance (ROI, P&amp;L, win rate) se construit
-            automatiquement dès qu&apos;un marché que vous avez analysé se
-            résout — revenez une fois qu&apos;au moins une analyse aura été
-            confirmée.
+            {t("emptyDescription")}
           </p>
         </div>
       </div>
@@ -47,15 +46,14 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
     <div className="rounded-2xl border border-dash-border bg-dash-surface p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-display text-base font-bold text-dash-text">
-          Performance globale
+          {t("title")}
         </h2>
         <span className="shrink-0 text-[11px] font-semibold text-dash-text-quaternary">
-          {stats.resolvedCount} résolue{stats.resolvedCount > 1 ? "s" : ""}
+          {t("resolvedCount", { count: stats.resolvedCount })}
         </span>
       </div>
       <p className="mt-1 text-[11px] leading-relaxed text-dash-text-quaternary">
-        Simulation basée sur les décisions de l&apos;IA — mise théorique de
-        100 € par analyse, jamais un gain réel.
+        {t("simulationNote")}
       </p>
 
       <div className="mt-4 grid grid-cols-3 gap-3 text-center">
@@ -63,7 +61,7 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
           <p className="font-display text-lg font-bold text-dash-text">
             {Math.round(stats.winRate)}%
           </p>
-          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">Win rate</p>
+          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">{t("winRate")}</p>
         </div>
         <div>
           <p
@@ -75,7 +73,7 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
             {stats.simulatedRoi >= 0 ? "+" : ""}
             {stats.simulatedRoi.toFixed(1)}%
           </p>
-          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">ROI simulé</p>
+          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">{t("roiSimule")}</p>
         </div>
         <div>
           <p
@@ -86,7 +84,7 @@ export function PerformanceCard({ stats }: { stats: PerformanceStats | null }) {
           >
             {formatAmount(stats.simulatedPnl, { signed: true })}
           </p>
-          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">P&amp;L simulé</p>
+          <p className="mt-0.5 text-[11px] text-dash-text-quaternary">{t("pnlSimule")}</p>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 import { isPlanId } from "@/lib/stripe/plans";
@@ -17,6 +17,7 @@ export function CheckoutIntentRedirect() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("Dashboard.CheckoutIntentRedirect");
   const planParam = searchParams.get("checkout");
   const plan = planParam && isPlanId(planParam) ? planParam : null;
 
@@ -48,9 +49,7 @@ export function CheckoutIntentRedirect() {
   return (
     <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3 bg-[#0d0607]/95">
       <Loader2 className="h-8 w-8 animate-spin text-brand-400" />
-      <p className="text-sm font-medium text-white/70">
-        Redirection vers le paiement...
-      </p>
+      <p className="text-sm font-medium text-white/70">{t("redirecting")}</p>
     </div>
   );
 }

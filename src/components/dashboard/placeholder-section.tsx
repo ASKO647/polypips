@@ -1,4 +1,7 @@
+"use client";
+
 import type { ComponentType } from "react";
+import { useTranslations } from "next-intl";
 
 export function PlaceholderSection({
   icon: Icon,
@@ -9,6 +12,8 @@ export function PlaceholderSection({
   title: string;
   description: string;
 }) {
+  const t = useTranslations("Dashboard.PlaceholderSection");
+
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
       <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-brand-400">
@@ -21,7 +26,7 @@ export function PlaceholderSection({
         {description}
       </p>
       <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-brand-500/15 px-3 py-1.5 text-xs font-semibold text-brand-400">
-        Cette section arrive bientôt
+        {t("comingSoonBadge")}
       </span>
     </div>
   );

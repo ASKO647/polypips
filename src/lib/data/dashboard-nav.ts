@@ -24,9 +24,15 @@ export type DashboardNavItem = {
 };
 
 /** Entry point shown above both universe groups — not itself scoped to
- * either Polymarket or Sport. */
+ * either Polymarket or Sport.
+ *
+ * `label` fields across this file are translation KEYS (relative to the
+ * "Dashboard.Nav" namespace), not display text — dashboard-nav.ts is plain
+ * data, so it can't call useTranslations itself. Consuming components
+ * (SidebarNavContent, DashboardHeader) call `t(item.label)` to resolve the
+ * real string in the current locale. */
 export const DASHBOARD_TOP_ITEM: DashboardNavItem = {
-  label: "Tableau de bord",
+  label: "top",
   href: "/dashboard",
   icon: LayoutDashboard,
 };
@@ -42,9 +48,9 @@ export const DASHBOARD_TOP_ITEM: DashboardNavItem = {
  * budget/risk-level config included, was removed; see
  * smart-wallet-flow.tsx). */
 export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
-  { label: "Analyse IA", href: "/dashboard/analyse-ia", icon: Sparkles },
-  { label: "Marchés sélectionnés", href: "/dashboard/markets", icon: LineChart },
-  { label: "Smart Wallet", href: "/dashboard/copy-trading", icon: Wallet },
+  { label: "polymarket.analyseIA", href: "/dashboard/analyse-ia", icon: Sparkles },
+  { label: "polymarket.marches", href: "/dashboard/markets", icon: LineChart },
+  { label: "polymarket.smartWallet", href: "/dashboard/copy-trading", icon: Wallet },
 ];
 
 /** The "Trading" universe group — a third product domain alongside
@@ -54,8 +60,8 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
  * persisted in trading_chart_analyses (previously only quota counting
  * read that table). */
 export const TRADING_NAV_ITEMS: DashboardNavItem[] = [
-  { label: "Analyse IA", href: "/dashboard/trading", icon: CandlestickChart },
-  { label: "Mes analyses", href: "/dashboard/trading/mes-analyses", icon: History },
+  { label: "trading.analyseIA", href: "/dashboard/trading", icon: CandlestickChart },
+  { label: "trading.mesAnalyses", href: "/dashboard/trading/mes-analyses", icon: History },
 ];
 
 /** Global tools that aren't specific to any universe — Coach IA answers
@@ -69,12 +75,12 @@ export const TRADING_NAV_ITEMS: DashboardNavItem[] = [
  * header-only menu, so it participates in the sidebar's own active-link
  * matching like every other section. */
 export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
-  { label: "Coach IA", href: "/dashboard/coach", icon: GraduationCap },
+  { label: "global.coach", href: "/dashboard/coach", icon: GraduationCap },
   // Groups/chat aren't scoped to any one universe — a user's community can
   // span several interests, so this lives here rather than inside one
   // universe group.
-  { label: "Communauté", href: "/dashboard/community", icon: Users },
-  { label: "Profil", href: "/dashboard/settings", icon: User },
+  { label: "global.communaute", href: "/dashboard/community", icon: Users },
+  { label: "global.profil", href: "/dashboard/settings", icon: User },
 ];
 
 /** Not rendered directly in the sidebar — the Sport universe group
@@ -84,7 +90,7 @@ export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
  * did before the sidebar restructure (every sports sub-page shared one
  * title; each Polymarket item still resolves to its own specific label). */
 export const SPORTS_TITLE_ITEM: DashboardNavItem = {
-  label: "Sports",
+  label: "sportsTitle",
   href: "/dashboard/sports",
   icon: Trophy,
 };
@@ -93,5 +99,5 @@ export const SPORTS_TITLE_ITEM: DashboardNavItem = {
  * (a real sidebar section now, see its own comment), so only FAQ/Support
  * is left here. Still feeds DashboardHeader's title lookup. */
 export const DASHBOARD_RESOURCE_ITEMS: DashboardNavItem[] = [
-  { label: "FAQ / Support", href: "/support", icon: LifeBuoy },
+  { label: "resources.faqSupport", href: "/support", icon: LifeBuoy },
 ];

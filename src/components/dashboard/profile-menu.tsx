@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition, type ComponentType } from "react";
 import { ChevronDown, User, CreditCard, Palette, Globe, LifeBuoy } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { routing } from "@/i18n/routing";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { SignOutButton } from "@/components/auth/sign-out-button";
@@ -54,6 +54,7 @@ export function ProfileMenu({
   avatarUrl: string | null;
   planLabel: string;
 }) {
+  const t = useTranslations("Dashboard.ProfileMenu");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useDashboardTheme();
@@ -91,7 +92,7 @@ export function ProfileMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Menu profil"
+        aria-label={t("ariaLabel")}
         aria-haspopup="true"
         aria-expanded={open}
         className="flex items-center gap-1.5 rounded-full border border-dash-border bg-dash-surface-alt py-1 pl-1 pr-2 transition-colors hover:border-dash-border-strong"
@@ -114,18 +115,18 @@ export function ProfileMenu({
             <UserAvatar name={displayName || email} avatarUrl={avatarUrl} size={40} />
             <div className="flex min-w-0 flex-col">
               <span className="truncate text-sm font-semibold text-dash-text">
-                {displayName || "Utilisateur Polypips"}
+                {displayName || t("defaultUserName")}
               </span>
               <span className="truncate text-xs text-dash-text-tertiary">{email}</span>
             </div>
           </div>
 
           <div className="flex flex-col py-1.5">
-            <MenuLink href="/dashboard/settings" icon={User} label="Profil" onNavigate={close} />
+            <MenuLink href="/dashboard/settings" icon={User} label={t("profil")} onNavigate={close} />
             <MenuLink
               href="/dashboard/subscription"
               icon={CreditCard}
-              label="Abonnement"
+              label={t("subscription")}
               value={planLabel}
               onNavigate={close}
             />
@@ -135,7 +136,7 @@ export function ProfileMenu({
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-2.5 text-sm text-dash-text-secondary">
                 <Palette className="h-4 w-4 shrink-0 text-dash-text-quaternary" strokeWidth={2} />
-                Thème
+                {t("theme")}
               </span>
               <div className="flex rounded-full border border-dash-border p-0.5">
                 {(["dark", "light"] as const).map((option) => (
@@ -150,7 +151,7 @@ export function ProfileMenu({
                         : "text-dash-text-tertiary hover:text-dash-text"
                     )}
                   >
-                    {option === "dark" ? "Sombre" : "Clair"}
+                    {option === "dark" ? t("dark") : t("light")}
                   </button>
                 ))}
               </div>
@@ -159,7 +160,7 @@ export function ProfileMenu({
             <div className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-2.5 text-sm text-dash-text-secondary">
                 <Globe className="h-4 w-4 shrink-0 text-dash-text-quaternary" strokeWidth={2} />
-                Langue
+                {t("language")}
               </span>
               <div className="flex rounded-full border border-dash-border p-0.5">
                 {routing.locales.map((code) => (
@@ -188,7 +189,7 @@ export function ProfileMenu({
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-dash-text-secondary transition-colors hover:bg-dash-surface-alt hover:text-dash-text"
             >
               <LifeBuoy className="h-4 w-4 shrink-0 text-dash-text-quaternary" strokeWidth={2} />
-              FAQ / Support
+              {t("faqSupport")}
             </Link>
           </div>
 
