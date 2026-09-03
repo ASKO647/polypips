@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Lock, Users } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 
@@ -24,6 +25,7 @@ export function GroupCard({
   actionLoading?: boolean;
   onAction: () => void;
 }) {
+  const t = useTranslations("Community.GroupCard");
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
       <div className="flex items-start gap-3">
@@ -36,7 +38,7 @@ export function GroupCard({
           {memberCount !== null && (
             <p className="mt-0.5 flex items-center gap-1 text-xs text-white/40">
               <Users className="h-3 w-3" strokeWidth={2} />
-              {memberCount} membre{memberCount > 1 ? "s" : ""}
+              {t("memberCount", { count: memberCount })}
             </p>
           )}
         </div>
@@ -48,7 +50,7 @@ export function GroupCard({
       </div>
 
       <p className="line-clamp-2 flex-1 text-xs leading-relaxed text-white/50">
-        {description || "Aucune description."}
+        {description || t("noDescription")}
       </p>
 
       <button

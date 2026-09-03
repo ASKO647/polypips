@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { REACTION_EMOJIS } from "@/lib/data/community";
 import { cn } from "@/lib/utils";
 import type { MessageReactionEmoji } from "@/lib/data/community";
@@ -19,6 +20,7 @@ export function MessageReactionPicker({
   placement?: "above" | "below";
   onPick: (emoji: MessageReactionEmoji) => void;
 }) {
+  const t = useTranslations("Community.MessageReactionPicker");
   return (
     <div
       className={cn(
@@ -32,7 +34,7 @@ export function MessageReactionPicker({
           key={emoji}
           type="button"
           onClick={() => onPick(emoji)}
-          aria-label={`Réagir avec ${emoji}`}
+          aria-label={t("reactWith", { emoji })}
           className="flex h-8 w-8 items-center justify-center rounded-full text-base transition-transform duration-100 hover:scale-125 active:scale-95"
         >
           {emoji}

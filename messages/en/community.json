@@ -1,0 +1,134 @@
+{
+  "Community": {
+    "Page": {
+      "metaTitle": "Community — Polypips",
+      "metaTitleWithGroup": "{groupName} — Community — Polypips"
+    },
+    "CommunityFlow": {
+      "title": "Community",
+      "subtitle": "Join or create groups to connect with other Polymarket traders.",
+      "findGroup": "Find a group",
+      "createGroup": "Create a group",
+      "lockedMessageCancelled": "Resubscribe to regain access to the Community.",
+      "lockedMessage": "The Community is reserved for subscribers. Unlock access to join and create groups.",
+      "tabDiscover": "Discover",
+      "tabMine": "My groups",
+      "emptyDiscover": "No public groups yet. Be the first to create one!",
+      "emptyMine": "You're not part of any group yet.",
+      "actionOpen": "Open",
+      "actionEnter": "Enter",
+      "actionPending": "Pending",
+      "badgePending": "Pending",
+      "badgeOwner": "Owner",
+      "joinError": "Couldn't join this group."
+    },
+    "GroupCard": {
+      "noDescription": "No description.",
+      "memberCount": "{count, plural, one {# member} other {# members}}"
+    },
+    "CreateGroupModal": {
+      "title": "Create a group",
+      "close": "Close",
+      "nameLabel": "Group name",
+      "namePlaceholder": "e.g. Polymarket FR Traders",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "What's this group about?",
+      "privacyPrivate": "Private",
+      "privacyPublic": "Public",
+      "privacyPrivateHint": "New members must be approved.",
+      "privacyPublicHint": "Anyone can join directly.",
+      "submitting": "Creating...",
+      "submit": "Create group",
+      "genericError": "Couldn't create the group."
+    },
+    "FindGroupPanel": {
+      "title": "Find a group",
+      "close": "Close",
+      "codePlaceholder": "Invite code",
+      "search": "Search",
+      "searchError": "Search failed.",
+      "noResult": "No group matches this code.",
+      "noDescription": "No description.",
+      "requestSent": "Request sent — you'll be added as soon as the owner approves it.",
+      "requestAccess": "Request access",
+      "enter": "Enter",
+      "joinError": "Couldn't join this group."
+    },
+    "GroupView": {
+      "back": "Back to Community",
+      "memberCount": "{count, plural, one {# member} other {# members}}",
+      "manage": "Manage",
+      "lockedMessageCancelled": "Resubscribe to keep chatting in this group.",
+      "lockedMessage": "Unlock your subscription to access this group's chat.",
+      "close": "Close",
+      "emptyMessages": "No messages yet. Start the conversation!",
+      "defaultSender": "Member",
+      "reactionError": "Couldn't react right now.",
+      "joinError": "Couldn't join this group.",
+      "pendingTitle": "Request pending",
+      "pendingMessage": "Your access request has been sent to the group owner. You'll be added as soon as it's approved.",
+      "rejectedTitle": "Request declined",
+      "rejectedMessage": "Your access request for this group was declined by its owner.",
+      "privateTitle": "Private group",
+      "joinTitle": "Join this group",
+      "privateMessage": "This group is private. Request access to join the conversation.",
+      "joinMessage": "Join this group to access the conversation.",
+      "requestAccess": "Request access",
+      "enter": "Enter"
+    },
+    "ManageGroupPanel": {
+      "title": "Manage {groupName}",
+      "close": "Close",
+      "changeAvatar": "Change group photo",
+      "uploadError": "Upload failed. Try again.",
+      "privacyPrivate": "Private",
+      "privacyPublic": "Public",
+      "privacyPrivateHint": "New members must be approved.",
+      "privacyPublicHint": "Anyone can join directly.",
+      "privacyError": "Couldn't change privacy settings.",
+      "inviteCodeLabel": "Invite code",
+      "copyCode": "Copy code",
+      "pendingRequests": "Pending requests ({count})",
+      "approve": "Accept",
+      "reject": "Decline",
+      "membersCount": "Members ({count})",
+      "youOwner": "You (owner)",
+      "remove": "Remove",
+      "actionError": "Action failed.",
+      "deleteWarning": "This action is irreversible. The group, its members, and all its messages will be permanently deleted.",
+      "cancel": "Cancel",
+      "confirming": "Deleting...",
+      "confirm": "Confirm",
+      "deleteGroup": "Delete group",
+      "deleteError": "Couldn't delete the group."
+    },
+    "MessageBubble": {
+      "expandPhoto": "Expand photo",
+      "react": "React to this message",
+      "report": "Report this message"
+    },
+    "MessageInput": {
+      "placeholder": "Write a message...",
+      "attachImage": "Attach an image",
+      "removeImage": "Remove image",
+      "send": "Send",
+      "sendError": "Message not sent."
+    },
+    "MessageReactionPicker": {
+      "reactWith": "React with {emoji}"
+    },
+    "PhotoLightbox": {
+      "close": "Close"
+    },
+    "ReportMessageModal": {
+      "title": "Report this message",
+      "close": "Close",
+      "reasons": ["Spam", "Inappropriate content", "Harassment", "Other"],
+      "detailsPlaceholder": "Details (optional)",
+      "submitting": "Sending...",
+      "submit": "Report",
+      "submitError": "Report failed.",
+      "sentMessage": "Report sent. Thank you for helping keep the community safe."
+    }
+  }
+}

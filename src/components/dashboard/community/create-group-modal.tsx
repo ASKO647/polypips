@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createGroup } from "@/lib/supabase/community";
@@ -15,6 +16,7 @@ export function CreateGroupModal({
   onClose: () => void;
   onCreated: (groupId: string) => void;
 }) {
+  const t = useTranslations("Community.CreateGroupModal");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
@@ -46,7 +48,7 @@ export function CreateGroupModal({
       });
       onCreated(id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Impossible de créer le groupe.");
+      setError(err instanceof Error ? err.message : t("genericError"));
       setSubmitting(false);
     }
   };
@@ -55,11 +57,11 @@ export function CreateGroupModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0f0808] p-6 shadow-[0_20px_60px_-16px_rgba(0,0,0,0.6)]">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="font-display text-base font-bold text-white">Créer un groupe</h2>
+          <h2 className="font-display text-base font-bold text-white">{t("title")}</h2>
           <button
             type="button"
             onClick={handleClose}
-            aria-label="Fermer"
+            aria-label={t("close")}
             className="rounded-full p-1 text-white/40 transition-colors hover:bg-white/5 hover:text-white"
           >
             <X className="h-4 w-4" />
@@ -69,14 +71,14 @@ export function CreateGroupModal({
         <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="group-name" className="text-xs font-medium text-white/50">
-              Nom du groupe
+              {t("nameLabel")}
             </label>
             <input
               id="group-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex : Traders Polymarket FR"
+              placeholder={t("namePlaceholder")}
               maxLength={80}
               className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none"
             />
@@ -84,13 +86,13 @@ export function CreateGroupModal({
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="group-description" className="text-xs font-medium text-white/50">
-              Description
+              {t("descriptionLabel")}
             </label>
             <textarea
               id="group-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="De quoi parle ce groupe ?"
+              placeholder={t("descriptionPlaceholder")}
               rows={3}
               maxLength={280}
               className="resize-none rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none"
@@ -99,11 +101,9 @@ export function CreateGroupModal({
 
           <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5">
             <div>
-              <p className="text-sm font-semibold text-white">{isPrivate ? "Privé" : "Public"}</p>
+              <p className="text-sm font-semibold text-white">{isPrivate ? t("privacyPrivate") : t("privacyPublic")}</p>
               <p className="mt-0.5 text-xs text-white/40">
-                {isPrivate
-                  ? "Les nouveaux membres doivent être approuvés."
-                  : "Tout le monde peut rejoindre directement."}
+                {isPrivate ? t("privacyPrivateHint") : t("privacyPublicHint")}
               </p>
             </div>
             <button
@@ -132,7 +132,7 @@ export function CreateGroupModal({
             disabled={submitting || name.trim() === ""}
             className="flex h-11 w-full items-center justify-center rounded-full bg-brand-500 text-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-40"
           >
-            {submitting ? "Création..." : "Créer le groupe"}
+            {submitting ? t("submitting") : t("submit")}
           </button>
         </form>
       </div>

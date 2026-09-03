@@ -1,0 +1,134 @@
+{
+  "Community": {
+    "Page": {
+      "metaTitle": "Communauté — Polypips",
+      "metaTitleWithGroup": "{groupName} — Communauté — Polypips"
+    },
+    "CommunityFlow": {
+      "title": "Communauté",
+      "subtitle": "Rejoignez ou créez des groupes pour échanger avec d'autres traders Polymarket.",
+      "findGroup": "Trouver un groupe",
+      "createGroup": "Créer un groupe",
+      "lockedMessageCancelled": "Réabonnez-vous pour retrouver l'accès à la Communauté.",
+      "lockedMessage": "La Communauté est réservée aux abonnés. Débloquez l'accès pour rejoindre et créer des groupes.",
+      "tabDiscover": "Découvrir",
+      "tabMine": "Mes groupes",
+      "emptyDiscover": "Aucun groupe public pour le moment. Soyez le premier à en créer un !",
+      "emptyMine": "Vous ne faites partie d'aucun groupe pour le moment.",
+      "actionOpen": "Ouvrir",
+      "actionEnter": "Entrer",
+      "actionPending": "En attente",
+      "badgePending": "En attente",
+      "badgeOwner": "Propriétaire",
+      "joinError": "Impossible de rejoindre ce groupe."
+    },
+    "GroupCard": {
+      "noDescription": "Aucune description.",
+      "memberCount": "{count, plural, one {# membre} other {# membres}}"
+    },
+    "CreateGroupModal": {
+      "title": "Créer un groupe",
+      "close": "Fermer",
+      "nameLabel": "Nom du groupe",
+      "namePlaceholder": "Ex : Traders Polymarket FR",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "De quoi parle ce groupe ?",
+      "privacyPrivate": "Privé",
+      "privacyPublic": "Public",
+      "privacyPrivateHint": "Les nouveaux membres doivent être approuvés.",
+      "privacyPublicHint": "Tout le monde peut rejoindre directement.",
+      "submitting": "Création...",
+      "submit": "Créer le groupe",
+      "genericError": "Impossible de créer le groupe."
+    },
+    "FindGroupPanel": {
+      "title": "Trouver un groupe",
+      "close": "Fermer",
+      "codePlaceholder": "Code d'invitation",
+      "search": "Chercher",
+      "searchError": "Recherche impossible.",
+      "noResult": "Aucun groupe ne correspond à ce code.",
+      "noDescription": "Aucune description.",
+      "requestSent": "Demande envoyée — vous serez ajouté dès que le propriétaire l'approuve.",
+      "requestAccess": "Demander l'accès",
+      "enter": "Entrer",
+      "joinError": "Impossible de rejoindre ce groupe."
+    },
+    "GroupView": {
+      "back": "Retour à la Communauté",
+      "memberCount": "{count, plural, one {# membre} other {# membres}}",
+      "manage": "Gérer",
+      "lockedMessageCancelled": "Réabonnez-vous pour continuer à discuter dans ce groupe.",
+      "lockedMessage": "Débloquez votre abonnement pour accéder au chat de ce groupe.",
+      "close": "Fermer",
+      "emptyMessages": "Aucun message pour le moment. Lancez la discussion !",
+      "defaultSender": "Membre",
+      "reactionError": "Réaction impossible pour le moment.",
+      "joinError": "Impossible de rejoindre ce groupe.",
+      "pendingTitle": "Demande en attente",
+      "pendingMessage": "Votre demande d'accès a été envoyée au propriétaire du groupe. Vous serez ajouté dès qu'elle sera approuvée.",
+      "rejectedTitle": "Demande refusée",
+      "rejectedMessage": "Votre demande d'accès à ce groupe a été refusée par son propriétaire.",
+      "privateTitle": "Groupe privé",
+      "joinTitle": "Rejoindre ce groupe",
+      "privateMessage": "Ce groupe est privé. Demandez l'accès pour rejoindre la discussion.",
+      "joinMessage": "Rejoignez ce groupe pour accéder à la discussion.",
+      "requestAccess": "Demander l'accès",
+      "enter": "Entrer"
+    },
+    "ManageGroupPanel": {
+      "title": "Gérer {groupName}",
+      "close": "Fermer",
+      "changeAvatar": "Changer la photo du groupe",
+      "uploadError": "L'upload a échoué. Réessayez.",
+      "privacyPrivate": "Privé",
+      "privacyPublic": "Public",
+      "privacyPrivateHint": "Les nouveaux membres doivent être approuvés.",
+      "privacyPublicHint": "Tout le monde peut rejoindre directement.",
+      "privacyError": "Impossible de modifier la confidentialité.",
+      "inviteCodeLabel": "Code d'invitation",
+      "copyCode": "Copier le code",
+      "pendingRequests": "Demandes en attente ({count})",
+      "approve": "Accepter",
+      "reject": "Refuser",
+      "membersCount": "Membres ({count})",
+      "youOwner": "Vous (propriétaire)",
+      "remove": "Retirer",
+      "actionError": "Action impossible.",
+      "deleteWarning": "Cette action est irréversible. Le groupe, ses membres et tous ses messages seront définitivement supprimés.",
+      "cancel": "Annuler",
+      "confirming": "Suppression...",
+      "confirm": "Confirmer",
+      "deleteGroup": "Supprimer le groupe",
+      "deleteError": "Suppression impossible."
+    },
+    "MessageBubble": {
+      "expandPhoto": "Agrandir la photo",
+      "react": "Réagir à ce message",
+      "report": "Signaler ce message"
+    },
+    "MessageInput": {
+      "placeholder": "Écrivez un message...",
+      "attachImage": "Joindre une image",
+      "removeImage": "Retirer l'image",
+      "send": "Envoyer",
+      "sendError": "Message non envoyé."
+    },
+    "MessageReactionPicker": {
+      "reactWith": "Réagir avec {emoji}"
+    },
+    "PhotoLightbox": {
+      "close": "Fermer"
+    },
+    "ReportMessageModal": {
+      "title": "Signaler ce message",
+      "close": "Fermer",
+      "reasons": ["Spam", "Contenu inapproprié", "Harcèlement", "Autre"],
+      "detailsPlaceholder": "Détails (facultatif)",
+      "submitting": "Envoi...",
+      "submit": "Signaler",
+      "submitError": "Signalement impossible.",
+      "sentMessage": "Signalement envoyé. Merci de nous aider à garder la communauté saine."
+    }
+  }
+}

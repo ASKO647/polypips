@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Flag, SmilePlus } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
@@ -45,6 +46,7 @@ export function MessageBubble({
   onReport: () => void;
   onToggleReaction: (emoji: MessageReactionEmoji) => void;
 }) {
+  const t = useTranslations("Community.MessageBubble");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerPlacement, setPickerPlacement] = useState<"above" | "below">("above");
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -140,7 +142,7 @@ export function MessageBubble({
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
-              aria-label="Agrandir la photo"
+              aria-label={t("expandPhoto")}
               className="mb-2 block w-full cursor-zoom-in"
             >
               <Image
@@ -186,7 +188,7 @@ export function MessageBubble({
           <button
             type="button"
             onClick={() => (pickerOpen ? setPickerOpen(false) : openPicker())}
-            aria-label="Réagir à ce message"
+            aria-label={t("react")}
             className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
           >
             <SmilePlus className="h-3 w-3 text-white/25 transition-colors hover:text-brand-400" strokeWidth={2} />
@@ -195,7 +197,7 @@ export function MessageBubble({
             <button
               type="button"
               onClick={onReport}
-              aria-label="Signaler ce message"
+              aria-label={t("report")}
               className="opacity-0 transition-opacity group-hover:opacity-100"
             >
               <Flag className="h-3 w-3 text-white/25 transition-colors hover:text-rose-400" strokeWidth={2} />

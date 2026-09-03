@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowLeft, Clock, Lock, Settings, ShieldX } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
@@ -38,6 +39,7 @@ export function GroupViewFlow({
   hasActiveSubscription: boolean;
   cancelled: boolean;
 }) {
+  const t = useTranslations("Community.GroupView");
   const router = useRouter();
   const [view, setView] = useState(initialView);
   const [messages, setMessages] = useState(initialMessages);
@@ -119,7 +121,7 @@ export function GroupViewFlow({
           ? [...prev, { messageId, userId: currentUserId, emoji }]
           : prev.filter((r) => !(r.messageId === messageId && r.userId === currentUserId && r.emoji === emoji))
       );
-      setReactionError(err instanceof Error ? err.message : "Réaction impossible pour le moment.");
+      setReactionError(err instanceof Error ? err.message : t("reactionError"));
     });
   };
 
@@ -145,7 +147,7 @@ export function GroupViewFlow({
         }
       }
     } catch (err) {
-      setJoinError(err instanceof Error ? err.message : "Impossible de rejoindre ce groupe.");
+      setJoinError(err instanceof Error ? err.message : t("joinError"));
     } finally {
       setJoining(false);
     }
@@ -157,7 +159,7 @@ export function GroupViewFlow({
         <div className="flex min-w-0 items-center gap-3">
           <Link
             href="/dashboard/community"
-            aria-label="Retour à la Communauté"
+            aria-label={t("back")}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/60 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={2} />
@@ -169,7 +171,7 @@ export function GroupViewFlow({
               {view.group.isPrivate && <Lock className="h-3 w-3 shrink-0 text-white/40" strokeWidth={2.5} />}
             </div>
             <p className="text-xs text-white/40">
-              {view.members.length} membre{view.members.length > 1 ? "s" : ""}
+              {t("memberCount", { count: view.members.length })}
             </p>
           </div>
         </div>
@@ -180,7 +182,7 @@ export function GroupViewFlow({
             className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-white/10 px-3.5 text-xs font-semibold text-white/70 transition-colors hover:border-white/25 hover:text-white"
           >
             <Settings className="h-3.5 w-3.5" strokeWidth={2} />
-            Gérer
+            {t("manage")}
           </button>
         )}
       </div>
@@ -192,11 +194,7 @@ export function GroupViewFlow({
             cancelled={cancelled}
             className="flex h-full flex-col overflow-hidden"
             contentClassName="flex h-full flex-col overflow-hidden"
-            message={
-              cancelled
-                ? "Réabonnez-vous pour continuer à discuter dans ce groupe."
-                : "Débloquez votre abonnement pour accéder au chat de ce groupe."
-            }
+            message={cancelled ? t("lockedMessageCancelled") : t("lockedMessage")}
           >
             {reactionError && (
               <div className="mx-4 mt-3 flex items-center justify-between gap-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3.5 py-2.5 text-xs text-rose-300">
@@ -204,7 +202,7 @@ export function GroupViewFlow({
                 <button
                   type="button"
                   onClick={() => setReactionError(null)}
-                  aria-label="Fermer"
+                  aria-label={t("close")}
                   className="shrink-0 text-rose-300/70 hover:text-rose-300"
                 >
                   ×
@@ -214,7 +212,7 @@ export function GroupViewFlow({
             <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
               {messages.length === 0 ? (
                 <p className="py-10 text-center text-sm text-white/40">
-                  Aucun message pour le moment. Lancez la discussion !
+                  {t("emptyMessages")}
                 </p>
               ) : (
                 messages.map((message) => (
@@ -222,7 +220,7 @@ export function GroupViewFlow({
                     key={message.id}
                     message={message}
                     isOwn={message.userId === currentUserId}
-                    senderName={memberByUserId.get(message.userId)?.displayName ?? "Membre"}
+                    senderName={memberByUserId.get(message.userId)?.displayName ?? t("defaultSender")}
                     senderAvatarUrl={memberByUserId.get(message.userId)?.avatarUrl ?? null}
                     reactions={reactionsByMessage.get(message.id) ?? []}
                     currentUserId={currentUserId}
@@ -241,24 +239,20 @@ export function GroupViewFlow({
         ) : view.myMembership?.status === "pending" ? (
           <StatusPanel
             icon={Clock}
-            title="Demande en attente"
-            message="Votre demande d'accès a été envoyée au propriétaire du groupe. Vous serez ajouté dès qu'elle sera approuvée."
+            title={t("pendingTitle")}
+            message={t("pendingMessage")}
           />
         ) : view.myMembership?.status === "rejected" ? (
           <StatusPanel
             icon={ShieldX}
-            title="Demande refusée"
-            message="Votre demande d'accès à ce groupe a été refusée par son propriétaire."
+            title={t("rejectedTitle")}
+            message={t("rejectedMessage")}
           />
         ) : (
           <StatusPanel
             icon={Lock}
-            title={view.group.isPrivate ? "Groupe privé" : "Rejoindre ce groupe"}
-            message={
-              view.group.isPrivate
-                ? "Ce groupe est privé. Demandez l'accès pour rejoindre la discussion."
-                : "Rejoignez ce groupe pour accéder à la discussion."
-            }
+            title={view.group.isPrivate ? t("privateTitle") : t("joinTitle")}
+            message={view.group.isPrivate ? t("privateMessage") : t("joinMessage")}
             action={
               <button
                 type="button"
@@ -266,7 +260,7 @@ export function GroupViewFlow({
                 disabled={joining}
                 className="flex h-10 items-center justify-center rounded-full bg-brand-500 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-40"
               >
-                {joining ? "..." : view.group.isPrivate ? "Demander l'accès" : "Entrer"}
+                {joining ? "..." : view.group.isPrivate ? t("requestAccess") : t("enter")}
               </button>
             }
             error={joinError}

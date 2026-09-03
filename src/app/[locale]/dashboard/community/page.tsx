@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { CommunityFlow } from "@/components/dashboard/community/community-flow";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, hasActiveAccess, isCancelledSubscription } from "@/lib/supabase/subscriptions";
 import { fetchMyGroups, fetchPublicGroups } from "@/lib/supabase/community";
 
-export const metadata: Metadata = {
-  title: "Communauté — Polypips",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Community.Page");
+  return { title: t("metaTitle") };
+}
 
 export default async function CommunityPage() {
   const supabase = await createClient();

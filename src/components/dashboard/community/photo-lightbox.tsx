@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
@@ -10,6 +11,7 @@ import { X } from "lucide-react";
  * absolute/fixed div nested inside that scroll container would get
  * clipped by it). */
 export function PhotoLightbox({ src, onClose }: { src: string; onClose: () => void }) {
+  const t = useTranslations("Community.PhotoLightbox");
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -26,7 +28,7 @@ export function PhotoLightbox({ src, onClose }: { src: string; onClose: () => vo
       <button
         type="button"
         onClick={onClose}
-        aria-label="Fermer"
+        aria-label={t("close")}
         className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] text-white/70 transition-colors hover:text-white sm:right-6 sm:top-6"
       >
         <X className="h-5 w-5" strokeWidth={2} />

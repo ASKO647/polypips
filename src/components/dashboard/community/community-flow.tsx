@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Plus, Search, Users } from "lucide-react";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
@@ -24,6 +25,7 @@ export function CommunityFlow({
   hasActiveSubscription: boolean;
   cancelled: boolean;
 }) {
+  const t = useTranslations("Community.CommunityFlow");
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("discover");
   const [createOpen, setCreateOpen] = useState(false);
@@ -45,7 +47,7 @@ export function CommunityFlow({
       await joinGroup(supabase, groupId);
       router.push(`/dashboard/community/${groupId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Impossible de rejoindre ce groupe.");
+      setError(err instanceof Error ? err.message : t("joinError"));
       setJoiningId(null);
     }
   };
@@ -55,10 +57,10 @@ export function CommunityFlow({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Communauté
+            {t("title")}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-            Rejoignez ou créez des groupes pour échanger avec d&apos;autres traders Polymarket.
+            {t("subtitle")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -68,7 +70,7 @@ export function CommunityFlow({
             className="flex h-10 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-semibold text-white/70 transition-colors hover:border-white/25 hover:text-white"
           >
             <Search className="h-4 w-4" strokeWidth={2} />
-            Trouver un groupe
+            {t("findGroup")}
           </button>
           <button
             type="button"
@@ -76,7 +78,7 @@ export function CommunityFlow({
             className="flex h-10 items-center gap-2 rounded-full bg-brand-500 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
-            Créer un groupe
+            {t("createGroup")}
           </button>
         </div>
       </div>
@@ -84,11 +86,7 @@ export function CommunityFlow({
       <LockedOverlay
         locked={!hasActiveSubscription}
         cancelled={cancelled}
-        message={
-          cancelled
-            ? "Réabonnez-vous pour retrouver l'accès à la Communauté."
-            : "La Communauté est réservée aux abonnés. Débloquez l'accès pour rejoindre et créer des groupes."
-        }
+        message={cancelled ? t("lockedMessageCancelled") : t("lockedMessage")}
       >
         <div className="flex flex-col gap-5">
           <div className="flex w-fit rounded-full border border-white/10 bg-white/[0.03] p-1">
@@ -99,7 +97,7 @@ export function CommunityFlow({
                 tab === "discover" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
               }`}
             >
-              Découvrir
+              {t("tabDiscover")}
             </button>
             <button
               type="button"
@@ -108,7 +106,7 @@ export function CommunityFlow({
                 tab === "mine" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
               }`}
             >
-              Mes groupes {myGroups.length > 0 && `(${myGroups.length})`}
+              {t("tabMine")} {myGroups.length > 0 && `(${myGroups.length})`}
             </button>
           </div>
 
@@ -116,7 +114,7 @@ export function CommunityFlow({
 
           {tab === "discover" ? (
             publicGroups.length === 0 ? (
-              <EmptyState message="Aucun groupe public pour le moment. Soyez le premier à en créer un !" />
+              <EmptyState message={t("emptyDiscover")} />
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {publicGroups.map((group) => (
@@ -127,7 +125,7 @@ export function CommunityFlow({
                     avatarUrl={group.avatarUrl}
                     isPrivate={false}
                     memberCount={null}
-                    actionLabel={myGroupIds.has(group.id) ? "Ouvrir" : "Entrer"}
+                    actionLabel={myGroupIds.has(group.id) ? t("actionOpen") : t("actionEnter")}
                     actionLoading={joiningId === group.id}
                     onAction={() => handleEnterPublicGroup(group.id)}
                   />
@@ -135,7 +133,7 @@ export function CommunityFlow({
               </div>
             )
           ) : myGroups.length === 0 ? (
-            <EmptyState message="Vous ne faites partie d'aucun groupe pour le moment." />
+            <EmptyState message={t("emptyMine")} />
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {myGroups.map((group) => (
@@ -148,12 +146,12 @@ export function CommunityFlow({
                   memberCount={group.memberCount}
                   badge={
                     group.memberStatus === "pending"
-                      ? "En attente"
+                      ? t("badgePending")
                       : group.memberRole === "owner"
-                        ? "Propriétaire"
+                        ? t("badgeOwner")
                         : undefined
                   }
-                  actionLabel={group.memberStatus === "pending" ? "En attente" : "Ouvrir"}
+                  actionLabel={group.memberStatus === "pending" ? t("actionPending") : t("actionOpen")}
                   actionDisabled={group.memberStatus === "pending"}
                   onAction={() => router.push(`/dashboard/community/${group.id}`)}
                 />

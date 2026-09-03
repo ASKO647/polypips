@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { GroupViewFlow } from "@/components/dashboard/community/group-view-flow";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, hasActiveAccess, isCancelledSubscription } from "@/lib/supabase/subscriptions";
@@ -12,8 +13,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { groupId } = await params;
   const supabase = await createClient();
-  const view = await getGroupView(supabase, groupId);
-  return { title: view ? `${view.group.name} — Communauté — Polypips` : "Communauté — Polypips" };
+  const [view, t] = await Promise.all([
+    getGroupView(supabase, groupId),
+    getTranslations("Community.Page"),
+  ]);
+  return {
+    title: view ? t("metaTitleWithGroup", { groupName: view.group.name }) : t("metaTitle"),
+  };
 }
 
 export default async function CommunityGroupPage({
