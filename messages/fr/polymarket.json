@@ -1,0 +1,131 @@
+{
+  "Polymarket": {
+    "AnalyseIa": {
+      "metaTitle": "Analyse IA — Polypips",
+      "heading": "Analyse IA",
+      "subtitle": "Déposez une capture ou collez un lien de marché Polymarket.",
+      "changePlanLink": "Changer de plan →",
+      "removeFileAria": "Retirer le fichier",
+      "dragDropTitle": "Glissez-déposez une capture d'écran",
+      "browseHint": "ou cliquez pour parcourir vos fichiers",
+      "orDivider": "ou",
+      "linkPlaceholder": "Collez un lien de marché Polymarket",
+      "analyzeButton": "Analyser",
+      "recentAnalysesTitle": "Marchés récemment analysés",
+      "loadingSteps": {
+        "fetching_market": "Récupération des données Polymarket...",
+        "calling_ai": "Envoi à l'IA pour analyse...",
+        "receiving_result": "Réception de l'analyse..."
+      },
+      "errors": {
+        "invalid_input": "Le lien ou l'image fournie n'est pas valide.",
+        "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
+        "market_not_found": "Ce marché est introuvable sur Polymarket. Vérifiez le lien et réessayez.",
+        "market_not_identified": "Le marché n'a pas pu être identifié automatiquement à partir de l'image. Collez le lien du marché à la place.",
+        "image_unreadable": "Impossible de lire cette image. Essayez une capture plus nette ou collez le lien du marché.",
+        "gamma_unavailable": "L'API Polymarket est momentanément indisponible. Réessayez dans quelques instants.",
+        "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
+        "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
+        "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
+        "unknown": "Une erreur inattendue est survenue. Réessayez."
+      }
+    },
+    "AnalysisResult": {
+      "defaultBackLabel": "Nouvelle analyse",
+      "viewOnPolymarket": "Voir sur Polymarket",
+      "lockedMessage": "La décision complète, l'edge et l'explication détaillée sont réservées aux abonnés.",
+      "redirecting": "Redirection...",
+      "unlockCta": "Débloquez cette analyse — Débutez pour 0,99 €",
+      "checkoutUnavailable": "Checkout indisponible.",
+      "decisionLabel": "Décision IA",
+      "marketLabel": "Marché",
+      "edgeLabel": "Edge",
+      "opportunityScoreLabel": "Score d'opportunité",
+      "confidenceLabel": "Niveau de confiance",
+      "disclaimer": "Cette analyse est une estimation probabiliste, pas une garantie de gain.",
+      "explanationTitle": "Explication",
+      "favorableFactorsTitle": "Facteurs favorables",
+      "risksTitle": "Risques",
+      "whatCouldChangeTitle": "Ce qui pourrait faire changer l'analyse",
+      "sourcesTitle": "Sources utilisées",
+      "coachCta": "Poser une question au Coach IA"
+    },
+    "Markets": {
+      "metaTitle": "Marchés sélectionnés — Polypips",
+      "heading": "Marchés sélectionnés par l'IA",
+      "subtitle": "Les opportunités identifiées par notre système aujourd'hui.",
+      "allCategories": "Tous",
+      "sortByLabel": "Trier par",
+      "sortOptions": {
+        "opportunityScore": "Score",
+        "edge": "Edge",
+        "aiProbability": "Probabilité IA"
+      },
+      "emptyTitle": "Aucun marché sélectionné pour le moment",
+      "emptyDescription": "Notre IA scanne périodiquement les marchés Polymarket les plus actifs. Revenez un peu plus tard pour voir les premières opportunités.",
+      "backToListLabel": "Retour à la liste"
+    },
+    "MarketCard": {
+      "reserved": "Réservé",
+      "viewOnPolymarket": "Voir sur Polymarket",
+      "marketLabel": "Marché",
+      "edgeLabel": "Edge",
+      "opportunityScoreLabel": "Score d'opportunité",
+      "confidenceLabel": "Confiance",
+      "unlockButton": "Débloquer cette analyse",
+      "viewFullAnalysis": "Voir l'analyse complète"
+    },
+    "Common": {
+      "confidenceLevels": {
+        "low": "Faible",
+        "medium": "Moyenne",
+        "high": "Élevée"
+      }
+    },
+    "SmartWallet": {
+      "metaTitle": "Smart Wallet — Polypips",
+      "heading": "Smart Wallet",
+      "subtitle": "Recherchez un portefeuille Polymarket par adresse pour voir ses positions, son profil et son activité. Suivez-le pour être notifié dès qu'il ouvre une nouvelle position — libre à vous de la répliquer vous-même sur Polymarket.",
+      "genericError": "Une erreur est survenue.",
+      "lockedMessageCancelled": "Abonnement annulé — réabonnez-vous pour continuer à utiliser Smart Wallet.",
+      "lockedMessage": "Débloquez Smart Wallet — Débutez pour 0,99 €",
+      "unfollowAria": "Ne plus suivre ce wallet",
+      "noDataYet": "Pas encore de données",
+      "openPositions": "{count, plural, one {# position ouverte} other {# positions ouvertes}}",
+      "viewDetail": "Voir le détail",
+      "followedWalletsTitle": "Wallets suivis",
+      "emptyFollowedTitle": "Aucun wallet suivi pour l'instant",
+      "emptyFollowedDescription": "Recherchez un wallet Polymarket ci-dessus et suivez-le pour être notifié de ses prochains mouvements."
+    },
+    "WalletLookup": {
+      "title": "Rechercher un wallet Polymarket",
+      "description": "Collez l'adresse d'un portefeuille (0x...) pour voir ses positions, son profil et son activité, sans avoir à le suivre au préalable.",
+      "invalidAddress": "Adresse invalide. Format attendu : 0x suivi de 40 caractères hexadécimaux.",
+      "lookupError": "Impossible de récupérer ce portefeuille.",
+      "genericError": "Une erreur est survenue.",
+      "addressPlaceholder": "0x1234...abcd",
+      "searching": "Recherche...",
+      "searchButton": "Rechercher",
+      "followButton": "Suivre ce wallet",
+      "followedButton": "Wallet suivi",
+      "profileTitle": "Profil du portefeuille",
+      "noProfileYet": "Pas encore de profil calculé — disponible une fois ce wallet suivi et actualisé.",
+      "winRate": "Win rate",
+      "roi": "ROI",
+      "consistency": "Consistance",
+      "risk": "Risque",
+      "riskLevels": {
+        "low": "Faible",
+        "medium": "Moyen",
+        "high": "Élevé"
+      },
+      "dailyFlowTitle": "Gains / pertes par jour",
+      "notEnoughActivity": "Pas assez d'activité récente pour un graphique.",
+      "positionsTitle": "Positions actuelles",
+      "noPositions": "Aucune position ouverte pour le moment.",
+      "movementsTitle": "Mouvements récents",
+      "noMovements": "Aucun mouvement récent détecté.",
+      "historyTitle": "Historique"
+    }
+  }
+}

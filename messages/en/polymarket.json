@@ -1,0 +1,131 @@
+{
+  "Polymarket": {
+    "AnalyseIa": {
+      "metaTitle": "AI Analysis — Polypips",
+      "heading": "AI Analysis",
+      "subtitle": "Upload a screenshot or paste a Polymarket market link.",
+      "changePlanLink": "Change plan →",
+      "removeFileAria": "Remove file",
+      "dragDropTitle": "Drag and drop a screenshot",
+      "browseHint": "or click to browse your files",
+      "orDivider": "or",
+      "linkPlaceholder": "Paste a Polymarket market link",
+      "analyzeButton": "Analyze",
+      "recentAnalysesTitle": "Recently analyzed markets",
+      "loadingSteps": {
+        "fetching_market": "Fetching Polymarket data...",
+        "calling_ai": "Sending to AI for analysis...",
+        "receiving_result": "Receiving the analysis..."
+      },
+      "errors": {
+        "invalid_input": "The provided link or image isn't valid.",
+        "unauthorized": "Your session has expired. Sign in again and retry.",
+        "market_not_found": "This market couldn't be found on Polymarket. Check the link and try again.",
+        "market_not_identified": "The market couldn't be identified automatically from the image. Paste the market link instead.",
+        "image_unreadable": "This image couldn't be read. Try a sharper screenshot or paste the market link.",
+        "gamma_unavailable": "The Polymarket API is temporarily unavailable. Try again in a moment.",
+        "ai_error": "The AI analysis service is temporarily unavailable. Try again in a moment.",
+        "network_error": "Connection failed. Check your connection and try again.",
+        "limit_reached": "You've reached your free analysis limit for today. Get started for €0.99 for unlimited analyses.",
+        "unknown": "An unexpected error occurred. Please try again."
+      }
+    },
+    "AnalysisResult": {
+      "defaultBackLabel": "New analysis",
+      "viewOnPolymarket": "View on Polymarket",
+      "lockedMessage": "The full decision, edge, and detailed explanation are reserved for subscribers.",
+      "redirecting": "Redirecting...",
+      "unlockCta": "Unlock this analysis — Get started for €0.99",
+      "checkoutUnavailable": "Checkout unavailable.",
+      "decisionLabel": "AI Decision",
+      "marketLabel": "Market",
+      "edgeLabel": "Edge",
+      "opportunityScoreLabel": "Opportunity score",
+      "confidenceLabel": "Confidence level",
+      "disclaimer": "This analysis is a probabilistic estimate, not a guarantee of profit.",
+      "explanationTitle": "Explanation",
+      "favorableFactorsTitle": "Favorable factors",
+      "risksTitle": "Risks",
+      "whatCouldChangeTitle": "What could change this analysis",
+      "sourcesTitle": "Sources used",
+      "coachCta": "Ask the AI Coach a question"
+    },
+    "Markets": {
+      "metaTitle": "Selected Markets — Polypips",
+      "heading": "AI-selected markets",
+      "subtitle": "The opportunities identified by our system today.",
+      "allCategories": "All",
+      "sortByLabel": "Sort by",
+      "sortOptions": {
+        "opportunityScore": "Score",
+        "edge": "Edge",
+        "aiProbability": "AI Probability"
+      },
+      "emptyTitle": "No markets selected yet",
+      "emptyDescription": "Our AI periodically scans the most active Polymarket markets. Check back soon to see the first opportunities.",
+      "backToListLabel": "Back to list"
+    },
+    "MarketCard": {
+      "reserved": "Reserved",
+      "viewOnPolymarket": "View on Polymarket",
+      "marketLabel": "Market",
+      "edgeLabel": "Edge",
+      "opportunityScoreLabel": "Opportunity score",
+      "confidenceLabel": "Confidence",
+      "unlockButton": "Unlock this analysis",
+      "viewFullAnalysis": "View full analysis"
+    },
+    "Common": {
+      "confidenceLevels": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      }
+    },
+    "SmartWallet": {
+      "metaTitle": "Smart Wallet — Polypips",
+      "heading": "Smart Wallet",
+      "subtitle": "Look up a Polymarket wallet by address to see its positions, profile, and activity. Follow it to get notified as soon as it opens a new position — replicating it yourself on Polymarket is entirely up to you.",
+      "genericError": "Something went wrong.",
+      "lockedMessageCancelled": "Subscription cancelled — resubscribe to keep using Smart Wallet.",
+      "lockedMessage": "Unlock Smart Wallet — Get started for €0.99",
+      "unfollowAria": "Stop following this wallet",
+      "noDataYet": "No data yet",
+      "openPositions": "{count, plural, one {# open position} other {# open positions}}",
+      "viewDetail": "View detail",
+      "followedWalletsTitle": "Followed wallets",
+      "emptyFollowedTitle": "No wallets followed yet",
+      "emptyFollowedDescription": "Look up a Polymarket wallet above and follow it to get notified of its next moves."
+    },
+    "WalletLookup": {
+      "title": "Look up a Polymarket wallet",
+      "description": "Paste a wallet address (0x...) to see its positions, profile, and activity, without having to follow it first.",
+      "invalidAddress": "Invalid address. Expected format: 0x followed by 40 hexadecimal characters.",
+      "lookupError": "Couldn't retrieve this wallet.",
+      "genericError": "Something went wrong.",
+      "addressPlaceholder": "0x1234...abcd",
+      "searching": "Searching...",
+      "searchButton": "Search",
+      "followButton": "Follow this wallet",
+      "followedButton": "Wallet followed",
+      "profileTitle": "Wallet profile",
+      "noProfileYet": "No profile computed yet — available once this wallet is followed and refreshed.",
+      "winRate": "Win rate",
+      "roi": "ROI",
+      "consistency": "Consistency",
+      "risk": "Risk",
+      "riskLevels": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "dailyFlowTitle": "Daily gains / losses",
+      "notEnoughActivity": "Not enough recent activity for a chart.",
+      "positionsTitle": "Current positions",
+      "noPositions": "No open positions right now.",
+      "movementsTitle": "Recent movements",
+      "noMovements": "No recent movement detected.",
+      "historyTitle": "History"
+    }
+  }
+}

@@ -12,6 +12,8 @@
 export type AnalysisDecision = string;
 export type ConfidenceLevel = "Faible" | "Moyenne" | "Élevée";
 
+type PolymarketTranslator = (key: string) => string;
+
 export type AnalysisSource = {
   name: string;
   url: string;
@@ -90,22 +92,42 @@ export function isPrimaryDecision(decision: string, outcomes: string[]): boolean
   return decision.trim().toLowerCase() !== outcomes[1].trim().toLowerCase();
 }
 
+/** analysis.confidence is a fixed backend-driven identifier (mirrored by
+ * the Supabase `analyses` table / analyze-market Edge Function), not
+ * display copy — so it can't be translated by just rendering it. This maps
+ * it to "Polymarket.Common.confidenceLevels.<low|medium|high>"; call with a
+ * translator scoped to "Polymarket.Common" (shared by AnalysisResult and
+ * MarketCard, the two surfaces that render this value as text). */
+const CONFIDENCE_LEVEL_KEY: Record<ConfidenceLevel, string> = {
+  Faible: "low",
+  Moyenne: "medium",
+  Élevée: "high",
+};
+
+export function confidenceLabel(level: ConfidenceLevel, t: PolymarketTranslator): string {
+  return t(`confidenceLevels.${CONFIDENCE_LEVEL_KEY[level]}`);
+}
+
 export type AnalysisProgressStep =
   | "fetching_market"
   | "calling_ai"
   | "receiving_result";
-
-export const ANALYSIS_LOADING_STEPS: Record<AnalysisProgressStep, string> = {
-  fetching_market: "Récupération des données Polymarket...",
-  calling_ai: "Envoi à l'IA pour analyse...",
-  receiving_result: "Réception de l'analyse...",
-};
 
 export const ANALYSIS_STEP_ORDER: AnalysisProgressStep[] = [
   "fetching_market",
   "calling_ai",
   "receiving_result",
 ];
+
+/** Loading step copy lives in "Polymarket.AnalyseIa.loadingSteps" — call
+ * with a translator scoped to "Polymarket.AnalyseIa" (see
+ * analysis-loading.tsx). */
+export function analysisLoadingStepLabel(
+  step: AnalysisProgressStep,
+  t: PolymarketTranslator
+): string {
+  return t(`loadingSteps.${step}`);
+}
 
 export type AnalysisErrorCode =
   | "invalid_input"
@@ -119,25 +141,25 @@ export type AnalysisErrorCode =
   | "limit_reached"
   | "unknown";
 
-const ERROR_MESSAGES: Record<AnalysisErrorCode, string> = {
-  invalid_input: "Le lien ou l'image fournie n'est pas valide.",
-  unauthorized: "Votre session a expiré. Reconnectez-vous et réessayez.",
-  market_not_found:
-    "Ce marché est introuvable sur Polymarket. Vérifiez le lien et réessayez.",
-  market_not_identified:
-    "Le marché n'a pas pu être identifié automatiquement à partir de l'image. Collez le lien du marché à la place.",
-  image_unreadable:
-    "Impossible de lire cette image. Essayez une capture plus nette ou collez le lien du marché.",
-  gamma_unavailable:
-    "L'API Polymarket est momentanément indisponible. Réessayez dans quelques instants.",
-  ai_error:
-    "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
-  network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
-  limit_reached:
-    "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
-  unknown: "Une erreur inattendue est survenue. Réessayez.",
-};
+const KNOWN_ERROR_CODES: AnalysisErrorCode[] = [
+  "invalid_input",
+  "unauthorized",
+  "market_not_found",
+  "market_not_identified",
+  "image_unreadable",
+  "gamma_unavailable",
+  "ai_error",
+  "network_error",
+  "limit_reached",
+  "unknown",
+];
 
-export function analysisErrorMessage(code: string): string {
-  return ERROR_MESSAGES[code as AnalysisErrorCode] ?? ERROR_MESSAGES.unknown;
+/** Error copy lives in "Polymarket.AnalyseIa.errors" — call with a
+ * translator scoped to "Polymarket.AnalyseIa". Codes the server sends that
+ * this UI doesn't recognize fall back to `errors.unknown`, same as before. */
+export function analysisErrorMessage(code: string, t: PolymarketTranslator): string {
+  const key = KNOWN_ERROR_CODES.includes(code as AnalysisErrorCode)
+    ? (code as AnalysisErrorCode)
+    : "unknown";
+  return t(`errors.${key}`);
 }

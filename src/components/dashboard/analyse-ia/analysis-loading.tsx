@@ -1,8 +1,9 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Check, Loader2 } from "lucide-react";
 import {
-  ANALYSIS_LOADING_STEPS,
+  analysisLoadingStepLabel,
   ANALYSIS_STEP_ORDER,
   type AnalysisProgressStep,
 } from "@/lib/data/analysis";
@@ -13,6 +14,7 @@ export function AnalysisLoading({
 }: {
   currentStep: AnalysisProgressStep | null;
 }) {
+  const t = useTranslations("Polymarket.AnalyseIa");
   const currentIndex = currentStep ? ANALYSIS_STEP_ORDER.indexOf(currentStep) : -1;
 
   return (
@@ -47,7 +49,7 @@ export function AnalysisLoading({
                   !complete && !current && "text-white/25"
                 )}
               >
-                {ANALYSIS_LOADING_STEPS[step]}
+                {analysisLoadingStepLabel(step, t)}
               </span>
             </div>
           );

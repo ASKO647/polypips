@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { ArrowRight, Clock, Link2, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { isPrimaryDecision, type MarketAnalysis } from "@/lib/data/analysis";
@@ -39,6 +40,7 @@ export function AnalysisInput({
   onAnalyze: (request: AnalyzeMarketRequest) => void;
   onSelectRecent: (analysis: MarketAnalysis) => void;
 }) {
+  const t = useTranslations("Polymarket.AnalyseIa");
   const [dragOver, setDragOver] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,10 +70,10 @@ export function AnalysisInput({
     <div className="flex flex-col gap-8">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Analyse IA
+          {t("heading")}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          Déposez une capture ou collez un lien de marché Polymarket.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -131,7 +133,7 @@ export function AnalysisInput({
               </p>
               <button
                 type="button"
-                aria-label="Retirer le fichier"
+                aria-label={t("removeFileAria")}
                 onClick={(e) => {
                   e.stopPropagation();
                   onFileChange(null);
@@ -145,10 +147,10 @@ export function AnalysisInput({
           ) : (
             <>
               <p className="text-sm font-medium text-white">
-                Glissez-déposez une capture d&apos;écran
+                {t("dragDropTitle")}
               </p>
               <p className="text-xs text-white/40">
-                ou cliquez pour parcourir vos fichiers
+                {t("browseHint")}
               </p>
             </>
           )}
@@ -157,7 +159,7 @@ export function AnalysisInput({
         <div className="flex items-center gap-3">
           <span className="h-px flex-1 bg-white/10" />
           <span className="text-xs font-semibold uppercase tracking-wide text-white/30">
-            ou
+            {t("orDivider")}
           </span>
           <span className="h-px flex-1 bg-white/10" />
         </div>
@@ -167,7 +169,7 @@ export function AnalysisInput({
           <input
             type="url"
             inputMode="url"
-            placeholder="Collez un lien de marché Polymarket"
+            placeholder={t("linkPlaceholder")}
             value={link}
             onChange={(e) => onLinkChange(e.target.value)}
             className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none"
@@ -180,7 +182,7 @@ export function AnalysisInput({
           onClick={handleSubmit}
           className="w-full sm:w-auto sm:self-end"
         >
-          Analyser
+          {t("analyzeButton")}
           <ButtonIcon>
             <ArrowRight className="h-4 w-4" />
           </ButtonIcon>
@@ -190,7 +192,7 @@ export function AnalysisInput({
       {recentAnalyses.length > 0 && (
         <div className="flex flex-col gap-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-            Marchés récemment analysés
+            {t("recentAnalysesTitle")}
           </p>
           <div className="flex flex-col gap-2">
             {recentAnalyses.map((item) => (

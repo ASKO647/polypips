@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { AnalysisInput } from "@/components/dashboard/analyse-ia/analysis-input";
 import { AnalysisLoading } from "@/components/dashboard/analyse-ia/analysis-loading";
@@ -14,7 +15,7 @@ import {
 
 type FlowState = "input" | "loading" | "result";
 
-function errorContentFor(error: unknown): React.ReactNode {
+function errorContentFor(error: unknown, t: (key: string) => string): React.ReactNode {
   if (error instanceof AnalysisRequestError && error.code === "limit_reached") {
     return (
       <>
@@ -23,13 +24,14 @@ function errorContentFor(error: unknown): React.ReactNode {
           href="/dashboard/settings"
           className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
         >
-          Changer de plan →
+          {t("changePlanLink")}
         </Link>
       </>
     );
   }
   return analysisErrorMessage(
-    error instanceof AnalysisRequestError ? error.code : "unknown"
+    error instanceof AnalysisRequestError ? error.code : "unknown",
+    t
   );
 }
 
@@ -40,6 +42,7 @@ export function AnalyseIaFlow({
   initialRecentAnalyses: MarketAnalysis[];
   hasActiveSubscription: boolean;
 }) {
+  const t = useTranslations("Polymarket.AnalyseIa");
   const [state, setState] = useState<FlowState>("input");
   const [result, setResult] = useState<MarketAnalysis | null>(null);
   const [recentAnalyses, setRecentAnalyses] = useState(initialRecentAnalyses);
@@ -62,7 +65,7 @@ export function AnalyseIaFlow({
       setFile(null);
       setState("result");
     } catch (error) {
-      setErrorMessage(errorContentFor(error));
+      setErrorMessage(errorContentFor(error, t));
       setState("input");
     }
   };

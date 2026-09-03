@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Check, Loader2, Plus, Search } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { WalletChart } from "@/components/ui/wallet-chart";
@@ -89,6 +90,7 @@ export function WalletLookupPanel({
    * same panel instead of duplicating its whole result view. */
   prefillAddress?: { address: string; key: number };
 }) {
+  const t = useTranslations("Polymarket.WalletLookup");
   const { formatAmount } = useCurrency();
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
@@ -99,7 +101,7 @@ export function WalletLookupPanel({
   const performSearch = async (rawAddress: string) => {
     const trimmed = rawAddress.trim().toLowerCase();
     if (!WALLET_ADDRESS_RE.test(trimmed)) {
-      setError("Adresse invalide. Format attendu : 0x suivi de 40 caractères hexadécimaux.");
+      setError(t("invalidAddress"));
       return;
     }
 
@@ -113,10 +115,10 @@ export function WalletLookupPanel({
         body: JSON.stringify({ address: trimmed }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Impossible de récupérer ce portefeuille.");
+      if (!response.ok) throw new Error(data.message || t("lookupError"));
       setResult(data as WalletLookupResult);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      setError(err instanceof Error ? err.message : t("genericError"));
     } finally {
       setLoading(false);
     }
@@ -154,7 +156,7 @@ export function WalletLookupPanel({
         ),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Une erreur est survenue.");
+      if (!response.ok) throw new Error(data.message || t("genericError"));
 
       const walletId = (data.walletId as string) ?? result.walletId;
       setResult((prev) => (prev ? { ...prev, isFollowed: nextFollowed, walletId } : prev));
@@ -162,7 +164,7 @@ export function WalletLookupPanel({
         onWalletFollowed(walletId, result.handle, result.address);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Une erreur est survenue.");
+      setError(err instanceof Error ? err.message : t("genericError"));
     } finally {
       setFollowPending(false);
     }
@@ -182,10 +184,9 @@ export function WalletLookupPanel({
   return (
     <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
       <div>
-        <p className="text-sm font-semibold text-white">Rechercher un wallet Polymarket</p>
+        <p className="text-sm font-semibold text-white">{t("title")}</p>
         <p className="mt-1 text-xs text-white/45">
-          Collez l&apos;adresse d&apos;un portefeuille (0x...) pour voir ses positions, son profil et
-          son activité, sans avoir à le suivre au préalable.
+          {t("description")}
         </p>
       </div>
 
@@ -194,12 +195,12 @@ export function WalletLookupPanel({
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="0x1234...abcd"
+          placeholder={t("addressPlaceholder")}
           disabled={loading}
           className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none disabled:opacity-50"
         />
         <Button type="submit" disabled={loading || !address.trim()}>
-          {loading ? "Recherche..." : "Rechercher"}
+          {loading ? t("searching") : t("searchButton")}
           <ButtonIcon>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}</ButtonIcon>
         </Button>
       </form>
@@ -225,26 +226,26 @@ export function WalletLookupPanel({
               )}
             >
               {result.isFollowed ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-              {result.isFollowed ? "Wallet suivi" : "Suivre ce wallet"}
+              {result.isFollowed ? t("followedButton") : t("followButton")}
             </button>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Profil du portefeuille</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">{t("profileTitle")}</p>
             {!hasProfile ? (
               <p className="mt-2 text-xs text-white/35">
-                Pas encore de profil calculé — disponible une fois ce wallet suivi et actualisé.
+                {t("noProfileYet")}
               </p>
             ) : (
               <div className="mt-4 grid grid-cols-2 gap-4 text-xs sm:grid-cols-4">
                 <div>
-                  <p className="text-white/35">Win rate</p>
+                  <p className="text-white/35">{t("winRate")}</p>
                   <p className="mt-0.5 font-semibold text-white">
                     {result.winRate !== null ? `${Math.round(result.winRate * 100)}%` : "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-white/35">ROI</p>
+                  <p className="text-white/35">{t("roi")}</p>
                   <p
                     className={cn(
                       "mt-0.5 font-semibold",
@@ -255,20 +256,20 @@ export function WalletLookupPanel({
                   </p>
                 </div>
                 <div>
-                  <p className="text-white/35">Consistance</p>
+                  <p className="text-white/35">{t("consistency")}</p>
                   <p className="mt-0.5 font-semibold text-white">
                     {result.consistencyScore !== null ? `${result.consistencyScore}/100` : "—"}
                   </p>
                 </div>
                 <div>
-                  <p className="text-white/35">Risque</p>
+                  <p className="text-white/35">{t("risk")}</p>
                   <p className="mt-0.5 font-semibold capitalize text-white">
                     {result.riskLevel === "low"
-                      ? "Faible"
+                      ? t("riskLevels.low")
                       : result.riskLevel === "high"
-                        ? "Élevé"
+                        ? t("riskLevels.high")
                         : result.riskLevel === "medium"
-                          ? "Moyen"
+                          ? t("riskLevels.medium")
                           : "—"}
                   </p>
                 </div>
@@ -278,7 +279,7 @@ export function WalletLookupPanel({
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Gains / pertes par jour
+              {t("dailyFlowTitle")}
             </p>
             <div className="mt-4 h-32 sm:h-40">
               {chartPoints.length >= 2 ? (
@@ -291,17 +292,17 @@ export function WalletLookupPanel({
                 />
               ) : (
                 <div className="flex h-full items-center justify-center">
-                  <p className="text-xs text-white/35">Pas assez d&apos;activité récente pour un graphique.</p>
+                  <p className="text-xs text-white/35">{t("notEnoughActivity")}</p>
                 </div>
               )}
             </div>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Positions actuelles</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">{t("positionsTitle")}</p>
             <div className="mt-3 flex flex-col gap-2">
               {result.positions.length === 0 ? (
-                <EmptyRow label="Aucune position ouverte pour le moment." />
+                <EmptyRow label={t("noPositions")} />
               ) : (
                 result.positions.map((position) => (
                   <PositionRow key={position.id} position={position} formatAmount={formatAmount} />
@@ -311,10 +312,10 @@ export function WalletLookupPanel({
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Mouvements récents</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/40">{t("movementsTitle")}</p>
             <div className="mt-3 flex flex-col gap-2">
               {result.recentMovements.length === 0 ? (
-                <EmptyRow label="Aucun mouvement récent détecté." />
+                <EmptyRow label={t("noMovements")} />
               ) : (
                 result.recentMovements.map((movement) => (
                   <MovementRow key={movement.id} movement={movement} formatAmount={formatAmount} />
@@ -325,7 +326,7 @@ export function WalletLookupPanel({
 
           {result.history.length > 0 && (
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Historique</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/40">{t("historyTitle")}</p>
               <div className="mt-3 flex flex-col gap-2">
                 {result.history.map((movement) => (
                   <MovementRow key={movement.id} movement={movement} formatAmount={formatAmount} />

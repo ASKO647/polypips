@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { SmartWalletFlow } from "@/components/dashboard/copy-trading/smart-wallet-flow";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import {
@@ -8,9 +9,10 @@ import {
 } from "@/lib/supabase/subscriptions";
 import { fetchSmartMoneyData } from "@/lib/supabase/wallets";
 
-export const metadata: Metadata = {
-  title: "Smart Wallet — Polypips",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("Polymarket.SmartWallet");
+  return { title: t("metaTitle") };
+}
 
 export default async function SmartWalletPage() {
   const supabase = await createClient();

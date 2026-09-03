@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Sparkles } from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
 import { MarketCard } from "@/components/dashboard/markets/market-card";
@@ -11,14 +12,6 @@ import { cn } from "@/lib/utils";
 
 type SortKey = "opportunityScore" | "edge" | "aiProbability";
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "opportunityScore", label: "Score" },
-  { key: "edge", label: "Edge" },
-  { key: "aiProbability", label: "Probabilité IA" },
-];
-
-const ALL_CATEGORIES = "Tous";
-
 export function MarketsFlow({
   markets: allMarkets,
   hasActiveSubscription,
@@ -28,21 +21,29 @@ export function MarketsFlow({
   hasActiveSubscription: boolean;
   lastSyncedAt: string | null;
 }) {
+  const t = useTranslations("Polymarket.Markets");
+  const allCategories = t("allCategories");
+  const sortOptions: { key: SortKey; label: string }[] = [
+    { key: "opportunityScore", label: t("sortOptions.opportunityScore") },
+    { key: "edge", label: t("sortOptions.edge") },
+    { key: "aiProbability", label: t("sortOptions.aiProbability") },
+  ];
+
   const [selected, setSelected] = useState<MarketAnalysis | null>(null);
-  const [category, setCategory] = useState<string>(ALL_CATEGORIES);
+  const [category, setCategory] = useState<string>(allCategories);
   const [sortKey, setSortKey] = useState<SortKey>("opportunityScore");
 
   const categories = useMemo(
     () => [
-      ALL_CATEGORIES,
+      allCategories,
       ...Array.from(new Set(allMarkets.map((m) => m.category))),
     ],
-    [allMarkets]
+    [allMarkets, allCategories]
   );
 
   const markets = useMemo(() => {
     const filtered =
-      category === ALL_CATEGORIES
+      category === allCategories
         ? allMarkets
         : allMarkets.filter((m) => m.category === category);
 
@@ -51,14 +52,14 @@ export function MarketsFlow({
         ? Math.abs(b.edge) - Math.abs(a.edge)
         : b[sortKey] - a[sortKey]
     );
-  }, [allMarkets, category, sortKey]);
+  }, [allMarkets, category, sortKey, allCategories]);
 
   if (selected) {
     return (
       <AnalysisResult
         analysis={selected}
         onBack={() => setSelected(null)}
-        backLabel="Retour à la liste"
+        backLabel={t("backToListLabel")}
         locked={!hasActiveSubscription}
       />
     );
@@ -69,10 +70,10 @@ export function MarketsFlow({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Marchés sélectionnés par l&apos;IA
+            {t("heading")}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-            Les opportunités identifiées par notre système aujourd&apos;hui.
+            {t("subtitle")}
           </p>
         </div>
         <SyncCountdown
@@ -87,12 +88,10 @@ export function MarketsFlow({
             <Sparkles className="h-5 w-5" strokeWidth={2} />
           </span>
           <p className="text-sm font-semibold text-white">
-            Aucun marché sélectionné pour le moment
+            {t("emptyTitle")}
           </p>
           <p className="max-w-sm text-xs leading-relaxed text-white/45">
-            Notre IA scanne périodiquement les marchés Polymarket les plus
-            actifs. Revenez un peu plus tard pour voir les premières
-            opportunités.
+            {t("emptyDescription")}
           </p>
         </div>
       ) : (
@@ -117,9 +116,9 @@ export function MarketsFlow({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-white/40">Trier par</span>
+              <span className="text-xs font-medium text-white/40">{t("sortByLabel")}</span>
               <div className="flex flex-wrap gap-1.5">
-                {SORT_OPTIONS.map((opt) => (
+                {sortOptions.map((opt) => (
                   <button
                     key={opt.key}
                     type="button"

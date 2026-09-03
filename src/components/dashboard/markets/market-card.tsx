@@ -1,7 +1,8 @@
+import { useTranslations } from "next-intl";
 import { ArrowRight, ExternalLink, Lock } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import { isPrimaryDecision, polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
+import { confidenceLabel, isPrimaryDecision, polymarketEventUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function MarketCard({
@@ -17,6 +18,8 @@ export function MarketCard({
    * explanation — is blurred out rather than given away for free. */
   locked?: boolean;
 }) {
+  const t = useTranslations("Polymarket.MarketCard");
+  const tCommon = useTranslations("Polymarket.Common");
   const isPrimary = isPrimaryDecision(market.decision, market.outcomes);
 
   return (
@@ -28,7 +31,7 @@ export function MarketCard({
         {locked ? (
           <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] font-semibold text-white/40">
             <Lock className="h-3 w-3" strokeWidth={2.25} />
-            Réservé
+            {t("reserved")}
           </span>
         ) : (
           <span
@@ -55,7 +58,7 @@ export function MarketCard({
           rel="noreferrer"
           className="inline-flex w-fit items-center gap-1 text-xs font-medium text-white/40 transition-colors hover:text-white/70"
         >
-          Voir sur Polymarket
+          {t("viewOnPolymarket")}
           <ExternalLink className="h-3 w-3" strokeWidth={2.25} />
         </a>
       )}
@@ -70,13 +73,13 @@ export function MarketCard({
 
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div>
-            <p className="text-white/35">Marché</p>
+            <p className="text-white/35">{t("marketLabel")}</p>
             <p className="mt-0.5 font-semibold text-white">
               {market.marketProbability}%
             </p>
           </div>
           <div>
-            <p className="text-white/35">Edge</p>
+            <p className="text-white/35">{t("edgeLabel")}</p>
             <p
               className={cn(
                 "mt-0.5 font-semibold",
@@ -92,7 +95,7 @@ export function MarketCard({
         <div>
           <div className="flex items-center justify-between text-[11px]">
             <span className="font-semibold uppercase tracking-wide text-white/35">
-              Score d&apos;opportunité
+              {t("opportunityScoreLabel")}
             </span>
             <span className="font-bold text-white">
               {market.opportunityScore}/100
@@ -109,9 +112,9 @@ export function MarketCard({
         <div>
           <div className="flex items-center justify-between text-[11px]">
             <span className="font-semibold uppercase tracking-wide text-white/35">
-              Confiance
+              {t("confidenceLabel")}
             </span>
-            <span className="font-bold text-white">{market.confidence}</span>
+            <span className="font-bold text-white">{confidenceLabel(market.confidence, tCommon)}</span>
           </div>
           <ConfidenceMeter level={market.confidence} className="mt-1.5" />
         </div>
@@ -123,7 +126,7 @@ export function MarketCard({
         onClick={onViewDetail}
         className="mt-1 w-full"
       >
-        {locked ? "Débloquer cette analyse" : "Voir l'analyse complète"}
+        {locked ? t("unlockButton") : t("viewFullAnalysis")}
         <ButtonIcon variant="outline">
           {locked ? <Lock className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
         </ButtonIcon>

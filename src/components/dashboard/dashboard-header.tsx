@@ -101,7 +101,7 @@ export function DashboardHeader({
   const [tick, setTick] = useState(0);
   useEffect(() => {
     if (!trialEndsAt) return;
-    const interval = setInterval(() => setTick((t) => t + 1), 60 * 60 * 1000);
+    const interval = setInterval(() => setTick((tick) => tick + 1), 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [trialEndsAt]);
   const trialDaysRemaining = useMemo(() => {

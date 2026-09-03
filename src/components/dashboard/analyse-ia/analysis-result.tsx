@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowRight,
   Check,
@@ -14,13 +14,13 @@ import {
 } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
-import { isPrimaryDecision, resolvedMarketUrl, type MarketAnalysis } from "@/lib/data/analysis";
+import { confidenceLabel, isPrimaryDecision, resolvedMarketUrl, type MarketAnalysis } from "@/lib/data/analysis";
 import { cn } from "@/lib/utils";
 
 export function AnalysisResult({
   analysis,
   onBack,
-  backLabel = "Nouvelle analyse",
+  backLabel,
   locked = false,
 }: {
   analysis: MarketAnalysis;
@@ -33,9 +33,12 @@ export function AnalysisResult({
 }) {
   const [unlocking, setUnlocking] = useState(false);
   const locale = useLocale();
+  const t = useTranslations("Polymarket.AnalysisResult");
+  const tCommon = useTranslations("Polymarket.Common");
   const isPrimary = isPrimaryDecision(analysis.decision, analysis.outcomes);
   const decisionTone = isPrimary ? "text-emerald-400" : "text-rose-400";
   const marketUrl = resolvedMarketUrl(analysis);
+  const resolvedBackLabel = backLabel ?? t("defaultBackLabel");
 
   const handleUnlock = async () => {
     if (unlocking) return;
@@ -48,7 +51,7 @@ export function AnalysisResult({
       });
       const data = await response.json();
       if (!response.ok || !data.url) {
-        throw new Error(data.message || "Checkout indisponible.");
+        throw new Error(data.message || t("checkoutUnavailable"));
       }
       window.location.href = data.url;
     } catch {
@@ -75,7 +78,7 @@ export function AnalysisResult({
             rel="noreferrer"
             className="inline-flex w-fit items-center gap-1 text-xs font-medium text-white/40 transition-colors hover:text-white/70"
           >
-            Voir sur Polymarket
+            {t("viewOnPolymarket")}
             <ExternalLink className="h-3 w-3" strokeWidth={2.25} />
           </a>
         )}
@@ -88,11 +91,10 @@ export function AnalysisResult({
               <Lock className="h-5 w-5" strokeWidth={2} />
             </span>
             <p className="max-w-xs text-sm font-medium leading-relaxed text-white/80">
-              La décision complète, l&apos;edge et l&apos;explication détaillée
-              sont réservées aux abonnés.
+              {t("lockedMessage")}
             </p>
             <Button type="button" onClick={handleUnlock} disabled={unlocking}>
-              {unlocking ? "Redirection..." : "Débloquez cette analyse — Débutez pour 0,99 €"}
+              {unlocking ? t("redirecting") : t("unlockCta")}
               <ButtonIcon>→</ButtonIcon>
             </Button>
           </div>
@@ -120,7 +122,7 @@ export function AnalysisResult({
                 </span>
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                    Décision IA
+                    {t("decisionLabel")}
                   </p>
                   <p className={cn("font-display text-3xl font-bold", decisionTone)}>
                     {analysis.aiProbability}%
@@ -131,7 +133,7 @@ export function AnalysisResult({
               <div className="flex gap-6">
                 <div className="text-right">
                   <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                    Marché
+                    {t("marketLabel")}
                   </p>
                   <p className="mt-1 text-xl font-bold text-white">
                     {analysis.marketProbability}%
@@ -139,7 +141,7 @@ export function AnalysisResult({
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-                    Edge
+                    {t("edgeLabel")}
                   </p>
                   <p
                     className={cn(
@@ -158,7 +160,7 @@ export function AnalysisResult({
               <div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold uppercase tracking-wide text-white/40">
-                    Score d&apos;opportunité
+                    {t("opportunityScoreLabel")}
                   </span>
                   <span className="font-bold text-white">
                     {analysis.opportunityScore}/100
@@ -175,9 +177,9 @@ export function AnalysisResult({
               <div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold uppercase tracking-wide text-white/40">
-                    Niveau de confiance
+                    {t("confidenceLabel")}
                   </span>
-                  <span className="font-bold text-white">{analysis.confidence}</span>
+                  <span className="font-bold text-white">{confidenceLabel(analysis.confidence, tCommon)}</span>
                 </div>
                 <ConfidenceMeter level={analysis.confidence} className="mt-2.5" />
               </div>
@@ -187,14 +189,13 @@ export function AnalysisResult({
           <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3">
             <ShieldAlert className="h-4 w-4 shrink-0 text-white/30" strokeWidth={2} />
             <p className="text-xs leading-relaxed text-white/40">
-              Cette analyse est une estimation probabiliste, pas une garantie de
-              gain.
+              {t("disclaimer")}
             </p>
           </div>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Explication
+              {t("explanationTitle")}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-white/75 sm:text-[15px]">
               {analysis.explanation}
@@ -205,7 +206,7 @@ export function AnalysisResult({
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-emerald-400">
                 <TrendingUp className="h-3.5 w-3.5" strokeWidth={2.25} />
-                Facteurs favorables
+                {t("favorableFactorsTitle")}
               </p>
               <ul className="mt-3 flex flex-col gap-2.5">
                 {analysis.favorableFactors.map((factor) => (
@@ -226,7 +227,7 @@ export function AnalysisResult({
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-amber-400">
                 <TriangleAlert className="h-3.5 w-3.5" strokeWidth={2.25} />
-                Risques
+                {t("risksTitle")}
               </p>
               <ul className="mt-3 flex flex-col gap-2.5">
                 {analysis.risks.map((risk) => (
@@ -248,7 +249,7 @@ export function AnalysisResult({
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-white/40">
               <RefreshCw className="h-3.5 w-3.5" strokeWidth={2.25} />
-              Ce qui pourrait faire changer l&apos;analyse
+              {t("whatCouldChangeTitle")}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-white/70">
               {analysis.whatCouldChange}
@@ -257,7 +258,7 @@ export function AnalysisResult({
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-              Sources utilisées
+              {t("sourcesTitle")}
             </p>
             <ul className="mt-3 flex flex-col gap-2">
               {analysis.sources.map((source) => (
@@ -285,13 +286,13 @@ export function AnalysisResult({
           onClick={onBack}
           className="sm:flex-1"
         >
-          {backLabel}
+          {resolvedBackLabel}
         </Button>
         <Button
           href={`/dashboard/coach?analysisId=${analysis.id}`}
           className="sm:flex-1"
         >
-          Poser une question au Coach IA
+          {t("coachCta")}
           <ButtonIcon>
             <ArrowRight className="h-4 w-4" />
           </ButtonIcon>
