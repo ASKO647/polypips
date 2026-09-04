@@ -17,7 +17,7 @@
       "title": "Notre mission",
       "paragraph1": "Polymarket et les marchés de prédiction en général reposent sur une idée simple : transformer une question sur l'avenir en un prix, fixé par l'offre et la demande. Comprendre ce prix — et se faire un avis dessus — demande de lire des règles de résolution, de croiser des sources, et de garder la tête froide face à ses propres biais. C'est un travail que peu de gens ont le temps de faire correctement pour chaque marché qui les intéresse.",
       "paragraph2": "Polypips est né de ce constat : donner accès à une analyse méthodique et honnête, construite par une intelligence artificielle qui applique la même rigueur à chaque marché, qu'il s'agisse d'un événement Polymarket ou d'un match sportif. Notre objectif n'est pas de prédire l'avenir à votre place, mais de vous donner les moyens de vous faire un avis plus informé, plus vite.",
-      "paragraph3": "Cela implique un engagement que nous prenons au sérieux : ne jamais présenter une estimation comme une certitude, ne jamais promettre un gain, et construire des outils — comme le Copy Trading en simulation — qui vous laissent tester une approche sans jamais vous exposer à un risque que vous n'auriez pas choisi vous-même.",
+      "paragraph3": "Cela implique un engagement que nous prenons au sérieux : ne jamais présenter une estimation comme une certitude, ne jamais promettre un gain, et construire des outils — comme le Smart Wallet, qui reste toujours en pure observation — qui vous permettent de vous informer sans jamais vous exposer à un risque que vous n'auriez pas choisi vous-même.",
       "values": {
         "aiTitle": "L'IA comme outil d'aide à la décision",
         "aiDescription": "Pas un oracle, pas une martingale : un outil qui traite l'information disponible et l'explique clairement, pour que la décision finale reste la vôtre.",
@@ -83,7 +83,7 @@
           "items": [
             "Analyse IA de marchés Polymarket et de matchs sportifs",
             "Sélection quotidienne de marchés par l'IA",
-            "Suivi de portefeuilles Smart Wallet et Copy Trading en simulation",
+            "Suivi de portefeuilles Smart Wallet",
             "Coach IA conversationnel",
             "Statistiques de suivi de performance"
           ]
@@ -241,7 +241,7 @@
           "answer": "Vous déposez une capture d'écran d'un marché Polymarket (ou décrivez un match sportif) : l'IA analyse la question, les règles de résolution, les données disponibles et vous propose une décision, une probabilité estimée et une explication. C'est une estimation informative, pas une garantie de résultat."
         },
         "copyTradingReal": {
-          "question": "Le Copy Trading exécute-t-il de vrais ordres pour moi ?",
+          "question": "Le Smart Wallet exécute-t-il de vrais ordres pour moi ?",
           "answer": "Non, jamais. Smart Wallet fonctionne exclusivement en observation : vous recherchez et suivez les portefeuilles de votre choix pour être notifié de leurs nouvelles positions, sans qu'aucun ordre réel ne soit jamais transmis en votre nom."
         },
         "financialAdvice": {

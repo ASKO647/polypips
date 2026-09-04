@@ -17,7 +17,7 @@
       "title": "Our mission",
       "paragraph1": "Polymarket, and prediction markets in general, rest on a simple idea: turning a question about the future into a price, set by supply and demand. Understanding that price — and forming your own view on it — means reading resolution rules, cross-checking sources, and staying clear-headed about your own biases. It's more work than most people have time to do properly for every market they care about.",
       "paragraph2": "Polypips grew out of that observation: giving everyone access to methodical, honest analysis, built by an AI that applies the same rigor to every market, whether it's a Polymarket event or a sports match. Our goal isn't to predict the future for you, but to help you form a more informed opinion, faster.",
-      "paragraph3": "That comes with a commitment we take seriously: never present an estimate as a certainty, never promise a win, and build tools — like simulated Copy Trading — that let you test an approach without ever exposing you to a risk you didn't choose for yourself.",
+      "paragraph3": "That comes with a commitment we take seriously: never present an estimate as a certainty, never promise a win, and build tools — like Smart Wallet, which always stays in pure observation mode — that let you stay informed without ever exposing you to a risk you didn't choose for yourself.",
       "values": {
         "aiTitle": "AI as a decision-support tool",
         "aiDescription": "Not an oracle, not a sure thing: a tool that processes the available information and explains it clearly, so the final call is always yours.",
@@ -83,7 +83,7 @@
           "items": [
             "AI analysis of Polymarket markets and sports matches",
             "Daily AI-curated market picks",
-            "Smart Wallet portfolio tracking and simulated Copy Trading",
+            "Smart Wallet portfolio tracking",
             "Conversational AI coach",
             "Performance tracking statistics"
           ]
@@ -241,7 +241,7 @@
           "answer": "You upload a screenshot of a Polymarket market (or describe a sports match): the AI analyzes the question, the resolution rules, the available data, and gives you a decision, an estimated probability, and an explanation. It's an informational estimate, not a guaranteed outcome."
         },
         "copyTradingReal": {
-          "question": "Does Copy Trading place real orders for me?",
+          "question": "Does Smart Wallet place real orders for me?",
           "answer": "No, never. Smart Wallet works purely through observation: you search for and follow the wallets of your choice to get notified of their new positions, and no real order is ever placed on your behalf."
         },
         "financialAdvice": {

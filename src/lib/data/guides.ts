@@ -42,7 +42,7 @@ export const GUIDES: Guide[] = [
     ],
   },
   {
-    slug: "suivre-un-wallet-en-copy-trading",
+    slug: "suivre-un-wallet-avec-smart-wallet",
     title: "Comment suivre un wallet avec Smart Wallet",
     excerpt: "Rechercher un portefeuille Polymarket par adresse, consulter son activité, et le suivre.",
     intro:

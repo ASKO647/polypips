@@ -39,13 +39,15 @@ export default function TermsPage() {
 
       <LegalSection title="2. Description du service">
         <p>
-          Polypips est un outil d&apos;analyse par intelligence artificielle de
-          marchés de prédiction (notamment ceux de la plateforme Polymarket).
-          Le Service propose notamment : une analyse IA de marchés
-          individuels, une sélection automatisée de marchés, un suivi de
-          portefeuilles publics on-chain (« Smart Money »), un module de
-          copie de stratégie en simulation (« Copy Trading »), et un
-          assistant conversationnel (« Coach IA »).
+          Polypips est un outil d&apos;analyse par intelligence artificielle
+          appliqué aux marchés de prédiction (notamment ceux de la
+          plateforme Polymarket), aux rencontres sportives et aux
+          graphiques de trading soumis par l&apos;Utilisateur. Le Service
+          propose notamment : une analyse IA de marchés individuels, de
+          matchs sportifs et de graphiques de trading, une sélection
+          automatisée de marchés Polymarket, un suivi de portefeuilles
+          publics on-chain (« Smart Wallet »), un assistant conversationnel
+          (« Coach IA »), et un espace communautaire.
         </p>
         <p>
           <strong>
@@ -64,15 +66,16 @@ export default function TermsPage() {
         </p>
         <p>
           <strong>
-            Le module Copy Trading fonctionne exclusivement en mode
-            simulation : à aucun moment le Service n&apos;exécute, ne
-            transmet, ni ne déclenche un ordre ou une transaction réelle
-            pour le compte de l&apos;Utilisateur, sur Polymarket ou sur tout
-            autre marché.
+            Le Smart Wallet fonctionne exclusivement en observation : à
+            aucun moment le Service n&apos;exécute, ne transmet, ni ne
+            déclenche un ordre ou une transaction réelle pour le compte de
+            l&apos;Utilisateur, sur Polymarket ou sur tout autre marché.
           </strong>{" "}
-          Il ne s&apos;agit ni d&apos;un service de gestion sous mandat, ni d&apos;un
-          service de réception-transmission d&apos;ordres au sens du droit
-          financier applicable.
+          Il permet uniquement de rechercher une adresse publique, de
+          consulter son activité on-chain et d&apos;être notifié de ses
+          nouvelles positions. Il ne s&apos;agit ni d&apos;un service de gestion
+          sous mandat, ni d&apos;un service de réception-transmission
+          d&apos;ordres au sens du droit financier applicable.
         </p>
       </LegalSection>
 

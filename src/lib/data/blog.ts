@@ -78,21 +78,21 @@ export const BLOG_ARTICLES: BlogArticle[] = [
     ],
   },
   {
-    slug: "comprendre-le-copy-trading-sportif",
-    title: "Comprendre le copy trading sportif",
+    slug: "comprendre-le-smart-wallet",
+    title: "Comprendre le Smart Wallet",
     excerpt:
-      "Copier les décisions d'un portefeuille suivi n'est pas une martingale : ce que ça veut vraiment dire, et pourquoi la simulation a du sens avant tout engagement réel.",
-    category: "Copy trading",
+      "Suivre un portefeuille Polymarket n'est pas une martingale : ce que le Smart Wallet permet vraiment de faire — et ce qu'il ne fait jamais.",
+    category: "Smart Wallet",
     date: "18 août 2026",
     readMinutes: 5,
     content: [
       {
         type: "p",
-        text: "Le « copy trading » désigne le fait de reproduire, automatiquement ou manuellement, les décisions prises par un autre participant — un portefeuille suivi, souvent qualifié de « Smart Money » quand son historique de décisions est jugé de bonne qualité. Appliqué au sport ou aux marchés de prédiction, le principe reste le même : s'appuyer sur l'activité d'un tiers plutôt que de partir de zéro à chaque décision.",
+        text: "Le Smart Wallet de Polypips permet de rechercher n'importe quelle adresse publique sur Polymarket et de consulter son activité on-chain : positions ouvertes, historique de mouvements, taille moyenne des paris. L'idée est simple — plutôt que de partir de zéro à chaque décision, s'appuyer sur l'activité vérifiable d'un portefeuille dont l'historique vous semble solide.",
       },
       {
         type: "h2",
-        text: "Copier un portefeuille, ce n'est pas suivre un tipster",
+        text: "Suivre un portefeuille, ce n'est pas suivre un tipster",
       },
       {
         type: "p",
@@ -104,32 +104,24 @@ export const BLOG_ARTICLES: BlogArticle[] = [
       },
       {
         type: "p",
-        text: "Un bon historique passé ne prédit pas un bon historique futur — c'est vrai pour n'importe quel style de décision répétée. Un échantillon de décisions, même solide, reste un échantillon : quelques résultats extrêmes peuvent avoir gonflé une performance qui ne se reproduira pas à l'identique. Copier une stratégie revient à parier que le style de décision observé continuera de fonctionner, pas à obtenir une garantie.",
+        text: "Un bon historique passé ne prédit pas un bon historique futur — c'est vrai pour n'importe quel style de décision répétée. Un échantillon de décisions, même solide, reste un échantillon : quelques résultats extrêmes peuvent avoir gonflé une performance qui ne se reproduira pas à l'identique. Suivre un portefeuille revient à parier que le style de décision observé continuera de fonctionner, pas à obtenir une garantie.",
       },
       {
         type: "h2",
-        text: "Pourquoi tester en simulation d'abord",
-      },
-      {
-        type: "p",
-        text: "Avant d'engager de l'argent réel sur une stratégie copiée, la simuler permet de voir comment elle se serait comportée dans des conditions proches du réel, avec vos propres paramètres de budget et de risque, sans aucun engagement financier. C'est exactement le principe du module Copy Trading de Polypips : il ne transmet jamais d'ordre réel, il vous permet d'observer et de comprendre une stratégie construite autour des portefeuilles que vous suivez.",
-      },
-      {
-        type: "h2",
-        text: "Les paramètres qui comptent",
+        text: "Comment fonctionne le Smart Wallet, concrètement",
       },
       {
         type: "ul",
         items: [
-          "Le budget maximum que vous êtes prêt à allouer à la stratégie",
-          "Le niveau de risque toléré par position",
-          "Le nombre de positions simultanées et l'exposition totale",
-          "La durée d'observation avant de tirer des conclusions sur une stratégie",
+          "Recherchez une adresse Polymarket (0x...) dans la barre de recherche",
+          "Consultez son historique de positions et ses métriques de qualité (win rate, taille moyenne, diversité de marchés)",
+          "Suivez le portefeuille pour recevoir une notification dès qu'il ouvre une nouvelle position",
+          "Décidez vous-même, manuellement, si vous répliquez ou non ce mouvement sur Polymarket",
         ],
       },
       {
         type: "p",
-        text: "Le copy trading, sportif ou non, reste un outil d'aide à la décision — pas un système qui élimine le risque. Garder le contrôle sur ses propres paramètres, et comprendre pourquoi une stratégie a pris telle décision, compte davantage que la promesse d'un rendement.",
+        text: "À aucun moment le Smart Wallet ne transmet d'ordre réel ni ne gère vos fonds : il fonctionne exclusivement en observation. C'est un outil d'aide à la décision, pas un système qui élimine le risque — comprendre pourquoi un portefeuille a pris telle décision compte davantage que la promesse d'un rendement.",
       },
     ],
   },

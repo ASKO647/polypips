@@ -50,11 +50,11 @@ export default function PrivacyPage() {
             l&apos;identifiant client Stripe et le statut de l&apos;abonnement.
           </li>
           <li>
-            <strong>Données d&apos;usage :</strong> analyses de marché
-            demandées, marchés suivis, portefeuilles suivis (« Smart
-            Money »), stratégies de copy trading configurées, messages
-            échangés avec le Coach IA, et statistiques de performance
-            associées à votre compte.
+            <strong>Données d&apos;usage :</strong> analyses de marché, de
+            matchs sportifs et de graphiques de trading demandées, marchés
+            suivis, portefeuilles Smart Wallet suivis, messages échangés
+            avec le Coach IA, et statistiques de performance associées à
+            votre compte.
           </li>
           <li>
             <strong>Données techniques :</strong> adresse IP, données de
