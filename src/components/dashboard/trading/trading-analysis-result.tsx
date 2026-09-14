@@ -4,13 +4,14 @@ import { useTranslations } from "next-intl";
 import {
   ArrowDown,
   ArrowUp,
+  Lock,
   Minus,
   ShieldAlert,
   Target,
   TrendingUp,
   TriangleAlert,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
 import {
   getConfidenceLabel,
@@ -34,10 +35,16 @@ export function TradingAnalysisResult({
   analysis,
   onBack,
   backLabel,
+  locked = false,
 }: {
   analysis: TradingChartAnalysis;
   onBack: () => void;
   backLabel?: string;
+  /** Same blur-and-gate pattern as AnalysisResult, for the Trading
+   * "Sélection du jour" page — defaults to false so the existing
+   * on-demand Analyse IA flow (which never passes this prop) is
+   * unaffected. */
+  locked?: boolean;
 }) {
   const t = useTranslations("Trading.Result");
   const tTrading = useTranslations("Trading");
@@ -67,8 +74,25 @@ export function TradingAnalysisResult({
         <p className="text-xs leading-relaxed text-amber-200/90">{getTradingDisclaimer(tTrading)}</p>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-5">
+      <div className="relative">
+        {locked && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-b from-[#160b0c]/50 via-[#160b0c]/80 to-[#160b0c]/95 px-6 py-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
+              <Lock className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <p className="max-w-xs text-sm font-medium leading-relaxed text-white/80">
+              {tTrading("Selection.lockedMessage")}
+            </p>
+            <Button href="/pricing">
+              {tTrading("Selection.unlockCta")}
+              <ButtonIcon>→</ButtonIcon>
+            </Button>
+          </div>
+        )}
+
+        <div className={cn("flex flex-col gap-5", locked && "pointer-events-none select-none blur-md")} aria-hidden={locked}>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-5">
           <div className="flex items-center gap-4">
             <span
               className={cn(
@@ -199,6 +223,8 @@ export function TradingAnalysisResult({
           </ul>
         </div>
       )}
+        </div>
+      </div>
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">
         <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1">

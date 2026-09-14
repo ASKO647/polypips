@@ -57,6 +57,23 @@
       "unknownInstrument": "Instrument not identified",
       "emptyTitle": "No analyses yet",
       "emptyDescription": "Drop a chart screenshot from AI Analysis to see your analyses appear here."
+    },
+    "Selection": {
+      "metaTitle": "Today's selection — Trading — Polypips",
+      "heading": "Today's selection",
+      "subtitle": "Our AI periodically analyzes major crypto pairs (BTC, ETH, SOL, BNB, XRP, DOGE) from live price data and delivers a full reading for each.",
+      "countdownLabel": "Next selection in",
+      "backToListLabel": "Back to selection",
+      "emptyTitle": "No selection yet",
+      "emptyDescription": "Our AI periodically scans major crypto pairs. Check back shortly to see the first analyses.",
+      "reserved": "Reserved",
+      "takeProfitLabel": "Take Profit",
+      "stopLossLabel": "Stop Loss",
+      "confidenceLabel": "Confidence",
+      "unlockButton": "Unlock this analysis",
+      "viewFullAnalysis": "View full analysis",
+      "lockedMessage": "The full recommendation, key levels and detailed analysis are reserved for subscribers.",
+      "unlockCta": "Unlock this analysis — Start for €0.99"
     }
   }
 }

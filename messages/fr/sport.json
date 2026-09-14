@@ -44,6 +44,22 @@
       "changePlan": "Changer de plan →",
       "otherMatch": "Autre rencontre"
     },
+    "Selection": {
+      "metaTitle": "Sélection du jour — Sport — Polypips",
+      "heading": "Sélection du jour",
+      "subtitle": "Chaque jour, notre IA repère quelques rencontres proches (football, basketball, tennis) et livre son pronostic complet pour chacune.",
+      "countdownLabel": "Prochaine sélection dans",
+      "backToListLabel": "Retour à la sélection",
+      "emptyTitle": "Aucune sélection pour le moment",
+      "emptyDescription": "Notre IA scanne périodiquement les prochaines rencontres. Revenez un peu plus tard pour voir les premiers pronostics.",
+      "reserved": "Réservé",
+      "predictedWinnerLabel": "Pronostic IA",
+      "confidenceLabel": "Confiance",
+      "unlockButton": "Débloquer ce pronostic",
+      "viewFullAnalysis": "Voir le pronostic complet",
+      "lockedMessage": "Le pronostic complet, les facteurs favorables et les risques sont réservés aux abonnés.",
+      "unlockCta": "Débloquez ce pronostic — Débutez pour 0,99 €"
+    },
     "Result": {
       "aiForecast": "Pronostic IA",
       "confidenceLevel": "Niveau de confiance",

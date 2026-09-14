@@ -93,3 +93,12 @@ export function sportMatchErrorLabel(code: string, t: SportTranslator): string {
   const key = KNOWN_CODES.includes(code as SportMatchErrorCode) ? code : "unknown";
   return t(key);
 }
+
+/** How often scan-sport-matches actually runs. Same "no committed
+ * cron.schedule()" situation as SYNC_MARKETS_INTERVAL_MINUTES in
+ * lib/data/markets.ts — must be kept in sync by hand with whatever
+ * interval is configured for the scan-sport-matches cron job in the
+ * Supabase dashboard/SQL editor. Only used to drive the "Prochaine
+ * sélection dans" countdown on the Sport "Sélection du jour" page —
+ * purely cosmetic, doesn't affect when the Edge Function itself runs. */
+export const SYNC_SPORT_SELECTION_INTERVAL_MINUTES = 12 * 60;

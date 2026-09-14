@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowRight, Check, RefreshCw, TrendingUp, TriangleAlert, ShieldAlert } from "lucide-react";
+import { ArrowRight, Check, Lock, RefreshCw, TrendingUp, TriangleAlert, ShieldAlert } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
 import type { SportMatchAnalysis } from "@/lib/data/sports-analysis";
@@ -20,10 +20,18 @@ export function SportMatchResult({
   analysis,
   onBack,
   backLabel,
+  locked = false,
 }: {
   analysis: SportMatchAnalysis;
   onBack: () => void;
   backLabel?: string;
+  /** Same blur-and-gate pattern as AnalysisResult, for the Sport
+   * "Sélection du jour" page — a viewer with no active subscription can
+   * still see this header, but the verdict itself is blurred behind a
+   * link to /pricing rather than given away for free. Defaults to false
+   * so the existing on-demand Analyse IA flow (which never passes this
+   * prop) is unaffected. */
+  locked?: boolean;
 }) {
   const t = useTranslations("Sport");
   const sportNames = t.raw("sportNames") as Record<Sport, string>;
@@ -45,7 +53,23 @@ export function SportMatchResult({
         <p className="text-xs text-white/40">{DATE_FORMATTER.format(new Date(analysis.matchDate))}</p>
       </div>
 
-      <div className="flex flex-col gap-5">
+      <div className="relative">
+        {locked && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-gradient-to-b from-[#160b0c]/50 via-[#160b0c]/80 to-[#160b0c]/95 px-6 py-10 text-center">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
+              <Lock className="h-5 w-5" strokeWidth={2} />
+            </span>
+            <p className="max-w-xs text-sm font-medium leading-relaxed text-white/80">
+              {t("Selection.lockedMessage")}
+            </p>
+            <Button href="/pricing">
+              {t("Selection.unlockCta")}
+              <ButtonIcon>→</ButtonIcon>
+            </Button>
+          </div>
+        )}
+
+        <div className={cn("flex flex-col gap-5", locked && "pointer-events-none select-none blur-md")} aria-hidden={locked}>
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-5">
             <div className="flex items-center gap-4">
@@ -153,6 +177,7 @@ export function SportMatchResult({
             </div>
           </div>
         )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">

@@ -6,6 +6,7 @@ import {
   LifeBuoy,
   LineChart,
   Sparkles,
+  Star,
   Trophy,
   User,
   Users,
@@ -55,12 +56,15 @@ export const POLYMARKET_NAV_ITEMS: DashboardNavItem[] = [
 
 /** The "Trading" universe group — a third product domain alongside
  * Polymarket and Sport, same collapsible-group pattern (own accent color
- * in SidebarNavContent). Mirrors Sport's own Analyse IA + Mes analyses
- * pair (SPORTS_SUB_NAV) — "Mes analyses" reads back every row already
- * persisted in trading_chart_analyses (previously only quota counting
- * read that table). */
+ * in SidebarNavContent). Mirrors Sport's own Analyse IA + Sélection +
+ * Mes analyses trio (SPORTS_SUB_NAV) — "Sélection du jour" is the
+ * automated crypto-pairs pick list (scan-trading-pairs Edge Function,
+ * Binance klines instead of a screenshot upload); "Mes analyses" reads
+ * back every row already persisted in trading_chart_analyses (previously
+ * only quota counting read that table). */
 export const TRADING_NAV_ITEMS: DashboardNavItem[] = [
   { label: "trading.analyseIA", href: "/dashboard/trading", icon: CandlestickChart },
+  { label: "trading.selection", href: "/dashboard/trading/selection", icon: Star },
   { label: "trading.mesAnalyses", href: "/dashboard/trading/mes-analyses", icon: History },
 ];
 

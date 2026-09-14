@@ -133,3 +133,12 @@ export function getConfidenceLabel(t: TradingTranslator, confidence: TradingConf
 export function getKeyLevelTypeLabel(t: TradingTranslator, type: TradingKeyLevel["type"]): string {
   return t(`keyLevelType.${type}`);
 }
+
+/** How often scan-trading-pairs actually runs. Same "no committed
+ * cron.schedule()" situation as SYNC_MARKETS_INTERVAL_MINUTES in
+ * lib/data/markets.ts — must be kept in sync by hand with whatever
+ * interval is configured for the scan-trading-pairs cron job in the
+ * Supabase dashboard/SQL editor. Only used to drive the "Prochaine
+ * sélection dans" countdown on the Trading "Sélection du jour" page —
+ * purely cosmetic, doesn't affect when the Edge Function itself runs. */
+export const SYNC_TRADING_SELECTION_INTERVAL_MINUTES = 12 * 60;

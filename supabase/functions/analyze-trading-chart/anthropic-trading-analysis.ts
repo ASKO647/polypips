@@ -1,5 +1,6 @@
 import Anthropic from "npm:@anthropic-ai/sdk@0.116.0";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
+import type { Candle } from "../_shared/binance.ts";
 
 /**
  * The Trading universe's "Analyse IA": the user drops a screenshot of a
@@ -163,10 +164,77 @@ Règles impératives, sans exception — le trading avec effet de levier est un 
 const USER_PROMPT =
   "Analyse ce graphique de trading (capture d'écran fournie). Identifie la tendance, les niveaux de support/résistance visibles, les indicateurs techniques affichés, et produis une recommandation structurée avec des niveaux de Take Profit / Stop Loss (en prix ou en pourcentage uniquement, jamais un montant).";
 
-async function requestVerdictOnce(
-  imageBase64: string,
-  mediaType: string
-): Promise<TradingChartVerdict> {
+/**
+ * Second entry point into the same schema/model/retry pipeline as
+ * analyzeTradingChart, for the Trading universe's automated "Sélection du
+ * jour" (scan-trading-pairs): real OHLC candles fetched live from Binance
+ * (_shared/binance.ts) rather than a user-uploaded screenshot, so there is
+ * no image to read at all. Deliberately its own system prompt rather than
+ * reusing SYSTEM_PROMPT as-is — every "visible dans l'image" / "graphique"
+ * framing would be actively misleading here, where the model never sees a
+ * chart image, only a table of numbers. The output schema, risk rules
+ * (never a certainty, never a money amount for TP/SL), and one-retry
+ * malformed-JSON policy are identical to the screenshot flow on purpose:
+ * one shared shape means one shared frontend renderer
+ * (TradingAnalysisResult) and one shared table column set, regardless of
+ * which flow produced the row.
+ */
+const SYSTEM_PROMPT_CANDLES = `Tu es l'analyste IA trading de Polypips, un outil d'aide à la décision pour la lecture de graphiques de trading (Forex, crypto, actions, indices).
+
+Ici, tu ne reçois pas une image de graphique : tu reçois directement les données de prix réelles (chandelles OHLC — ouverture/haut/bas/clôture/volume) d'une paire crypto, récupérées en direct depuis Binance. Raisonne exactement comme si tu lisais un graphique construit à partir de ces mêmes chandelles.
+
+Règles impératives, sans exception — le trading avec effet de levier est un domaine à haut risque de perte en capital :
+- Ne présente JAMAIS ta lecture comme une garantie de gain. C'est une estimation probabiliste basée uniquement sur les données fournies.
+- Reste toujours au conditionnel/probabiliste ("pourrait", "semble indiquer", "suggère") — jamais "va monter", "va baisser" ou toute formulation affirmative sur un résultat futur.
+- "takeProfit" et "stopLoss" doivent être EXCLUSIVEMENT un niveau de prix ou un pourcentage depuis l'entrée. Ne suggère JAMAIS un montant en devise, une taille de position, un nombre de lots, ou tout autre engagement financier précis — ce n'est pas ton rôle et ce serait dangereux.
+- Base ton analyse uniquement sur les chandelles OHLC fournies : tendance (déduite de la suite des clôtures), niveaux de support/résistance (déduits des plus hauts/plus bas récents), et volume. Aucun indicateur technique (RSI, MACD, moyennes mobiles...) n'est pré-calculé dans les données fournies — si "indicatorsObserved" ne peut pas être déduit avec certitude à partir des seules chandelles, laisse ce tableau vide plutôt que d'inventer une valeur d'indicateur que tu n'as pas réellement calculée.
+- Si les données fournies sont insuffisantes pour une lecture fiable (trop peu de chandelles, mouvements incohérents), dis-le explicitement dans "explanation", recommande "Attendre", et choisis un niveau de confiance "Faible" plutôt que d'inventer une analyse.
+- L'instrument et l'unité de temps te sont toujours donnés explicitement dans le message — reporte-les tels quels, ne les devine jamais.`;
+
+function formatCandle(c: Candle): string {
+  return `${c.openTime} — O:${c.open} H:${c.high} L:${c.low} C:${c.close} V:${c.volume}`;
+}
+
+export type CandleAnalysisInput = {
+  displaySymbol: string;
+  timeframe: string;
+  candles: Candle[];
+};
+
+function buildCandlesUserPrompt(input: CandleAnalysisInput): string {
+  const candlesBlock = input.candles.map(formatCandle).join("\n");
+  return `Instrument : ${input.displaySymbol}
+Unité de temps : ${input.timeframe} (une chandelle par ligne, la plus ancienne en premier)
+
+CHANDELLES OHLC RÉCENTES :
+${candlesBlock}
+
+Analyse la tendance, les niveaux de support/résistance déductibles de ces chandelles, et produis une recommandation structurée avec des niveaux de Take Profit / Stop Loss (en prix ou en pourcentage uniquement, jamais un montant).`;
+}
+
+type VerdictContent =
+  | { kind: "image"; imageBase64: string; mediaType: string }
+  | { kind: "candles"; input: CandleAnalysisInput };
+
+async function requestVerdictOnce(content: VerdictContent): Promise<TradingChartVerdict> {
+  const [system, messageContent] =
+    content.kind === "image"
+      ? [
+          SYSTEM_PROMPT,
+          [
+            {
+              type: "image" as const,
+              source: {
+                type: "base64" as const,
+                media_type: content.mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
+                data: content.imageBase64,
+              },
+            },
+            { type: "text" as const, text: USER_PROMPT },
+          ],
+        ]
+      : [SYSTEM_PROMPT_CANDLES, buildCandlesUserPrompt(content.input)];
+
   let response;
   try {
     response = await client.messages.create({
@@ -175,23 +243,8 @@ async function requestVerdictOnce(
       output_config: {
         format: { type: "json_schema", schema: SCHEMA },
       },
-      system: SYSTEM_PROMPT,
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mediaType as "image/jpeg" | "image/png" | "image/gif" | "image/webp",
-                data: imageBase64,
-              },
-            },
-            { type: "text", text: USER_PROMPT },
-          ],
-        },
-      ],
+      system,
+      messages: [{ role: "user", content: messageContent }],
     });
   } catch (error) {
     logAnthropicError("analyzeTradingChart", error);
@@ -233,19 +286,16 @@ async function requestVerdictOnce(
 
 /** Same one-retry-on-malformed-response policy as analyze-market's own
  * analyzeMarket — see that function's comment for why. */
-export async function analyzeTradingChart(
-  imageBase64: string,
-  mediaType: string
-): Promise<TradingChartVerdict> {
+async function requestVerdictWithRetry(content: VerdictContent): Promise<TradingChartVerdict> {
   try {
-    return await requestVerdictOnce(imageBase64, mediaType);
+    return await requestVerdictOnce(content);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
     console.warn(
       `[anthropic-trading:analyzeTradingChart] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestVerdictOnce(imageBase64, mediaType);
+      return await requestVerdictOnce(content);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);
@@ -253,4 +303,23 @@ export async function analyzeTradingChart(
       throw retryError;
     }
   }
+}
+
+export async function analyzeTradingChart(
+  imageBase64: string,
+  mediaType: string
+): Promise<TradingChartVerdict> {
+  return requestVerdictWithRetry({ kind: "image", imageBase64, mediaType });
+}
+
+/** Trading "Sélection du jour" entry point (scan-trading-pairs) — same
+ * pipeline as analyzeTradingChart, fed live Binance candles instead of a
+ * screenshot. instrument/timeframe are still taken from the model's own
+ * JSON output (not overridden from `input`) for one reason: keeping a
+ * single verdict shape/validation path for both flows, exactly like
+ * analyzeSportMatch's predictedWinner is still read from the model even
+ * though the caller already knows the two real team names — the schema's
+ * enum/null constraints are what actually keep it honest. */
+export async function analyzeTradingCandles(input: CandleAnalysisInput): Promise<TradingChartVerdict> {
+  return requestVerdictWithRetry({ kind: "candles", input });
 }

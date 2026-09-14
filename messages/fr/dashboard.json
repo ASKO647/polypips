@@ -12,12 +12,14 @@
       "sport": {
         "groupLabel": "Sport",
         "analyseIA": "Analyse IA",
+        "selection": "Sélection du jour",
         "mesAnalyses": "Mes analyses"
       },
       "trading": {
         "groupLabel": "Trading",
         "badge": "NOUVEAU",
         "analyseIA": "Analyse IA",
+        "selection": "Sélection du jour",
         "mesAnalyses": "Mes analyses"
       },
       "global": {

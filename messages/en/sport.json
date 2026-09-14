@@ -44,6 +44,22 @@
       "changePlan": "Change plan →",
       "otherMatch": "Another matchup"
     },
+    "Selection": {
+      "metaTitle": "Today's selection — Sport — Polypips",
+      "heading": "Today's selection",
+      "subtitle": "Every day, our AI spots a handful of upcoming matchups (football, basketball, tennis) and delivers a full forecast for each.",
+      "countdownLabel": "Next selection in",
+      "backToListLabel": "Back to selection",
+      "emptyTitle": "No selection yet",
+      "emptyDescription": "Our AI periodically scans upcoming matchups. Check back shortly to see the first forecasts.",
+      "reserved": "Reserved",
+      "predictedWinnerLabel": "AI forecast",
+      "confidenceLabel": "Confidence",
+      "unlockButton": "Unlock this forecast",
+      "viewFullAnalysis": "View full forecast",
+      "lockedMessage": "The full forecast, favorable factors and risks are reserved for subscribers.",
+      "unlockCta": "Unlock this forecast — Start for €0.99"
+    },
     "Result": {
       "aiForecast": "AI forecast",
       "confidenceLevel": "Confidence level",
