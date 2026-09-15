@@ -51,7 +51,19 @@ export async function generateMetadata({
     title: t("title"),
     description: t("description"),
     manifest: "/manifest.json",
+    // Explicit `icon` entries are required here: setting `icons` at all
+    // (needed below for `apple`) replaces Next's auto-detected file-
+    // convention icons (app/icon.png, app/favicon.ico) instead of merging
+    // with them — without this, browsers silently lost the PNG icon link
+    // and fell back to whatever favicon.ico happened to be at the app
+    // root (previously the default Vercel triangle, since fixed to the
+    // real logo — see src/app/favicon.ico). Reuses the same PNGs already
+    // built for manifest.json rather than adding new assets.
     icons: {
+      icon: [
+        { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
       apple: "/icons/apple-touch-icon.png",
     },
     appleWebApp: {
