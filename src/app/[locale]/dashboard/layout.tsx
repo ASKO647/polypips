@@ -3,6 +3,7 @@ import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, getTrialEndsAt } from "@/lib/supabase/subscriptions";
 import { fetchNotifications } from "@/lib/supabase/notifications";
+import { fetchCreditBalance } from "@/lib/supabase/credits";
 import type { CurrencyCode } from "@/providers/currency-provider";
 
 export default async function DashboardLayout({
@@ -18,9 +19,10 @@ export default async function DashboardLayout({
     return;
   }
 
-  const [subscription, notifications] = await Promise.all([
+  const [subscription, notifications, creditBalance] = await Promise.all([
     fetchSubscription(supabase),
     fetchNotifications(supabase),
+    fetchCreditBalance(supabase),
   ]);
 
   const displayName =
@@ -39,6 +41,7 @@ export default async function DashboardLayout({
       subscription={subscription}
       trialEndsAt={getTrialEndsAt(subscription)}
       notifications={notifications}
+      creditBalance={creditBalance}
     >
       {children}
     </DashboardShell>

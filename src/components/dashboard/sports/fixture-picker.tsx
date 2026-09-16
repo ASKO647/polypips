@@ -1,9 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Calendar, Info } from "lucide-react";
+import { ArrowLeft, BrainCircuit, Calendar, Info } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
   weekday: "long",
@@ -21,17 +22,17 @@ const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("fr-FR", {
 
 function FixtureCard({
   fixture,
+  creditBalance,
   onSelect,
 }: {
   fixture: SportFixture;
-  onSelect: () => void;
+  creditBalance: number;
+  onSelect: (depth: AnalysisDepth) => void;
 }) {
+  const t = useTranslations("Sport.FixturePicker");
+  const tCredits = useTranslations("Credits");
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className="flex w-full flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5 text-left transition-colors duration-150 hover:border-brand-400/50 hover:bg-brand-500/5"
-    >
+    <div className="flex w-full flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3.5 transition-colors duration-150 hover:border-brand-400/50 hover:bg-brand-500/5">
       <div className="flex items-center gap-1.5 text-xs font-medium text-brand-400">
         <Calendar className="h-3.5 w-3.5" strokeWidth={2.25} />
         {DATE_FORMATTER.format(new Date(fixture.kickoffAt))}
@@ -42,7 +43,30 @@ function FixtureCard({
       {fixture.competitionName && (
         <p className="text-xs text-white/40">{fixture.competitionName}</p>
       )}
-    </button>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => onSelect("standard")}
+          className="w-full sm:w-auto"
+        >
+          {t("analyzeCta")}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onSelect("deep")}
+          className="w-full sm:w-auto"
+        >
+          <BrainCircuit className="h-3.5 w-3.5" />
+          {tCredits("DeepAnalysis.button")}
+          <span className="ml-0.5 text-[11px] font-normal text-current opacity-60">
+            ({tCredits("DeepAnalysis.buttonCreditCost")} · {creditBalance})
+          </span>
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -67,12 +91,14 @@ function RecentMeetingRow({ meeting }: { meeting: SportFixture }) {
 export function FixturePicker({
   sport,
   result,
+  creditBalance,
   onSelectFixture,
   onBack,
 }: {
   sport: Sport;
   result: SportSearchResult;
-  onSelectFixture: (fixture: SportFixture) => void;
+  creditBalance: number;
+  onSelectFixture: (fixture: SportFixture, depth: AnalysisDepth) => void;
   onBack: () => void;
 }) {
   const t = useTranslations("Sport.FixturePicker");
@@ -106,7 +132,8 @@ export function FixturePicker({
               <FixtureCard
                 key={fixture.externalFixtureId}
                 fixture={fixture}
-                onSelect={() => onSelectFixture(fixture)}
+                creditBalance={creditBalance}
+                onSelect={(depth) => onSelectFixture(fixture, depth)}
               />
             ))}
           </div>

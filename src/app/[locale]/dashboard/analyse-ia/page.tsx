@@ -4,6 +4,7 @@ import { AnalyseIaFlow } from "@/components/dashboard/analyse-ia/analyse-ia-flow
 import { createClient } from "@/lib/supabase/server";
 import { fetchRecentAnalyses } from "@/lib/supabase/analyses";
 import { fetchSubscription, hasActiveAccess } from "@/lib/supabase/subscriptions";
+import { fetchCreditBalance } from "@/lib/supabase/credits";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Polymarket.AnalyseIa");
@@ -12,15 +13,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function AnalyseIaPage() {
   const supabase = await createClient();
-  const [recentAnalyses, subscription] = await Promise.all([
+  const [recentAnalyses, subscription, creditBalance] = await Promise.all([
     fetchRecentAnalyses(supabase),
     fetchSubscription(supabase),
+    fetchCreditBalance(supabase),
   ]);
 
   return (
     <AnalyseIaFlow
       initialRecentAnalyses={recentAnalyses}
       hasActiveSubscription={hasActiveAccess(subscription)}
+      creditBalance={creditBalance}
     />
   );
 }

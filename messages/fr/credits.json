@@ -1,0 +1,60 @@
+{
+  "Credits": {
+    "metaTitle": "Crédits — Polypips",
+    "title": "Crédits Analyse Approfondie",
+    "description": "L'Analyse IA standard reste illimitée avec votre abonnement Pro. Les crédits débloquent en plus l'Analyse Approfondie — un rapport IA plus poussé, disponible sur Polymarket, Sport et Trading.",
+    "balanceLabel": "Solde actuel",
+    "balanceUnit": "{count, plural, one {crédit} other {crédits}}",
+    "packsTitle": "Packs de crédits",
+    "creditsLabel": "{count} crédits",
+    "pricePerCredit": "{price} / crédit",
+    "buyButton": "Acheter",
+    "mostPopular": "Le plus populaire",
+    "bestValue": "Meilleur prix",
+    "checkoutLineDescription": "{credits} crédits Analyse Approfondie — Polypips",
+    "genericError": "Une erreur est survenue.",
+    "purchaseSuccess": "Achat réussi ! Vos crédits ont été ajoutés à votre solde.",
+    "purchaseCancelled": "Achat annulé — aucun crédit n'a été débité.",
+    "packs": {
+      "decouverte": {
+        "name": "Pack Découverte",
+        "description": "Pour essayer l'Analyse Approfondie."
+      },
+      "standard": {
+        "name": "Pack Standard",
+        "description": "Pour un usage régulier."
+      },
+      "pro": {
+        "name": "Pack Pro",
+        "description": "Pour analyser sans compter."
+      },
+      "power": {
+        "name": "Pack Power",
+        "description": "Le meilleur prix par crédit."
+      }
+    },
+    "History": {
+      "title": "Historique",
+      "empty": "Aucune transaction pour le moment.",
+      "purchase": "Achat de crédits",
+      "consumption": "Analyse Approfondie utilisée",
+      "refund": "Crédit remboursé (analyse échouée)"
+    },
+    "errors": {
+      "unknownPack": "Pack de crédits inconnu.",
+      "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
+      "stripeError": "Impossible de démarrer le paiement."
+    },
+    "DeepAnalysis": {
+      "button": "Analyse Approfondie",
+      "buttonCreditCost": "1 crédit",
+      "loadingCalling": "Envoi à l'IA (raisonnement approfondi)...",
+      "loadingReceiving": "Réception du rapport détaillé...",
+      "badge": "Analyse Approfondie",
+      "noCreditsTitle": "Plus de crédits disponibles",
+      "noCreditsMessage": "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack pour continuer.",
+      "buyCreditsCta": "Acheter des crédits",
+      "balanceLow": "{count, plural, one {# crédit restant} other {# crédits restants}}"
+    }
+  }
+}

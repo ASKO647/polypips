@@ -34,6 +34,7 @@
     },
     "FixturePicker": {
       "newSearch": "New search",
+      "analyzeCta": "Analyze this match",
       "upcomingTitle": "Upcoming matchups — choose one to analyze",
       "noUpcoming": "No upcoming matchup found between these two {type, select, tennis {players} other {teams}}.",
       "tennisDrawNotice": "In tennis, a matchup only appears once the tournament draw is published (usually 1 to 3 days ahead) — so an upcoming clash may not be visible here yet even though it will take place.",

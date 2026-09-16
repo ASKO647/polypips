@@ -18,6 +18,7 @@ function DashboardShellInner({
   subscription,
   trialEndsAt,
   notifications,
+  creditBalance,
   children,
 }: {
   userEmail: string;
@@ -26,6 +27,7 @@ function DashboardShellInner({
   subscription: SubscriptionRow | null;
   trialEndsAt: string | null;
   notifications: NotificationItem[];
+  creditBalance: number;
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -58,6 +60,7 @@ function DashboardShellInner({
           userEmail={userEmail}
           displayName={displayName}
           avatarUrl={avatarUrl}
+          creditBalance={creditBalance}
         />
         <main
           data-dashboard-theme={mainTheme}
@@ -89,6 +92,7 @@ export function DashboardShell({
   subscription,
   trialEndsAt,
   notifications,
+  creditBalance,
   children,
 }: {
   userEmail: string;
@@ -98,6 +102,7 @@ export function DashboardShell({
   subscription: SubscriptionRow | null;
   trialEndsAt: string | null;
   notifications: NotificationItem[];
+  creditBalance: number;
   children: React.ReactNode;
 }) {
   return (
@@ -110,6 +115,7 @@ export function DashboardShell({
           subscription={subscription}
           trialEndsAt={trialEndsAt}
           notifications={notifications}
+          creditBalance={creditBalance}
         >
           {children}
         </DashboardShellInner>

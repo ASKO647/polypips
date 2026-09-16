@@ -40,6 +40,10 @@ export type TradingChartAnalysis = {
   stopLoss: string | null;
   explanation: string;
   risks: string[];
+  /** True for "Analyse Approfondie" (Opus 5, extended thinking,
+   * credit-gated) rather than the standard on-demand Analyse IA. Defaults
+   * false for rows created before this field existed. */
+  isDeep: boolean;
 };
 
 export type TradingProgressStep = "calling_ai" | "receiving_result";

@@ -1,7 +1,16 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
-import { analyzeTradingChart } from "./anthropic-trading-analysis.ts";
+import { analyzeTradingChart, type AnalysisDepth } from "./anthropic-trading-analysis.ts";
+import {
+  consumeDeepAnalysisCredit,
+  refundDeepAnalysisCredit,
+  InsufficientCreditsError,
+} from "../_shared/deep-analysis-credits.ts";
+
+function parseDepth(value: unknown): AnalysisDepth {
+  return value === "deep" ? "deep" : "standard";
+}
 
 /**
  * The Trading universe's "Analyse IA" — a screenshot of a trading chart in,
@@ -24,7 +33,7 @@ const FREE_DEMO_DAILY_LIMIT = 10;
 
 const ALLOWED_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
 
-type AnalyzeRequest = { imageBase64: string; imageMediaType: string };
+type AnalyzeRequest = { imageBase64: string; imageMediaType: string; depth?: AnalysisDepth };
 
 function isValidInput(body: unknown): body is AnalyzeRequest {
   if (!body || typeof body !== "object") return false;
@@ -95,6 +104,8 @@ Deno.serve(async (req) => {
   }
 
   const input = body;
+  const depth = parseDepth(input.depth);
+  const analysisId = crypto.randomUUID();
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -108,33 +119,56 @@ Deno.serve(async (req) => {
         controller.close();
       };
 
-      const { data: subscriptionRow } = await supabase
-        .from("subscriptions")
-        .select("plan, status, cancel_at_period_end")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const hasAccess =
-        (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
-        !subscriptionRow?.cancel_at_period_end;
-      const dailyLimit = hasAccess
-        ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
-        : FREE_DEMO_DAILY_LIMIT;
-
-      if (dailyLimit !== null) {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count } = await supabase
-          .from("trading_chart_analyses")
-          .select("id", { count: "exact", head: true })
+      // Analyse Approfondie bypasses the daily quota entirely — it's
+      // credit-gated instead, checked further down right before the AI
+      // call. The standard flow's quota is untouched.
+      if (depth === "standard") {
+        const { data: subscriptionRow } = await supabase
+          .from("subscriptions")
+          .select("plan, status, cancel_at_period_end")
           .eq("user_id", user.id)
-          .gte("created_at", since);
+          .maybeSingle();
 
-        if ((count ?? 0) >= dailyLimit) {
+        const hasAccess =
+          (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
+          !subscriptionRow?.cancel_at_period_end;
+        const dailyLimit = hasAccess
+          ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
+          : FREE_DEMO_DAILY_LIMIT;
+
+        if (dailyLimit !== null) {
+          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const { count } = await supabase
+            .from("trading_chart_analyses")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .gte("created_at", since);
+
+          if ((count ?? 0) >= dailyLimit) {
+            emitErrorAndClose(
+              "limit_reached",
+              hasAccess
+                ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
+                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+            );
+            return;
+          }
+        }
+      } else {
+        try {
+          await consumeDeepAnalysisCredit(user.id, analysisId);
+        } catch (error) {
+          if (error instanceof InsufficientCreditsError) {
+            emitErrorAndClose(
+              "no_credits",
+              "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack pour continuer."
+            );
+            return;
+          }
+          console.error("[analyze-trading-chart] échec de la consommation du crédit", error);
           emitErrorAndClose(
-            "limit_reached",
-            hasAccess
-              ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
-              : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+            "ai_error",
+            "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
           );
           return;
         }
@@ -144,11 +178,12 @@ Deno.serve(async (req) => {
 
       let verdict;
       try {
-        verdict = await analyzeTradingChart(input.imageBase64, input.imageMediaType);
+        verdict = await analyzeTradingChart(input.imageBase64, input.imageMediaType, depth);
       } catch (error) {
         console.error(
           `[analyze-trading-chart] échec IA pendant la lecture du graphique (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
         );
+        if (depth === "deep") await refundDeepAnalysisCredit(user.id, analysisId);
         emitErrorAndClose(
           "ai_error",
           "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
@@ -159,7 +194,7 @@ Deno.serve(async (req) => {
       emitProgress("receiving_result");
 
       const analysis = {
-        id: crypto.randomUUID(),
+        id: analysisId,
         analyzedAt: new Date().toISOString(),
         instrument: verdict.instrument,
         timeframe: verdict.timeframe,
@@ -172,6 +207,7 @@ Deno.serve(async (req) => {
         stopLoss: verdict.stopLoss,
         explanation: verdict.explanation,
         risks: verdict.risks,
+        isDeep: depth === "deep",
       };
 
       const { error: insertError } = await supabase.from("trading_chart_analyses").insert({
@@ -188,6 +224,7 @@ Deno.serve(async (req) => {
         stop_loss: analysis.stopLoss,
         explanation: analysis.explanation,
         risks: analysis.risks,
+        is_deep: analysis.isDeep,
       });
 
       if (insertError) {

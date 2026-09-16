@@ -21,14 +21,29 @@ import {
   type SportMatchProgressStep,
 } from "@/lib/data/sports-analysis";
 import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 
 type FlowState = "search" | "fixtures" | "loading" | "result";
 
 function errorContentFor(
   error: unknown,
   changePlanLabel: string,
-  tErrors: (key: string) => string
+  tErrors: (key: string) => string,
+  tCredits: (key: string) => string
 ): React.ReactNode {
+  if (error instanceof SportMatchAnalysisError && error.code === "no_credits") {
+    return (
+      <>
+        {tCredits("DeepAnalysis.noCreditsMessage")}{" "}
+        <Link
+          href="/dashboard/credits"
+          className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
+        >
+          {tCredits("DeepAnalysis.buyCreditsCta")}
+        </Link>
+      </>
+    );
+  }
   if (error instanceof SportMatchAnalysisError && error.code === "limit_reached") {
     return (
       <>
@@ -48,9 +63,10 @@ function errorContentFor(
   return sportMatchErrorLabel("unknown", tErrors);
 }
 
-export function SportAnalyseIaFlow() {
+export function SportAnalyseIaFlow({ creditBalance }: { creditBalance: number }) {
   const t = useTranslations("Sport.Flow");
   const tErrors = useTranslations("Sport.Errors");
+  const tCredits = useTranslations("Credits");
   const [state, setState] = useState<FlowState>("search");
   const [sport, setSport] = useState<Sport>("football");
   const [team1, setTeam1] = useState("");
@@ -69,13 +85,13 @@ export function SportAnalyseIaFlow() {
       setSearchResult(found);
       setState("fixtures");
     } catch (error) {
-      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors));
+      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors, tCredits));
     } finally {
       setSearchLoading(false);
     }
   };
 
-  const handleSelectFixture = async (fixture: SportFixture) => {
+  const handleSelectFixture = async (fixture: SportFixture, depth: AnalysisDepth) => {
     if (!searchResult) return;
     setErrorMessage(null);
     setCurrentStep(null);
@@ -89,13 +105,14 @@ export function SportAnalyseIaFlow() {
           competitionName: fixture.competitionName,
           kickoffAt: fixture.kickoffAt,
           recentMeetings: searchResult.recentMeetings,
+          depth,
         },
         (step) => setCurrentStep(step)
       );
       setResult(analysis);
       setState("result");
     } catch (error) {
-      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors));
+      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors, tCredits));
       setState("fixtures");
     }
   };
@@ -136,6 +153,7 @@ export function SportAnalyseIaFlow() {
         <FixturePicker
           sport={sport}
           result={searchResult}
+          creditBalance={creditBalance}
           onSelectFixture={handleSelectFixture}
           onBack={handleNewSearch}
         />

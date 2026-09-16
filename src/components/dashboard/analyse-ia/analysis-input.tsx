@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, Clock, Link2, TriangleAlert, UploadCloud, X } from "lucide-react";
+import { ArrowRight, BrainCircuit, Clock, Link2, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { isPrimaryDecision, type MarketAnalysis } from "@/lib/data/analysis";
 import type { AnalyzeMarketRequest } from "@/lib/supabase/analyze-market-client";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 import { cn } from "@/lib/utils";
 
 function fileToBase64(file: File): Promise<string> {
@@ -30,6 +31,7 @@ export function AnalysisInput({
   onFileChange,
   onAnalyze,
   onSelectRecent,
+  creditBalance,
 }: {
   recentAnalyses: MarketAnalysis[];
   errorMessage: React.ReactNode | null;
@@ -39,30 +41,35 @@ export function AnalysisInput({
   onFileChange: (file: File | null) => void;
   onAnalyze: (request: AnalyzeMarketRequest) => void;
   onSelectRecent: (analysis: MarketAnalysis) => void;
+  /** Current Deep Analysis credit balance — shown next to the deep button
+   * so a user isn't surprised by a "no credits" error. */
+  creditBalance: number;
 }) {
   const t = useTranslations("Polymarket.AnalyseIa");
+  const tCredits = useTranslations("Credits");
   const [dragOver, setDragOver] = useState(false);
-  const [preparing, setPreparing] = useState(false);
+  const [preparing, setPreparing] = useState<AnalysisDepth | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canAnalyze = (file !== null || link.trim() !== "") && !preparing;
+  const canAnalyze = (file !== null || link.trim() !== "") && preparing === null;
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (depth: AnalysisDepth) => {
     if (!canAnalyze) return;
     if (file) {
-      setPreparing(true);
+      setPreparing(depth);
       try {
         const imageBase64 = await fileToBase64(file);
         onAnalyze({
           type: "image",
           imageBase64,
           imageMediaType: file.type || "image/png",
+          depth,
         });
       } finally {
-        setPreparing(false);
+        setPreparing(null);
       }
     } else {
-      onAnalyze({ type: "link", link: link.trim() });
+      onAnalyze({ type: "link", link: link.trim(), depth });
     }
   };
 
@@ -176,17 +183,32 @@ export function AnalysisInput({
           />
         </div>
 
-        <Button
-          type="button"
-          disabled={!canAnalyze}
-          onClick={handleSubmit}
-          className="w-full sm:w-auto sm:self-end"
-        >
-          {t("analyzeButton")}
-          <ButtonIcon>
-            <ArrowRight className="h-4 w-4" />
-          </ButtonIcon>
-        </Button>
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!canAnalyze}
+            onClick={() => handleSubmit("deep")}
+            className="w-full sm:w-auto"
+          >
+            <BrainCircuit className="h-4 w-4" />
+            {preparing === "deep" ? t("analyzeButton") : tCredits("DeepAnalysis.button")}
+            <span className="ml-1 text-xs font-normal text-current opacity-60">
+              ({tCredits("DeepAnalysis.buttonCreditCost")} · {creditBalance})
+            </span>
+          </Button>
+          <Button
+            type="button"
+            disabled={!canAnalyze}
+            onClick={() => handleSubmit("standard")}
+            className="w-full sm:w-auto"
+          >
+            {t("analyzeButton")}
+            <ButtonIcon>
+              <ArrowRight className="h-4 w-4" />
+            </ButtonIcon>
+          </Button>
+        </div>
       </div>
 
       {recentAnalyses.length > 0 && (

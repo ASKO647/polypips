@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { AnalysisProgressStep, MarketAnalysis } from "@/lib/data/analysis";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 
 export class AnalysisRequestError extends Error {
   code: string;
@@ -10,8 +11,8 @@ export class AnalysisRequestError extends Error {
 }
 
 export type AnalyzeMarketRequest =
-  | { type: "link"; link: string }
-  | { type: "image"; imageBase64: string; imageMediaType: string };
+  | { type: "link"; link: string; depth?: AnalysisDepth }
+  | { type: "image"; imageBase64: string; imageMediaType: string; depth?: AnalysisDepth };
 
 type StreamEvent =
   | { type: "progress"; step: AnalysisProgressStep }

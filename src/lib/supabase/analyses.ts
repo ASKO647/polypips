@@ -19,6 +19,7 @@ type AnalysisRow = {
   risks: string[];
   what_could_change: string;
   sources: { name: string; url: string }[];
+  is_deep: boolean | null;
 };
 
 const RELATIVE_TIME_FORMATTER = new Intl.RelativeTimeFormat("fr-FR", {
@@ -60,6 +61,7 @@ function mapRow(row: AnalysisRow): MarketAnalysis {
     whatCouldChange: row.what_could_change,
     sources: row.sources,
     marketSlug: row.market_slug,
+    isDeep: row.is_deep ?? false,
   };
 }
 
@@ -118,7 +120,7 @@ export async function fetchAnalysisById(
   const { data, error } = await supabase
     .from("analyses")
     .select(
-      "id, question, category, created_at, market_slug, decision, outcomes, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
+      "id, question, category, created_at, market_slug, decision, outcomes, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources, is_deep"
     )
     .eq("id", id)
     .maybeSingle();
@@ -134,7 +136,7 @@ export async function fetchRecentAnalyses(
   const { data, error } = await supabase
     .from("analyses")
     .select(
-      "id, question, category, created_at, market_slug, decision, outcomes, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources"
+      "id, question, category, created_at, market_slug, decision, outcomes, ai_probability, market_probability, edge, opportunity_score, confidence, explanation, favorable_factors, risks, what_could_change, sources, is_deep"
     )
     .order("created_at", { ascending: false })
     .limit(limit);

@@ -44,6 +44,10 @@ export type MarketAnalysis = {
    * market genuinely didn't resolve to one. Never fall back to guessing a
    * URL when this is null; just don't render the Polymarket link. */
   marketSlug: string | null;
+  /** True for "Analyse Approfondie" (Opus 5, extended thinking,
+   * credit-gated) rather than the standard on-demand Analyse IA. Defaults
+   * false for rows created before this field existed. */
+  isDeep: boolean;
 };
 
 /** The real, canonical market page on Polymarket — same slug the

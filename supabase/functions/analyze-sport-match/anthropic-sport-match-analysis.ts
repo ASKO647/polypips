@@ -19,6 +19,10 @@ const client = new Anthropic({
   apiKey: Deno.env.get("ANTHROPIC_API_KEY"),
 });
 
+/** Same depth toggle as analyze-market — see that file's AnalysisDepth
+ * comment for the model/config rationale. */
+export type AnalysisDepth = "standard" | "deep";
+
 class MalformedVerdictError extends Error {}
 
 const DEGENERATE_REPETITION_PATTERN = /(.{1,12})\1{19,}/;
@@ -86,7 +90,8 @@ function outcomeLabels(input: SportMatchInput): string[] {
     : [input.homeTeamName, input.awayTeamName];
 }
 
-function buildSchema(outcomes: string[]) {
+function buildSchema(outcomes: string[], depth: AnalysisDepth = "standard") {
+  const deep = depth === "deep";
   return {
     type: "object",
     properties: {
@@ -104,18 +109,23 @@ function buildSchema(outcomes: string[]) {
       confidence: { type: "string", enum: ["Faible", "Moyenne", "Élevée"] },
       explanation: {
         type: "string",
-        description:
-          "Explication détaillée (3-5 phrases) citant la forme récente connue des deux équipes, l'historique de leurs confrontations, et le contexte du match (enjeu, compétition).",
+        description: deep
+          ? "Explication détaillée et nuancée (8-12 phrases) croisant la forme récente des deux équipes, l'historique de leurs confrontations, le contexte de la compétition et plusieurs angles d'analyse."
+          : "Explication détaillée (3-5 phrases) citant la forme récente connue des deux équipes, l'historique de leurs confrontations, et le contexte du match (enjeu, compétition).",
       },
       favorableFactors: {
         type: "array",
         items: { type: "string" },
-        description: "3 à 5 facteurs concrets qui soutiennent ce pronostic.",
+        description: deep
+          ? "5 à 8 facteurs concrets qui soutiennent ce pronostic, aussi précis et variés que possible."
+          : "3 à 5 facteurs concrets qui soutiennent ce pronostic.",
       },
       risks: {
         type: "array",
         items: { type: "string" },
-        description: "2 à 4 risques concrets qui pourraient invalider ce pronostic.",
+        description: deep
+          ? "4 à 6 risques concrets qui pourraient invalider ce pronostic, aussi précis et variés que possible."
+          : "2 à 4 risques concrets qui pourraient invalider ce pronostic.",
       },
       whatCouldChange: {
         type: "string",
@@ -165,6 +175,11 @@ Règles impératives, sans exception :
 - Si l'information disponible est insuffisante pour trancher avec confiance (peu ou pas d'historique de confrontations, équipes/joueurs peu connus), dis-le explicitement dans "explanation" et choisis un niveau de confiance "Faible" plutôt que d'inventer des statistiques.
 - Pour le tennis spécifiquement : aucun historique de confrontations directes n'est jamais fourni (la source de données n'en a pas) — ce n'est jamais un signe d'erreur, applique simplement la règle précédente (dis-le, confiance "Faible" si le duo est peu connu) sans jamais présenter cette absence comme suspecte.`;
 
+/** Appended only for depth "deep" — same rules, more thoroughness. */
+const DEEP_SYSTEM_PROMPT_ADDENDUM = `
+
+MODE ANALYSE APPROFONDIE : tu disposes ici d'un budget de raisonnement étendu — utilise-le pour croiser davantage de facteurs (forme récente, historique, contexte, dynamique de compétition) avant de conclure. Développe une explication nuancée et un nombre de facteurs favorables/risques plus riche que pour un pronostic standard, tout en respectant strictement les mêmes règles ci-dessus.`;
+
 function formatMeeting(m: RecentMeeting): string {
   const score = m.homeScore !== null && m.awayScore !== null ? `${m.homeScore}-${m.awayScore}` : "score inconnu";
   const date = new Date(m.kickoffAt).toLocaleDateString("fr-FR");
@@ -196,17 +211,23 @@ ${meetingsBlock}
 Produis ton pronostic structuré sur cette rencontre, ainsi que 2 à 3 marchés secondaires pertinents pour ce même match.`;
 }
 
-async function requestVerdictOnce(input: SportMatchInput): Promise<SportMatchVerdict> {
+async function requestVerdictOnce(
+  input: SportMatchInput,
+  depth: AnalysisDepth = "standard"
+): Promise<SportMatchVerdict> {
   const outcomes = outcomeLabels(input);
+  const deep = depth === "deep";
   let response;
   try {
     response = await client.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 8192,
+      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
+      max_tokens: deep ? 16000 : 8192,
+      ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
-        format: { type: "json_schema", schema: buildSchema(outcomes) },
+        format: { type: "json_schema", schema: buildSchema(outcomes, depth) },
+        ...(deep ? { effort: "high" as const } : {}),
       },
-      system: SYSTEM_PROMPT,
+      system: deep ? `${SYSTEM_PROMPT}${DEEP_SYSTEM_PROMPT_ADDENDUM}` : SYSTEM_PROMPT,
       messages: [{ role: "user", content: buildUserPrompt(input) }],
     });
   } catch (error) {
@@ -249,16 +270,19 @@ async function requestVerdictOnce(input: SportMatchInput): Promise<SportMatchVer
 
 /** Same one-retry-on-malformed-response policy as analyze-market's own
  * analyzeMarket — see that function's comment for why. */
-export async function analyzeSportMatch(input: SportMatchInput): Promise<SportMatchVerdict> {
+export async function analyzeSportMatch(
+  input: SportMatchInput,
+  depth: AnalysisDepth = "standard"
+): Promise<SportMatchVerdict> {
   try {
-    return await requestVerdictOnce(input);
+    return await requestVerdictOnce(input, depth);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
     console.warn(
       `[anthropic-sport-match:analyzeSportMatch] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestVerdictOnce(input);
+      return await requestVerdictOnce(input, depth);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);

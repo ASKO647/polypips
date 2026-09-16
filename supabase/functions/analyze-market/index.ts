@@ -15,11 +15,21 @@ import {
   analyzeMarket,
   analyzeMultiCandidateMarket,
   extractMarketQuestionFromImage,
+  type AnalysisDepth,
 } from "./anthropic-analysis.ts";
+import {
+  consumeDeepAnalysisCredit,
+  refundDeepAnalysisCredit,
+  InsufficientCreditsError,
+} from "../_shared/deep-analysis-credits.ts";
 
 type AnalyzeRequest =
-  | { type: "link"; link: string }
-  | { type: "image"; imageBase64: string; imageMediaType: string };
+  | { type: "link"; link: string; depth?: AnalysisDepth }
+  | { type: "image"; imageBase64: string; imageMediaType: string; depth?: AnalysisDepth };
+
+function parseDepth(value: unknown): AnalysisDepth {
+  return value === "deep" ? "deep" : "standard";
+}
 
 /** Steps are reported as they genuinely complete on the server — the
  * frontend renders these events directly instead of simulating delays. */
@@ -121,6 +131,13 @@ Deno.serve(async (req) => {
     );
   }
 
+  const depth = parseDepth(body.depth);
+  // Generated once up front (not at result-build time) so the same id can
+  // be passed to consumeDeepAnalysisCredit/refundDeepAnalysisCredit for
+  // traceability (credit_transactions.related_analysis_id) before the
+  // `analyses` row itself is ever inserted.
+  const analysisId = crypto.randomUUID();
+
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -137,39 +154,46 @@ Deno.serve(async (req) => {
         controller.close();
       };
 
-      const { data: subscriptionRow } = await supabase
-        .from("subscriptions")
-        .select("plan, status, cancel_at_period_end")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      // A cancellation blurs/blocks access immediately (see hasActiveAccess
-      // in src/lib/supabase/subscriptions.ts) rather than waiting for the
-      // paid period to actually end — mirrored here by hand since this
-      // Edge Function can't import that module.
-      const hasAccess =
-        (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
-        !subscriptionRow?.cancel_at_period_end;
-      const dailyLimit = hasAccess
-        ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
-        : FREE_DEMO_DAILY_LIMIT;
-
-      if (dailyLimit !== null) {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count } = await supabase
-          .from("analyses")
-          .select("id", { count: "exact", head: true })
+      // Analyse Approfondie (depth "deep") is never gated by the daily
+      // quota below — it's credit-gated instead, checked right before the
+      // AI call once we know a real market was actually resolved (see the
+      // consumeDeepAnalysisCredit call further down). The standard flow's
+      // quota is untouched.
+      if (depth === "standard") {
+        const { data: subscriptionRow } = await supabase
+          .from("subscriptions")
+          .select("plan, status, cancel_at_period_end")
           .eq("user_id", user.id)
-          .gte("created_at", since);
+          .maybeSingle();
 
-        if ((count ?? 0) >= dailyLimit) {
-          emitErrorAndClose(
-            "limit_reached",
-            hasAccess
-              ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
-              : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
-          );
-          return;
+        // A cancellation blurs/blocks access immediately (see hasActiveAccess
+        // in src/lib/supabase/subscriptions.ts) rather than waiting for the
+        // paid period to actually end — mirrored here by hand since this
+        // Edge Function can't import that module.
+        const hasAccess =
+          (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
+          !subscriptionRow?.cancel_at_period_end;
+        const dailyLimit = hasAccess
+          ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
+          : FREE_DEMO_DAILY_LIMIT;
+
+        if (dailyLimit !== null) {
+          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const { count } = await supabase
+            .from("analyses")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .gte("created_at", since);
+
+          if ((count ?? 0) >= dailyLimit) {
+            emitErrorAndClose(
+              "limit_reached",
+              hasAccess
+                ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
+                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+            );
+            return;
+          }
         }
       }
 
@@ -266,6 +290,32 @@ Deno.serve(async (req) => {
         resolution = found;
       }
 
+      // Credit gate for Analyse Approfondie — checked here, right after a
+      // real market was resolved and right before the (expensive, Opus 5)
+      // AI call starts, never earlier. Atomic + server-verified: see
+      // _shared/deep-analysis-credits.ts and the consume_deep_analysis_credit
+      // RPC (service_role only, user.id from the verified JWT above, never
+      // from request input).
+      if (depth === "deep") {
+        try {
+          await consumeDeepAnalysisCredit(user.id, analysisId);
+        } catch (error) {
+          if (error instanceof InsufficientCreditsError) {
+            emitErrorAndClose(
+              "no_credits",
+              "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack pour continuer."
+            );
+            return;
+          }
+          console.error("[analyze-market] échec de la consommation du crédit", error);
+          emitErrorAndClose(
+            "ai_error",
+            "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
+          );
+          return;
+        }
+      }
+
       emitProgress("calling_ai");
 
       // A multi-candidate event (see gamma.ts's MultiCandidateEvent) has no
@@ -292,11 +342,12 @@ Deno.serve(async (req) => {
         const { eventSlug, eventTitle, candidates } = resolution;
         let verdict;
         try {
-          verdict = await analyzeMultiCandidateMarket(eventTitle, candidates, marketUrl);
+          verdict = await analyzeMultiCandidateMarket(eventTitle, candidates, marketUrl, depth);
         } catch (error) {
           console.error(
             `[analyze-market] échec IA pendant la génération du verdict multi-candidats (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
           );
+          if (depth === "deep") await refundDeepAnalysisCredit(user.id, analysisId);
           emitErrorAndClose(
             "ai_error",
             "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
@@ -340,7 +391,7 @@ Deno.serve(async (req) => {
         market = resolution.market;
         let verdict;
         try {
-          verdict = await analyzeMarket(market, marketUrl);
+          verdict = await analyzeMarket(market, marketUrl, depth);
         } catch (error) {
           // logAnthropicError already logged the precise cause (status, type,
           // message) inside anthropic-analysis.ts for diagnosis in the
@@ -348,6 +399,7 @@ Deno.serve(async (req) => {
           console.error(
             `[analyze-market] échec IA pendant la génération du verdict (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
           );
+          if (depth === "deep") await refundDeepAnalysisCredit(user.id, analysisId);
           emitErrorAndClose(
             "ai_error",
             "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
@@ -402,7 +454,7 @@ Deno.serve(async (req) => {
       }
 
       const analysis = {
-        id: crypto.randomUUID(),
+        id: analysisId,
         question: analysisQuestion,
         category: analysisCategory,
         analyzedAt: new Date().toISOString(),
@@ -419,6 +471,7 @@ Deno.serve(async (req) => {
         risks,
         whatCouldChange,
         sources,
+        isDeep: depth === "deep",
       };
 
       const { error: insertError } = await supabase.from("analyses").insert({
@@ -444,6 +497,7 @@ Deno.serve(async (req) => {
         risks: analysis.risks,
         what_could_change: analysis.whatCouldChange,
         sources: analysis.sources,
+        is_deep: analysis.isDeep,
       });
 
       if (insertError) {

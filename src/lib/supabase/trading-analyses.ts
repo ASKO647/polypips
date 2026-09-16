@@ -16,10 +16,11 @@ type TradingChartAnalysisRow = {
   indicators_observed: string[] | null;
   explanation: string;
   risks: string[] | null;
+  is_deep: boolean | null;
 };
 
 const SELECT_COLUMNS =
-  "id, created_at, instrument, timeframe, recommendation, take_profit, stop_loss, confidence, trend_analysis, key_levels, indicators_observed, explanation, risks";
+  "id, created_at, instrument, timeframe, recommendation, take_profit, stop_loss, confidence, trend_analysis, key_levels, indicators_observed, explanation, risks, is_deep";
 
 function mapRow(row: TradingChartAnalysisRow): TradingChartAnalysis {
   return {
@@ -36,6 +37,7 @@ function mapRow(row: TradingChartAnalysisRow): TradingChartAnalysis {
     stopLoss: row.stop_loss,
     explanation: row.explanation,
     risks: row.risks ?? [],
+    isDeep: row.is_deep ?? false,
   };
 }
 

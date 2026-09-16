@@ -37,6 +37,9 @@ function mapRow(row: SelectedSportMatchRow): SportMatchAnalysis {
     risks: row.risks,
     whatCouldChange: row.what_could_change,
     secondaryMarkets: row.secondary_markets,
+    // The automated "Sélection du jour" scan never runs Analyse
+    // Approfondie (deliberately cheap by design — see scan-sport-matches).
+    isDeep: false,
   };
 }
 

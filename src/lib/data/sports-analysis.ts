@@ -29,6 +29,10 @@ export type SportMatchAnalysis = {
   risks: string[];
   whatCouldChange: string;
   secondaryMarkets: SecondaryMarket[];
+  /** True for "Analyse Approfondie" (Opus 5, extended thinking,
+   * credit-gated) rather than the standard on-demand Analyse IA. Defaults
+   * false for rows created before this field existed. */
+  isDeep: boolean;
 };
 
 export type SportMatchProgressStep = "calling_ai" | "receiving_result";

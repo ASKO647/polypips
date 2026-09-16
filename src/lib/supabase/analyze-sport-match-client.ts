@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Sport, SportFixture } from "@/lib/sports/types";
 import type { SportMatchAnalysis, SportMatchProgressStep } from "@/lib/data/sports-analysis";
 import { sportMatchErrorMessage } from "@/lib/data/sports-analysis";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 
 export class SportMatchAnalysisError extends Error {
   code: string;
@@ -18,6 +19,7 @@ export type AnalyzeSportMatchRequest = {
   competitionName: string | null;
   kickoffAt: string;
   recentMeetings: SportFixture[];
+  depth?: AnalysisDepth;
 };
 
 type StreamEvent =
@@ -63,6 +65,7 @@ export async function runSportMatchAnalysis(
           awayScore: m.awayScore,
           competitionName: m.competitionName,
         })),
+        depth: request.depth,
       }),
     });
   } catch {

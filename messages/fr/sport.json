@@ -34,6 +34,7 @@
     },
     "FixturePicker": {
       "newSearch": "Nouvelle recherche",
+      "analyzeCta": "Analyser ce match",
       "upcomingTitle": "Prochaines confrontations — choisissez celle à analyser",
       "noUpcoming": "Aucune confrontation à venir trouvée entre ces deux {type, select, tennis {joueurs} other {équipes}}.",
       "tennisDrawNotice": "Au tennis, une rencontre n'apparaît qu'une fois le tableau du tournoi publié (généralement 1 à 3 jours avant) — un duel à venir peut donc ne pas encore être visible ici même s'il aura bien lieu.",

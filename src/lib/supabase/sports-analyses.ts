@@ -17,10 +17,11 @@ type SportsBetAnalysisRow = {
   risks: string[];
   what_could_change: string;
   secondary_markets: SportMatchAnalysis["secondaryMarkets"] | null;
+  is_deep: boolean | null;
 };
 
 const SELECT_COLUMNS =
-  "id, created_at, sport, participants, competition, match_date, predicted_winner, ai_probability, confidence, explanation, favorable_factors, risks, what_could_change, secondary_markets";
+  "id, created_at, sport, participants, competition, match_date, predicted_winner, ai_probability, confidence, explanation, favorable_factors, risks, what_could_change, secondary_markets, is_deep";
 
 function mapRow(row: SportsBetAnalysisRow): SportMatchAnalysis {
   return {
@@ -38,6 +39,7 @@ function mapRow(row: SportsBetAnalysisRow): SportMatchAnalysis {
     risks: row.risks,
     whatCouldChange: row.what_could_change,
     secondaryMarkets: row.secondary_markets ?? [],
+    isDeep: row.is_deep ?? false,
   };
 }
 

@@ -76,6 +76,7 @@ export function DashboardHeader({
   userEmail,
   displayName,
   avatarUrl,
+  creditBalance,
 }: {
   menuOpen: boolean;
   onMenuToggle: () => void;
@@ -90,6 +91,7 @@ export function DashboardHeader({
   userEmail: string;
   displayName: string;
   avatarUrl: string | null;
+  creditBalance: number;
 }) {
   const pathname = usePathname();
   const t = useTranslations("Dashboard.Header");
@@ -157,6 +159,7 @@ export function DashboardHeader({
           email={userEmail}
           avatarUrl={avatarUrl}
           planLabel={planPillLabel(tPlanPill, subscription, cancelled, trialDaysRemaining)}
+          creditBalance={creditBalance}
         />
 
         <button

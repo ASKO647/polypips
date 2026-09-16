@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { TradingChartAnalysis, TradingProgressStep } from "@/lib/data/trading-analysis";
 import { tradingErrorMessage } from "@/lib/data/trading-analysis";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 
 export class TradingAnalysisError extends Error {
   code: string;
@@ -13,6 +14,7 @@ export class TradingAnalysisError extends Error {
 export type AnalyzeTradingChartRequest = {
   imageBase64: string;
   imageMediaType: string;
+  depth?: AnalysisDepth;
 };
 
 type StreamEvent =

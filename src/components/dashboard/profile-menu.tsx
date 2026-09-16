@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition, type ComponentType } from "react";
-import { ChevronDown, User, CreditCard, Palette, Globe, LifeBuoy } from "lucide-react";
+import { ChevronDown, User, CreditCard, BrainCircuit, Palette, Globe, LifeBuoy } from "lucide-react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { routing } from "@/i18n/routing";
@@ -48,13 +48,19 @@ export function ProfileMenu({
   email,
   avatarUrl,
   planLabel,
+  creditBalance,
 }: {
   displayName: string;
   email: string;
   avatarUrl: string | null;
   planLabel: string;
+  /** Current Deep Analysis credit balance — shown next to the plan badge,
+   * per the credits system's "always visible somewhere in the dashboard"
+   * requirement. */
+  creditBalance: number;
 }) {
   const t = useTranslations("Dashboard.ProfileMenu");
+  const tCredits = useTranslations("Credits");
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useDashboardTheme();
@@ -128,6 +134,13 @@ export function ProfileMenu({
               icon={CreditCard}
               label={t("subscription")}
               value={planLabel}
+              onNavigate={close}
+            />
+            <MenuLink
+              href="/dashboard/credits"
+              icon={BrainCircuit}
+              label={tCredits("title")}
+              value={`${creditBalance} ${tCredits("balanceUnit", { count: creditBalance })}`}
               onNavigate={close}
             />
           </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowRight,
+  BrainCircuit,
   Check,
   ExternalLink,
   Lock,
@@ -35,6 +36,7 @@ export function AnalysisResult({
   const locale = useLocale();
   const t = useTranslations("Polymarket.AnalysisResult");
   const tCommon = useTranslations("Polymarket.Common");
+  const tCredits = useTranslations("Credits");
   const isPrimary = isPrimaryDecision(analysis.decision, analysis.outcomes);
   const decisionTone = isPrimary ? "text-emerald-400" : "text-rose-400";
   const marketUrl = resolvedMarketUrl(analysis);
@@ -67,6 +69,12 @@ export function AnalysisResult({
             {analysis.category}
           </span>
           <span className="text-xs text-white/35">{analysis.analyzedAt}</span>
+          {analysis.isDeep && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/15 px-2.5 py-1 text-xs font-bold text-brand-400">
+              <BrainCircuit className="h-3 w-3" strokeWidth={2.5} />
+              {tCredits("DeepAnalysis.badge")}
+            </span>
+          )}
         </div>
         <h1 className="font-display text-xl font-bold leading-snug text-white sm:text-2xl">
           {analysis.question}

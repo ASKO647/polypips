@@ -26,6 +26,13 @@ const client = new Anthropic({
   apiKey: Deno.env.get("ANTHROPIC_API_KEY"),
 });
 
+/** Same depth toggle as analyze-market — see that file's AnalysisDepth
+ * comment for the model/config rationale. Only the screenshot flow
+ * (analyzeTradingChart) exposes this; the candles flow
+ * (analyzeTradingCandles) backs the automated "Sélection du jour" cron,
+ * which has no per-request user choice to be deep or standard. */
+export type AnalysisDepth = "standard" | "deep";
+
 class MalformedVerdictError extends Error {}
 
 const DEGENERATE_REPETITION_PATTERN = /(.{1,12})\1{19,}/;
@@ -74,7 +81,9 @@ export type TradingChartVerdict = {
   risks: string[];
 };
 
-const SCHEMA = {
+function buildSchema(depth: AnalysisDepth = "standard") {
+  const deep = depth === "deep";
+  return {
   type: "object",
   properties: {
     instrument: {
@@ -127,12 +136,16 @@ const SCHEMA = {
     },
     explanation: {
       type: "string",
-      description: "Explication détaillée (3-5 phrases) du raisonnement — tendance, niveaux, indicateurs — au conditionnel, jamais affirmatif sur un résultat futur.",
+      description: deep
+        ? "Explication détaillée et nuancée (8-12 phrases) du raisonnement, croisant tendance, niveaux, indicateurs et plusieurs scénarios possibles, au conditionnel, jamais affirmatif sur un résultat futur."
+        : "Explication détaillée (3-5 phrases) du raisonnement — tendance, niveaux, indicateurs — au conditionnel, jamais affirmatif sur un résultat futur.",
     },
     risks: {
       type: "array",
       items: { type: "string" },
-      description: "2-4 risques concrets qui pourraient invalider cette lecture.",
+      description: deep
+        ? "4-6 risques concrets qui pourraient invalider cette lecture, aussi précis et variés que possible."
+        : "2-4 risques concrets qui pourraient invalider cette lecture.",
     },
   },
   required: [
@@ -149,7 +162,8 @@ const SCHEMA = {
     "risks",
   ],
   additionalProperties: false,
-} as const;
+  } as const;
+}
 
 const SYSTEM_PROMPT = `Tu es l'analyste IA trading de Polypips, un outil d'aide à la décision pour la lecture de graphiques de trading (Forex, crypto, actions, indices) fournis en capture d'écran, quelle que soit la plateforme d'origine (TradingView, MT5, ou autre).
 
@@ -160,6 +174,12 @@ Règles impératives, sans exception — le trading avec effet de levier est un 
 - Base ton analyse uniquement sur ce qui est visible dans l'image : tendance, niveaux de support/résistance, indicateurs techniques affichés. N'invente jamais un indicateur ou un niveau qui n'apparaît pas sur le graphique.
 - Si l'image est trop floue, trop petite, ou ne contient pas assez d'information pour une lecture fiable, dis-le explicitement dans "explanation", recommande "Attendre", et choisis un niveau de confiance "Faible" plutôt que d'inventer une analyse.
 - Si l'instrument ou l'unité de temps ne sont pas clairement identifiables, retourne null plutôt que de deviner.`;
+
+/** Appended only for depth "deep" (screenshot flow only) — same rules,
+ * more thoroughness. */
+const DEEP_SYSTEM_PROMPT_ADDENDUM = `
+
+MODE ANALYSE APPROFONDIE : tu disposes ici d'un budget de raisonnement étendu — utilise-le pour croiser davantage de facteurs visibles sur le graphique (structure de tendance, multiples niveaux, cohérence des indicateurs affichés) avant de conclure. Développe une explication nuancée et un nombre de risques plus riche que pour une lecture standard, tout en respectant strictement les mêmes règles ci-dessus.`;
 
 const USER_PROMPT =
   "Analyse ce graphique de trading (capture d'écran fournie). Identifie la tendance, les niveaux de support/résistance visibles, les indicateurs techniques affichés, et produis une recommandation structurée avec des niveaux de Take Profit / Stop Loss (en prix ou en pourcentage uniquement, jamais un montant).";
@@ -213,14 +233,17 @@ Analyse la tendance, les niveaux de support/résistance déductibles de ces chan
 }
 
 type VerdictContent =
-  | { kind: "image"; imageBase64: string; mediaType: string }
+  | { kind: "image"; imageBase64: string; mediaType: string; depth?: AnalysisDepth }
   | { kind: "candles"; input: CandleAnalysisInput };
 
 async function requestVerdictOnce(content: VerdictContent): Promise<TradingChartVerdict> {
+  // Depth only ever applies to the screenshot flow — the candles flow
+  // (automated "Sélection du jour") has no per-request user choice.
+  const deep = content.kind === "image" && content.depth === "deep";
   const [system, messageContent] =
     content.kind === "image"
       ? [
-          SYSTEM_PROMPT,
+          deep ? `${SYSTEM_PROMPT}${DEEP_SYSTEM_PROMPT_ADDENDUM}` : SYSTEM_PROMPT,
           [
             {
               type: "image" as const,
@@ -238,10 +261,12 @@ async function requestVerdictOnce(content: VerdictContent): Promise<TradingChart
   let response;
   try {
     response = await client.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 8192,
+      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
+      max_tokens: deep ? 16000 : 8192,
+      ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
-        format: { type: "json_schema", schema: SCHEMA },
+        format: { type: "json_schema", schema: buildSchema(deep ? "deep" : "standard") },
+        ...(deep ? { effort: "high" as const } : {}),
       },
       system,
       messages: [{ role: "user", content: messageContent }],
@@ -307,9 +332,10 @@ async function requestVerdictWithRetry(content: VerdictContent): Promise<Trading
 
 export async function analyzeTradingChart(
   imageBase64: string,
-  mediaType: string
+  mediaType: string,
+  depth: AnalysisDepth = "standard"
 ): Promise<TradingChartVerdict> {
-  return requestVerdictWithRetry({ kind: "image", imageBase64, mediaType });
+  return requestVerdictWithRetry({ kind: "image", imageBase64, mediaType, depth });
 }
 
 /** Trading "Sélection du jour" entry point (scan-trading-pairs) — same

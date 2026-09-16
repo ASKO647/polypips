@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowRight, TriangleAlert, UploadCloud, X } from "lucide-react";
+import { ArrowRight, BrainCircuit, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { getTradingDisclaimer } from "@/lib/data/trading-analysis";
 import { cn } from "@/lib/utils";
+import type { AnalysisDepth } from "@/lib/data/deep-analysis";
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -25,28 +26,38 @@ export function TradingChartInput({
   file,
   onFileChange,
   onAnalyze,
+  creditBalance,
 }: {
   errorMessage: React.ReactNode | null;
   file: File | null;
   onFileChange: (file: File | null) => void;
-  onAnalyze: (request: { imageBase64: string; imageMediaType: string }) => void;
+  onAnalyze: (
+    request: { imageBase64: string; imageMediaType: string },
+    depth: AnalysisDepth
+  ) => void;
+  /** Current Deep Analysis credit balance — shown next to the button so a
+   * user isn't surprised by a "no credits" error after uploading. Always
+   * shown (even 0): the button stays clickable at 0 too, since the
+   * no_credits error path already links to /dashboard/credits. */
+  creditBalance: number;
 }) {
   const t = useTranslations("Trading.ChartInput");
   const tTrading = useTranslations("Trading");
+  const tCredits = useTranslations("Credits");
   const [dragOver, setDragOver] = useState(false);
-  const [preparing, setPreparing] = useState(false);
+  const [preparing, setPreparing] = useState<AnalysisDepth | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const canAnalyze = file !== null && !preparing;
+  const canAnalyze = file !== null && preparing === null;
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (depth: AnalysisDepth) => {
     if (!canAnalyze || !file) return;
-    setPreparing(true);
+    setPreparing(depth);
     try {
       const imageBase64 = await fileToBase64(file);
-      onAnalyze({ imageBase64, imageMediaType: file.type || "image/png" });
+      onAnalyze({ imageBase64, imageMediaType: file.type || "image/png" }, depth);
     } finally {
-      setPreparing(false);
+      setPreparing(null);
     }
   };
 
@@ -132,17 +143,32 @@ export function TradingChartInput({
           )}
         </div>
 
-        <Button
-          type="button"
-          disabled={!canAnalyze}
-          onClick={handleSubmit}
-          className="w-full sm:w-auto sm:self-end"
-        >
-          {preparing ? t("preparing") : t("submit")}
-          <ButtonIcon>
-            <ArrowRight className="h-4 w-4" />
-          </ButtonIcon>
-        </Button>
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            disabled={!canAnalyze}
+            onClick={() => handleSubmit("deep")}
+            className="w-full sm:w-auto"
+          >
+            <BrainCircuit className="h-4 w-4" />
+            {preparing === "deep" ? t("preparing") : tCredits("DeepAnalysis.button")}
+            <span className="ml-1 text-xs font-normal text-current opacity-60">
+              ({tCredits("DeepAnalysis.buttonCreditCost")} · {creditBalance})
+            </span>
+          </Button>
+          <Button
+            type="button"
+            disabled={!canAnalyze}
+            onClick={() => handleSubmit("standard")}
+            className="w-full sm:w-auto"
+          >
+            {preparing === "standard" ? t("preparing") : t("submit")}
+            <ButtonIcon>
+              <ArrowRight className="h-4 w-4" />
+            </ButtonIcon>
+          </Button>
+        </div>
       </div>
 
       <p className="text-xs leading-relaxed text-white/35">{getTradingDisclaimer(tTrading)}</p>

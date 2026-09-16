@@ -3,9 +3,19 @@ import { corsHeaders } from "../_shared/cors.ts";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
 import {
   analyzeSportMatch,
+  type AnalysisDepth,
   type RecentMeeting,
   type SportMatchInput,
 } from "./anthropic-sport-match-analysis.ts";
+import {
+  consumeDeepAnalysisCredit,
+  refundDeepAnalysisCredit,
+  InsufficientCreditsError,
+} from "../_shared/deep-analysis-credits.ts";
+
+function parseDepth(value: unknown): AnalysisDepth {
+  return value === "deep" ? "deep" : "standard";
+}
 
 /**
  * The Sport universe's "Analyse IA", step 2 — see
@@ -115,6 +125,8 @@ Deno.serve(async (req) => {
   }
 
   const input = body;
+  const depth = parseDepth((body as Record<string, unknown>).depth);
+  const analysisId = crypto.randomUUID();
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -128,33 +140,56 @@ Deno.serve(async (req) => {
         controller.close();
       };
 
-      const { data: subscriptionRow } = await supabase
-        .from("subscriptions")
-        .select("plan, status, cancel_at_period_end")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const hasAccess =
-        (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
-        !subscriptionRow?.cancel_at_period_end;
-      const dailyLimit = hasAccess
-        ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
-        : FREE_DEMO_DAILY_LIMIT;
-
-      if (dailyLimit !== null) {
-        const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-        const { count } = await supabase
-          .from("sports_bet_analyses")
-          .select("id", { count: "exact", head: true })
+      // Analyse Approfondie bypasses the daily quota entirely — it's
+      // credit-gated instead, checked further down right before the AI
+      // call. The standard flow's quota is untouched.
+      if (depth === "standard") {
+        const { data: subscriptionRow } = await supabase
+          .from("subscriptions")
+          .select("plan, status, cancel_at_period_end")
           .eq("user_id", user.id)
-          .gte("created_at", since);
+          .maybeSingle();
 
-        if ((count ?? 0) >= dailyLimit) {
+        const hasAccess =
+          (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
+          !subscriptionRow?.cancel_at_period_end;
+        const dailyLimit = hasAccess
+          ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
+          : FREE_DEMO_DAILY_LIMIT;
+
+        if (dailyLimit !== null) {
+          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const { count } = await supabase
+            .from("sports_bet_analyses")
+            .select("id", { count: "exact", head: true })
+            .eq("user_id", user.id)
+            .gte("created_at", since);
+
+          if ((count ?? 0) >= dailyLimit) {
+            emitErrorAndClose(
+              "limit_reached",
+              hasAccess
+                ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
+                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+            );
+            return;
+          }
+        }
+      } else {
+        try {
+          await consumeDeepAnalysisCredit(user.id, analysisId);
+        } catch (error) {
+          if (error instanceof InsufficientCreditsError) {
+            emitErrorAndClose(
+              "no_credits",
+              "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack pour continuer."
+            );
+            return;
+          }
+          console.error("[analyze-sport-match] échec de la consommation du crédit", error);
           emitErrorAndClose(
-            "limit_reached",
-            hasAccess
-              ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
-              : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+            "ai_error",
+            "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
           );
           return;
         }
@@ -164,11 +199,12 @@ Deno.serve(async (req) => {
 
       let verdict;
       try {
-        verdict = await analyzeSportMatch(input);
+        verdict = await analyzeSportMatch(input, depth);
       } catch (error) {
         console.error(
           `[analyze-sport-match] échec IA pendant la génération du pronostic (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
         );
+        if (depth === "deep") await refundDeepAnalysisCredit(user.id, analysisId);
         emitErrorAndClose(
           "ai_error",
           "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants."
@@ -181,7 +217,7 @@ Deno.serve(async (req) => {
       const aiProbability = Math.max(0, Math.min(100, Math.round(verdict.aiProbability)));
 
       const analysis = {
-        id: crypto.randomUUID(),
+        id: analysisId,
         analyzedAt: new Date().toISOString(),
         sport: input.sport,
         participants: `${input.homeTeamName} vs ${input.awayTeamName}`,
@@ -195,6 +231,7 @@ Deno.serve(async (req) => {
         risks: verdict.risks,
         whatCouldChange: verdict.whatCouldChange,
         secondaryMarkets: verdict.secondaryMarkets,
+        isDeep: depth === "deep",
       };
 
       const { error: insertError } = await supabase.from("sports_bet_analyses").insert({
@@ -212,6 +249,7 @@ Deno.serve(async (req) => {
         risks: analysis.risks,
         what_could_change: analysis.whatCouldChange,
         secondary_markets: analysis.secondaryMarkets,
+        is_deep: analysis.isDeep,
       });
 
       if (insertError) {

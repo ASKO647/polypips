@@ -23,6 +23,7 @@ const MESSAGE_FILES = [
   "community",
   "profile",
   "subscription",
+  "credits",
 ] as const;
 
 export default getRequestConfig(async ({ requestLocale }) => {

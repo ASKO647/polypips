@@ -1,7 +1,16 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { ArrowRight, Check, Lock, RefreshCw, TrendingUp, TriangleAlert, ShieldAlert } from "lucide-react";
+import {
+  ArrowRight,
+  BrainCircuit,
+  Check,
+  Lock,
+  RefreshCw,
+  TrendingUp,
+  TriangleAlert,
+  ShieldAlert,
+} from "lucide-react";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { ConfidenceMeter } from "@/components/dashboard/analyse-ia/confidence-meter";
 import type { SportMatchAnalysis } from "@/lib/data/sports-analysis";
@@ -34,6 +43,7 @@ export function SportMatchResult({
   locked?: boolean;
 }) {
   const t = useTranslations("Sport");
+  const tCredits = useTranslations("Credits");
   const sportNames = t.raw("sportNames") as Record<Sport, string>;
   return (
     <div className="flex flex-col gap-5">
@@ -46,6 +56,12 @@ export function SportMatchResult({
             <span className="text-xs text-white/35">{analysis.competition}</span>
           )}
           <span className="text-xs text-white/35">{analysis.analyzedAt}</span>
+          {analysis.isDeep && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand-500/15 px-2.5 py-1 text-xs font-bold text-brand-400">
+              <BrainCircuit className="h-3 w-3" strokeWidth={2.5} />
+              {tCredits("DeepAnalysis.badge")}
+            </span>
+          )}
         </div>
         <h1 className="font-display text-xl font-bold leading-snug text-white sm:text-2xl">
           {analysis.participants}

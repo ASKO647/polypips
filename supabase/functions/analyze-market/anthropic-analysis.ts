@@ -1,6 +1,14 @@
 import Anthropic from "npm:@anthropic-ai/sdk@0.116.0";
 import type { GammaMarket } from "./gamma.ts";
 
+/** "deep" = Analyse Approfondie (claude-opus-5, adaptive thinking, effort
+ * "high" — the exact model/config confirmed against the credit-pack
+ * pricing grid before this feature was built). "standard" = the existing
+ * on-demand Analyse IA (claude-haiku-4-5, no thinking), unchanged and
+ * still unlimited on a paid plan. Defaults to "standard" everywhere so
+ * scan-markets and every other pre-existing caller is unaffected. */
+export type AnalysisDepth = "standard" | "deep";
+
 /** A verdict for a multi-candidate event (see gamma.ts's MultiCandidateEvent):
  * "decision" is the chosen candidate's own real label (e.g. "Donald
  * Trump"), never a Yes/No — a multi-candidate market has no yes/no
@@ -111,7 +119,8 @@ function effectiveOutcomes(market: GammaMarket): [string, string] {
   return ["Oui", "Non"];
 }
 
-function buildVerdictSchema(outcomes: [string, string]) {
+function buildVerdictSchema(outcomes: [string, string], depth: AnalysisDepth = "standard") {
+  const deep = depth === "deep";
   return {
     type: "object",
     properties: {
@@ -132,18 +141,23 @@ function buildVerdictSchema(outcomes: [string, string]) {
       confidence: { type: "string", enum: ["Faible", "Moyenne", "Élevée"] },
       explanation: {
         type: "string",
-        description:
-          "Explication détaillée (3-5 phrases) citant les règles de résolution et les données réelles du marché.",
+        description: deep
+          ? "Explication détaillée et nuancée (8-12 phrases) croisant les règles de résolution, les données réelles du marché et plusieurs angles d'analyse (facteurs structurels, contexte récent, dynamique de marché)."
+          : "Explication détaillée (3-5 phrases) citant les règles de résolution et les données réelles du marché.",
       },
       favorableFactors: {
         type: "array",
         items: { type: "string" },
-        description: "3 à 5 facteurs concrets qui soutiennent la décision.",
+        description: deep
+          ? "5 à 8 facteurs concrets qui soutiennent la décision, aussi précis et variés que possible."
+          : "3 à 5 facteurs concrets qui soutiennent la décision.",
       },
       risks: {
         type: "array",
         items: { type: "string" },
-        description: "2 à 4 risques concrets qui pourraient invalider l'analyse.",
+        description: deep
+          ? "4 à 6 risques concrets qui pourraient invalider l'analyse, aussi précis et variés que possible."
+          : "2 à 4 risques concrets qui pourraient invalider l'analyse.",
       },
       whatCouldChange: {
         type: "string",
@@ -175,6 +189,13 @@ Règles impératives :
 - Chaque marché a ses propres libellés d'issue réels (souvent "Yes"/"No", mais pas toujours — par exemple "Up"/"Down" sur un marché de prix crypto). "decision" doit être EXACTEMENT l'un des deux libellés fournis dans le message utilisateur, jamais "YES"/"NO" par défaut ni une reformulation.
 - "aiProbability" doit être ton estimation réelle et indépendante de la probabilité que la PREMIÈRE issue mentionnée dans le message utilisateur se réalise, pas une simple copie du prix du marché.
 - Si l'information disponible est insuffisante pour trancher avec confiance, dis-le explicitement dans "explanation" et choisis un niveau de confiance "Faible".`;
+
+/** Appended to SYSTEM_PROMPT only for depth "deep" — the standard prompt's
+ * rules stay identical (never a guarantee, stay factual/probabilistic);
+ * this only asks for more thoroughness, never a different stance. */
+const DEEP_SYSTEM_PROMPT_ADDENDUM = `
+
+MODE ANALYSE APPROFONDIE : tu disposes ici d'un budget de raisonnement étendu — utilise-le pour croiser davantage de facteurs (contexte structurel du sujet, dynamique récente, précédents comparables, sensibilité aux règles de résolution précises) avant de conclure. Développe une explication nuancée et un nombre de facteurs favorables/risques plus riche que pour une analyse standard, tout en respectant strictement les mêmes règles ci-dessus.`;
 
 function buildUserPrompt(market: GammaMarket, marketUrl: string | null, outcomes: [string, string]): string {
   const outcomeLines = market.outcomes
@@ -210,7 +231,8 @@ La probabilité de marché actuelle pour l'issue "${outcomes[0]}" est d'environ 
 Produis ton verdict structuré. Pour "decision", réponds EXACTEMENT "${outcomes[0]}" ou "${outcomes[1]}" — aucune autre valeur n'est acceptée.`;
 }
 
-function buildMultiCandidateSchema(candidateLabels: string[]) {
+function buildMultiCandidateSchema(candidateLabels: string[], depth: AnalysisDepth = "standard") {
+  const deep = depth === "deep";
   return {
     type: "object",
     properties: {
@@ -233,18 +255,23 @@ function buildMultiCandidateSchema(candidateLabels: string[]) {
       confidence: { type: "string", enum: ["Faible", "Moyenne", "Élevée"] },
       explanation: {
         type: "string",
-        description:
-          "Explication détaillée (3-5 phrases) justifiant pourquoi ce candidat précis est le plus probable, citant des éléments concrets sur lui et ses principaux rivaux.",
+        description: deep
+          ? "Explication détaillée et nuancée (8-12 phrases) comparant ce candidat à ses principaux rivaux sous plusieurs angles (dynamique récente, structure de la compétition, précédents comparables)."
+          : "Explication détaillée (3-5 phrases) justifiant pourquoi ce candidat précis est le plus probable, citant des éléments concrets sur lui et ses principaux rivaux.",
       },
       favorableFactors: {
         type: "array",
         items: { type: "string" },
-        description: "3 à 5 facteurs concrets qui soutiennent ce candidat.",
+        description: deep
+          ? "5 à 8 facteurs concrets qui soutiennent ce candidat, aussi précis et variés que possible."
+          : "3 à 5 facteurs concrets qui soutiennent ce candidat.",
       },
       risks: {
         type: "array",
         items: { type: "string" },
-        description: "2 à 4 risques/scénarios concrets qui pourraient invalider ce pronostic.",
+        description: deep
+          ? "4 à 6 risques/scénarios concrets qui pourraient invalider ce pronostic, aussi précis et variés que possible."
+          : "2 à 4 risques/scénarios concrets qui pourraient invalider ce pronostic.",
       },
       whatCouldChange: {
         type: "string",
@@ -309,21 +336,27 @@ Désigne le candidat/l'option le plus probable de l'emporter. Pour "decision", r
 async function requestMultiCandidateVerdictOnce(
   eventTitle: string,
   candidates: GammaMarket[],
-  marketUrl: string | null
+  marketUrl: string | null,
+  depth: AnalysisDepth = "standard"
 ): Promise<AiMultiCandidateVerdict> {
   const candidateLabels = candidates.map((c) => c.groupItemTitle || c.question);
+  const deep = depth === "deep";
   let response;
   try {
     response = await client.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 8192,
+      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
+      max_tokens: deep ? 16000 : 8192,
+      ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
         format: {
           type: "json_schema",
-          schema: buildMultiCandidateSchema(candidateLabels),
+          schema: buildMultiCandidateSchema(candidateLabels, depth),
         },
+        ...(deep ? { effort: "high" as const } : {}),
       },
-      system: MULTI_CANDIDATE_SYSTEM_PROMPT,
+      system: deep
+        ? `${MULTI_CANDIDATE_SYSTEM_PROMPT}${DEEP_SYSTEM_PROMPT_ADDENDUM}`
+        : MULTI_CANDIDATE_SYSTEM_PROMPT,
       messages: [
         { role: "user", content: buildMultiCandidateUserPrompt(eventTitle, candidates, marketUrl) },
       ],
@@ -373,10 +406,11 @@ async function requestMultiCandidateVerdictOnce(
 export async function analyzeMultiCandidateMarket(
   eventTitle: string,
   candidates: GammaMarket[],
-  marketUrl: string | null
+  marketUrl: string | null,
+  depth: AnalysisDepth = "standard"
 ): Promise<AiMultiCandidateVerdict> {
   try {
-    return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl);
+    return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl, depth);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
 
@@ -384,7 +418,7 @@ export async function analyzeMultiCandidateMarket(
       `[anthropic:analyzeMultiCandidateMarket] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl);
+      return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl, depth);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);
@@ -400,34 +434,36 @@ export async function analyzeMultiCandidateMarket(
  * (degenerate repetition or invalid JSON — worth one retry). */
 async function requestVerdictOnce(
   market: GammaMarket,
-  marketUrl: string | null
+  marketUrl: string | null,
+  depth: AnalysisDepth = "standard"
 ): Promise<AiVerdict> {
   const outcomes = effectiveOutcomes(market);
+  const deep = depth === "deep";
   let response;
   try {
     response = await client.messages.create({
-      model: "claude-haiku-4-5",
-      // Was 4096 — too tight for the previous model with high-effort
-      // json_schema output on this schema (explanation + 3-5 factors + 2-4
-      // risks + whatCouldChange): a response that runs long can hit the cap
-      // mid-string, which is indistinguishable from a truncated/malformed
-      // response by the time it reaches JSON.parse. 8192 gives real headroom
-      // without materially changing latency/cost for the common case.
-      max_tokens: 8192,
-      // No `thinking` field: Haiku 4.5 runs with no extended thinking when
-      // the field is omitted (thinking is opt-in on this model tier, not
-      // on-by-default like the Opus-tier models this used to run on) — this
-      // is also the single biggest cost driver being removed by this
-      // switch. No `effort` either: output_config.effort errors on Haiku
-      // 4.5 (it's an Opus-tier-and-newer control), so the json_schema
-      // format is the only output_config field left here.
+      // Standard: claude-haiku-4-5, no thinking — cost-conscious, unlimited
+      // on a paid plan. Deep ("Analyse Approfondie", credit-gated):
+      // claude-opus-5 with adaptive thinking at effort "high" — the exact
+      // model/config confirmed against the credit-pack pricing grid.
+      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
+      // 8192 is enough for the standard schema (see below); deep mode asks
+      // for a longer explanation and more factors/risks on top of the
+      // thinking tokens themselves, so it gets more headroom.
+      max_tokens: deep ? 16000 : 8192,
+      // No `thinking`/`effort` for standard: Haiku 4.5 has no extended
+      // thinking when the field is omitted, and output_config.effort
+      // errors on Haiku 4.5 (an Opus-tier-and-newer control) — this is
+      // also the single biggest cost driver being removed by that switch.
+      ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
         format: {
           type: "json_schema",
-          schema: buildVerdictSchema(outcomes),
+          schema: buildVerdictSchema(outcomes, depth),
         },
+        ...(deep ? { effort: "high" as const } : {}),
       },
-      system: SYSTEM_PROMPT,
+      system: deep ? `${SYSTEM_PROMPT}${DEEP_SYSTEM_PROMPT_ADDENDUM}` : SYSTEM_PROMPT,
       messages: [
         { role: "user", content: buildUserPrompt(market, marketUrl, outcomes) },
       ],
@@ -488,10 +524,11 @@ async function requestVerdictOnce(
  * scan-markets already treats a failed candidate as skippable). */
 export async function analyzeMarket(
   market: GammaMarket,
-  marketUrl: string | null
+  marketUrl: string | null,
+  depth: AnalysisDepth = "standard"
 ): Promise<AiVerdict> {
   try {
-    return await requestVerdictOnce(market, marketUrl);
+    return await requestVerdictOnce(market, marketUrl, depth);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
 
@@ -499,7 +536,7 @@ export async function analyzeMarket(
       `[anthropic:analyzeMarket] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestVerdictOnce(market, marketUrl);
+      return await requestVerdictOnce(market, marketUrl, depth);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);

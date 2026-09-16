@@ -34,6 +34,9 @@ function mapRow(row: SelectedTradingRow): TradingChartAnalysis {
     stopLoss: row.stop_loss,
     explanation: row.explanation,
     risks: row.risks,
+    // The automated "Sélection du jour" scan never runs Analyse
+    // Approfondie (deliberately cheap by design — see scan-trading-pairs).
+    isDeep: false,
   };
 }
 

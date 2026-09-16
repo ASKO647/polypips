@@ -41,6 +41,9 @@ function mapRow(row: SelectedMarketRow): MarketAnalysis {
     whatCouldChange: row.what_could_change,
     sources: row.sources,
     marketSlug: row.slug,
+    // The automated "Marchés sélectionnés" scan never runs Analyse
+    // Approfondie (deliberately cheap by design — see scan-markets).
+    isDeep: false,
   };
 }
 

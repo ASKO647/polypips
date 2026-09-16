@@ -78,11 +78,53 @@ async function upsertSubscription(
   }
 }
 
+/** One-time credits purchase — distinct from the subscription flow below
+ * (no session.subscription, mode is "payment" not "subscription").
+ * Routed here by handleCheckoutCompleted based on session.metadata.type,
+ * set by /api/stripe/credits-checkout. Idempotency is enforced inside the
+ * credit_purchase RPC itself (unique index on stripe_payment_intent_id),
+ * not here — so a retried webhook delivery for the same payment_intent is
+ * safely a no-op even under concurrent retries. */
+async function handleCreditsCheckoutCompleted(
+  supabase: SupabaseClient,
+  session: Stripe.Checkout.Session
+) {
+  const userId = session.metadata?.supabase_user_id;
+  const credits = Number(session.metadata?.credits);
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id;
+
+  if (!userId || !Number.isFinite(credits) || credits <= 0 || !paymentIntentId) {
+    console.error("[stripe/webhook] credits checkout.session.completed missing/invalid data", {
+      hasUserId: !!userId,
+      credits: session.metadata?.credits,
+      hasPaymentIntentId: !!paymentIntentId,
+    });
+    return;
+  }
+
+  const { error } = await supabase.rpc("credit_purchase", {
+    p_user_id: userId,
+    p_amount: credits,
+    p_stripe_payment_intent_id: paymentIntentId,
+  });
+  if (error) {
+    console.error("[stripe/webhook] credit_purchase RPC failed", error);
+  }
+}
+
 async function handleCheckoutCompleted(
   stripe: Stripe,
   supabase: SupabaseClient,
   session: Stripe.Checkout.Session
 ) {
+  if (session.metadata?.type === "credits") {
+    await handleCreditsCheckoutCompleted(supabase, session);
+    return;
+  }
+
   const userId = session.client_reference_id;
   const subscriptionId =
     typeof session.subscription === "string"

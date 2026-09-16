@@ -1,0 +1,60 @@
+{
+  "Credits": {
+    "metaTitle": "Credits — Polypips",
+    "title": "Deep Analysis credits",
+    "description": "Standard AI Analysis stays unlimited with your Pro subscription. Credits additionally unlock Deep Analysis — a more thorough AI report, available on Polymarket, Sport and Trading.",
+    "balanceLabel": "Current balance",
+    "balanceUnit": "{count, plural, one {credit} other {credits}}",
+    "packsTitle": "Credit packs",
+    "creditsLabel": "{count} credits",
+    "pricePerCredit": "{price} / credit",
+    "buyButton": "Buy",
+    "mostPopular": "Most popular",
+    "bestValue": "Best value",
+    "checkoutLineDescription": "{credits} Deep Analysis credits — Polypips",
+    "genericError": "An error occurred.",
+    "purchaseSuccess": "Purchase successful! Your credits have been added to your balance.",
+    "purchaseCancelled": "Purchase cancelled — no credits were charged.",
+    "packs": {
+      "decouverte": {
+        "name": "Starter Pack",
+        "description": "To try Deep Analysis."
+      },
+      "standard": {
+        "name": "Standard Pack",
+        "description": "For regular use."
+      },
+      "pro": {
+        "name": "Pro Pack",
+        "description": "To analyze without counting."
+      },
+      "power": {
+        "name": "Power Pack",
+        "description": "The best price per credit."
+      }
+    },
+    "History": {
+      "title": "History",
+      "empty": "No transaction yet.",
+      "purchase": "Credits purchase",
+      "consumption": "Deep Analysis used",
+      "refund": "Credit refunded (failed analysis)"
+    },
+    "errors": {
+      "unknownPack": "Unknown credit pack.",
+      "unauthorized": "Your session has expired. Please sign in again and retry.",
+      "stripeError": "Unable to start checkout."
+    },
+    "DeepAnalysis": {
+      "button": "Deep Analysis",
+      "buttonCreditCost": "1 credit",
+      "loadingCalling": "Sending to the AI (extended reasoning)...",
+      "loadingReceiving": "Receiving the detailed report...",
+      "badge": "Deep Analysis",
+      "noCreditsTitle": "No credits left",
+      "noCreditsMessage": "You have no credits left for Deep Analysis. Buy a pack to continue.",
+      "buyCreditsCta": "Buy credits",
+      "balanceLow": "{count, plural, one {# credit left} other {# credits left}}"
+    }
+  }
+}
