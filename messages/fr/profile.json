@@ -99,14 +99,10 @@
         "marketsFollowed": "Marchés suivis",
         "walletsFollowed": "Smart Wallets suivis"
       },
-      "referral": {
-        "title": "Invitez vos amis",
-        "fallbackPseudo": "vous",
-        "comingBack": "Le programme de parrainage sera bientôt de retour.",
-        "copyAria": "Copier le lien d'invitation",
-        "referrals": "Filleuls",
-        "earnings": "Gains générés",
-        "partnersCta": "En attendant, découvrez notre programme partenaires sur candidature →"
+      "credits": {
+        "title": "Crédits Analyse Approfondie",
+        "balanceLabel": "Solde actuel",
+        "viewAllCta": "Voir la page crédits →"
       },
       "connectedTools": {
         "title": "Mes outils connectés",

@@ -13,6 +13,8 @@ import {
   fetchProfileActivityStats,
   EMPTY_PROFILE_ACTIVITY_STATS,
 } from "@/lib/supabase/profile-activity";
+import { fetchCreditBalance } from "@/lib/supabase/credits";
+import { ensureReferralSlug } from "@/lib/supabase/user-referrals";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Profile.SettingsPage");
@@ -46,17 +48,22 @@ export default async function SettingsPage() {
         analysesToday={0}
         dailyAnalysisLimit={null}
         trialDaysRemaining={null}
+        creditBalance={0}
+        referralSlug={null}
       />
     );
   }
 
-  const [subscription, plan, analysesToday, activity, mfaFactors] = await Promise.all([
-    fetchSubscription(supabase),
-    getEffectivePlan(supabase, user.id),
-    countAnalysesToday(supabase, user.id),
-    fetchProfileActivityStats(supabase, user.id),
-    supabase.auth.mfa.listFactors(),
-  ]);
+  const [subscription, plan, analysesToday, activity, mfaFactors, creditBalance, referralSlug] =
+    await Promise.all([
+      fetchSubscription(supabase),
+      getEffectivePlan(supabase, user.id),
+      countAnalysesToday(supabase, user.id),
+      fetchProfileActivityStats(supabase, user.id),
+      supabase.auth.mfa.listFactors(),
+      fetchCreditBalance(supabase),
+      ensureReferralSlug(supabase, user.id),
+    ]);
 
   const locale = await getLocale();
   const memberSince = user.created_at
@@ -84,6 +91,8 @@ export default async function SettingsPage() {
       analysesToday={analysesToday}
       dailyAnalysisLimit={getDailyAnalysisLimit(plan)}
       trialDaysRemaining={getTrialDaysRemaining(subscription)}
+      creditBalance={creditBalance}
+      referralSlug={referralSlug}
     />
   );
 }

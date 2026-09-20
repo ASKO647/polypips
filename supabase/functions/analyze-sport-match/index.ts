@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
           if (error instanceof InsufficientCreditsError) {
             emitErrorAndClose(
               "no_credits",
-              "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack pour continuer."
+              "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack ou parrainez un ami pour en obtenir gratuitement."
             );
             return;
           }

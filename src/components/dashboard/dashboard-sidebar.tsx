@@ -8,8 +8,12 @@ import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 
 export function DashboardSidebar({
   subscription,
+  userId,
+  creditBalance,
 }: {
   subscription: SubscriptionRow | null;
+  userId: string | null;
+  creditBalance: number;
 }) {
   const t = useTranslations("Dashboard.Sidebar");
 
@@ -32,7 +36,7 @@ export function DashboardSidebar({
         </span>
       </Link>
 
-      <SidebarNavContent subscription={subscription} />
+      <SidebarNavContent subscription={subscription} userId={userId} creditBalance={creditBalance} />
     </aside>
   );
 }

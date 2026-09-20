@@ -27,6 +27,8 @@ export function SettingsFlow({
   analysesToday,
   dailyAnalysisLimit,
   trialDaysRemaining,
+  creditBalance,
+  referralSlug,
 }: {
   email: string;
   initialUsername: string;
@@ -43,6 +45,8 @@ export function SettingsFlow({
   dailyAnalysisLimit: number | null;
   /** Days left in the discovery trial, or null when not currently trialing. */
   trialDaysRemaining: number | null;
+  creditBalance: number;
+  referralSlug: string | null;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -134,6 +138,8 @@ export function SettingsFlow({
         onOpenDeleteModal={() => setDeleteModalOpen(true)}
         deletionRequested={deletionRequested}
         actionError={actionError}
+        creditBalance={creditBalance}
+        referralSlug={referralSlug}
       />
 
       <CancelSubscriptionModal

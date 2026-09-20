@@ -5,6 +5,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPlanId, planForPriceId, type PlanId } from "@/lib/stripe/plans";
 import { recordInfluencerConversion } from "@/lib/supabase/influencer-commissions";
+import { recordUserReferralConversion } from "@/lib/supabase/user-referrals";
 
 type DbStatus = "trialing" | "active" | "canceled" | "past_due";
 
@@ -148,6 +149,12 @@ async function handleCheckoutCompleted(
   // (in cents) — exactly "le montant du premier paiement" the commission
   // is computed from, no separate invoice fetch needed.
   await recordInfluencerConversion(supabase, userId, session.amount_total);
+  // Referrer's +10 credit reward — only fires once this user's Pro
+  // subscription payment actually went through (this exact handler),
+  // never at mere signup. Idempotent server-side (see
+  // record_user_referral_conversion), so a redelivered webhook event
+  // can't double-credit the referrer.
+  await recordUserReferralConversion(supabase, userId);
 }
 
 async function handleSubscriptionUpdated(

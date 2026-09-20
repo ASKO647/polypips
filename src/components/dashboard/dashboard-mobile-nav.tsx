@@ -9,10 +9,14 @@ export function DashboardMobileNav({
   open,
   onClose,
   subscription,
+  userId,
+  creditBalance,
 }: {
   open: boolean;
   onClose: () => void;
   subscription: SubscriptionRow | null;
+  userId: string | null;
+  creditBalance: number;
 }) {
   const t = useTranslations("Dashboard.MobileNav");
 
@@ -38,7 +42,12 @@ export function DashboardMobileNav({
           </button>
         </div>
 
-        <SidebarNavContent onNavigate={onClose} subscription={subscription} />
+        <SidebarNavContent
+          onNavigate={onClose}
+          subscription={subscription}
+          userId={userId}
+          creditBalance={creditBalance}
+        />
       </div>
     </div>
   );

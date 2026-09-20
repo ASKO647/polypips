@@ -99,14 +99,10 @@
         "marketsFollowed": "Markets followed",
         "walletsFollowed": "Smart Wallets followed"
       },
-      "referral": {
-        "title": "Invite your friends",
-        "fallbackPseudo": "you",
-        "comingBack": "The referral program will be back soon.",
-        "copyAria": "Copy invitation link",
-        "referrals": "Referrals",
-        "earnings": "Earnings generated",
-        "partnersCta": "In the meantime, check out our by-application partner program →"
+      "credits": {
+        "title": "Deep Analysis credits",
+        "balanceLabel": "Current balance",
+        "viewAllCta": "View credits page →"
       },
       "connectedTools": {
         "title": "My connected tools",

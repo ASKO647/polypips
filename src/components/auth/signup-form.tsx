@@ -23,6 +23,8 @@ import { recordSignupSource } from "@/lib/supabase/signup-sources";
 import { applyInfluencerCode } from "@/lib/influencers/check-code-action";
 import { readInfluencerAttribution } from "@/lib/influencers/attribution";
 import { recordInfluencerReferral } from "@/lib/supabase/influencer-referrals";
+import { readReferralAttribution } from "@/lib/referrals/attribution";
+import { ensureWelcomeCredits, recordUserReferral } from "@/lib/supabase/user-referrals";
 import { cn } from "@/lib/utils";
 
 const STRENGTH_COLORS = [
@@ -172,6 +174,13 @@ export function SignupForm({
         const influencerAttribution = readInfluencerAttribution();
         if (influencerAttribution && data.user) {
           await recordInfluencerReferral(supabase, data.user.id, influencerAttribution);
+        }
+        if (data.user) {
+          await ensureWelcomeCredits(supabase);
+          const referralAttribution = readReferralAttribution();
+          if (referralAttribution) {
+            await recordUserReferral(supabase, referralAttribution);
+          }
         }
         router.push(next ?? "/dashboard");
         router.refresh();

@@ -2,6 +2,7 @@
   "Credits": {
     "metaTitle": "Crédits — Polypips",
     "title": "Crédits Analyse Approfondie",
+    "gaugeLabel": "Crédits",
     "description": "L'Analyse IA standard reste illimitée avec votre abonnement Pro. Les crédits débloquent en plus l'Analyse Approfondie — un rapport IA plus poussé, disponible sur Polymarket, Sport et Trading.",
     "balanceLabel": "Solde actuel",
     "balanceUnit": "{count, plural, one {crédit} other {crédits}}",
@@ -38,12 +39,22 @@
       "empty": "Aucune transaction pour le moment.",
       "purchase": "Achat de crédits",
       "consumption": "Analyse Approfondie utilisée",
-      "refund": "Crédit remboursé (analyse échouée)"
+      "refund": "Crédit remboursé (analyse échouée)",
+      "welcome": "Bonus de bienvenue",
+      "referral": "Récompense de parrainage"
     },
     "errors": {
       "unknownPack": "Pack de crédits inconnu.",
       "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
       "stripeError": "Impossible de démarrer le paiement."
+    },
+    "Referral": {
+      "title": "Parrainez un ami",
+      "description": "Il reçoit 5 crédits bonus à l'inscription, vous recevez 10 crédits dès qu'il passe Pro.",
+      "linkLabel": "Votre lien de parrainage",
+      "copyButton": "Copier",
+      "copiedLabel": "Copié !",
+      "unavailable": "Lien de parrainage indisponible pour le moment."
     },
     "DeepAnalysis": {
       "button": "Analyse Approfondie",
@@ -52,7 +63,7 @@
       "loadingReceiving": "Réception du rapport détaillé...",
       "badge": "Analyse Approfondie",
       "noCreditsTitle": "Plus de crédits disponibles",
-      "noCreditsMessage": "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack pour continuer.",
+      "noCreditsMessage": "Vous n'avez plus de crédits pour l'Analyse Approfondie. Achetez un pack ou parrainez un ami pour en obtenir gratuitement.",
       "buyCreditsCta": "Acheter des crédits",
       "balanceLow": "{count, plural, one {# crédit restant} other {# crédits restants}}"
     }

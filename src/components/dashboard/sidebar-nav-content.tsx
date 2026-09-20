@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { ChevronDown, Plus } from "lucide-react";
 import { AccountStatusCard } from "@/components/dashboard/account-status-card";
+import { CreditGauge } from "@/components/dashboard/credit-gauge";
 import {
   DASHBOARD_GLOBAL_ITEMS,
   DASHBOARD_TOP_ITEM,
@@ -33,9 +34,13 @@ type UniverseGroup = {
 
 export function SidebarNavContent({
   subscription,
+  userId,
+  creditBalance,
   onNavigate,
 }: {
   subscription: SubscriptionRow | null;
+  userId: string | null;
+  creditBalance: number;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -163,6 +168,9 @@ export function SidebarNavContent({
       </nav>
 
       <div className="flex flex-col gap-3 px-4 pb-4">
+        {userId && (
+          <CreditGauge userId={userId} initialBalance={creditBalance} onNavigate={onNavigate} />
+        )}
         <AccountStatusCard subscription={subscription} />
         <Link
           href="/dashboard/analyse-ia"

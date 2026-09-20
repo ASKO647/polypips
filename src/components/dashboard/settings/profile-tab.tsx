@@ -14,8 +14,7 @@ import {
   Sparkles,
   Star,
   Wallet,
-  Copy,
-  Check,
+  BrainCircuit,
   Link2,
   TriangleAlert,
   Loader2,
@@ -25,9 +24,11 @@ import { createClient } from "@/lib/supabase/client";
 import { uploadAvatar, validateAvatarFile } from "@/lib/supabase/avatar";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { SettingsToggle } from "@/components/dashboard/settings/settings-toggle";
+import { ReferralCard } from "@/components/dashboard/credits/referral-card";
 import { useDashboardTheme } from "@/providers/dashboard-theme-provider";
 import { useCurrency, SUPPORTED_CURRENCIES, type CurrencyCode } from "@/providers/currency-provider";
 import { Link } from "@/i18n/navigation";
+import { CREDIT_PACK_ORDER, CREDIT_PACKS } from "@/lib/stripe/credit-packs";
 import { cn } from "@/lib/utils";
 import type { PricingPlan } from "@/lib/data/pricing";
 import { DEFAULT_NOTIFICATION_PREFERENCES } from "@/lib/data/settings";
@@ -222,6 +223,8 @@ export function ProfileTab({
   onOpenDeleteModal,
   deletionRequested,
   actionError,
+  creditBalance,
+  referralSlug,
 }: {
   email: string;
   initialUsername: string;
@@ -241,6 +244,8 @@ export function ProfileTab({
   /** Set only when a cancel-subscription attempt (triggered via
    * onOpenCancelModal's modal) just failed. */
   actionError: string | null;
+  creditBalance: number;
+  referralSlug: string | null;
 }) {
   const t = useTranslations("Profile.ProfileTab");
   const [username, setUsername] = useState(initialUsername);
@@ -266,8 +271,7 @@ export function ProfileTab({
   const { theme, setTheme } = useDashboardTheme();
   const { currency, setCurrency, formatAmount, ratesUnavailable } = useCurrency();
   const [prefError, setPrefError] = useState<string | null>(null);
-
-  const [referralCopied, setReferralCopied] = useState(false);
+  const tCredits = useTranslations("Credits");
 
   const dirty = username !== initialUsername || pseudo !== initialPseudo;
 
@@ -330,17 +334,6 @@ export function ProfileTab({
       await setCurrency(next as CurrencyCode);
     } catch (err) {
       setPrefError(err instanceof Error ? err.message : t("preferences.currencyError"));
-    }
-  };
-
-  const referralLink = `polypips.app/ref/${pseudo.trim() || t("referral.fallbackPseudo")}`;
-  const handleCopyReferral = async () => {
-    try {
-      await navigator.clipboard.writeText(`https://${referralLink}`);
-      setReferralCopied(true);
-      setTimeout(() => setReferralCopied(false), 2000);
-    } catch (err) {
-      console.error("[profile-tab] clipboard write failed", err);
     }
   };
 
@@ -652,40 +645,50 @@ export function ProfileTab({
           <ActivityRow icon={Wallet} label={t("activity.walletsFollowed")} value={activity.walletsFollowedCount} />
         </Card>
 
-        <Card title={t("referral.title")}>
-          <p className="text-sm leading-relaxed text-dash-text-tertiary">
-            {t("referral.comingBack")}
-          </p>
-          <div className="flex items-center gap-2 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-2.5">
-            <span className="flex-1 truncate text-sm text-dash-text-tertiary">{referralLink}</span>
-            <button
-              type="button"
-              onClick={handleCopyReferral}
-              aria-label={t("referral.copyAria")}
-              className="shrink-0 text-dash-text-tertiary transition-colors hover:text-dash-text"
-            >
-              {referralCopied ? (
-                <Check className="h-4 w-4 text-emerald-400" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5">
-              <p className="text-[11px] font-medium text-dash-text-quaternary">{t("referral.referrals")}</p>
-              <p className="mt-0.5 text-sm font-bold text-dash-text">0</p>
-            </div>
-            <div className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5">
-              <p className="text-[11px] font-medium text-dash-text-quaternary">{t("referral.earnings")}</p>
-              <p className="mt-0.5 text-sm font-bold text-dash-text">{formatAmount(0)}</p>
+        <Card title={t("credits.title")}>
+          <div className="flex items-center gap-3 rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
+              <BrainCircuit className="h-4 w-4" strokeWidth={2} />
+            </span>
+            <div>
+              <p className="text-[11px] font-medium text-dash-text-quaternary">
+                {t("credits.balanceLabel")}
+              </p>
+              <p className="text-sm font-bold text-dash-text">
+                {creditBalance} {tCredits("balanceUnit", { count: creditBalance })}
+              </p>
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            {CREDIT_PACK_ORDER.map((packId) => {
+              const pack = CREDIT_PACKS[packId];
+              return (
+                <div
+                  key={packId}
+                  className="rounded-xl border border-dash-border bg-dash-surface-alt px-3 py-2.5"
+                >
+                  <p className="truncate text-xs font-semibold text-dash-text">
+                    {tCredits(`packs.${packId}.name`)}
+                  </p>
+                  <p className="mt-0.5 text-sm font-bold text-dash-text">
+                    {formatAmount(pack.priceCents / 100)}
+                  </p>
+                  <p className="text-[11px] text-dash-text-quaternary">
+                    {tCredits("creditsLabel", { count: pack.credits })}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <ReferralCard referralSlug={referralSlug} />
+
           <Link
-            href="/partners"
+            href="/dashboard/credits"
             className="text-center text-sm font-semibold text-brand-400 transition-colors hover:text-brand-300"
           >
-            {t("referral.partnersCta")}
+            {t("credits.viewAllCta")}
           </Link>
         </Card>
 

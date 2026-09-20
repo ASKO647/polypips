@@ -3,11 +3,22 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { ArrowDownCircle, ArrowUpCircle, BrainCircuit, Check, Loader2, RotateCcw, X } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  BrainCircuit,
+  Check,
+  Gift,
+  Loader2,
+  RotateCcw,
+  Users,
+  X,
+} from "lucide-react";
 import { useCurrency } from "@/providers/currency-provider";
 import { CREDIT_PACK_ORDER, CREDIT_PACKS, pricePerCredit, type CreditPackId } from "@/lib/stripe/credit-packs";
 import { formatRelativeTime } from "@/lib/supabase/analyses";
 import type { CreditTransaction } from "@/lib/supabase/credits";
+import { ReferralCard } from "@/components/dashboard/credits/referral-card";
 import { cn } from "@/lib/utils";
 
 function PackCard({ packId, highlight }: { packId: CreditPackId; highlight?: "popular" | "value" }) {
@@ -84,6 +95,8 @@ const TRANSACTION_ICON: Record<CreditTransaction["type"], typeof ArrowUpCircle> 
   purchase: ArrowUpCircle,
   consumption: ArrowDownCircle,
   refund: RotateCcw,
+  welcome: Gift,
+  referral: Users,
 };
 
 function TransactionRow({ tx }: { tx: CreditTransaction }) {
@@ -117,9 +130,11 @@ function TransactionRow({ tx }: { tx: CreditTransaction }) {
 export function CreditsPageContent({
   balance,
   transactions,
+  referralSlug,
 }: {
   balance: number;
   transactions: CreditTransaction[];
+  referralSlug: string | null;
 }) {
   const t = useTranslations("Credits");
   const searchParams = useSearchParams();
@@ -185,6 +200,8 @@ export function CreditsPageContent({
           </p>
         </div>
       </div>
+
+      <ReferralCard referralSlug={referralSlug} />
 
       <div>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-dash-text-tertiary">

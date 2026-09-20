@@ -12,6 +12,7 @@ import { isCancelledSubscription, type SubscriptionRow } from "@/lib/supabase/su
 import type { NotificationItem } from "@/lib/data/notifications";
 
 function DashboardShellInner({
+  userId,
   userEmail,
   displayName,
   avatarUrl,
@@ -21,6 +22,7 @@ function DashboardShellInner({
   creditBalance,
   children,
 }: {
+  userId: string;
   userEmail: string;
   displayName: string;
   avatarUrl: string | null;
@@ -47,7 +49,7 @@ function DashboardShellInner({
 
   return (
     <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg text-dash-text">
-      <DashboardSidebar subscription={subscription} />
+      <DashboardSidebar subscription={subscription} userId={userId} creditBalance={creditBalance} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <DashboardHeader
@@ -79,12 +81,15 @@ function DashboardShellInner({
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         subscription={subscription}
+        userId={userId}
+        creditBalance={creditBalance}
       />
     </div>
   );
 }
 
 export function DashboardShell({
+  userId,
   userEmail,
   displayName,
   avatarUrl,
@@ -95,6 +100,7 @@ export function DashboardShell({
   creditBalance,
   children,
 }: {
+  userId: string;
   userEmail: string;
   displayName: string;
   avatarUrl: string | null;
@@ -109,6 +115,7 @@ export function DashboardShell({
     <DashboardThemeProvider>
       <CurrencyProvider initialCurrency={initialCurrency}>
         <DashboardShellInner
+          userId={userId}
           userEmail={userEmail}
           displayName={displayName}
           avatarUrl={avatarUrl}

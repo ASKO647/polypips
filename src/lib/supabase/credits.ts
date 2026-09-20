@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type CreditTransactionType = "purchase" | "consumption" | "refund";
+export type CreditTransactionType = "purchase" | "consumption" | "refund" | "welcome" | "referral";
 
 export type CreditTransaction = {
   id: string;
