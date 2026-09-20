@@ -79,6 +79,9 @@
       "subscription": {
         "title": "Mon abonnement",
         "planPro": "Pro",
+        "planProPlus": "Pro+",
+        "planUltimate": "Ultimate",
+        "planProLegacy": "Pro (ancienne formule)",
         "planDecouverte": "Découverte",
         "statusTrialing": "Essai",
         "statusActive": "Actif",
@@ -107,7 +110,20 @@
       "connectedTools": {
         "title": "Mes outils connectés",
         "empty": "Aucun outil connecté. Connectez vos comptes pour une expérience complète.",
-        "manage": "Gérer les connexions"
+        "manage": "Gérer les connexions",
+        "comingSoonBadge": "Bientôt disponible",
+        "moonx": {
+          "title": "Connexion MoonX (lecture seule)",
+          "description": "Consultez vos positions et votre solde MoonX directement dans Polypips, et recevez des alertes basées sur nos analyses IA — jamais d'exécution d'ordre automatique. En cours de développement."
+        },
+        "weeklyReport": {
+          "title": "Rapport IA hebdomadaire",
+          "description": "Un résumé automatique de vos analyses de la semaine, généré par l'IA. En cours de développement."
+        },
+        "multiPlatform": {
+          "title": "Connexions multi-plateformes",
+          "description": "Connectez plusieurs plateformes de trading au-delà de MoonX. En cours de développement."
+        }
       },
       "dangerZone": {
         "title": "Zone dangereuse",

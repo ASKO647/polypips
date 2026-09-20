@@ -25,6 +25,7 @@ export default async function TradingSelectionPage() {
     <TradingSelectionFlow
       analyses={analyses}
       hasActiveSubscription={hasActiveAccess(subscription)}
+      currentPlan={hasActiveAccess(subscription) ? subscription!.plan : null}
       lastSyncedAt={lastSyncedAt}
     />
   );

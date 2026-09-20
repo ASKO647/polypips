@@ -2,35 +2,77 @@
   "Plans": {
     "decouverte": {
       "name": "Offre découverte",
-      "tagline": "L'entrée idéale pour tester Polypips",
+      "tagline": "L'entrée idéale pour tester Polypips — accès Pro pendant 3 jours",
       "price": "0,99 €",
       "priceSuffix": "pendant 3 jours",
-      "afterOffer": "Puis 29,99 € / mois",
+      "afterOffer": "Puis 29,99 € / mois (formule Pro)",
       "features": [
-        "Accès complet à toutes les fonctionnalités",
-        "Analyses IA illimitées",
-        "Portefeuilles suivis illimités",
-        "Analyse IA Sport & Trading",
-        "Messages Coach IA illimités",
-        "Sélections IA illimitées"
+        "10 analyses IA par jour (Polymarket, Sport, Trading)",
+        "Marchés/Sport/Trading Sélectionnés en consultation",
+        "Smart Wallet : jusqu'à 3 portefeuilles suivis",
+        "Coach IA : 20 messages par semaine",
+        "Accès complet à la Communauté"
       ],
       "cta": "Débutez pour 0,99 €"
     },
     "pro": {
       "name": "Polypips Pro",
-      "tagline": "L'accès complet à Polypips, sans limites",
+      "tagline": "L'essentiel pour analyser sérieusement",
       "price": "29,99 €",
       "priceSuffix": "/ mois",
-      "originalPrice": "49,99 €",
       "features": [
-        "Analyses IA illimitées",
-        "Portefeuilles suivis illimités",
-        "Analyse IA Sport & Trading",
-        "Messages Coach IA illimités",
-        "Sélections IA illimitées",
-        "Communauté & historique complet"
+        "10 analyses IA par jour (Polymarket, Sport, Trading)",
+        "Marchés/Sport/Trading Sélectionnés en consultation",
+        "Smart Wallet : jusqu'à 3 portefeuilles suivis",
+        "Coach IA : 20 messages par semaine",
+        "Accès complet à la Communauté"
       ],
       "cta": "Choisir Pro"
+    },
+    "pro_plus": {
+      "name": "Polypips Pro+",
+      "tagline": "Pour analyser sans compter",
+      "price": "49,99 €",
+      "priceSuffix": "/ mois",
+      "features": [
+        "Analyses IA illimitées",
+        "Sélections illimitées + scan à la demande",
+        "Smart Wallet : jusqu'à 15 portefeuilles suivis",
+        "Coach IA illimité",
+        "15 crédits Analyse Approfondie inclus chaque mois",
+        "Connexion MoonX en lecture seule (bientôt disponible)",
+        "Export PDF illimité des analyses"
+      ],
+      "cta": "Choisir Pro+"
+    },
+    "pro_legacy": {
+      "name": "Pro (ancienne formule)",
+      "tagline": "Vos avantages illimités d'origine, conservés tant que vous restez abonné en continu",
+      "price": "29,99 €",
+      "priceSuffix": "/ mois",
+      "features": [
+        "Analyses IA illimitées",
+        "Sélections illimitées + scan à la demande",
+        "Smart Wallet illimité",
+        "Coach IA illimité",
+        "Accès complet à la Communauté"
+      ],
+      "cta": "Formule actuelle"
+    },
+    "ultimate": {
+      "name": "Polypips Ultimate",
+      "tagline": "L'expérience Polypips complète, sans aucune limite",
+      "price": "79,99 €",
+      "priceSuffix": "/ mois",
+      "features": [
+        "Tout Pro+, sans aucune limite",
+        "Smart Wallet illimité",
+        "50 crédits Analyse Approfondie inclus chaque mois",
+        "Rapport IA hebdomadaire automatique (bientôt disponible)",
+        "Connexions multi-plateformes de trading (bientôt disponible)",
+        "Badge Ultimate dans la Communauté"
+      ],
+      "cta": "Choisir Ultimate"
     }
   },
   "PricingPlanButton": {
@@ -40,13 +82,14 @@
   },
   "StripeCheckout": {
     "discoveryProductName": "Polypips — Période découverte (3 jours)",
-    "discoveryProductDescription": "Accès complet à Polypips pendant 3 jours, facturé 0,99 € dès aujourd'hui. Puis 29,99 €/mois, sauf annulation avant la fin des 3 jours.",
+    "discoveryProductDescription": "Accès Pro à Polypips pendant 3 jours, facturé 0,99 € dès aujourd'hui. Puis 29,99 €/mois, sauf annulation avant la fin des 3 jours.",
     "discoverySubmitMessage": "**0,99 € facturés aujourd'hui** pour votre période découverte de 3 jours — ce n'est pas un essai gratuit. Puis 29,99 €/mois, résiliable à tout moment avant la fin des 3 jours pour ne rien payer de plus.",
     "errors": {
       "invalid_input": "Corps de requête JSON invalide.",
       "unknown_plan": "Plan inconnu.",
       "unauthorized": "Connectez-vous pour continuer.",
-      "stripe_error": "Impossible de démarrer le paiement. Réessayez."
+      "stripe_error": "Impossible de démarrer le paiement. Réessayez.",
+      "already_on_plan": "Vous êtes déjà sur cette formule."
     }
   }
 }

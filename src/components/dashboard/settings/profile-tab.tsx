@@ -25,6 +25,7 @@ import { uploadAvatar, validateAvatarFile } from "@/lib/supabase/avatar";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { SettingsToggle } from "@/components/dashboard/settings/settings-toggle";
 import { ReferralCard } from "@/components/dashboard/credits/referral-card";
+import { TierLockedOverlay } from "@/components/dashboard/tier-locked-overlay";
 import { useDashboardTheme } from "@/providers/dashboard-theme-provider";
 import { useCurrency, SUPPORTED_CURRENCIES, type CurrencyCode } from "@/providers/currency-provider";
 import { Link } from "@/i18n/navigation";
@@ -207,6 +208,17 @@ function getSubscriptionStatusLabel(
   return labels[status];
 }
 
+function getPlanBadgeLabel(t: ProfileTranslator, planId: string): string {
+  const labels: Record<string, string> = {
+    pro: t("subscription.planPro"),
+    pro_plus: t("subscription.planProPlus"),
+    ultimate: t("subscription.planUltimate"),
+    pro_legacy: t("subscription.planProLegacy"),
+    decouverte: t("subscription.planDecouverte"),
+  };
+  return labels[planId] ?? t("subscription.planDecouverte");
+}
+
 export function ProfileTab({
   email,
   initialUsername,
@@ -385,7 +397,7 @@ export function ProfileTab({
                 </span>
                 {currentPlan && currentPlan.id !== "decouverte" && (
                   <span className="rounded-full bg-brand-500/15 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-brand-400">
-                    {t("premiumBadge")}
+                    {getPlanBadgeLabel(t, currentPlan.id)}
                   </span>
                 )}
               </div>
@@ -583,7 +595,7 @@ export function ProfileTab({
             <>
               <div className="flex items-center gap-3">
                 <span className="rounded-lg bg-brand-500/15 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-brand-400">
-                  {currentPlan.id === "pro" ? t("subscription.planPro") : t("subscription.planDecouverte")}
+                  {getPlanBadgeLabel(t, currentPlan.id)}
                 </span>
                 <span className="font-display text-xl font-bold text-dash-text">
                   {formatAmount(currentPlan.priceEur)}
@@ -698,6 +710,50 @@ export function ProfileTab({
             <p>{t("connectedTools.empty")}</p>
           </div>
           <ComingSoonInlineButton label={t("connectedTools.manage")} />
+
+          <TierLockedOverlay
+            currentPlan={currentPlan?.id ?? null}
+            minRequiredPlan="pro_plus"
+            contentClassName="flex flex-col gap-2 rounded-xl border border-dash-border bg-dash-surface-alt p-4"
+          >
+            <div className="flex items-start gap-2.5">
+              <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" strokeWidth={2} />
+              <div>
+                <p className="text-sm font-semibold text-dash-text">{t("connectedTools.moonx.title")}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-dash-text-quaternary">
+                  {t("connectedTools.moonx.description")}
+                </p>
+              </div>
+            </div>
+            <span className="w-fit rounded-full bg-dash-surface-strong px-2.5 py-1 text-[11px] font-semibold text-dash-text-secondary">
+              {t("connectedTools.comingSoonBadge")}
+            </span>
+          </TierLockedOverlay>
+
+          <TierLockedOverlay
+            currentPlan={currentPlan?.id ?? null}
+            minRequiredPlan="ultimate"
+            contentClassName="flex flex-col gap-3"
+          >
+            <div className="flex flex-col gap-2 rounded-xl border border-dash-border bg-dash-surface-alt p-4">
+              <p className="text-sm font-semibold text-dash-text">{t("connectedTools.weeklyReport.title")}</p>
+              <p className="text-xs leading-relaxed text-dash-text-quaternary">
+                {t("connectedTools.weeklyReport.description")}
+              </p>
+              <span className="w-fit rounded-full bg-dash-surface-strong px-2.5 py-1 text-[11px] font-semibold text-dash-text-secondary">
+                {t("connectedTools.comingSoonBadge")}
+              </span>
+            </div>
+            <div className="flex flex-col gap-2 rounded-xl border border-dash-border bg-dash-surface-alt p-4">
+              <p className="text-sm font-semibold text-dash-text">{t("connectedTools.multiPlatform.title")}</p>
+              <p className="text-xs leading-relaxed text-dash-text-quaternary">
+                {t("connectedTools.multiPlatform.description")}
+              </p>
+              <span className="w-fit rounded-full bg-dash-surface-strong px-2.5 py-1 text-[11px] font-semibold text-dash-text-secondary">
+                {t("connectedTools.comingSoonBadge")}
+              </span>
+            </div>
+          </TierLockedOverlay>
         </Card>
 
         <Card title={t("dangerZone.title")} className="border-rose-500/20">

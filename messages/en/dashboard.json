@@ -99,8 +99,33 @@
       "resubscribe": "Resubscribe",
       "unlockCta": "Unlock — Start for $0.99"
     },
+    "TierGate": {
+      "redirecting": "Redirecting...",
+      "defaultMessage": {
+        "pro": "This feature requires a Polypips Pro subscription.",
+        "pro_plus": "This feature is reserved for Pro+ and Ultimate subscribers.",
+        "ultimate": "This feature is exclusive to Ultimate subscribers."
+      },
+      "cta": {
+        "pro": "Choose Pro",
+        "pro_plus": "Upgrade to Pro+",
+        "ultimate": "Upgrade to Ultimate"
+      }
+    },
     "ComingSoonBlur": {
       "eyebrow": "Coming soon"
+    },
+    "OnDemandScan": {
+      "button": "Scan now",
+      "scanning": "Scanning...",
+      "success": "Selection refreshed!",
+      "lockedTooltip": "Pro+ and Ultimate only",
+      "errors": {
+        "unauthorized": "Please sign in to continue.",
+        "planRequired": "On-demand scan is reserved for Pro+ and Ultimate subscribers.",
+        "cooldown": "Selection was just refreshed — try again in {minutes} min.",
+        "unknown": "Couldn't start the scan. Please try again shortly."
+      }
     },
     "SyncCountdown": {
       "defaultLabel": "Next markets in",

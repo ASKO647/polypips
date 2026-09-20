@@ -6,16 +6,20 @@ import { Sparkles } from "lucide-react";
 import { SportMatchResult } from "@/components/dashboard/sports/sport-match-result";
 import { SportMatchCard } from "@/components/dashboard/sports/sport-match-card";
 import { SyncCountdown } from "@/components/dashboard/sync-countdown";
+import { OnDemandScanButton } from "@/components/dashboard/on-demand-scan-button";
 import type { SportMatchAnalysis } from "@/lib/data/sports-analysis";
 import { SYNC_SPORT_SELECTION_INTERVAL_MINUTES } from "@/lib/data/sports-analysis";
+import type { PlanId } from "@/lib/stripe/plans";
 
 export function SportSelectionFlow({
   matches,
   hasActiveSubscription,
+  currentPlan,
   lastSyncedAt,
 }: {
   matches: SportMatchAnalysis[];
   hasActiveSubscription: boolean;
+  currentPlan: PlanId | null;
   lastSyncedAt: string | null;
 }) {
   const t = useTranslations("Sport.Selection");
@@ -43,11 +47,14 @@ export function SportSelectionFlow({
             {t("subtitle")}
           </p>
         </div>
-        <SyncCountdown
-          lastSyncedAt={lastSyncedAt}
-          intervalMinutes={SYNC_SPORT_SELECTION_INTERVAL_MINUTES}
-          label={t("countdownLabel")}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <SyncCountdown
+            lastSyncedAt={lastSyncedAt}
+            intervalMinutes={SYNC_SPORT_SELECTION_INTERVAL_MINUTES}
+            label={t("countdownLabel")}
+          />
+          <OnDemandScanButton feature="sports" currentPlan={currentPlan} />
+        </div>
       </div>
 
       {matches.length === 0 ? (

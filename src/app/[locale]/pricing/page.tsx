@@ -18,8 +18,15 @@ export default async function PricingPage() {
   const t = await getTranslations("Pages.Pricing");
   const tPlans = await getTranslations("Plans");
   const plans = getPricingPlans(tPlans);
-  const decouverte = plans.find((p) => p.id === "decouverte") ?? plans[0];
-  const pro = plans.find((p) => p.id === "pro") ?? plans[1];
+  // "decouverte" is the entry-point hook (3-day Pro access for 0,99 €),
+  // shown first — the 3 real recurring tiers (pro/pro_plus/ultimate)
+  // follow in ascending order regardless of PLAN_METADATA's own order.
+  const orderedPlans = [
+    plans.find((p) => p.id === "decouverte"),
+    plans.find((p) => p.id === "pro"),
+    plans.find((p) => p.id === "pro_plus"),
+    plans.find((p) => p.id === "ultimate"),
+  ].filter((p): p is NonNullable<typeof p> => p !== undefined);
 
   return (
     <MarketingPageShell>
@@ -30,8 +37,8 @@ export default async function PricingPage() {
       />
 
       <Container className="pb-20 sm:pb-28">
-        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
-          {[decouverte, pro].map((plan) => (
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+          {orderedPlans.map((plan) => (
             <div
               key={plan.id}
               className={cn(
@@ -54,11 +61,6 @@ export default async function PricingPage() {
                 {plan.afterOffer && (
                   <p className="mt-1 text-xs leading-relaxed text-body-soft">{plan.afterOffer}</p>
                 )}
-                {plan.originalPrice && (
-                  <p className="mt-1 text-xs leading-relaxed text-body-soft">
-                    <span className="line-through">{plan.originalPrice}</span> {t("indicative")}
-                  </p>
-                )}
               </div>
 
               <ul className="flex flex-col gap-3">
@@ -68,10 +70,10 @@ export default async function PricingPage() {
               </ul>
 
               <PricingPlanButton
-                planId={plan.id === "pro" ? "pro" : "decouverte"}
+                planId={plan.id}
                 label={plan.cta}
                 variant={plan.highlighted ? "primary" : "outline"}
-                className="h-[54px] w-full"
+                className="mt-auto h-[54px] w-full"
               />
             </div>
           ))}

@@ -1,6 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type CreditTransactionType = "purchase" | "consumption" | "refund" | "welcome" | "referral";
+export type CreditTransactionType =
+  | "purchase"
+  | "consumption"
+  | "refund"
+  | "welcome"
+  | "referral"
+  | "plan_grant"
+  | "plan_reset";
 
 export type CreditTransaction = {
   id: string;
@@ -28,6 +35,13 @@ export async function fetchCreditBalance(supabase: SupabaseClient): Promise<numb
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return 0;
+
+  // Best-effort: grants this billing cycle's included Deep Analysis
+  // credits (Pro+/Ultimate) if the cycle just rolled over and nobody has
+  // triggered the sync yet (see sync_plan_credits_cycle in the 3-tier
+  // pricing migration) — a no-op for every other plan/state. Never blocks
+  // the balance read on failure.
+  await supabase.rpc("ensure_plan_credits_grant");
 
   const { data } = await supabase
     .from("user_credits")

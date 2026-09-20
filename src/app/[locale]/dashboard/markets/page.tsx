@@ -25,6 +25,7 @@ export default async function MarketsPage() {
     <MarketsFlow
       markets={markets}
       hasActiveSubscription={hasActiveAccess(subscription)}
+      currentPlan={hasActiveAccess(subscription) ? subscription!.plan : null}
       lastSyncedAt={lastSyncedAt}
     />
   );

@@ -58,6 +58,13 @@ export function SubscriptionPlans({
         body: JSON.stringify({ plan: plan.id, locale }),
       });
       const data = await response.json();
+      if (data.changed) {
+        // Plan change applied in place on the existing subscription
+        // (proration handled by Stripe) — no Checkout redirect, just
+        // reload so this page reflects the new plan.
+        window.location.assign(`/${locale}/dashboard/settings?checkout=success`);
+        return;
+      }
       if (!response.ok || !data.url) {
         throw new Error(data.message || t("checkoutError"));
       }
@@ -74,13 +81,15 @@ export function SubscriptionPlans({
         <p className="rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3 text-sm text-dash-text-secondary">
           {cancelAtPeriodEnd
             ? t("cancelledNotice", { date: periodEndLabel ?? t("cancelledNoticeFallback") })
-            : t("activeNotice")}
+            : currentPlanId === "pro_legacy"
+              ? t("legacyNotice")
+              : t("activeNotice")}
         </p>
       )}
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {visiblePlans.map((plan) => {
           const isCurrent = hasAccess && !cancelAtPeriodEnd && plan.id === currentPlanId;
           return (

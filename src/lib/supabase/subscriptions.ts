@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getTranslations } from "next-intl/server";
 import type { PlanId } from "@/lib/stripe/plans";
-import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
+import { getPlanDisplay, type PricingPlan } from "@/lib/data/pricing";
 
 export type SubscriptionStatus = "trialing" | "active" | "canceled" | "past_due";
 
@@ -120,8 +120,7 @@ export async function getEffectivePlan(
   const hasAccess = isActiveStatus(data?.status) && !data?.cancel_at_period_end;
   const planId = hasAccess ? (data!.plan as PlanId) : "decouverte";
   const t = await getTranslations("Plans");
-  const plans = getPricingPlans(t);
-  return plans.find((p) => p.id === planId) ?? plans[0];
+  return getPlanDisplay(t, planId);
 }
 
 /** Days left in the discovery trial (current_period_end doubles as the

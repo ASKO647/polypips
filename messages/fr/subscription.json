@@ -8,7 +8,8 @@
     "currentPlan": "Plan actuel",
     "cancelledNotice": "Votre abonnement est annulé — l'accès reste actif jusqu'au {date}.",
     "cancelledNoticeFallback": "terme de la période payée",
-    "activeNotice": "Vous avez déjà un abonnement actif. Choisir un plan ci-dessous remplace votre abonnement en cours.",
+    "activeNotice": "Vous avez déjà un abonnement actif. Choisir un plan ci-dessous met à jour votre abonnement en cours (au prorata).",
+    "legacyNotice": "Vous bénéficiez de l'ancienne formule Pro, avec des avantages illimités conservés tant que vous restez abonné en continu. Choisir une formule ci-dessous remplacera cet avantage par les limites de la nouvelle formule sélectionnée.",
     "genericError": "Une erreur est survenue.",
     "checkoutError": "Impossible de démarrer le paiement.",
     "backToProfile": "← Retour au profil"

@@ -8,7 +8,8 @@
     "currentPlan": "Current plan",
     "cancelledNotice": "Your subscription is cancelled — access stays active until {date}.",
     "cancelledNoticeFallback": "the end of the paid period",
-    "activeNotice": "You already have an active subscription. Choosing a plan below replaces your current subscription.",
+    "activeNotice": "You already have an active subscription. Choosing a plan below updates your current subscription (prorated).",
+    "legacyNotice": "You're on the legacy Pro plan, with unlimited perks kept for as long as you stay continuously subscribed. Choosing a plan below will replace that with the new plan's limits.",
     "genericError": "Something went wrong.",
     "checkoutError": "Unable to start checkout.",
     "backToProfile": "← Back to profile"

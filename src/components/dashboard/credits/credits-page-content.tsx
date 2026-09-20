@@ -11,6 +11,7 @@ import {
   Gift,
   Loader2,
   RotateCcw,
+  Sparkles,
   Users,
   X,
 } from "lucide-react";
@@ -97,6 +98,8 @@ const TRANSACTION_ICON: Record<CreditTransaction["type"], typeof ArrowUpCircle> 
   refund: RotateCcw,
   welcome: Gift,
   referral: Users,
+  plan_grant: Sparkles,
+  plan_reset: RotateCcw,
 };
 
 function TransactionRow({ tx }: { tx: CreditTransaction }) {

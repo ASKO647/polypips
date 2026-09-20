@@ -6,16 +6,20 @@ import { CandlestickChart } from "lucide-react";
 import { TradingAnalysisResult } from "@/components/dashboard/trading/trading-analysis-result";
 import { TradingPairCard } from "@/components/dashboard/trading/trading-pair-card";
 import { SyncCountdown } from "@/components/dashboard/sync-countdown";
+import { OnDemandScanButton } from "@/components/dashboard/on-demand-scan-button";
 import type { TradingChartAnalysis } from "@/lib/data/trading-analysis";
 import { SYNC_TRADING_SELECTION_INTERVAL_MINUTES } from "@/lib/data/trading-analysis";
+import type { PlanId } from "@/lib/stripe/plans";
 
 export function TradingSelectionFlow({
   analyses,
   hasActiveSubscription,
+  currentPlan,
   lastSyncedAt,
 }: {
   analyses: TradingChartAnalysis[];
   hasActiveSubscription: boolean;
+  currentPlan: PlanId | null;
   lastSyncedAt: string | null;
 }) {
   const t = useTranslations("Trading.Selection");
@@ -43,11 +47,14 @@ export function TradingSelectionFlow({
             {t("subtitle")}
           </p>
         </div>
-        <SyncCountdown
-          lastSyncedAt={lastSyncedAt}
-          intervalMinutes={SYNC_TRADING_SELECTION_INTERVAL_MINUTES}
-          label={t("countdownLabel")}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <SyncCountdown
+            lastSyncedAt={lastSyncedAt}
+            intervalMinutes={SYNC_TRADING_SELECTION_INTERVAL_MINUTES}
+            label={t("countdownLabel")}
+          />
+          <OnDemandScanButton feature="trading" currentPlan={currentPlan} />
+        </div>
       </div>
 
       {analyses.length === 0 ? (

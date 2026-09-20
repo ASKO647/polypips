@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { getStripe } from "@/lib/stripe/server";
-import { isPlanId, PLAN_PRICE_IDS, type PlanId } from "@/lib/stripe/plans";
+import { isCheckoutPlanId, PLAN_PRICE_IDS, type PayingPlanId } from "@/lib/stripe/plans";
 import { createClient } from "@/lib/supabase/server";
 import { routing } from "@/i18n/routing";
 
@@ -36,13 +36,16 @@ export async function POST(request: Request) {
   // getTranslations accepts it explicitly here.
   const t = await getTranslations({ locale, namespace: "StripeCheckout" });
 
-  if (!body.plan || !isPlanId(body.plan)) {
+  // "pro_legacy" is deliberately excluded by isCheckoutPlanId — it can
+  // never be requested by a client, only assigned by the one-time legacy
+  // migration.
+  if (!body.plan || !isCheckoutPlanId(body.plan)) {
     return NextResponse.json(
       { error: "invalid_input", message: t("errors.unknown_plan") },
       { status: 400 }
     );
   }
-  const plan: PlanId = body.plan;
+  const plan: "decouverte" | PayingPlanId = body.plan;
 
   const supabase = await createClient();
   const {
@@ -66,7 +69,7 @@ export async function POST(request: Request) {
   // discovery offer was already consumed once.
   const { data: existing } = await supabase
     .from("subscriptions")
-    .select("stripe_customer_id")
+    .select("stripe_customer_id, stripe_subscription_id, plan, status, cancel_at_period_end")
     .eq("user_id", user.id)
     .maybeSingle();
   let existingCustomerId = existing?.stripe_customer_id as string | null | undefined;
@@ -100,10 +103,58 @@ export async function POST(request: Request) {
     }
   }
 
+  // A user who already has a real, currently-active/trialing subscription
+  // never gets a second Checkout Session created for them — that would
+  // leave them with two live Stripe subscriptions billing in parallel.
+  // Requesting a different paid tier while already subscribed is a PLAN
+  // CHANGE, handled entirely server-side by updating the existing
+  // subscription's price in place (Stripe prorates automatically). The
+  // discovery offer ("decouverte") never applies here: hasSubscribedBefore
+  // below already forces it to "pro" for anyone with an existing row.
+  const hasActiveAccessNow =
+    existing !== null &&
+    (existing.status === "active" || existing.status === "trialing") &&
+    !existing.cancel_at_period_end;
+
+  if (hasActiveAccessNow && plan !== "decouverte" && existing!.stripe_subscription_id) {
+    if (existing!.plan === plan) {
+      return NextResponse.json(
+        { error: "already_on_plan", message: t("errors.already_on_plan") },
+        { status: 409 }
+      );
+    }
+    try {
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        existing!.stripe_subscription_id
+      );
+      const itemId = stripeSubscription.items.data[0]?.id;
+      if (!itemId) throw new Error("Subscription has no line item to update.");
+
+      await stripe.subscriptions.update(existing!.stripe_subscription_id, {
+        items: [{ id: itemId, price: PLAN_PRICE_IDS[plan] }],
+        proration_behavior: "create_prorations",
+        metadata: { ...stripeSubscription.metadata, plan },
+      });
+
+      return NextResponse.json({ changed: true });
+    } catch (error) {
+      console.error("[stripe/checkout] plan change failed", error);
+      return NextResponse.json(
+        { error: "stripe_error", message: t("errors.stripe_error") },
+        { status: 502 }
+      );
+    }
+  }
+
   // A user who has ever had a subscription always pays full price
   // directly, regardless of what the client requested — the discovery
   // offer can only ever be granted once per user.
-  const effectivePlan: PlanId = hasSubscribedBefore ? "pro" : plan;
+  const effectivePlan: "decouverte" | PayingPlanId = hasSubscribedBefore
+    ? plan === "decouverte"
+      ? "pro"
+      : plan
+    : plan;
+  const billedPlan: PayingPlanId = effectivePlan === "decouverte" ? "pro" : effectivePlan;
 
   const origin = new URL(request.url).origin;
 
@@ -111,7 +162,7 @@ export async function POST(request: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
-        { price: PLAN_PRICE_IDS.pro, quantity: 1 },
+        { price: PLAN_PRICE_IDS[billedPlan], quantity: 1 },
         ...(effectivePlan === "decouverte"
           ? [
               {

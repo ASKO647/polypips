@@ -2,35 +2,77 @@
   "Plans": {
     "decouverte": {
       "name": "Discovery offer",
-      "tagline": "The ideal way to try Polypips",
+      "tagline": "The ideal way to try Polypips — Pro access for 3 days",
       "price": "$0.99",
       "priceSuffix": "for 3 days",
-      "afterOffer": "Then $29.99 / month",
+      "afterOffer": "Then $29.99 / month (Pro plan)",
       "features": [
-        "Full access to every feature",
-        "Unlimited AI analyses",
-        "Unlimited tracked wallets",
-        "AI Sport & Trading analysis",
-        "Unlimited AI Coach messages",
-        "Unlimited AI-selected picks"
+        "10 AI analyses per day (Polymarket, Sport, Trading)",
+        "View-only Polymarket/Sport/Trading Sélectionnés",
+        "Smart Wallet: up to 3 tracked wallets",
+        "AI Coach: 20 messages per week",
+        "Full access to the Community"
       ],
       "cta": "Start for $0.99"
     },
     "pro": {
       "name": "Polypips Pro",
-      "tagline": "Full access to Polypips, no limits",
+      "tagline": "The essentials for serious analysis",
       "price": "$29.99",
       "priceSuffix": "/ month",
-      "originalPrice": "$49.99",
       "features": [
-        "Unlimited AI analyses",
-        "Unlimited tracked wallets",
-        "AI Sport & Trading analysis",
-        "Unlimited AI Coach messages",
-        "Unlimited AI-selected picks",
-        "Community & full history"
+        "10 AI analyses per day (Polymarket, Sport, Trading)",
+        "View-only Polymarket/Sport/Trading Sélectionnés",
+        "Smart Wallet: up to 3 tracked wallets",
+        "AI Coach: 20 messages per week",
+        "Full access to the Community"
       ],
       "cta": "Choose Pro"
+    },
+    "pro_plus": {
+      "name": "Polypips Pro+",
+      "tagline": "Analyze without counting",
+      "price": "$49.99",
+      "priceSuffix": "/ month",
+      "features": [
+        "Unlimited AI analyses",
+        "Unlimited Sélectionnés + on-demand scan",
+        "Smart Wallet: up to 15 tracked wallets",
+        "Unlimited AI Coach",
+        "15 Deep Analysis credits included every month",
+        "Read-only MoonX connection (coming soon)",
+        "Unlimited PDF export of analyses"
+      ],
+      "cta": "Choose Pro+"
+    },
+    "pro_legacy": {
+      "name": "Pro (legacy plan)",
+      "tagline": "Your original unlimited perks, kept for as long as you stay continuously subscribed",
+      "price": "$29.99",
+      "priceSuffix": "/ month",
+      "features": [
+        "Unlimited AI analyses",
+        "Unlimited Sélectionnés + on-demand scan",
+        "Unlimited Smart Wallet",
+        "Unlimited AI Coach",
+        "Full access to the Community"
+      ],
+      "cta": "Current plan"
+    },
+    "ultimate": {
+      "name": "Polypips Ultimate",
+      "tagline": "The full Polypips experience, with no limits at all",
+      "price": "$79.99",
+      "priceSuffix": "/ month",
+      "features": [
+        "Everything in Pro+, with no limits at all",
+        "Unlimited Smart Wallet",
+        "50 Deep Analysis credits included every month",
+        "Automatic weekly AI report (coming soon)",
+        "Multi-platform trading connections (coming soon)",
+        "Ultimate badge in the Community"
+      ],
+      "cta": "Choose Ultimate"
     }
   },
   "PricingPlanButton": {
@@ -40,13 +82,14 @@
   },
   "StripeCheckout": {
     "discoveryProductName": "Polypips — Discovery period (3 days)",
-    "discoveryProductDescription": "Full access to Polypips for 3 days, billed €0.99 today. Then €29.99/month unless cancelled before the 3 days end.",
+    "discoveryProductDescription": "Pro access to Polypips for 3 days, billed €0.99 today. Then €29.99/month unless cancelled before the 3 days end.",
     "discoverySubmitMessage": "**€0.99 charged today** for your 3-day discovery period — this is not a free trial. Then €29.99/month, cancellable anytime before the 3 days end to pay nothing further.",
     "errors": {
       "invalid_input": "Invalid JSON request body.",
       "unknown_plan": "Unknown plan.",
       "unauthorized": "Please sign in to continue.",
-      "stripe_error": "Unable to start checkout. Please try again."
+      "stripe_error": "Unable to start checkout. Please try again.",
+      "already_on_plan": "You're already on this plan."
     }
   }
 }

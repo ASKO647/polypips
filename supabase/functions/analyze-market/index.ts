@@ -22,6 +22,7 @@ import {
   refundDeepAnalysisCredit,
   InsufficientCreditsError,
 } from "../_shared/deep-analysis-credits.ts";
+import { DAILY_ANALYSIS_LIMITS, countCombinedDailyAnalyses } from "../_shared/plan-quotas.ts";
 
 type AnalyzeRequest =
   | { type: "link"; link: string; depth?: AnalysisDepth }
@@ -34,15 +35,6 @@ function parseDepth(value: unknown): AnalysisDepth {
 /** Steps are reported as they genuinely complete on the server — the
  * frontend renders these events directly instead of simulating delays. */
 type ProgressStep = "fetching_market" | "calling_ai" | "receiving_result";
-
-/** Both real plans (decouverte and pro) are full-access, unlimited tiers —
- * mirrors PRICING_PLANS in src/lib/data/pricing.ts, duplicated here because
- * this Edge Function runs on Deno and can't import from the Next.js app's
- * src tree. Keep these two in sync by hand. */
-const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
-  decouverte: null,
-  pro: null,
-};
 
 /** A user with NO row in `subscriptions` at all (never paid, or a lapsed
  * subscription) still gets to run real analyses up to this ceiling, so the
@@ -178,14 +170,11 @@ Deno.serve(async (req) => {
           : FREE_DEMO_DAILY_LIMIT;
 
         if (dailyLimit !== null) {
-          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-          const { count } = await supabase
-            .from("analyses")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .gte("created_at", since);
+          // Combined across Polymarket/Sport/Trading — one shared quota,
+          // not one per universe. See plan-quotas.ts.
+          const count = await countCombinedDailyAnalyses(authHeader, user.id);
 
-          if ((count ?? 0) >= dailyLimit) {
+          if (count >= dailyLimit) {
             emitErrorAndClose(
               "limit_reached",
               hasAccess

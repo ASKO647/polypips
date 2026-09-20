@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { AiServiceError, streamCoachReply, type ChatMessage } from "./anthropic-chat.ts";
+import { WEEKLY_COACH_MESSAGE_LIMITS } from "../_shared/plan-quotas.ts";
 
 type ChatRequest = {
   conversationId: string | null;
@@ -23,15 +24,6 @@ type AnalysisRow = {
   risks: string[];
   what_could_change: string;
   created_at: string;
-};
-
-/** Both real plans (decouverte and pro) are full-access, unlimited tiers —
- * mirrors PRICING_PLANS in src/lib/data/pricing.ts, duplicated here because
- * this Edge Function runs on Deno and can't import from the Next.js app's
- * src tree. Keep these two in sync by hand. */
-const WEEKLY_MESSAGE_LIMITS: Record<string, number | null> = {
-  decouverte: null,
-  pro: null,
 };
 
 const SYSTEM_PROMPT_BASE = `Tu es le Coach IA de Polypips, un assistant qui aide les utilisateurs à comprendre les analyses de marchés de prédiction (Polymarket) déjà produites par Polypips, à comparer des marchés entre eux et à discuter des risques.
@@ -189,7 +181,7 @@ Deno.serve(async (req) => {
       }
 
       const effectivePlan = subscriptionRow!.plan;
-      const weeklyLimit = WEEKLY_MESSAGE_LIMITS[effectivePlan] ?? null;
+      const weeklyLimit = WEEKLY_COACH_MESSAGE_LIMITS[effectivePlan] ?? null;
 
       if (weeklyLimit !== null) {
         const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

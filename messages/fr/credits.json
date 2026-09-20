@@ -3,7 +3,7 @@
     "metaTitle": "Crédits — Polypips",
     "title": "Crédits Analyse Approfondie",
     "gaugeLabel": "Crédits",
-    "description": "L'Analyse IA standard reste illimitée avec votre abonnement Pro. Les crédits débloquent en plus l'Analyse Approfondie — un rapport IA plus poussé, disponible sur Polymarket, Sport et Trading.",
+    "description": "Les crédits débloquent l'Analyse Approfondie — un rapport IA plus poussé (Opus, raisonnement étendu), disponible sur Polymarket, Sport et Trading. Pro+ et Ultimate incluent des crédits chaque mois ; achetez un pack pour en obtenir plus, à tout moment.",
     "balanceLabel": "Solde actuel",
     "balanceUnit": "{count, plural, one {crédit} other {crédits}}",
     "packsTitle": "Packs de crédits",
@@ -41,7 +41,9 @@
       "consumption": "Analyse Approfondie utilisée",
       "refund": "Crédit remboursé (analyse échouée)",
       "welcome": "Bonus de bienvenue",
-      "referral": "Récompense de parrainage"
+      "referral": "Récompense de parrainage",
+      "plan_grant": "Crédits inclus (abonnement)",
+      "plan_reset": "Crédits inclus non utilisés (cycle précédent)"
     },
     "errors": {
       "unknownPack": "Pack de crédits inconnu.",

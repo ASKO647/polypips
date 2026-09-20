@@ -12,6 +12,7 @@ import {
   refundDeepAnalysisCredit,
   InsufficientCreditsError,
 } from "../_shared/deep-analysis-credits.ts";
+import { DAILY_ANALYSIS_LIMITS, countCombinedDailyAnalyses } from "../_shared/plan-quotas.ts";
 
 function parseDepth(value: unknown): AnalysisDepth {
   return value === "deep" ? "deep" : "standard";
@@ -26,10 +27,6 @@ function parseDepth(value: unknown): AnalysisDepth {
 
 type ProgressStep = "calling_ai" | "receiving_result";
 
-const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
-  decouverte: null,
-  pro: null,
-};
 const FREE_DEMO_DAILY_LIMIT = 10;
 
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
@@ -158,14 +155,11 @@ Deno.serve(async (req) => {
           : FREE_DEMO_DAILY_LIMIT;
 
         if (dailyLimit !== null) {
-          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-          const { count } = await supabase
-            .from("sports_bet_analyses")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .gte("created_at", since);
+          // Combined across Polymarket/Sport/Trading — one shared quota,
+          // not one per universe. See plan-quotas.ts.
+          const count = await countCombinedDailyAnalyses(authHeader, user.id);
 
-          if ((count ?? 0) >= dailyLimit) {
+          if (count >= dailyLimit) {
             emitErrorAndClose(
               "limit_reached",
               hasAccess

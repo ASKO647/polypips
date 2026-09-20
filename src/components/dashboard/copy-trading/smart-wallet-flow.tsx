@@ -83,12 +83,15 @@ export function SmartWalletFlow({
   followedWallets: initialFollowedWallets,
   hasActiveSubscription,
   cancelled,
+  maxTrackedWallets,
 }: {
   followedWallets: Wallet[];
   hasActiveSubscription: boolean;
   /** True when access is blocked because the user cancelled — swaps the
    * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
   cancelled: boolean;
+  /** null = unlimited (Ultimate, or the legacy grandfather plan). */
+  maxTrackedWallets: number | null;
 }) {
   const t = useTranslations("Polymarket.SmartWallet");
   const [followedWallets, setFollowedWallets] = useState(initialFollowedWallets);
@@ -174,7 +177,10 @@ export function SmartWalletFlow({
 
         <div className="mt-6">
           <p className="mb-3 text-sm font-semibold text-white">
-            {t("followedWalletsTitle")} {followedWallets.length > 0 && `(${followedWallets.length})`}
+            {t("followedWalletsTitle")}{" "}
+            {maxTrackedWallets !== null
+              ? `(${followedWallets.length}/${maxTrackedWallets})`
+              : followedWallets.length > 0 && `(${followedWallets.length})`}
           </p>
           {followedWallets.length === 0 ? (
             <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">

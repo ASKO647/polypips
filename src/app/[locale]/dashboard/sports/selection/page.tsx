@@ -25,6 +25,7 @@ export default async function SportSelectionPage() {
     <SportSelectionFlow
       matches={matches}
       hasActiveSubscription={hasActiveAccess(subscription)}
+      currentPlan={hasActiveAccess(subscription) ? subscription!.plan : null}
       lastSyncedAt={lastSyncedAt}
     />
   );

@@ -8,6 +8,7 @@ import {
   isCancelledSubscription,
 } from "@/lib/supabase/subscriptions";
 import { fetchSmartMoneyData } from "@/lib/supabase/wallets";
+import { getMaxTrackedWallets, getPlanMeta } from "@/lib/data/pricing";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Polymarket.SmartWallet");
@@ -20,7 +21,12 @@ export default async function SmartWalletPage() {
 
   if (!user) {
     return (
-      <SmartWalletFlow followedWallets={[]} hasActiveSubscription={false} cancelled={false} />
+      <SmartWalletFlow
+        followedWallets={[]}
+        hasActiveSubscription={false}
+        cancelled={false}
+        maxTrackedWallets={null}
+      />
     );
   }
 
@@ -30,12 +36,16 @@ export default async function SmartWalletPage() {
   ]);
 
   const followedWallets = wallets.filter((w) => followedWalletIds.has(w.id));
+  const maxTrackedWallets = hasActiveAccess(subscription)
+    ? getMaxTrackedWallets(getPlanMeta(subscription!.plan))
+    : null;
 
   return (
     <SmartWalletFlow
       followedWallets={followedWallets}
       hasActiveSubscription={hasActiveAccess(subscription)}
       cancelled={isCancelledSubscription(subscription)}
+      maxTrackedWallets={maxTrackedWallets}
     />
   );
 }

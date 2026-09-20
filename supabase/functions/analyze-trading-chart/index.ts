@@ -7,6 +7,7 @@ import {
   refundDeepAnalysisCredit,
   InsufficientCreditsError,
 } from "../_shared/deep-analysis-credits.ts";
+import { DAILY_ANALYSIS_LIMITS, countCombinedDailyAnalyses } from "../_shared/plan-quotas.ts";
 
 function parseDepth(value: unknown): AnalysisDepth {
   return value === "deep" ? "deep" : "standard";
@@ -14,21 +15,14 @@ function parseDepth(value: unknown): AnalysisDepth {
 
 /**
  * The Trading universe's "Analyse IA" — a screenshot of a trading chart in,
- * a structured recommendation out. Own table (trading_chart_analyses) and
- * own daily-quota counter, same "one product surface, one counter" pattern
- * already used for Polymarket's `analyses` and Sport's
- * `sports_bet_analyses` — never sharing a counter across unrelated
- * features. Same limit numbers as those two, though (10/day free demo,
- * unlimited on both paid plans): there's no product reason for Trading to
- * have a different daily cap.
+ * a structured recommendation out. Own table (trading_chart_analyses), but
+ * its standard-analysis daily quota is COMBINED with Polymarket's and
+ * Sport's into one shared counter for the Pro/decouverte tiers — see
+ * countCombinedDailyAnalyses in _shared/plan-quotas.ts.
  */
 
 type ProgressStep = "calling_ai" | "receiving_result";
 
-const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
-  decouverte: null,
-  pro: null,
-};
 const FREE_DEMO_DAILY_LIMIT = 10;
 
 const ALLOWED_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
@@ -137,14 +131,11 @@ Deno.serve(async (req) => {
           : FREE_DEMO_DAILY_LIMIT;
 
         if (dailyLimit !== null) {
-          const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-          const { count } = await supabase
-            .from("trading_chart_analyses")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", user.id)
-            .gte("created_at", since);
+          // Combined across Polymarket/Sport/Trading — one shared quota,
+          // not one per universe. See plan-quotas.ts.
+          const count = await countCombinedDailyAnalyses(authHeader, user.id);
 
-          if ((count ?? 0) >= dailyLimit) {
+          if (count >= dailyLimit) {
             emitErrorAndClose(
               "limit_reached",
               hasAccess

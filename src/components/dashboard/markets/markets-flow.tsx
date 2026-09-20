@@ -6,8 +6,10 @@ import { Sparkles } from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
 import { MarketCard } from "@/components/dashboard/markets/market-card";
 import { SyncCountdown } from "@/components/dashboard/sync-countdown";
+import { OnDemandScanButton } from "@/components/dashboard/on-demand-scan-button";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import { SYNC_MARKETS_INTERVAL_MINUTES } from "@/lib/data/markets";
+import type { PlanId } from "@/lib/stripe/plans";
 import { cn } from "@/lib/utils";
 
 type SortKey = "opportunityScore" | "edge" | "aiProbability";
@@ -15,10 +17,12 @@ type SortKey = "opportunityScore" | "edge" | "aiProbability";
 export function MarketsFlow({
   markets: allMarkets,
   hasActiveSubscription,
+  currentPlan,
   lastSyncedAt,
 }: {
   markets: MarketAnalysis[];
   hasActiveSubscription: boolean;
+  currentPlan: PlanId | null;
   lastSyncedAt: string | null;
 }) {
   const t = useTranslations("Polymarket.Markets");
@@ -76,10 +80,13 @@ export function MarketsFlow({
             {t("subtitle")}
           </p>
         </div>
-        <SyncCountdown
-          lastSyncedAt={lastSyncedAt}
-          intervalMinutes={SYNC_MARKETS_INTERVAL_MINUTES}
-        />
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <SyncCountdown
+            lastSyncedAt={lastSyncedAt}
+            intervalMinutes={SYNC_MARKETS_INTERVAL_MINUTES}
+          />
+          <OnDemandScanButton feature="markets" currentPlan={currentPlan} />
+        </div>
       </div>
 
       {allMarkets.length === 0 ? (
