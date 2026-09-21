@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { BrainCircuit } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -46,10 +46,23 @@ export function CreditGauge({
     setBalance(initialBalance);
   }
 
+  // Two CreditGauge instances are mounted simultaneously for the same
+  // user: the desktop sidebar's (always mounted, merely CSS-hidden below
+  // the lg breakpoint via "hidden lg:flex" — never unmounted on mobile)
+  // and the mobile drawer's (mounted lazily the first time it's opened,
+  // see DashboardMobileNav). Without a unique suffix, both would call
+  // supabase.channel() with the exact same topic string concurrently the
+  // moment the drawer opens — a duplicate-topic subscription conflict
+  // that only happens at that exact moment, not on initial page load.
+  // useId() gives each mounted instance its own topic while `filter`
+  // (not the topic name) is what actually scopes the postgres_changes
+  // events to this user's row.
+  const instanceId = useId();
+
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
-      .channel(`user-credits-${userId}`)
+      .channel(`user-credits-${userId}-${instanceId}`)
       .on(
         "postgres_changes",
         {
@@ -70,7 +83,7 @@ export function CreditGauge({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, instanceId]);
 
   const fillPct = Math.max(0, Math.min(100, Math.round((balance / GAUGE_FULL_AT) * 100)));
 

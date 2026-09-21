@@ -4,13 +4,16 @@ import { Crown, Rocket } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCurrency } from "@/providers/currency-provider";
-import { getPricingPlans } from "@/lib/data/pricing";
+import { getPlanDisplay, getPricingPlans } from "@/lib/data/pricing";
 import { getTrialDaysRemaining, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { formatResetDate } from "@/lib/utils";
 
 export const PLAN_ICONS: Record<string, typeof Crown> = {
   decouverte: Rocket,
   pro: Crown,
+  pro_plus: Crown,
+  ultimate: Crown,
+  pro_legacy: Crown,
 };
 
 /** Sidebar account card. While genuinely trialing, this is the countdown
@@ -29,7 +32,6 @@ export function AccountStatusCard({
   const tPlans = useTranslations("Plans");
   const t = useTranslations("Dashboard.AccountStatusCard");
   const plans = getPricingPlans(tPlans);
-  const DECOUVERTE_PLAN = plans.find((p) => p.id === "decouverte") ?? plans[0];
   const PRO_PLAN = plans.find((p) => p.id === "pro") ?? plans[0];
 
   if (!subscription) {
@@ -77,7 +79,10 @@ export function AccountStatusCard({
 
   const cancelled = subscription.cancelAtPeriodEnd || subscription.status === "canceled";
   const pastDue = subscription.status === "past_due";
-  const plan = subscription.plan === "pro" ? PRO_PLAN : DECOUVERTE_PLAN;
+  // getPlanDisplay resolves ANY plan id (including "pro_plus"/"ultimate"/
+  // "pro_legacy") to real display copy — a binary pro/decouverte ternary
+  // here would silently mislabel every other tier as "Découverte".
+  const plan = getPlanDisplay(tPlans, subscription.plan);
   const PlanIcon = PLAN_ICONS[plan.id] ?? Crown;
 
   return (
