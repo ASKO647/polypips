@@ -64,23 +64,9 @@
 	.st6{fill:url(#SVGID_1_);}
 	.st7{fill:url(#SVGID_2_);}
 </style>
-<rect
-   style="stroke-width:0.971688"
-   x="0"
-   id="rect835"
-   height="361.80392"
-   width="260.99222"
-   class="st0"
-   y="0" />
 
-<rect
-   style="stroke-width:0.926161"
-   id="rect837"
-   height="86.596069"
-   width="260.99222"
-   class="st1"
-   y="361.80392"
-   x="0" /><g
+
+<g
    transform="translate(-20.852028,-0.11975509)"
    id="g1066"><g
      id="g954"
