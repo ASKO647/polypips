@@ -6,6 +6,7 @@ import { FeatureSection } from "@/components/marketing/feature-section";
 import { ProofShowcase } from "@/components/marketing/proof-showcase";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { PotentialCalculator } from "@/components/marketing/potential-calculator";
+import { SportShowcase } from "@/components/marketing/sport-showcase";
 import { V2Announcement } from "@/components/marketing/v2-announcement";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
@@ -23,6 +24,7 @@ export default function Home() {
         <ProofShowcase />
         <HowItWorks />
         <PotentialCalculator />
+        <SportShowcase />
         <V2Announcement />
         <Pricing />
         <FAQ />

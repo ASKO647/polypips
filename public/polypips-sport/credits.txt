@@ -1,0 +1,12 @@
+Polypips sport demonstration assets
+
+Stadium, two representative fictional football players and ball: generated with the built-in image generation tool for this Polypips section. Portraits do not represent an endorsement by a player or club.
+Final prompts: cinematic dark football stadium with red lighting and no text; isolated fictional footballer in Barcelona-style navy/crimson shirt holding a ball; isolated fictional footballer in Real Madrid-style white/gold shirt holding a ball; isolated white football with navy/red angular panels. Independent layers; generated transparent alpha retained. WebP encoding for delivery.
+
+League marks (Wikimedia Commons originals; respective league trademarks):
+https://commons.wikimedia.org/wiki/File:LaLiga_logo_(2023).svg
+https://commons.wikimedia.org/wiki/File:Serie_A_logo_2022.svg
+https://commons.wikimedia.org/wiki/File:Ligue_1_McDonald's_logo.svg
+https://commons.wikimedia.org/wiki/File:Premier_League.svg
+
+The displayed 52%, 23%, 25% are illustrative demo data, not a live prediction.
