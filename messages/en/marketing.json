@@ -120,10 +120,22 @@
     "watchTestimonial": "Read {handle}'s testimonial",
     "videoComingSoon": "Video coming soon",
     "stats": {
-      "precision": { "label": "Average accuracy", "value": "92.2%" },
-      "markets": { "label": "Markets analyzed", "value": "879" },
-      "users": { "label": "Active users", "value": "+12,000" },
-      "analyses": { "label": "Analyses run", "value": "+68,000" }
+      "precision": {
+        "label": "Average accuracy",
+        "value": "92.2%"
+      },
+      "markets": {
+        "label": "Markets analyzed",
+        "value": "879"
+      },
+      "users": {
+        "label": "Active users",
+        "value": "+12,000"
+      },
+      "analyses": {
+        "label": "Analyses run",
+        "value": "+68,000"
+      }
     },
     "pills": {
       "ai": "Specialized market AI",
@@ -280,8 +292,22 @@
     "resultLabel": "Your monthly potential",
     "disclaimer": "Indicative simulation based on the selected parameters. Actual performance may vary.",
     "cta": "Get the Polypips edge",
-    "stakeTicks": ["$10", "$25", "$50", "$100", "$250", "$500 and up"],
-    "opportunitiesTicks": ["10", "25", "50", "100", "200", "Over 500"]
+    "stakeTicks": [
+      "$10",
+      "$25",
+      "$50",
+      "$100",
+      "$250",
+      "$500 and up"
+    ],
+    "opportunitiesTicks": [
+      "10",
+      "25",
+      "50",
+      "100",
+      "200",
+      "Over 500"
+    ]
   },
   "Pricing": {
     "eyebrow": "Pricing",
@@ -306,17 +332,17 @@
     }
   },
   "FAQ": {
-    "eyebrow": "FAQ",
-    "title": "Frequently asked questions",
-    "description": "Everything you need to know before getting started.",
+    "eyebrow": "POLYPIPS FAQ",
+    "title": "Your questions.",
+    "description": "Analysis, subscriptions, Smart Wallet: everything you need to get started.",
     "items": {
       "howAiWorks": {
         "question": "How does the AI analysis work?",
-        "answer": "Drop a screenshot of a Polymarket market or paste its link. Polypips analyzes the question, the resolution rules, current probabilities and relevant external sources, then gives you a decision (YES or NO), an estimated probability, the edge, an opportunity score and a detailed explanation."
+        "answer": "For a Polymarket market, add a link or screenshot. The AI reviews available data and presents a summary, estimated probabilities and risks to consider. You make the final decision."
       },
       "updateFrequency": {
         "question": "How often are analyses updated?",
-        "answer": "Markets move constantly: our analyses factor in the latest data available at the time of the request, and AI-selected markets refresh several times a day."
+        "answer": "On-demand analyses use the data available when you make your request. The automatic selection includes 9 short-term Polymarket markets, updated every 12 hours."
       },
       "cancelAnytime": {
         "question": "Can I cancel anytime?",
@@ -331,9 +357,35 @@
         "answer": "Polypips covers Polymarket markets, plus sports match analysis (Football, Basketball, Tennis) and Trading chart reading. Other platforms will be added progressively."
       },
       "copyTrading": {
-        "question": "Does Polypips touch my portfolio? How does Smart Wallet work?",
+        "question": "How does Smart Wallet work, and can it access my funds?",
         "answer": "No, Polypips never has access to your portfolio or your funds. Smart Wallet lets you look up any Polymarket address and follow its positions and new bets — it's an observation tool, not automatic execution. No return is guaranteed."
       }
+    },
+    "titleAccent": "Our answers.",
+    "contactTitle": "Another question?",
+    "contactDescription": "Our team is here to help.",
+    "contactLink": "Contact us",
+    "cta": "Get started for €0.99",
+    "searchLabel": "Search the FAQ",
+    "searchPlaceholder": "Search for a question…",
+    "clearSearch": "Clear search",
+    "categoryLabel": "Filter questions by category",
+    "categories": {
+      "all": "All",
+      "analysis": "AI analysis",
+      "subscription": "Subscription",
+      "wallet": "Smart Wallet"
+    },
+    "resultCount": "{count, plural, =0 {No questions found} one {# question found} other {# questions found}}",
+    "emptyTitle": "No questions found",
+    "emptyDescription": "Try another keyword or browse all categories.",
+    "reset": "Show all questions",
+    "answerLinks": {
+      "features": "Explore the features",
+      "markets": "View selected markets",
+      "coach": "Meet the AI Coach",
+      "subscription": "Manage my subscription",
+      "wallet": "Explore Smart Wallet"
     }
   },
   "FinalCTA": {

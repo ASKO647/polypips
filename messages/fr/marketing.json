@@ -120,10 +120,22 @@
     "watchTestimonial": "Lire le témoignage de {handle}",
     "videoComingSoon": "Vidéo bientôt disponible",
     "stats": {
-      "precision": { "label": "Précision moyenne", "value": "92,2 %" },
-      "markets": { "label": "Marchés analysés", "value": "879" },
-      "users": { "label": "Utilisateurs actifs", "value": "+12 000" },
-      "analyses": { "label": "Analyses réalisées", "value": "+68 000" }
+      "precision": {
+        "label": "Précision moyenne",
+        "value": "92,2 %"
+      },
+      "markets": {
+        "label": "Marchés analysés",
+        "value": "879"
+      },
+      "users": {
+        "label": "Utilisateurs actifs",
+        "value": "+12 000"
+      },
+      "analyses": {
+        "label": "Analyses réalisées",
+        "value": "+68 000"
+      }
     },
     "pills": {
       "ai": "IA spécialisée marchés",
@@ -280,8 +292,22 @@
     "resultLabel": "Votre potentiel mensuel",
     "disclaimer": "Simulation indicative basée sur les paramètres sélectionnés. Les performances réelles peuvent varier.",
     "cta": "Bénéficiez de l'avantage Polypips",
-    "stakeTicks": ["10 €", "25 €", "50 €", "100 €", "250 €", "500 € et plus"],
-    "opportunitiesTicks": ["10", "25", "50", "100", "200", "Plus de 500"]
+    "stakeTicks": [
+      "10 €",
+      "25 €",
+      "50 €",
+      "100 €",
+      "250 €",
+      "500 € et plus"
+    ],
+    "opportunitiesTicks": [
+      "10",
+      "25",
+      "50",
+      "100",
+      "200",
+      "Plus de 500"
+    ]
   },
   "Pricing": {
     "eyebrow": "Tarifs",
@@ -306,17 +332,17 @@
     }
   },
   "FAQ": {
-    "eyebrow": "FAQ",
-    "title": "Questions fréquentes",
-    "description": "Tout ce qu'il faut savoir avant de commencer.",
+    "eyebrow": "FAQ POLYPIPS",
+    "title": "Vos questions.",
+    "description": "Analyses, abonnement, Smart Wallet : retrouvez l’essentiel pour commencer.",
     "items": {
       "howAiWorks": {
         "question": "Comment fonctionne l'analyse IA ?",
-        "answer": "Vous déposez une capture d'écran d'un marché Polymarket ou collez son lien. Polypips analyse la question, les règles de résolution, les probabilités actuelles et les sources externes pertinentes, puis vous propose une décision (YES ou NO), une probabilité estimée, l'edge, un score d'opportunité et une explication détaillée."
+        "answer": "Pour un marché Polymarket, ajoutez un lien ou une capture d’écran. L’IA examine les données disponibles et présente une synthèse, les probabilités estimées et les risques à considérer. Vous gardez la décision finale."
       },
       "updateFrequency": {
         "question": "À quelle fréquence les analyses sont-elles mises à jour ?",
-        "answer": "Les marchés évoluent en continu : nos analyses intègrent les dernières données disponibles au moment de la demande, et les marchés sélectionnés par l'IA sont actualisés plusieurs fois par jour."
+        "answer": "Les analyses demandées utilisent les données disponibles au moment de votre demande. La sélection automatique comprend 9 marchés Polymarket à court terme, actualisés toutes les 12 h."
       },
       "cancelAnytime": {
         "question": "Puis-je annuler à tout moment ?",
@@ -331,9 +357,35 @@
         "answer": "Polypips couvre les marchés Polymarket, ainsi que l'analyse de matchs sportifs (Football, Basketball, Tennis) et la lecture de graphiques Trading. D'autres plateformes seront intégrées progressivement."
       },
       "copyTrading": {
-        "question": "Polypips touche-t-il à mon portefeuille ? Comment fonctionne le Smart Wallet ?",
+        "question": "Comment fonctionne Smart Wallet et l’accès à mon portefeuille ?",
         "answer": "Non, Polypips n'a jamais accès à votre portefeuille ni à vos fonds. Le Smart Wallet vous permet de rechercher n'importe quelle adresse Polymarket et de suivre ses positions et nouveaux paris — c'est un outil d'observation, pas d'exécution automatique. Aucun rendement n'est garanti."
       }
+    },
+    "titleAccent": "Nos réponses.",
+    "contactTitle": "Une autre question ?",
+    "contactDescription": "Notre équipe peut vous aider.",
+    "contactLink": "Nous contacter",
+    "cta": "Débuter pour 0,99 €",
+    "searchLabel": "Rechercher dans la FAQ",
+    "searchPlaceholder": "Rechercher une question…",
+    "clearSearch": "Effacer la recherche",
+    "categoryLabel": "Filtrer les questions par catégorie",
+    "categories": {
+      "all": "Tout",
+      "analysis": "Analyses IA",
+      "subscription": "Abonnement",
+      "wallet": "Smart Wallet"
+    },
+    "resultCount": "{count, plural, =0 {Aucune question trouvée} one {# question trouvée} other {# questions trouvées}}",
+    "emptyTitle": "Aucune question trouvée",
+    "emptyDescription": "Essayez un autre mot-clé ou consultez toutes les catégories.",
+    "reset": "Afficher toutes les questions",
+    "answerLinks": {
+      "features": "Découvrir les fonctionnalités",
+      "markets": "Voir les marchés sélectionnés",
+      "coach": "Découvrir le Coach IA",
+      "subscription": "Gérer mon abonnement",
+      "wallet": "Découvrir Smart Wallet"
     }
   },
   "FinalCTA": {
