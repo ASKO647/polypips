@@ -1,84 +1,131 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { PlayCircle } from "lucide-react";
+import Image from "next/image";
+import { useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { Button, ButtonIcon } from "@/components/ui/button";
-import { SocialProofRow } from "@/components/ui/social-proof-row";
-import { CheckItem } from "@/components/ui/check-item";
-import { HeroBackground } from "@/components/marketing/hero-background";
-import { V2Badge } from "@/components/marketing/v2-badge";
-import { scrollToHashIfAlreadyThere } from "@/lib/hash-scroll";
+import { getLandingHeaderCopy } from "./landing-header-copy";
+import styles from "./landing-intro.module.css";
 
-export function Hero() {
-  const t = useTranslations("Hero");
-  const trustItems = [t("trust1"), t("trust2"), t("trust3"), t("trust4")];
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m6 12 4 4 8-8" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function UniverseIcon({ kind }: { kind: "market" | "sport" | "trading" }) {
+  if (kind === "sport") {
+    return <span className={styles.football} aria-hidden="true">{"\u26BD"}</span>;
+  }
+  return (
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {kind === "market" ? (
+        <path d="M4 20V12M9 20V7M14 20V3M19 20V9" stroke="currentColor" strokeWidth="2.7" strokeLinecap="round" />
+      ) : (
+        <path d="m3 17 6-6 4 3 8-10m-6 0h6v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      )}
+    </svg>
+  );
+}
+
+export function Hero({ socialProofUsers = 56964 }: { socialProofUsers?: number }) {
+  const locale = useLocale();
+  const copy = getLandingHeaderCopy(locale);
+  const count = new Intl.NumberFormat(locale).format(socialProofUsers);
+  const universes = [
+    { kind: "market" as const, label: "Polymarket", href: "/dashboard/analyse-ia" },
+    { kind: "sport" as const, label: copy.sport, href: "/dashboard/sports" },
+    { kind: "trading" as const, label: "Trading", href: "/dashboard/trading" },
+  ];
 
   return (
-    <section className="relative isolate overflow-hidden">
-      <HeroBackground />
-
-      <div className="relative mx-auto flex w-full max-w-[860px] flex-col items-center px-6 pt-14 pb-8 text-center sm:pt-16 sm:pb-10 lg:pt-16 lg:pb-10">
-        <V2Badge className="animate-fade-up" />
-        <SocialProofRow align="center" className="mt-4 animate-fade-up" />
-
-        <h1
-          className="mt-8 animate-fade-up text-balance font-display text-[2.5rem] font-extrabold leading-[0.95] tracking-tight text-ink sm:text-6xl lg:text-[68px]"
-          style={{ animationDelay: "80ms" }}
-        >
-          {t("title1")}
-          <br />
-          {t("title2")}
-          <br />
-          <span className="text-brand-500">{t("title3")}</span>
-        </h1>
-
-        <p
-          className="mt-6 max-w-[560px] animate-fade-up text-balance text-[18px] leading-[1.65] text-body"
-          style={{ animationDelay: "140ms" }}
-        >
-          {t("description")}
-        </p>
-        <p
-          className="mt-3 animate-fade-up text-balance text-sm font-semibold uppercase tracking-wide text-body-soft"
-          style={{ animationDelay: "180ms" }}
-        >
-          {t("tagline")}
-        </p>
-
-        <div
-          className="mt-9 flex animate-fade-up flex-col items-center gap-3 sm:flex-row"
-          style={{ animationDelay: "220ms" }}
-        >
-          <Button
-            href="#tarifs"
-            size="lg"
-            onClick={scrollToHashIfAlreadyThere("tarifs")}
-          >
-            {t("ctaTrial")} <ButtonIcon>→</ButtonIcon>
-          </Button>
-          <Button
-            href="#demonstration"
-            variant="outline"
-            size="lg"
-            onClick={scrollToHashIfAlreadyThere("demonstration")}
-          >
-            <ButtonIcon variant="outline">
-              <PlayCircle className="h-5 w-5 text-brand-500" strokeWidth={2} />
-            </ButtonIcon>
-            {t("ctaDemo")}
-          </Button>
+    <section className={styles.hero}>
+      <div className={styles.particles} aria-hidden="true" />
+      <div className={styles.floatingEmojis} aria-hidden="true">
+        {["⚽", "🏀", "📈", "🎾", "🏀", "⚽", "🎾", "📈"].map((emoji, index) => (
+          <span className={styles.floatingEmoji} key={index}>{emoji}</span>
+        ))}
+      </div>
+      <div className={styles.inner}>
+        <div className={styles.community}>
+          <span className={styles.avatars} aria-hidden="true">
+            {[1, 2, 3].map((portrait) => (
+              <span className={styles.avatar} key={portrait}>
+                <Image
+                  src={`/polypips-proof/avatar-${portrait}.png`}
+                  alt=""
+                  width={96}
+                  height={96}
+                  sizes="(max-width: 640px) 34px, 46px"
+                  loading="eager"
+                  className={styles.avatarImage}
+                />
+              </span>
+            ))}
+          </span>
+          <span className={styles.communityText}>{copy.users.replace("{count}", count)}</span>
+          <span className={styles.communityCheck}><CheckIcon /></span>
         </div>
 
-        <ul
-          className="mt-8 grid animate-fade-up grid-cols-2 justify-items-center gap-x-4 gap-y-2 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-6 sm:gap-y-2"
-          style={{ animationDelay: "260ms" }}
-        >
-          {trustItems.map((item) => (
-            <CheckItem key={item} className="text-body-soft">
-              {item}
-            </CheckItem>
+        <p className={styles.eyebrow}>{copy.universes}</p>
+
+        <h1 className={styles.title}>
+          <span>{copy.title1}</span>
+          <span>
+            {copy.title2Lead}
+            <em className={styles.advantage}>
+              {copy.title2Accent}
+              <svg className={styles.underline} viewBox="0 0 360 26" fill="none" aria-hidden="true">
+                <path d="M5 21C109 1 233 1 353 10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                <path d="M40 24C148 7 259 7 340 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity=".6" />
+              </svg>
+            </em>
+          </span>
+        </h1>
+
+        <p className={styles.description}>
+          <span>{copy.description1}</span>
+          <span>{copy.description2}</span>
+        </p>
+
+        <div className={styles.actions}>
+          <Button href="/signup" size="lg" className={styles.heroCta}>
+            <span className={styles.desktopCta}>{copy.cta}</span>
+            <span className={styles.mobileCta}>{copy.shortCta}</span>
+            <ButtonIcon>→</ButtonIcon>
+          </Button>
+        </div>
+        <p className={styles.support}>{copy.support}</p>
+
+        <div className={styles.trustpilot}>
+          <Image
+            src="/polypips-proof/trustpilot.svg"
+            alt="Trustpilot"
+            width={196}
+            height={48}
+            unoptimized
+            className={styles.trustpilotLogo}
+          />
+        </div>
+
+        <ul className={styles.benefits}>
+          {copy.benefits.map((benefit) => (
+            <li key={benefit}>
+              <span className={styles.benefitIcon}><CheckIcon /></span>
+              <span>{benefit}</span>
+            </li>
           ))}
         </ul>
+
+        <nav className={styles.universes} aria-label={copy.universeLabel}>
+          {universes.map(({ kind, label, href }) => (
+            <Link href={href} className={styles.universe} key={kind}>
+              <UniverseIcon kind={kind} />{label}
+            </Link>
+          ))}
+        </nav>
       </div>
     </section>
   );

@@ -5,7 +5,6 @@ import { Hero } from "@/components/marketing/hero";
 import { FeatureSection } from "@/components/marketing/feature-section";
 import { ProofShowcase } from "@/components/marketing/proof-showcase";
 import { HowItWorks } from "@/components/marketing/how-it-works";
-import { ProductDemo } from "@/components/marketing/product-demo";
 import { PotentialCalculator } from "@/components/marketing/potential-calculator";
 import { V2Announcement } from "@/components/marketing/v2-announcement";
 import { Pricing } from "@/components/marketing/pricing";
@@ -17,13 +16,12 @@ export default function Home() {
   return (
     <>
       <AnnouncementBar />
-      <SiteHeader />
+      <SiteHeader landing />
       <main>
-        <Hero />
+        <Hero socialProofUsers={56964} />
         <FeatureSection />
         <ProofShowcase />
         <HowItWorks />
-        <ProductDemo />
         <PotentialCalculator />
         <V2Announcement />
         <Pricing />

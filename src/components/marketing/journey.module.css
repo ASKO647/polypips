@@ -1,0 +1,237 @@
+.section { --step-gap: 16px; padding: 32px clamp(20px, 2.85vw, 48px) 24px; overflow: hidden; color: #0d0f15; background: radial-gradient(ellipse at 0% 0%, #fff3f6 0%, transparent 31%), radial-gradient(ellipse at 0% 100%, #fff0f4 0%, transparent 28%), radial-gradient(ellipse at 100% 100%, #fff5f7 0%, transparent 28%), #fff; scroll-margin-top: 112px; }
+.container { max-width: 1578px; margin-inline: auto; }
+.heading { text-align: center; }
+.eyebrow { display: flex; align-items: center; justify-content: center; gap: 11px; margin: 0 0 17px; color: #f40032; font-size: 12px; font-weight: 650; line-height: 1.5; letter-spacing: .17em; }
+.eyebrow > span { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.heading h2 { margin: 0; color: #08090d; font-size: clamp(35px, 3.3vw, 56px); font-weight: 800; line-height: 1.12; letter-spacing: -.055em; text-wrap: balance; }
+.heading h2 > span { display: block; margin-top: 4px; color: #fa0034; }
+.description { margin: 11px auto 0; color: #757d8b; font-size: clamp(16px, 1.2vw, 21px); line-height: 1.55; letter-spacing: -.02em; text-wrap: balance; }
+.steps { position: relative; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--step-gap); margin: 25px 0 0; padding: 0; list-style: none; }
+.stepItem { position: relative; display: flex; align-items: stretch; flex-direction: column; min-width: 0; }
+.connector { position: absolute; top: 21px; left: calc(50% + 26px); width: calc(100% + var(--step-gap) - 52px); height: 2px; overflow: hidden; background: #e0e3e9; }
+.connectorFill { display: block; width: 100%; height: 100%; background: #ff0738; transform: scaleX(0); transform-origin: left center; }
+.connectorFill[data-state="complete"] { transform: scaleX(1); }
+.connectorFill[data-state="filling"] { animation: lineProgress 300ms linear both; }
+.number { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; align-self: center; flex-shrink: 0; width: 42px; height: 42px; margin-bottom: 12px; padding: 8px; border: 1px solid #dfe3eb; border-radius: 50%; color: #727b8b; background: #fff; box-shadow: 0 0 0 5px #fff; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.number svg { width: 23px; height: 23px; }
+.stepItem[data-future="false"] .number { color: #fff; border-color: #ff0738; background: #ff0738; }
+.card { display: flex; flex: 1; flex-direction: column; min-height: 488px; min-width: 0; padding: 19px 17px 16px; border: 1px solid #e9ecf2; border-radius: 20px; background: rgb(255 255 255 / 92%); box-shadow: 0 4px 16px rgb(31 26 43 / 2%); transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
+.stepItem[data-active="true"] .card { transform: translateY(-4px); border-color: #ff0738; background: #fffafb; box-shadow: 0 10px 28px rgb(255 7 56 / 7%); }
+.iconTile { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 59px; height: 59px; margin-left: 3px; border-radius: 14px; color: #ff0738; background: linear-gradient(135deg, #ffebf0, #fff3f6); }
+.iconTile svg { width: 33px; height: 33px; }
+.card h3 { margin: 12px 0 0; color: #0c0e15; font-size: clamp(17px, 1.28vw, 22px); font-weight: 750; line-height: 1.22; letter-spacing: -.055em; }
+.stepDescription { margin: 8px 0 0; color: #737c8d; font-size: clamp(13px, .97vw, 16px); line-height: 1.45; letter-spacing: -.02em; }
+.preview { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 250px; margin-top: 18px; transition: opacity 220ms ease; }
+.stepItem[data-future="true"] .preview { opacity: .78; }
+.preview > div { width: 100%; }
+.skeleton, .skeletonShort { display: block; height: 6px; margin-top: 6px; border-radius: 999px; background: #dfe2e7; }
+.skeleton { width: 100%; }
+.skeletonShort { width: 68%; }
+.importPanel { display: flex; flex: 1; flex-direction: column; padding: 6px; border: 1px solid #e9edf3; border-radius: 14px; background: #fff; }
+.urlField { display: flex; align-items: center; gap: 9px; min-width: 0; min-height: 40px; padding: 9px 10px; border: 1px solid #e6eaf1; border-radius: 10px; color: #808998; font-size: 10px; }
+.urlField svg { flex-shrink: 0; width: 15px; height: 15px; }
+.urlText { display: block; flex: 1; overflow: hidden; white-space: nowrap; letter-spacing: -.025em; }
+.divider { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 10px 4px; color: #939ba8; font-size: 9px; }
+.divider > span { height: 1px; flex: 1; background: #e5e8ef; }
+.dropZone { position: relative; display: flex; align-items: center; flex: 1; flex-direction: column; min-height: 128px; overflow: hidden; padding-top: 9px; border: 1px dashed #ff8ba8; border-radius: 12px; color: #77808e; background: linear-gradient(135deg, #fffafb, #fff1f5); }
+.dropZone > svg { width: 20px; height: 20px; color: #ff0738; }
+.dropZone > span { margin-top: 4px; font-size: 10px; }
+.screenshot { position: absolute; bottom: -5px; left: 23%; width: 63%; height: 68px; padding: 9px; border: 1px solid #eceef3; border-radius: 9px; background: #fff; box-shadow: 0 8px 18px rgb(55 28 40 / 13%); transform: rotate(-9deg); }
+.screenshot strong { display: flex; align-items: center; gap: 5px; color: #10131a; font-size: 10px; }
+.screenshot strong > span { font-size: 6px; }
+.screenshot .skeleton, .screenshot .skeletonShort { height: 3px; margin-top: 5px; background: #e9ebef; }
+.screenshot > svg { display: block; width: 100%; height: 22px; }
+.cursor { position: absolute; right: -7px; bottom: -1px; color: #15181d; font-size: 22px; line-height: 1; transform: rotate(-35deg); }
+.addedBadge { display: flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 7px; min-height: 29px; margin-top: 12px; border-radius: 8px; color: #009f67; background: #e4faee; font-size: 10px; font-weight: 550; }
+.addedBadge svg { width: 13px; height: 13px; padding: 1px; border-radius: 50%; color: #fff; background: #00ad70; }
+.dataPanel, .resultPanel { display: flex; flex: 1; flex-direction: column; overflow: hidden; border: 1px solid #e9edf3; border-radius: 13px; background: #fff; }
+.panelHeader { display: flex; align-items: center; flex-shrink: 0; gap: 8px; min-height: 43px; padding: 10px 12px; border-bottom: 1px solid #edf0f5; }
+.panelHeader > strong { color: #171c27; font-size: 11px; font-weight: 650; letter-spacing: -.035em; }
+.panelHeader > svg { width: 18px; height: 18px; color: #ff0738; }
+.spinner { display: none; width: 17px; height: 17px; border: 2px dotted #ff0738; border-radius: 50%; }
+.scanCheck { display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 50%; color: #fff; background: #00b879; }
+.scanCheck svg { width: 13px; height: 13px; }
+.dataRow { display: flex; align-items: center; flex: 1; gap: 9px; min-height: 60px; padding: 10px 12px; }
+.dataRow + .dataRow { border-top: 1px solid #f0f2f6; }
+.smallIcon { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 30px; height: 33px; border-radius: 9px; color: #697383; background: #f6f7f9; }
+.smallIcon svg { width: 23px; height: 23px; }
+.dataRow > div { flex: 1; min-width: 0; }
+.dataRow strong { display: block; color: #1b202a; font-size: 10px; font-weight: 600; line-height: 1.3; letter-spacing: -.035em; }
+.scanTrack { display: block; overflow: hidden; height: 6px; margin-top: 7px; border-radius: 999px; background: #ffe2e9; }
+.scanFill { display: block; width: 100%; height: 100%; border-radius: inherit; background: #ff0738; transform-origin: left; }
+.dataRow .skeletonShort { height: 5px; margin-top: 5px; background: #e6e8ed; }
+.rowCheck { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; color: #fff; background: #ff0738; }
+.rowCheck svg { width: 14px; height: 14px; }
+.resultPanel .panelHeader { gap: 6px; padding-inline: 10px; }
+.resultPanel .panelHeader > strong { font-size: 10px; }
+.readyBadge { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 4px; min-height: 23px; margin-left: auto; padding: 4px 6px; border-radius: 999px; color: #009a63; background: #e4faee; font-size: 7px; font-weight: 550; }
+.readyBadge svg { width: 12px; height: 12px; padding: 1px; border-radius: 50%; color: #fff; background: #00ad70; }
+.resultBlock { display: flex; align-items: flex-start; flex: 1; gap: 8px; min-height: 65px; padding: 10px 11px; }
+.resultBlock > div { min-width: 0; flex: 1; }
+.resultBlock .smallIcon { color: #ff0738; background: #fff3f6; }
+.resultBlock strong { display: block; margin-top: 4px; color: #222731; font-size: 10px; line-height: 1.35; font-weight: 600; letter-spacing: -.035em; }
+.scenarioFill { margin-top: 2px; padding: 1px 0 5px; background: linear-gradient(0deg, #fff0f4, transparent); }
+.scenarioFill .skeleton, .scenarioFill .skeletonShort { height: 5px; }
+.scenarioFill .skeletonShort { background: #f5c6d3; }
+.gauge { position: relative; height: 10px; margin-top: 12px; border-radius: 999px; background: #e6e8ed; }
+.gaugeFill { display: block; width: 72%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ff0738, #ff4e72); }
+.gaugeMarker { position: absolute; top: -2px; left: 72%; width: 14px; height: 14px; margin-left: -7px; border: 1.5px solid #ff0738; border-radius: 50%; background: #fff; }
+.riskLine { display: flex; align-items: center; gap: 7px; margin-top: 7px; }
+.riskLine > i { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: #ff0738; }
+.riskLine .skeleton, .riskLine .skeletonShort { height: 5px; margin: 0; }
+.opportunities { display: flex; flex: 1; flex-direction: column; }
+.followTabs { position: relative; display: flex; flex-shrink: 0; min-height: 44px; padding: 4px; border: 1px solid #e9edf3; border-radius: 999px; background: #f8f9fb; }
+.followTabs > span:not(.tabIndicator) { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 50%; font-size: 11px; font-weight: 550; }
+.tabIndicator { position: absolute; top: 4px; bottom: 4px; left: 50%; width: calc(50% - 4px); border-radius: 999px; background: #ff0738; }
+.marketsTab { color: #6e7888; }
+.walletsTab { color: #fff; }
+.followViews { display: grid; flex: 1; margin-top: 17px; }
+.marketsView, .walletsView { display: flex; grid-area: 1 / 1; flex-direction: column; overflow: hidden; border: 1px solid #e9edf3; border-radius: 13px; background: #fff; }
+.marketsView { opacity: 0; visibility: hidden; }
+.walletsView { opacity: 1; }
+.followRow { display: flex; align-items: center; flex: 1; gap: 9px; min-height: 77px; padding: 12px 11px; }
+.followRow + .followRow { border-top: 1px solid #eef1f5; }
+.followRow .smallIcon { color: #ff0738; background: #fff0f4; }
+.followRow > div { flex: 1; min-width: 0; }
+.followRow strong { display: block; color: #242935; font-size: 10px; font-weight: 600; line-height: 1.3; letter-spacing: -.035em; }
+.followRow .skeleton, .followRow .skeletonShort { height: 5px; margin-top: 6px; }
+.sparkline { flex-shrink: 0; width: 45px; height: 34px; color: #ff0738; }
+.chevron { flex-shrink: 0; color: #788293; font-size: 22px; line-height: 1; }
+.decisionPanel { display: flex; flex: 1; flex-direction: column; padding: 13px 12px 0; overflow: hidden; border: 1px solid #e9edf3; border-radius: 13px; background: #fff; }
+.validationRows { display: flex; flex-direction: column; gap: 19px; margin: 7px 1px 22px; }
+.validationRow { display: flex; align-items: center; gap: 13px; min-height: 40px; }
+.validationCheck { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 27px; height: 27px; border-radius: 50%; color: #fff; background: #ff0738; }
+.validationCheck svg { width: 21px; height: 21px; }
+.validationRow > div { flex: 1; min-width: 0; }
+.validationRow strong { display: block; color: #252b34; font-size: 10px; font-weight: 600; line-height: 1.35; letter-spacing: -.025em; }
+.validationRow .skeleton, .validationRow .skeletonShort { height: 5px; margin-top: 6px; }
+.openMarket { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 8px; min-height: 43px; margin-top: auto; overflow: hidden; border: 1px solid #ff0738; border-radius: 11px; color: #ff0738; background: #fff; font-size: 12px; font-weight: 600; text-decoration: none; transition: transform 180ms ease, box-shadow 180ms ease; }
+.openMarket svg { width: 15px; height: 15px; transition: transform 180ms ease; }
+.openMarket::after { position: absolute; inset: 0; width: 45%; content: ""; opacity: 0; background: linear-gradient(90deg, transparent, rgb(255 175 194 / 30%), transparent); transform: translateX(-150%) skewX(-18deg); pointer-events: none; }
+.openMarket:hover { transform: translateY(-2px); box-shadow: 0 7px 17px rgb(255 7 56 / 10%); }
+.openMarket:hover svg { transform: translateX(4px); }
+.openMarket:active { transform: scale(.98); }
+.controlNote { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; margin: 17px 0 0; border-top: 1px solid #eef0f5; color: #838c9b; font-size: 10px; }
+.controlNote svg { width: 15px; height: 15px; }
+.swipeHint { display: none; }
+.demoControls { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 12px; }
+.replayButton, .pauseButton { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 30px; padding: 4px 7px; border: 0; border-radius: 8px; color: #77818f; background: transparent; font: inherit; font-size: 11px; cursor: pointer; transition: color 180ms ease, background-color 180ms ease; }
+.replayButton svg, .pauseButton svg { width: 17px; height: 17px; }
+.replayButton:hover, .pauseButton:hover { color: #ff0738; background: #fff1f5; }
+.pauseButton { font-size: 10px; }
+.pauseButton svg { width: 13px; height: 13px; }
+.demoStatus { min-height: 12px; margin: 0; color: #9299a7; text-align: center; font-size: 9px; line-height: 1.4; }
+.ctaArea { display: flex; flex-direction: column; align-items: center; margin-top: 7px; text-align: center; }
+.primaryCta { display: inline-flex; align-items: center; justify-content: center; gap: 16px; min-height: 49px; max-width: 100%; padding: 12px 32px; border: 1px solid #ff8ba5; border-radius: 16px; color: #fff; background: linear-gradient(180deg, #ff244b, #ff0738); box-shadow: 0 11px 27px rgb(255 7 56 / 20%); font-size: 14px; font-weight: 600; letter-spacing: -.025em; text-decoration: none; transition: transform 180ms ease, box-shadow 180ms ease; }
+.primaryCta svg { width: 20px; height: 20px; transition: transform 180ms ease; }
+.primaryCta:hover { transform: translateY(-2px); box-shadow: 0 14px 31px rgb(255 7 56 / 30%); }
+.primaryCta:hover svg { transform: translateX(4px); }
+.primaryCta:active { transform: scale(.98); }
+.ctaArea > p { margin: 7px 0 0; color: #818995; font-size: 13px; line-height: 1.5; }
+.ctaArea strong { color: #ff0738; font-weight: 600; }
+.number:focus-visible, .openMarket:focus-visible, .replayButton:focus-visible, .pauseButton:focus-visible, .primaryCta:focus-visible { outline: 2px solid #ff0738; outline-offset: 4px; }
+
+.section[data-revealed="true"] .reveal { animation: revealUp 600ms ease-out var(--reveal-delay, 0ms) both; }
+.preview[data-animated="true"] .urlText { animation: typeLink 1000ms steps(22, end) 150ms both; }
+.preview[data-animated="true"] .screenshot { animation: importScreenshot 600ms ease-out 1200ms both; }
+.preview[data-animated="true"] .addedBadge { animation: badgePop 300ms ease-out 1950ms both; }
+.preview[data-animated="true"] .spinner { display: block; animation: spin 900ms linear infinite; }
+.preview[data-animated="true"] .scanCheck { display: none; }
+.preview[data-animated="true"] .scanFill { animation: scanProgress 500ms ease var(--data-delay) both; }
+.preview[data-animated="true"] .rowCheck { animation: checkPop 160ms ease-out var(--check-delay) both; }
+.preview[data-animated="true"] .resultBlock { animation: detailIn 200ms ease-out var(--result-delay) both; }
+.preview[data-animated="true"] .gaugeFill { animation: gaugeFill 700ms ease 400ms both; }
+.preview[data-animated="true"] .gaugeMarker { animation: gaugeMarker 700ms ease 400ms both; }
+.preview[data-animated="true"] .readyBadge { animation: badgePop 200ms ease-out 1300ms both; }
+.preview[data-animated="true"] .tabIndicator { animation: switchTab 250ms ease 1500ms both; }
+.preview[data-animated="true"] .marketsTab { animation: labelGray 250ms ease 1500ms both; }
+.preview[data-animated="true"] .walletsTab { animation: labelWhite 250ms ease 1500ms both; }
+.preview[data-animated="true"] .marketsView { animation: marketsOut 250ms ease 1500ms both; }
+.preview[data-animated="true"] .walletsView { animation: walletsIn 250ms ease 1500ms both; }
+.preview[data-animated="true"] .marketEntry, .preview[data-animated="true"] .walletEntry { animation: rowSlide 350ms ease-out var(--row-delay) both; }
+.preview[data-animated="true"] .validationCheck { animation: checkPop 250ms ease-out var(--validation-delay) both; }
+.preview[data-animated="true"] .openMarket { animation: buttonHighlight 700ms ease 1200ms both; }
+.preview[data-animated="true"] .openMarket::after { animation: buttonSweep 700ms ease 1200ms both; }
+.section[data-running="false"] .preview *, .section[data-running="false"] .preview *::after, .section[data-running="false"] .connectorFill { animation-play-state: paused !important; }
+@keyframes revealUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes lineProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes typeLink { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes importScreenshot { from { opacity: 0; transform: translate(18px, 18px) rotate(-9deg); } to { opacity: 1; transform: translate(0, 0) rotate(-9deg); } }
+@keyframes badgePop { 0% { opacity: 0; transform: scale(.92); } 70% { opacity: 1; transform: scale(1.035); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes scanProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes checkPop { 0% { opacity: 0; transform: scale(.4); } 75% { opacity: 1; transform: scale(1.09); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes detailIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes gaugeFill { from { width: 0; } to { width: 72%; } }
+@keyframes gaugeMarker { from { left: 0; } to { left: 72%; } }
+@keyframes switchTab { from { left: 4px; } to { left: 50%; } }
+@keyframes labelGray { from { color: #fff; } to { color: #6e7888; } }
+@keyframes labelWhite { from { color: #6e7888; } to { color: #fff; } }
+@keyframes marketsOut { from { opacity: 1; visibility: visible; } to { opacity: 0; visibility: hidden; } }
+@keyframes walletsIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rowSlide { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes buttonHighlight { 0%, 100% { box-shadow: 0 0 0 0 rgb(255 7 56 / 0%); background: #fff; } 50% { box-shadow: 0 0 19px rgb(255 7 56 / 14%); background: #fff3f6; } }
+@keyframes buttonSweep { 0% { opacity: 0; transform: translateX(-150%) skewX(-18deg); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateX(350%) skewX(-18deg); } }
+
+@media (min-width: 1151px) and (max-width: 1390px) {
+  .section { --step-gap: 13px; padding-inline: 28px; }
+  .card { min-height: 467px; padding: 16px 12px 13px; }
+  .iconTile { width: 51px; height: 51px; }
+  .iconTile svg { width: 29px; height: 29px; }
+  .card h3 { font-size: 17px; }
+  .stepDescription { font-size: 13px; }
+  .preview { margin-top: 15px; min-height: 245px; }
+  .dataRow, .resultBlock { padding-inline: 8px; gap: 6px; }
+  .smallIcon { width: 25px; height: 29px; }
+  .smallIcon svg { width: 20px; height: 20px; }
+  .dataRow strong, .resultBlock strong, .followRow strong { font-size: 9px; }
+  .panelHeader { padding-inline: 9px; }
+  .panelHeader > strong { font-size: 10px; }
+  .resultPanel .panelHeader { padding-inline: 7px; gap: 4px; }
+  .resultPanel .panelHeader > strong { font-size: 8px; }
+  .readyBadge { font-size: 6px; padding-inline: 4px; gap: 3px; }
+  .readyBadge svg { width: 10px; height: 10px; }
+  .followRow { padding-inline: 8px; gap: 6px; }
+  .sparkline { width: 36px; }
+  .decisionPanel { padding-inline: 9px; }
+  .validationRow { gap: 9px; }
+  .validationRow strong { font-size: 9px; }
+  .openMarket { font-size: 10px; gap: 6px; }
+  .controlNote { font-size: 9px; gap: 6px; }
+}
+@media (max-width: 1150px) {
+  .section { padding-inline: 24px; }
+  .heading h2 { font-size: clamp(34px, 4.3vw, 47px); }
+  .steps { display: flex; gap: 16px; margin-inline: -24px; padding: 5px 24px 15px; overflow-x: auto; scroll-snap-type: x proximity; scroll-padding-inline: 24px; scrollbar-width: thin; scrollbar-color: #ffd3dd transparent; }
+  .stepItem { flex: 0 0 300px; scroll-snap-align: center; }
+  .card { min-height: 486px; }
+  .card h3 { font-size: 21px; }
+  .stepDescription { font-size: 15px; }
+  .swipeHint { display: block; margin: 4px 0 0; color: #929aa8; font-size: 10px; text-align: center; }
+  .demoControls { margin-top: 5px; }
+}
+@media (max-width: 640px) {
+  .section { padding: 32px 18px 28px; scroll-margin-top: 92px; }
+  .eyebrow { font-size: 9px; margin-bottom: 13px; }
+  .heading h2 { font-size: clamp(30px, 7.7vw, 40px); line-height: 1.16; }
+  .description { margin-top: 13px; font-size: 14px; line-height: 1.6; }
+  .steps { margin: 22px -18px 0; padding: 5px 18px 15px; scroll-padding-inline: 18px; }
+  .stepItem { flex-basis: min(84vw, 310px); }
+  .number { width: 44px; height: 44px; margin-bottom: 12px; }
+  .connector { top: 22px; }
+  .card { min-height: 485px; padding: 18px 16px 16px; }
+  .iconTile { width: 56px; height: 56px; }
+  .card h3 { font-size: 20px; }
+  .stepDescription { font-size: 14px; }
+  .preview { min-height: 250px; }
+  .replayButton, .pauseButton { min-height: 42px; }
+  .demoStatus { min-height: 15px; font-size: 10px; }
+  .primaryCta { min-height: 52px; padding-inline: 22px; font-size: 14px; border-radius: 14px; }
+  .ctaArea > p { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .section *, .section *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .stepItem[data-active="true"] .card, .primaryCta:hover, .primaryCta:active, .openMarket:hover, .openMarket:active { transform: none; }
+  .stepItem[data-future="true"] .preview { opacity: 1; }
+  .primaryCta:hover svg, .openMarket:hover svg { transform: none; }
+}
