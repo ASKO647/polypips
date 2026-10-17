@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type MouseEvent } from "react";
+import { useRef, useState, useSyncExternalStore, type MouseEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Menu, X } from "lucide-react";
@@ -10,8 +10,17 @@ import { LanguageSelector } from "@/components/ui/language-selector";
 import { NAV_LINKS } from "@/lib/data/nav";
 import introStyles from "@/components/marketing/landing-intro.module.css";
 
+function subscribeToScroll(onChange: () => void) {
+  window.addEventListener("scroll", onChange, { passive: true });
+  return () => window.removeEventListener("scroll", onChange);
+}
+
+const getScrolled = () => window.scrollY > 24;
+const getServerScrolled = () => false;
+
 export function SiteHeader({ landing = false }: { landing?: boolean }) {
   const [open, setOpen] = useState(false);
+  const scrolled = useSyncExternalStore(subscribeToScroll, getScrolled, getServerScrolled);
   const headerRef = useRef<HTMLElement>(null);
   const tNav = useTranslations("Nav");
   const tHeader = useTranslations("Header");
@@ -34,7 +43,7 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
   }
 
   return (
-    <header ref={headerRef} className={`sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md ${landing ? introStyles.header : ""}`}>
+    <header ref={headerRef} data-scrolled={scrolled} className={`sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md ${landing ? introStyles.header : ""}`}>
       <div className="mx-auto flex h-[76px] w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
         <Logo />
         <nav className="hidden items-center gap-8 lg:flex">

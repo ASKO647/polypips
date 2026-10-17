@@ -1,12 +1,19 @@
 .header.header {
   color: #374151;
   margin-bottom: calc(-93px - env(safe-area-inset-top, 0px));
-  background: rgb(255 255 255 / 84%);
-  border-bottom-color: rgb(255 255 255 / 56%);
-  box-shadow: 0 4px 28px rgb(53 0 13 / 5%);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
-  backdrop-filter: blur(20px) saturate(1.4);
+  background: transparent;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 }
+.header.header[data-scrolled="true"] { background: #fff; border-bottom-color: #eceef2; box-shadow: 0 4px 28px rgb(53 0 13 / 8%); }
+.header[data-scrolled="false"] > div:first-child nav a,
+.header[data-scrolled="false"] > div:first-child a[href$="/login"],
+.header[data-scrolled="false"] > div:first-child a[aria-label] { color: #fff; }
+.header[data-scrolled="false"] > div:first-child a[aria-label] img { filter: brightness(0) invert(1); }
+.header[data-scrolled="false"] > div:first-child button[aria-expanded]:not([aria-haspopup]) { color: #fff; border-color: rgb(255 255 255 / 40%); }
 .header > div:first-child { height: 92px; max-width: 1360px; }
 .header a[aria-label] { color: var(--color-brand-500, #e52323); font-size: 25px; letter-spacing: -0.045em; }
 .header a[aria-label] img { height: 39px; width: auto; filter: none; }
@@ -175,6 +182,7 @@
   .football { font-size: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .header.header { transition: none; }
   .floatingEmoji { animation: none; }
   .universe { transition: none; }
 }
