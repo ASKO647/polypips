@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { CoachFlow } from "@/components/dashboard/coach/coach-flow";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
@@ -30,7 +30,6 @@ export default async function CoachPage({
 
   return (
     <CoachFlow
-      userId={user?.id ?? null}
       initialConversations={conversations}
       initialFocusAnalysis={
         focusAnalysis ? { id: focusAnalysis.id, question: focusAnalysis.question } : null
@@ -40,3 +39,4 @@ export default async function CoachPage({
     />
   );
 }
+
