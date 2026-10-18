@@ -1,159 +1,50 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Loader2, Paperclip, Send, X } from "lucide-react";
-import { QUICK_QUESTION_IDS, type QuickQuestion } from "@/lib/data/coach";
-import {
-  COACH_ATTACHMENT_ALLOWED_TYPES,
-  CoachAttachmentError,
-  uploadCoachAttachment,
-  type UploadedCoachAttachment,
-} from "@/lib/supabase/coach-attachments";
-import { createClient } from "@/lib/supabase/client";
+import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { ChevronDown, Layers3, Mic, Paperclip, Send, Square, X } from "lucide-react";
+import type { QuickQuestion } from "@/lib/data/coach";
+import styles from "./coach-workspace.module.css";
 
-export function ChatInput({
-  value,
-  onChange,
-  onSend,
-  onSelectSuggestion,
-  disabled,
-  userId,
-  attachments,
-  onAttachmentsChange,
-}: {
+export function ChatInput({ value, onChange, onSend, disabled, sending, onStop }: {
   value: string;
   onChange: (value: string) => void;
   onSend: () => void;
   onSelectSuggestion: (question: QuickQuestion) => void;
   disabled: boolean;
-  /** null for a logged-out/no-access state — the picker is hidden then. */
-  userId: string | null;
-  attachments: UploadedCoachAttachment[];
-  onAttachmentsChange: (next: UploadedCoachAttachment[]) => void;
+  sending: boolean;
+  onStop: () => void;
 }) {
   const t = useTranslations("Coach.ChatInput");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-  const [attachmentError, setAttachmentError] = useState<string | null>(null);
-  const quickQuestionLabels = t.raw("quickQuestions") as Record<
-    (typeof QUICK_QUESTION_IDS)[number],
-    string
-  >;
-  const quickQuestions: QuickQuestion[] = QUICK_QUESTION_IDS.map((id) => ({
-    id,
-    label: quickQuestionLabels[id],
-  }));
+  const locale = useLocale();
+  const areaRef = useRef<HTMLTextAreaElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [modelOpen, setModelOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [file, setFile] = useState<string | null>(null);
 
-  const handlePickFile = () => fileInputRef.current?.click();
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file || !userId) return;
-
-    setAttachmentError(null);
-    setUploading(true);
-    try {
-      const supabase = createClient();
-      const uploaded = await uploadCoachAttachment(supabase, userId, file);
-      onAttachmentsChange([...attachments, uploaded]);
-    } catch (err) {
-      setAttachmentError(
-        err instanceof CoachAttachmentError ? err.message : t("attachmentUploadFailed")
-      );
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeAttachment = (id: string) => {
-    onAttachmentsChange(attachments.filter((a) => a.id !== id));
-  };
+  useEffect(() => {
+    const area = areaRef.current;
+    if (!area) return;
+    area.style.height = "auto";
+    area.style.height = `${Math.min(area.scrollHeight, 104)}px`;
+  }, [value]);
 
   return (
-    <div className="border-t border-white/10 p-3 sm:p-4">
-      <div className="mb-3 flex flex-wrap gap-2">
-        {quickQuestions.map((question) => (
-          <button
-            key={question.id}
-            type="button"
-            disabled={disabled}
-            onClick={() => onSelectSuggestion(question)}
-            className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-medium text-white/60 transition-colors duration-150 hover:border-white/25 hover:text-white disabled:pointer-events-none disabled:opacity-50"
-          >
-            {question.label}
-          </button>
-        ))}
-      </div>
-
-      {attachments.length > 0 && (
-        <div className="mb-2.5 flex flex-wrap gap-1.5">
-          {attachments.map((att) => (
-            <span
-              key={att.id}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-[11px] text-white/60"
-            >
-              <Paperclip className="h-3 w-3" />
-              {att.fileName}
-              <button
-                type="button"
-                onClick={() => removeAttachment(att.id)}
-                aria-label={t("removeAttachmentAria")}
-                className="text-white/40 transition-colors hover:text-white"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </span>
-          ))}
+    <div className={styles.composerWrap}>
+      <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); if (sending) onStop(); else onSend(); }}>
+        {file && <div className={styles.fileCard}><Paperclip /><span>{file}<small>{locale === "en" ? "Ready" : "Prêt"}</small></span><button type="button" onClick={() => setFile(null)}><X /></button></div>}
+        <textarea ref={areaRef} rows={1} value={value} onChange={(event) => onChange(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); onSend(); } }} placeholder={t("placeholder")} disabled={disabled || sending} />
+        <div className={styles.composerActions}>
+          <input ref={fileRef} type="file" hidden onChange={(event) => setFile(event.target.files?.[0]?.name ?? null)} />
+          <button type="button" className={styles.circleButton} onClick={() => fileRef.current?.click()} aria-label={locale === "en" ? "Attach a file" : "Joindre un fichier"}><Paperclip /></button>
+          <div className={styles.menuAnchor}><button type="button" className={styles.contextButton} onClick={() => setContextOpen((v) => !v)}><Layers3 />{locale === "en" ? "Add context" : "Ajouter un contexte"}<ChevronDown /></button>{contextOpen && <div className={styles.floatingMenu}><button type="button">✓ Polymarket</button><button type="button">Portefeuille</button><button type="button">{locale === "en" ? "Sports data" : "Données sportives"}</button></div>}</div>
+          <div className={styles.menuAnchor}><button type="button" className={styles.modelButton} onClick={() => setModelOpen((v) => !v)}><span>P</span>Polypips Intelligence<ChevronDown /></button>{modelOpen && <div className={styles.floatingMenu}><button type="button">✓ Polypips Intelligence</button><button type="button">Polypips Fast</button></div>}</div>
+          <span className={styles.actionSpacer} />
+          <button type="button" className={`${styles.micButton} ${recording ? styles.recording : ""}`} onClick={() => setRecording((v) => !v)}><Mic /></button>
+          <button type="submit" className={`${styles.sendButton} ${sending ? styles.stopButton : ""}`} disabled={!sending && (disabled || !value.trim())} aria-label={sending ? (locale === "en" ? "Stop" : "Arrêter") : t("sendAria")}>{sending ? <Square /> : <Send />}</button>
         </div>
-      )}
-
-      {attachmentError && <p className="mb-2 text-xs text-rose-400">{attachmentError}</p>}
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          onSend();
-        }}
-        className="flex items-center gap-2"
-      >
-        {userId && (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={COACH_ATTACHMENT_ALLOWED_TYPES.join(",")}
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <button
-              type="button"
-              onClick={handlePickFile}
-              disabled={disabled || uploading}
-              aria-label={t("attachAria")}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.03] text-white/60 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-50"
-            >
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
-            </button>
-          </>
-        )}
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={t("placeholder")}
-          disabled={disabled}
-          className="w-full rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-white/25 focus:outline-none disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={disabled || value.trim() === ""}
-          aria-label={t("sendAria")}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition-transform duration-150 ease-out hover:scale-105 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
-        >
-          <Send className="h-4 w-4" />
-        </button>
       </form>
     </div>
   );
