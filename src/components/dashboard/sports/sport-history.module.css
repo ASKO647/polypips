@@ -3,3 +3,12 @@
 @media(max-width:1050px){.stats{grid-template-columns:repeat(2,1fr)}.contentGrid{grid-template-columns:1fr}.sidePanels{grid-template-columns:repeat(3,1fr)}.filters{flex-wrap:wrap}.search{flex-basis:100%}}
 @media(max-width:700px){.page,.resultPage{padding:18px 14px}.hero{align-items:flex-start;flex-direction:column}.hero h1{font-size:26px}.stats{grid-template-columns:1fr 1fr;gap:9px}.statCard{padding:12px;gap:9px}.statCard strong{font-size:19px}.filters{align-items:stretch}.sportFilters{width:100%;overflow:auto}.sportFilters button{flex:1;white-space:nowrap}.selectButton{flex:1;justify-content:space-between}.analysisGrid{grid-template-columns:1fr}.sidePanels{grid-template-columns:1fr}.benefits{grid-template-columns:1fr}.empty{min-height:300px}.contentGrid{gap:12px}}
 @media(prefers-reduced-motion:reduce){.page,.hero,.statCard,.filters,.empty,.analysisCard,.sidePanels,.benefits div,.empty>span{animation:none!important;transition:color .01ms,background-color .01ms,border-color .01ms!important}}
+
+/* Layout and typography alignment with the shared dashboard shell. */
+.page{min-height:calc(100vh - 68px);padding-bottom:14px;font-family:var(--font-sans),Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.resultPage{min-height:calc(100vh - 68px)}
+.hero h1{font-weight:800}
+.hero p,.panelHeading p{font-weight:450}
+.historyPanel{min-height:calc(100vh - 370px)}
+.privacy{margin-top:4px}
+@media(max-width:700px){.page,.resultPage{padding-bottom:10px}.historyPanel{min-height:420px}}
