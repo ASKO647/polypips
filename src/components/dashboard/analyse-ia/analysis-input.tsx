@@ -1,253 +1,30 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { ArrowRight, BrainCircuit, Clock, Link2, TriangleAlert, UploadCloud, X } from "lucide-react";
-import { Button, ButtonIcon } from "@/components/ui/button";
-import { isPrimaryDecision, type MarketAnalysis } from "@/lib/data/analysis";
+import { useMemo, useRef, useState } from "react";
+import { ArrowRight, BarChart3, Check, Clock3, FileText, Link2, MessageCircle, Shield, Sparkles, TriangleAlert, UploadCloud, X } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { AnalyzeMarketRequest } from "@/lib/supabase/analyze-market-client";
 import type { AnalysisDepth } from "@/lib/data/deep-analysis";
-import { cn } from "@/lib/utils";
+import styles from "./polymarket-analysis.module.css";
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(",")[1] ?? "";
-      resolve(base64);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-export function AnalysisInput({
-  recentAnalyses,
-  errorMessage,
-  link,
-  onLinkChange,
-  file,
-  onFileChange,
-  onAnalyze,
-  onSelectRecent,
-  creditBalance,
-}: {
-  recentAnalyses: MarketAnalysis[];
-  errorMessage: React.ReactNode | null;
-  link: string;
-  onLinkChange: (link: string) => void;
-  file: File | null;
-  onFileChange: (file: File | null) => void;
-  onAnalyze: (request: AnalyzeMarketRequest) => void;
-  onSelectRecent: (analysis: MarketAnalysis) => void;
-  /** Current Deep Analysis credit balance — shown next to the deep button
-   * so a user isn't surprised by a "no credits" error. */
-  creditBalance: number;
-}) {
-  const t = useTranslations("Polymarket.AnalyseIa");
-  const tCredits = useTranslations("Credits");
-  const [dragOver, setDragOver] = useState(false);
-  const [preparing, setPreparing] = useState<AnalysisDepth | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const canAnalyze = (file !== null || link.trim() !== "") && preparing === null;
-
-  const handleSubmit = async (depth: AnalysisDepth) => {
-    if (!canAnalyze) return;
-    if (file) {
-      setPreparing(depth);
-      try {
-        const imageBase64 = await fileToBase64(file);
-        onAnalyze({
-          type: "image",
-          imageBase64,
-          imageMediaType: file.type || "image/png",
-          depth,
-        });
-      } finally {
-        setPreparing(null);
-      }
-    } else {
-      onAnalyze({ type: "link", link: link.trim(), depth });
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          {t("heading")}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          {t("subtitle")}
-        </p>
-      </div>
-
-      {errorMessage && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-4 py-3.5">
-          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-rose-400" strokeWidth={2} />
-          <p className="text-sm leading-relaxed text-rose-300">{errorMessage}</p>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:p-6">
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => inputRef.current?.click()}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              inputRef.current?.click();
-            }
-          }}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setDragOver(true);
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            const dropped = e.dataTransfer.files?.[0];
-            if (dropped) onFileChange(dropped);
-          }}
-          className={cn(
-            "flex cursor-pointer flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-10 text-center transition-colors duration-150",
-            dragOver
-              ? "border-brand-400 bg-brand-500/[0.06]"
-              : "border-white/15 hover:border-white/25 hover:bg-white/[0.02]"
-          )}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const selected = e.target.files?.[0];
-              if (selected) onFileChange(selected);
-            }}
-          />
-          <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-brand-400">
-            <UploadCloud className="h-5 w-5" strokeWidth={1.75} />
-          </span>
-          {file ? (
-            <div className="flex items-center gap-2">
-              <p className="max-w-[240px] truncate text-sm font-medium text-white">
-                {file.name}
-              </p>
-              <button
-                type="button"
-                aria-label={t("removeFileAria")}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFileChange(null);
-                  if (inputRef.current) inputRef.current.value = "";
-                }}
-                className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:text-white"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-white">
-                {t("dragDropTitle")}
-              </p>
-              <p className="text-xs text-white/40">
-                {t("browseHint")}
-              </p>
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="h-px flex-1 bg-white/10" />
-          <span className="text-xs font-semibold uppercase tracking-wide text-white/30">
-            {t("orDivider")}
-          </span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
-
-        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 transition-colors focus-within:border-white/25">
-          <Link2 className="h-4 w-4 shrink-0 text-white/40" strokeWidth={2} />
-          <input
-            type="url"
-            inputMode="url"
-            placeholder={t("linkPlaceholder")}
-            value={link}
-            onChange={(e) => onLinkChange(e.target.value)}
-            className="w-full bg-transparent text-sm text-white placeholder:text-white/30 focus:outline-none"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            disabled={!canAnalyze}
-            onClick={() => handleSubmit("deep")}
-            className="w-full sm:w-auto"
-          >
-            <BrainCircuit className="h-4 w-4" />
-            {preparing === "deep" ? t("analyzeButton") : tCredits("DeepAnalysis.button")}
-            <span className="ml-1 text-xs font-normal text-current opacity-60">
-              ({tCredits("DeepAnalysis.buttonCreditCost")} · {creditBalance})
-            </span>
-          </Button>
-          <Button
-            type="button"
-            disabled={!canAnalyze}
-            onClick={() => handleSubmit("standard")}
-            className="w-full sm:w-auto"
-          >
-            {t("analyzeButton")}
-            <ButtonIcon>
-              <ArrowRight className="h-4 w-4" />
-            </ButtonIcon>
-          </Button>
-        </div>
-      </div>
-
-      {recentAnalyses.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">
-            {t("recentAnalysesTitle")}
-          </p>
-          <div className="flex flex-col gap-2">
-            {recentAnalyses.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onSelectRecent(item)}
-                className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-left transition-colors duration-150 hover:border-white/20 hover:bg-white/[0.06]"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <p className="truncate text-sm font-medium text-white">
-                    {item.question}
-                  </p>
-                  <span className="flex items-center gap-1.5 text-xs text-white/40">
-                    <Clock className="h-3 w-3" />
-                    {item.analyzedAt} · {item.category}
-                  </span>
-                </div>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
-                    isPrimaryDecision(item.decision, item.outcomes)
-                      ? "bg-emerald-500/15 text-emerald-400"
-                      : "bg-rose-500/15 text-rose-400"
-                  )}
-                >
-                  {item.decision} {item.aiProbability}%
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+function fileToBase64(file:File):Promise<string>{return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(((r.result as string).split(",")[1]??""));r.onerror=reject;r.readAsDataURL(file)})}
+export function AnalysisInput({recentAnalyses,errorMessage,link,onLinkChange,file,onFileChange,onAnalyze,onSelectRecent,creditBalance}:{recentAnalyses:MarketAnalysis[];errorMessage:React.ReactNode|null;link:string;onLinkChange:(v:string)=>void;file:File|null;onFileChange:(f:File|null)=>void;onAnalyze:(r:AnalyzeMarketRequest)=>void;onSelectRecent:(a:MarketAnalysis)=>void;creditBalance:number}){
+ const[drag,setDrag]=useState(false),[preparing,setPreparing]=useState(false),[depth,setDepth]=useState<AnalysisDepth>("deep"),[fileError,setFileError]=useState(""),input=useRef<HTMLInputElement>(null);
+ const validLink=useMemo(()=>{if(!link.trim())return false;try{const u=new URL(link);return u.hostname.includes("polymarket.com")}catch{return false}},[link]);
+ const choose=(f:File|null)=>{setFileError("");if(!f){onFileChange(null);return}if(!["image/png","image/jpeg","image/webp"].includes(f.type)){setFileError("Format incorrect : utilisez PNG, JPG ou WEBP.");return}if(f.size>10*1024*1024){setFileError("Le fichier dépasse la limite de 10 Mo.");return}onFileChange(f)};
+ const submit=async()=>{if((!file&&!validLink)||preparing)return;if(file){setPreparing(true);try{onAnalyze({type:"image",imageBase64:await fileToBase64(file),imageMediaType:file.type||"image/png",depth})}finally{setPreparing(false)}}else onAnalyze({type:"link",link:link.trim(),depth})};
+ return <div className={styles.pageEnter}>
+  <div className={styles.titleRow}><div><h1>Analyse IA Polymarket</h1><p>Importez un marché et obtenez une analyse claire de ses probabilités, arguments et risques.</p></div><div className={styles.quota}><BarChart3/>0/10 analyses aujourd’hui</div></div>
+  {errorMessage&&<div className={styles.error}><TriangleAlert/>{errorMessage}<button onClick={submit}>Réessayer</button></div>}
+  <div className={styles.contentGrid}><section className={styles.formCard}><div className={styles.steps}><div className={styles.stepActive}><span>1</span>Importer</div><i/><div><span>2</span>Configurer</div><i/><div><span>3</span>Résultat</div></div>
+   <div className={`${styles.dropzone} ${drag?styles.dropActive:""} ${fileError?styles.dropError:""}`} role="button" tabIndex={0} onClick={()=>input.current?.click()} onKeyDown={e=>{if(e.key==="Enter"||e.key===" ")input.current?.click()}} onDragOver={e=>{e.preventDefault();setDrag(true)}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);choose(e.dataTransfer.files?.[0]||null)}}><input ref={input} type="file" accept="image/png,image/jpeg,image/webp" onChange={e=>choose(e.target.files?.[0]||null)}/>{file?<div className={styles.filePreview}><div className={styles.thumb}><FileText/></div><div><strong>{file.name}</strong><small>{(file.size/1024/1024).toFixed(2)} Mo · Import terminé</small><span><i/></span></div><Check className={styles.check}/><button onClick={e=>{e.stopPropagation();choose(null);if(input.current)input.current.value=""}}><X/></button></div>:<><span className={styles.uploadIcon}><UploadCloud/></span><h3>Déposez une capture d’écran</h3><p>PNG, JPG ou WEBP · 10 Mo maximum</p><button>Choisir un fichier</button></>}</div>
+   {fileError&&<p className={styles.fileError}>{fileError}</p>}<div className={styles.or}><i/>OU<i/></div>
+   <label className={`${styles.urlField} ${link&&!validLink?styles.invalidUrl:""}`}><Link2/><input type="url" placeholder="Collez le lien d’un marché Polymarket" value={link} onChange={e=>onLinkChange(e.target.value)}/>{validLink&&<Check/>}</label><p className={styles.detect}><Check/>Le marché sera automatiquement détecté</p>
+   <div className={styles.config}><div className={styles.configTitle}><strong>Niveau d’analyse</strong><span>{depth==="deep"?"1 crédit":"Inclus"}</span></div><div className={styles.configBottom}><div className={styles.depths}><button className={depth==="standard"?styles.depthActive:""} onClick={()=>setDepth("standard")}><Sparkles/><div><b>Rapide</b><small>Aperçu essentiel</small></div><i/></button><button className={depth==="deep"?styles.depthActive:""} onClick={()=>setDepth("deep")}><BarChart3/><div><b>Approfondie</b><small>Analyse complète · {creditBalance} crédits</small></div><i/></button></div><button className={styles.analyze} disabled={(!file&&!validLink)||preparing} onClick={submit}>{preparing?<><span className={styles.spinner}/>Préparation…</>:<> <Sparkles/>Analyser le marché<ArrowRight/></>}</button></div></div><p className={styles.privacy}><Shield/>Votre capture est utilisée uniquement pour cette analyse.</p>
+  </section>
+  <aside className={styles.rightPanel}><section className={styles.benefits}><h2>Ce que vous obtiendrez</h2>{[[BarChart3,"Probabilité estimée","Une estimation claire et argumentée."],[FileText,"Arguments pour et contre","Les principaux éléments en faveur et en défaveur."],[TriangleAlert,"Risques à surveiller","Les incertitudes et scénarios alternatifs."],[Link2,"Sources et niveau de confiance","Les sources utilisées et leur fiabilité."]].map(([Icon,title,sub],i)=><div key={title as string} style={{"--delay":`${i*60}ms`} as React.CSSProperties}><span><Icon/></span><p><b>{title as string}</b><small>{sub as string}</small></p></div>)}</section>
+   <section className={styles.recents}><h2>Analyses récentes</h2>{recentAnalyses.length?<div>{recentAnalyses.slice(0,3).map(a=><button key={a.id} onClick={()=>onSelectRecent(a)}><span>{a.category[0]}</span><p><b>{a.question}</b><small>{a.aiProbability}% · {a.decision}</small></p><ArrowRight/></button>)}</div>:<div className={styles.noRecent}><Clock3/><b>Aucune analyse récente</b><p>Vos analyses apparaîtront ici une fois un marché analysé.</p></div>}<Link href="/dashboard/markets">Voir tout l’historique <ArrowRight/></Link></section>
+   <Link href="/dashboard/coach" className={styles.coachCard}><span><MessageCircle/></span><p><b>Besoin d’aide ?</b><small>Le Coach IA peut expliquer chaque résultat.</small><em>Ouvrir le Coach IA <ArrowRight/></em></p></Link>
+  </aside></div></div>
 }

@@ -17,12 +17,13 @@ export function AnalysisLoading({
   const t = useTranslations("Polymarket.AnalyseIa");
   const currentIndex = currentStep ? ANALYSIS_STEP_ORDER.indexOf(currentStep) : -1;
 
+  const progress = currentIndex < 0 ? 4 : ((currentIndex + 1) / ANALYSIS_STEP_ORDER.length) * 100;
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-8 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16">
-      <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.06]">
-        <Loader2 className="h-7 w-7 animate-spin text-brand-400" strokeWidth={2} />
+    <div className="mx-auto mt-8 flex min-h-[560px] max-w-3xl animate-[fadeIn_.45s_ease-out] flex-col items-center justify-center gap-8 rounded-2xl border border-[#eadfe2] bg-white px-6 py-16 text-[#171014] shadow-[0_18px_60px_rgba(82,21,33,.08)]">
+      <span className="flex h-16 w-16 items-center justify-center rounded-full border border-[#ffd3da] bg-[#fff0f2]">
+        <Loader2 className="h-7 w-7 animate-spin text-[#f3173c]" strokeWidth={2} />
       </span>
-
+      <div className="h-2 w-full max-w-sm overflow-hidden rounded-full bg-[#f3edef]"><span className="block h-full rounded-full bg-[#f3173c] transition-[width] duration-300" style={{width:`${progress}%`}} /></div>
       <div className="flex w-full max-w-sm flex-col gap-3">
         {ANALYSIS_STEP_ORDER.map((step, i) => {
           const current = i === currentIndex;
@@ -33,10 +34,10 @@ export function AnalysisLoading({
                 className={cn(
                   "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold",
                   complete
-                    ? "border-emerald-400 bg-emerald-400/15 text-emerald-400"
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-600"
                     : current
-                      ? "border-brand-400 bg-brand-400/15 text-brand-400"
-                      : "border-white/15 text-white/20"
+                      ? "border-[#f3173c] bg-[#fff0f2] text-[#f3173c]"
+                      : "border-[#ddd4d7] text-[#aaa0a4]"
                 )}
               >
                 {complete ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
@@ -44,9 +45,9 @@ export function AnalysisLoading({
               <span
                 className={cn(
                   "text-sm transition-colors duration-200",
-                  complete && "text-white/40",
-                  current && "font-medium text-white",
-                  !complete && !current && "text-white/25"
+                  complete && "text-[#8a7f83]",
+                  current && "font-medium text-[#171014]",
+                  !complete && !current && "text-[#aaa0a4]"
                 )}
               >
                 {analysisLoadingStepLabel(step, t)}

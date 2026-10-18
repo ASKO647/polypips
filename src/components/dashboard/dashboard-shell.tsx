@@ -36,7 +36,7 @@ function DashboardShellInner({
   const { theme } = useDashboardTheme();
   const pathname = usePathname();
   const isCoachRoute = pathname.startsWith("/dashboard/coach");
-  const isOverviewRoute = pathname === "/dashboard";
+  const isOverviewRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia";
   const isImmersiveRoute = isCoachRoute || isOverviewRoute;
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
