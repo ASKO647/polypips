@@ -1,177 +1,39 @@
 "use client";
-
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { SportMatchSearchPanel } from "@/components/dashboard/sports/sport-match-search-panel";
-import { FixturePicker } from "@/components/dashboard/sports/fixture-picker";
-import { SportMatchLoading } from "@/components/dashboard/sports/sport-match-loading";
-import { SportMatchResult } from "@/components/dashboard/sports/sport-match-result";
-import {
-  SportMatchSearchError,
-  searchSportMatch,
-} from "@/lib/supabase/sport-match-search-client";
-import {
-  SportMatchAnalysisError,
-  runSportMatchAnalysis,
-} from "@/lib/supabase/analyze-sport-match-client";
-import {
-  sportMatchErrorLabel,
-  type SportMatchAnalysis,
-  type SportMatchProgressStep,
-} from "@/lib/data/sports-analysis";
-import type { Sport, SportFixture, SportSearchResult } from "@/lib/sports/types";
-import type { AnalysisDepth } from "@/lib/data/deep-analysis";
-
-type FlowState = "search" | "fixtures" | "loading" | "result";
-
-function errorContentFor(
-  error: unknown,
-  changePlanLabel: string,
-  tErrors: (key: string) => string,
-  tCredits: (key: string) => string
-): React.ReactNode {
-  if (error instanceof SportMatchAnalysisError && error.code === "no_credits") {
-    return (
-      <>
-        {tCredits("DeepAnalysis.noCreditsMessage")}{" "}
-        <Link
-          href="/dashboard/credits"
-          className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
-        >
-          {tCredits("DeepAnalysis.buyCreditsCta")}
-        </Link>
-      </>
-    );
-  }
-  if (error instanceof SportMatchAnalysisError && error.code === "limit_reached") {
-    return (
-      <>
-        {sportMatchErrorLabel(error.code, tErrors)}{" "}
-        <Link
-          href="/dashboard/settings"
-          className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
-        >
-          {changePlanLabel}
-        </Link>
-      </>
-    );
-  }
-  if (error instanceof SportMatchSearchError || error instanceof SportMatchAnalysisError) {
-    return sportMatchErrorLabel(error.code, tErrors);
-  }
-  return sportMatchErrorLabel("unknown", tErrors);
-}
-
-export function SportAnalyseIaFlow({ creditBalance }: { creditBalance: number }) {
-  const t = useTranslations("Sport.Flow");
-  const tErrors = useTranslations("Sport.Errors");
-  const tCredits = useTranslations("Credits");
-  const [state, setState] = useState<FlowState>("search");
-  const [sport, setSport] = useState<Sport>("football");
-  const [team1, setTeam1] = useState("");
-  const [team2, setTeam2] = useState("");
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [searchResult, setSearchResult] = useState<SportSearchResult | null>(null);
-  const [result, setResult] = useState<SportMatchAnalysis | null>(null);
-  const [currentStep, setCurrentStep] = useState<SportMatchProgressStep | null>(null);
-  const [errorMessage, setErrorMessage] = useState<React.ReactNode | null>(null);
-
-  const handleSearch = async () => {
-    setErrorMessage(null);
-    setSearchLoading(true);
-    try {
-      const found = await searchSportMatch(sport, team1, team2);
-      setSearchResult(found);
-      setState("fixtures");
-    } catch (error) {
-      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors, tCredits));
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  const handleSelectFixture = async (fixture: SportFixture, depth: AnalysisDepth) => {
-    if (!searchResult) return;
-    setErrorMessage(null);
-    setCurrentStep(null);
-    setState("loading");
-    try {
-      const analysis = await runSportMatchAnalysis(
-        {
-          sport,
-          homeTeamName: fixture.homeTeamName,
-          awayTeamName: fixture.awayTeamName,
-          competitionName: fixture.competitionName,
-          kickoffAt: fixture.kickoffAt,
-          recentMeetings: searchResult.recentMeetings,
-          depth,
-        },
-        (step) => setCurrentStep(step)
-      );
-      setResult(analysis);
-      setState("result");
-    } catch (error) {
-      setErrorMessage(errorContentFor(error, t("changePlan"), tErrors, tCredits));
-      setState("fixtures");
-    }
-  };
-
-  const handleNewSearch = () => {
-    setSearchResult(null);
-    setResult(null);
-    setErrorMessage(null);
-    setTeam1("");
-    setTeam2("");
-    setState("search");
-  };
-
-  const handleBackToFixtures = () => {
-    setResult(null);
-    setErrorMessage(null);
-    setState(searchResult ? "fixtures" : "search");
-  };
-
-  if (state === "loading") {
-    return <SportMatchLoading currentStep={currentStep} />;
-  }
-
-  if (state === "result" && result) {
-    return (
-      <SportMatchResult analysis={result} onBack={handleBackToFixtures} backLabel={t("otherMatch")} />
-    );
-  }
-
-  if (state === "fixtures" && searchResult) {
-    return (
-      <>
-        {errorMessage && (
-          <p className="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/5 px-4 py-3 text-xs text-rose-400">
-            {errorMessage}
-          </p>
-        )}
-        <FixturePicker
-          sport={sport}
-          result={searchResult}
-          creditBalance={creditBalance}
-          onSelectFixture={handleSelectFixture}
-          onBack={handleNewSearch}
-        />
-      </>
-    );
-  }
-
-  return (
-    <SportMatchSearchPanel
-      sport={sport}
-      onSportChange={setSport}
-      team1={team1}
-      onTeam1Change={setTeam1}
-      team2={team2}
-      onTeam2Change={setTeam2}
-      loading={searchLoading}
-      errorMessage={typeof errorMessage === "string" ? errorMessage : null}
-      onSearch={handleSearch}
-    />
-  );
+import {useState} from "react";
+import {useLocale,useTranslations} from "next-intl";
+import {ArrowLeft,ArrowRight,BarChart3,CalendarDays,Check,ChevronRight,CircleDot,CircleHelp,Clock3,Goal,Loader2,Search,Shield,Sparkles,Target,Trophy,Users,Zap} from "lucide-react";
+import {Link} from "@/i18n/navigation";
+import {DashboardChrome} from "@/components/dashboard/shared/dashboard-chrome";
+import {SportMatchResult} from "./sport-match-result";
+import {SportMatchSearchError,searchSportMatch} from "@/lib/supabase/sport-match-search-client";
+import {SportMatchAnalysisError,runSportMatchAnalysis} from "@/lib/supabase/analyze-sport-match-client";
+import {SPORT_MATCH_STEP_ORDER,sportMatchErrorLabel,sportMatchLoadingStepLabel,type SportMatchAnalysis,type SportMatchProgressStep} from "@/lib/data/sports-analysis";
+import type {Sport,SportFixture,SportSearchResult} from "@/lib/sports/types";
+import type {AnalysisDepth} from "@/lib/data/deep-analysis";
+import styles from "./sport-analysis.module.css";
+type State="search"|"fixtures"|"loading"|"result";
+const sports=[{id:"football",label:"Football",Icon:Goal},{id:"basketball",label:"Basketball",Icon:CircleDot},{id:"tennis",label:"Tennis",Icon:Target}] as const;
+const benefits=[[BarChart3,"Forme récente","Les derniers résultats et la dynamique."],[Trophy,"Historique des confrontations","Les précédents matchs entre les adversaires."],[BarChart3,"Statistiques clés","Les indicateurs essentiels de performance."],[Users,"Contexte et absences","Les effectifs, blessés et facteurs influents."],[Target,"Scénarios probables","Les issues possibles selon l’analyse IA."]] as const;
+export function SportAnalyseIaFlow({creditBalance}:{creditBalance:number}){
+ const locale=useLocale(),fr=locale!=="en",tErrors=useTranslations("Sport.Errors"),tCredits=useTranslations("Credits"),tLoading=useTranslations("Sport.Loading");
+ const[state,setState]=useState<State>("search"),[sport,setSport]=useState<Sport>("football"),[team1,setTeam1]=useState(""),[team2,setTeam2]=useState(""),[searchResult,setSearchResult]=useState<SportSearchResult|null>(null),[fixture,setFixture]=useState<SportFixture|null>(null),[depth,setDepth]=useState<AnalysisDepth>("deep"),[result,setResult]=useState<SportMatchAnalysis|null>(null),[currentStep,setCurrentStep]=useState<SportMatchProgressStep|null>(null),[error,setError]=useState(""),[searching,setSearching]=useState(false);
+ const canSearch=team1.trim().length>1&&team2.trim().length>1,activeStep=state==="result"?3:state==="fixtures"||state==="loading"?2:1;
+ const errorText=(e:unknown)=>{if(e instanceof SportMatchAnalysisError&&e.code==="no_credits")return `${tCredits("DeepAnalysis.noCreditsMessage")} ${tCredits("DeepAnalysis.buyCreditsCta")}`;if(e instanceof SportMatchSearchError||e instanceof SportMatchAnalysisError)return sportMatchErrorLabel(e.code,tErrors);return sportMatchErrorLabel("unknown",tErrors)};
+ const search=async()=>{if(!canSearch||searching)return;setError("");setSearching(true);try{const found=await searchSportMatch(sport,team1.trim(),team2.trim());setSearchResult(found);setFixture(found.upcomingFixtures[0]??null);setState("fixtures")}catch(e){setError(errorText(e))}finally{setSearching(false)}};
+ const analyze=async()=>{if(!searchResult||!fixture)return;setError("");setCurrentStep(null);setState("loading");try{const a=await runSportMatchAnalysis({sport,homeTeamName:fixture.homeTeamName,awayTeamName:fixture.awayTeamName,competitionName:fixture.competitionName,kickoffAt:fixture.kickoffAt,recentMeetings:searchResult.recentMeetings,depth},setCurrentStep);setResult(a);setState("result")}catch(e){setError(errorText(e));setState("fixtures")}};
+ const reset=()=>{setState("search");setSearchResult(null);setFixture(null);setResult(null);setError("")};
+ if(state==="result"&&result)return <DashboardChrome title={fr?"Analyse IA Sport":"Sport AI Analysis"}><main className={styles.resultPage}><SportMatchResult analysis={result} onBack={()=>setState("fixtures")} backLabel={fr?"Autre rencontre":"Another match"}/></main></DashboardChrome>;
+ return <DashboardChrome title={fr?"Analyse IA Sport":"Sport AI Analysis"}><main className={styles.page}>
+  <div className={styles.pageTitle}><div><h1>{fr?"Analyse IA Sport":"Sport AI Analysis"}</h1><p>{fr?"Comparez deux équipes ou joueurs et obtenez une analyse détaillée de leur prochaine confrontation.":"Compare two teams or players and get a detailed analysis."}</p></div><div className={styles.titleActions}><span><BarChart3/>0/10 {fr?"analyses aujourd’hui":"analyses today"}</span><Link href="/dashboard/sports/mes-analyses">{fr?"Voir mes analyses":"View analyses"}<ArrowRight/></Link></div></div>
+  <div className={styles.layout}><section className={styles.mainCard}>
+   <div className={styles.steps}>{[fr?"Choisir":"Choose",fr?"Confrontation":"Fixture",fr?"Résultat":"Result"].map((x,i)=><div key={x} className={activeStep>=i+1?styles.stepActive:""}><span>{activeStep>i+1?<Check/>:i+1}</span><b>{x}</b>{i<2&&<i/>}</div>)}</div>
+   {state==="loading"?<div className={styles.loadingPanel}><span className={styles.loadingIcon}><Loader2/></span><h2>{fr?"Analyse en cours…":"Analysis in progress…"}</h2><p>{fr?"Polypips croise les statistiques et le contexte réel de cette rencontre.":"Polypips is combining statistics and match context."}</p><div className={styles.progressList}>{SPORT_MATCH_STEP_ORDER.map((step,i)=>{const n=currentStep?SPORT_MATCH_STEP_ORDER.indexOf(currentStep):-1,done=n>i,current=n===i;return <div key={step} className={current?styles.progressCurrent:done?styles.progressDone:""}><span>{done?<Check/>:current?<Loader2/>:i+1}</span><b>{sportMatchLoadingStepLabel(step,tLoading)}</b></div>})}</div></div>:<>
+    <h2 className={styles.sectionTitle}>{fr?"Choisissez votre sport":"Choose your sport"}</h2><div className={styles.sportChoices}>{sports.map(({id,label,Icon})=><button key={id} className={sport===id?styles.choiceActive:""} onClick={()=>{setSport(id);reset()}}><span><Icon/></span><b>{label}</b><i/></button>)}</div>
+    <div className={`${styles.teams} ${canSearch?styles.teamsReady:""}`}><label><span><Shield/></span><div><b>{sport==="tennis"?(fr?"Joueur A":"Player A"):(fr?"Équipe A":"Team A")}</b><em><Search/><input value={team1} onChange={e=>{setTeam1(e.target.value);setState("search")}} placeholder={sport==="tennis"?"Carlos Alcaraz":"Paris Saint-Germain"}/></em></div></label><strong>VS</strong><label><span><Shield/></span><div><b>{sport==="tennis"?(fr?"Joueur B":"Player B"):(fr?"Équipe B":"Team B")}</b><em><Search/><input value={team2} onChange={e=>{setTeam2(e.target.value);setState("search")}} placeholder={sport==="tennis"?"Jannik Sinner":"Real Madrid"}/></em></div></label></div>
+    {state==="search"?<div className={styles.fixtureEmpty}><span><CalendarDays/></span><div><b>{fr?"Prochaine confrontation":"Next fixture"}</b><p>{fr?"Saisissez les deux participants pour rechercher leurs prochains matchs.":"Enter both participants to find their next fixtures."}</p></div><button disabled={!canSearch||searching} onClick={search}>{searching?<Loader2/>:<Search/>}{searching?(fr?"Recherche…":"Searching…"):(fr?"Rechercher":"Search")}</button></div>:<div className={styles.fixtures}><div className={styles.fixtureHead}><div><CalendarDays/><span><b>{fr?"Prochaine confrontation":"Next fixture"}</b><small>{searchResult?.upcomingFixtures.length??0} {fr?"rencontre(s) trouvée(s)":"fixture(s) found"}</small></span></div><button onClick={reset}><ArrowLeft/>{fr?"Nouvelle recherche":"New search"}</button></div>{searchResult?.upcomingFixtures.length?searchResult.upcomingFixtures.map((f,i)=><button key={f.externalFixtureId} style={{"--delay":`${i*60}ms`} as React.CSSProperties} className={`${styles.fixtureCard} ${fixture?.externalFixtureId===f.externalFixtureId?styles.fixtureSelected:""}`} onClick={()=>setFixture(f)}><span><b>{f.competitionName||"Compétition"}</b><small>{new Intl.DateTimeFormat(locale,{dateStyle:"medium",timeStyle:"short"}).format(new Date(f.kickoffAt))}</small></span><strong>{f.homeTeamName}<i>VS</i>{f.awayTeamName}</strong><em>{fixture?.externalFixtureId===f.externalFixtureId?<Check/>:null}</em></button>):<p className={styles.noFixture}>{fr?"Aucune rencontre à venir trouvée.":"No upcoming fixture found."}</p>}</div>}
+    <div className={styles.depthHead}><h2>{fr?"Niveau d’analyse":"Analysis depth"}</h2><span>{depth==="deep"?"1 crédit":fr?"Inclus":"Included"}</span></div><div className={styles.depthChoices}><button className={depth==="standard"?styles.depthActive:""} onClick={()=>setDepth("standard")}><Zap/><span><b>{fr?"Rapide":"Quick"}</b><small>{fr?"Aperçu essentiel":"Essential overview"}</small></span><i/></button><button className={depth==="deep"?styles.depthActive:""} onClick={()=>setDepth("deep")}><BarChart3/><span><b>{fr?"Approfondie":"Deep"}</b><small>{fr?"Statistiques, forme et contexte":"Statistics, form and context"}</small></span><i/></button></div>{error&&<p className={styles.error}>{error}</p>}<button className={styles.analyze} disabled={!fixture||state!=="fixtures"||(depth==="deep"&&creditBalance<1)} onClick={analyze}><Sparkles/>{fr?"Analyser la confrontation":"Analyze fixture"}<ArrowRight/></button><p className={styles.privacy}><Shield/>{fr?"Les données sportives sont utilisées uniquement pour générer cette analyse.":"Sports data is only used to generate this analysis."}</p>
+   </>}</section>
+   <aside className={styles.side}><article className={styles.benefits}><h2>{fr?"L’analyse comprendra":"The analysis includes"}</h2>{benefits.map(([Icon,title,desc],i)=><div key={title} style={{"--delay":`${i*60}ms`} as React.CSSProperties}><span><Icon/></span><p><b>{title}</b><small>{desc}</small></p></div>)}</article><article className={styles.recent}><h2>{fr?"Analyses récentes":"Recent analyses"}</h2><Clock3/><b>{fr?"Aucune analyse récente":"No recent analysis"}</b><p>{fr?"Vos analyses apparaîtront ici une fois une confrontation analysée.":"Your analyses will appear here after a fixture is analyzed."}</p><Link href="/dashboard/sports/mes-analyses">{fr?"Voir tout l’historique":"View full history"}<ArrowRight/></Link></article><article className={styles.coach}><span><CircleHelp/></span><div><b>{fr?"Une question sur un match ?":"A question about a match?"}</b><p>{fr?"Le Coach IA peut expliquer les statistiques, les risques et les scénarios.":"AI Coach can explain statistics, risks and scenarios."}</p><Link href="/dashboard/coach">{fr?"Ouvrir le Coach IA":"Open AI Coach"}<ChevronRight/></Link></div></article></aside>
+  </div><section className={styles.how}><h2><Target/>{fr?"Comment ça fonctionne ?":"How does it work?"}</h2><div>{[["1",fr?"Recherchez les participants":"Find participants",fr?"Trouvez les équipes ou joueurs à comparer.":"Find teams or players."],["2",fr?"Choisissez la confrontation":"Choose the fixture",fr?"Sélectionnez leur prochain match.":"Select their next match."],["3",fr?"Consultez l’analyse":"Read the analysis",fr?"Obtenez une analyse détaillée.":"Get a detailed analysis."]].map(([n,x,d])=><article key={n}><b>{n}</b><p><strong>{x}</strong><small>{d}</small></p></article>)}</div></section>
+ </main></DashboardChrome>
 }
