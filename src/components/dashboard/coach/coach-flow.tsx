@@ -1,356 +1,209 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  Archive, BarChart3, ChevronLeft, ChevronRight, CircleHelp, Database, Folder,
+  History, Link2, MessageCircle, MoreHorizontal, Plus, Settings, ShieldCheck,
+  Sparkles, WalletCards, X,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { History as HistoryIcon, Loader2, Table2, X } from "lucide-react";
 import { ChatInput } from "@/components/dashboard/coach/chat-input";
 import { ChatMessage } from "@/components/dashboard/coach/chat-message";
-import { CoachMobileHistory } from "@/components/dashboard/coach/coach-mobile-history";
-import { CoachSidebar } from "@/components/dashboard/coach/coach-sidebar";
 import { TypingIndicator } from "@/components/dashboard/coach/typing-indicator";
-import { ContextSelector } from "@/components/dashboard/coach/context-selector";
-import { ArtifactsPanel } from "@/components/dashboard/coach/artifact-cards";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
-import {
-  coachChatErrorMessage,
-  type Artifact,
-  type ContextSource,
-  type ConversationSummary,
-  type Message,
-  type QuickQuestion,
-} from "@/lib/data/coach";
+import { coachChatErrorMessage, type ConversationSummary, type Message, type QuickQuestion } from "@/lib/data/coach";
 import { CoachChatError, runCoachChat } from "@/lib/supabase/coach-chat-client";
 import { createClient } from "@/lib/supabase/client";
-import { fetchConversationArtifacts, fetchConversationMessages } from "@/lib/supabase/coach";
-import type { UploadedCoachAttachment } from "@/lib/supabase/coach-attachments";
-import { cn } from "@/lib/utils";
+import { fetchConversationMessages } from "@/lib/supabase/coach";
+import styles from "./coach-workspace.module.css";
 
 type FocusAnalysis = { id: string; question: string };
-type Tab = "chat" | "artifacts";
+type ConnectorState = "idle" | "connecting" | "checking" | "connected";
+
+const COPY = {
+  fr: {
+    ready: "Prêt à analyser", discussion: "Discussion", artifacts: "Artefacts",
+    welcome: "Comment puis-je vous aider aujourd’hui ?",
+    intro: "Posez vos questions sur vos analyses, explorez les marchés et obtenez des éclairages personnalisés.",
+    tools: "Outils & contexte", sources: "Sources connectées", addMcp: "Ajouter un connecteur MCP",
+    discussionSources: "Sources de cette discussion", noSource: "Aucune source spécifique",
+    noSourceText: "Les sources utilisées dans cette discussion apparaîtront ici.", secure: "Connexion sécurisée",
+    secureText: "Vos données sont protégées et utilisées uniquement pour vos analyses.",
+    nav: ["Discussions", "Projets", "Analyses", "Connecteurs MCP"], recent: "Conversations récentes",
+    all: "Voir toutes les conversations", collapse: "Réduire le menu", openTools: "Ouvrir les outils",
+    polymarket: "Polymarket", wallet: "Portefeuille", sport: "Données sportives", connected: "Connecté", readOnly: "Lecture seule",
+    mcpTitle: "Connecter une source MCP", mcpText: "Préparez une nouvelle source de données pour le Coach IA.",
+    endpoint: "URL du serveur MCP", connect: "Tester la connexion", connecting: "Connexion au serveur…",
+    checking: "Vérification des permissions…", confirmed: "Connecteur prêt", close: "Fermer",
+  },
+  en: {
+    ready: "Ready to analyse", discussion: "Discussion", artifacts: "Artifacts",
+    welcome: "How can I help you today?",
+    intro: "Ask questions about your analyses, explore markets and get personalised insights.",
+    tools: "Tools & context", sources: "Connected sources", addMcp: "Add an MCP connector",
+    discussionSources: "Sources in this chat", noSource: "No specific source",
+    noSourceText: "Sources used in this discussion will appear here.", secure: "Secure connection",
+    secureText: "Your data is protected and used only for your analyses.",
+    nav: ["Discussions", "Projects", "Analyses", "MCP connectors"], recent: "Recent conversations",
+    all: "View all conversations", collapse: "Collapse menu", openTools: "Open tools",
+    polymarket: "Polymarket", wallet: "Portfolio", sport: "Sports data", connected: "Connected", readOnly: "Read only",
+    mcpTitle: "Connect an MCP source", mcpText: "Prepare a new data source for the AI Coach.",
+    endpoint: "MCP server URL", connect: "Test connection", connecting: "Connecting to server…",
+    checking: "Checking permissions…", confirmed: "Connector ready", close: "Close",
+  },
+} as const;
 
 function errorContentFor(error: unknown, t: (key: string) => string): React.ReactNode {
   if (error instanceof CoachChatError && error.code === "limit_reached") {
-    return (
-      <>
-        {error.message}{" "}
-        <Link
-          href="/dashboard/settings"
-          className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
-        >
-          {t("changePlanLink")}
-        </Link>
-      </>
-    );
+    return <>{error.message} <Link href="/dashboard/settings">{t("changePlanLink")}</Link></>;
   }
   return coachChatErrorMessage(error instanceof CoachChatError ? error.code : "unknown", t);
 }
 
-export function CoachFlow({
-  userId,
-  initialConversations,
-  initialFocusAnalysis,
-  hasActiveSubscription,
-  cancelled,
-}: {
-  userId: string | null;
+export function CoachFlow({ initialConversations, initialFocusAnalysis, hasActiveSubscription, cancelled }: {
   initialConversations: ConversationSummary[];
   initialFocusAnalysis: FocusAnalysis | null;
   hasActiveSubscription: boolean;
-  /** True when access is blocked because the user cancelled — swaps the
-   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
   cancelled: boolean;
 }) {
+  const locale = useLocale();
+  const c = COPY[locale === "en" ? "en" : "fr"];
   const t = useTranslations("Coach");
-  const welcomeMessage: Message = {
-    id: "welcome",
-    role: "assistant",
-    content: t("welcomeMessage"),
-  };
-  const [conversations, setConversations] = useState<ConversationSummary[]>(initialConversations);
+  const welcomeMessage: Message = { id: "welcome", role: "assistant", content: t("welcomeMessage") };
+  const [conversations, setConversations] = useState(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
-  const [tab, setTab] = useState<Tab>("chat");
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [loadingConversation, setLoadingConversation] = useState(false);
   const [errorMessage, setErrorMessage] = useState<React.ReactNode | null>(null);
   const [focusAnalysis, setFocusAnalysis] = useState<FocusAnalysis | null>(initialFocusAnalysis);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [enabledContext, setEnabledContext] = useState<ContextSource[]>([]);
-  const [pendingAttachments, setPendingAttachments] = useState<UploadedCoachAttachment[]>([]);
+  const [collapsed, setCollapsed] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"discussion" | "artifacts">("discussion");
+  const [mcpOpen, setMcpOpen] = useState(false);
+  const [connectorState, setConnectorState] = useState<ConnectorState>("idle");
+  const [toast, setToast] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const isWelcome = messages.length === 1 && messages[0]?.id === "welcome" && !activeConversationId;
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, showTyping]);
-
-  const activeConversation = conversations.find((c) => c.id === activeConversationId) ?? null;
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, showTyping]);
+  useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(null), 4000); return () => clearTimeout(timer); }, [toast]);
 
   const handleNewConversation = () => {
-    setActiveConversationId(null);
-    setMessages([welcomeMessage]);
-    setArtifacts([]);
-    setTab("chat");
-    setInputValue("");
-    setErrorMessage(null);
-    setFocusAnalysis(null);
-    setEnabledContext([]);
-    setPendingAttachments([]);
+    setMessages((current) => current.length > 1 ? [] : current);
+    window.setTimeout(() => {
+      setActiveConversationId(null); setMessages([welcomeMessage]); setInputValue(""); setErrorMessage(null); setFocusAnalysis(null);
+    }, 180);
   };
 
   const handleSelectConversation = async (id: string) => {
     if (id === activeConversationId) return;
-    setErrorMessage(null);
-    setFocusAnalysis(null);
-    setPendingAttachments([]);
-    setActiveConversationId(id);
-    setTab("chat");
-    setLoadingConversation(true);
+    setErrorMessage(null); setFocusAnalysis(null); setActiveConversationId(id); setLoadingConversation(true);
     try {
-      const supabase = createClient();
-      const [msgs, artifactRows] = await Promise.all([
-        fetchConversationMessages(supabase, id),
-        fetchConversationArtifacts(supabase, id),
-      ]);
+      const msgs = await fetchConversationMessages(createClient(), id);
       setMessages(msgs.length > 0 ? msgs : [welcomeMessage]);
-      setArtifacts(artifactRows);
-    } finally {
-      setLoadingConversation(false);
-    }
+    } finally { setLoadingConversation(false); }
   };
 
-  const bumpConversation = (id: string, title: string) => {
-    setConversations((prev) => {
-      const existingIdx = prev.findIndex((c) => c.id === id);
-      const updated: ConversationSummary = { id, title, updatedAt: new Date().toISOString() };
-      if (existingIdx === -1) return [updated, ...prev];
-      const rest = prev.filter((c) => c.id !== id);
-      return [updated, ...rest];
-    });
+  const bumpConversation = (id: string, title: string) => setConversations((prev) => [
+    { id, title, updatedAt: new Date().toISOString() }, ...prev.filter((item) => item.id !== id),
+  ]);
+
+  const handleStop = () => {
+    abortRef.current?.abort(); abortRef.current = null; setSending(false); setShowTyping(false);
+    setToast(locale === "en" ? "Generation stopped" : "Génération arrêtée");
   };
 
   const handleSend = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || sending || !hasActiveSubscription) return;
-
-    setErrorMessage(null);
-    setInputValue("");
-    const sentAttachments = pendingAttachments;
-    setPendingAttachments([]);
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: trimmed,
-        attachments: sentAttachments.map((a) => ({ fileName: a.fileName, kind: a.kind })),
-      },
-    ]);
-    setSending(true);
-    setShowTyping(true);
-
-    const assistantId = crypto.randomUUID();
-    let assistantStarted = false;
-    const conversationIdAtSend = activeConversationId;
-
+    const controller = new AbortController(); abortRef.current = controller;
+    setErrorMessage(null); setInputValue("");
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", content: trimmed }]);
+    setSending(true); setShowTyping(true);
+    const assistantId = crypto.randomUUID(); let assistantStarted = false; const conversationIdAtSend = activeConversationId;
     try {
       const result = await runCoachChat(
-        {
-          conversationId: conversationIdAtSend,
-          message: trimmed,
-          focusAnalysisId: conversationIdAtSend ? undefined : (focusAnalysis?.id ?? undefined),
-          enabledContext,
-          attachmentIds: sentAttachments.map((a) => a.id),
-        },
+        { conversationId: conversationIdAtSend, message: trimmed, focusAnalysisId: conversationIdAtSend ? undefined : focusAnalysis?.id },
         (delta) => {
           if (!assistantStarted) {
-            assistantStarted = true;
-            setShowTyping(false);
+            assistantStarted = true; setShowTyping(false);
             setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: delta }]);
-          } else {
-            setMessages((prev) =>
-              prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + delta } : m))
-            );
-          }
-        }
+          } else setMessages((prev) => prev.map((m) => m.id === assistantId ? { ...m, content: m.content + delta } : m));
+        },
+        controller.signal,
       );
-
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantId
-            ? { ...m, sourcesUsed: result.sourcesUsed, showDisclaimer: result.showDisclaimer }
-            : m
-        )
-      );
-
-      if (result.artifact) {
-        setArtifacts((prev) => [...prev, result.artifact as Artifact]);
-      }
-
-      setFocusAnalysis(null);
-      if (!conversationIdAtSend) {
-        setActiveConversationId(result.conversationId);
-      }
-      bumpConversation(result.conversationId, result.title);
+      setFocusAnalysis(null); if (!conversationIdAtSend) setActiveConversationId(result.conversationId); bumpConversation(result.conversationId, result.title);
     } catch (error) {
-      setErrorMessage(errorContentFor(error, t));
-    } finally {
-      setShowTyping(false);
-      setSending(false);
-    }
+      if (!(error instanceof DOMException && error.name === "AbortError")) setErrorMessage(errorContentFor(error, t));
+    } finally { abortRef.current = null; setShowTyping(false); setSending(false); }
   };
 
-  const handleSelectSuggestion = (question: QuickQuestion) => {
-    handleSend(question.label);
+  const connectMcp = () => {
+    if (connectorState === "connected") { setMcpOpen(false); return; }
+    setConnectorState("connecting");
+    window.setTimeout(() => setConnectorState("checking"), 800);
+    window.setTimeout(() => { setConnectorState("connected"); setToast(c.confirmed); }, 1700);
   };
 
   return (
-    <div className="flex h-[calc(100vh-180px)] min-h-[520px] gap-4">
-      <CoachSidebar
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
-      />
+    <div className={styles.workspace} data-collapsed={collapsed} data-chatting={!isWelcome}>
+      <aside className={styles.sidebar}>
+        <div className={styles.brand}><Image src="/polypips-mark.png" alt="" width={36} height={40} /><strong>Polypips</strong><button onClick={() => setCollapsed((v) => !v)} aria-label={c.collapse}>{collapsed ? <ChevronRight /> : <ChevronLeft />}</button></div>
+        <button className={styles.newChat} onClick={handleNewConversation}><Plus /><span>{t("Sidebar.newConversation")}</span></button>
+        <nav className={styles.coachNav}>
+          {[MessageCircle, Folder, BarChart3, Link2].map((Icon, index) => <button className={index === 0 ? styles.navActive : ""} key={c.nav[index]} onClick={() => index === 3 && setMcpOpen(true)}><Icon /><span>{c.nav[index]}</span></button>)}
+        </nav>
+        <div className={styles.recent}><p>{c.recent}</p>{conversations.slice(0, 5).map((conv) => <button key={conv.id} data-active={conv.id === activeConversationId} onClick={() => handleSelectConversation(conv.id)}><MessageCircle /><span><strong>{conv.title}</strong><small>{new Date(conv.updatedAt).toLocaleDateString(locale)}</small></span></button>)}<button className={styles.allChats}><span>{c.all}</span><ChevronRight /></button></div>
+        <Link href="/dashboard/settings" className={styles.profile}><span>S</span><span><strong>Sébastien</strong><small>Compte Polypips Pro</small></span><Settings /></Link>
+      </aside>
 
-      <LockedOverlay
-        locked={!hasActiveSubscription}
-        cancelled={cancelled}
-        message={cancelled ? t("lockedMessageCancelled") : t("lockedMessage")}
-        className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
-        contentClassName="flex flex-1 flex-col overflow-hidden"
-      >
-        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5 sm:px-5">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/15">
-              <Image src="/polypips-mark.png" alt="" width={290} height={322} className="h-4 w-auto" />
-            </span>
-            <div>
-              <p className="font-display text-sm font-bold text-white">{t("headerTitle")}</p>
-              <p className="max-w-[220px] truncate text-[11px] text-white/40 sm:max-w-xs">
-                {activeConversation ? activeConversation.title : t("newConversationDefault")}
-              </p>
-            </div>
+      <LockedOverlay locked={!hasActiveSubscription} cancelled={cancelled} message={cancelled ? t("lockedMessageCancelled") : t("lockedMessage")} className={styles.chatShell} contentClassName={styles.chatInner}>
+        <header className={styles.header}>
+          <div><h1>{t("headerTitle")}</h1><span><i />{c.ready}</span></div>
+          <div className={styles.headerActions}><button><History /></button><button><MoreHorizontal /></button><button className={styles.mobileTools} onClick={() => setToolsOpen(true)} aria-label={c.openTools}><Database /></button></div>
+        </header>
+        <div className={styles.tabs} data-tab={activeTab}><button onClick={() => setActiveTab("discussion")} data-active={activeTab === "discussion"}><MessageCircle />{c.discussion}</button><button onClick={() => setActiveTab("artifacts")} data-active={activeTab === "artifacts"}><Archive />{c.artifacts}</button><span /></div>
+
+        {activeTab === "discussion" ? <>
+          <div ref={scrollRef} className={styles.chatBody}>
+            {loadingConversation ? <div className={styles.loading}><span /><span /><span /></div> : isWelcome ? <div className={styles.welcome}>
+              <div className={styles.logoHero}><span /><Image src="/polypips-mark.png" alt="" width={60} height={68} /></div>
+              <h2>{c.welcome}</h2><p>{c.intro}</p>
+              <div className={styles.suggestions}>{[
+                ["why-decision", "Expliquer une analyse", "Comprenez les raisons d’une décision et les facteurs clés.", Sparkles],
+                ["compare-recent", "Comparer des opportunités", "Analysez plusieurs marchés ou scénarios côte à côte.", BarChart3],
+                ["main-risks", "Suivre les risques", "Identifiez les principaux risques et les points de vigilance.", ShieldCheck],
+                ["what-could-invalidate", "Résumer un portefeuille", "Obtenez une vue d’ensemble de vos positions et analyses.", WalletCards],
+              ].map(([id, title, text, Icon], index) => <button key={String(id)} style={{"--delay": `${300 + index * 70}ms`} as React.CSSProperties} onClick={() => handleSend(t(`ChatInput.quickQuestions.${id}`))}><span><Icon className={styles.suggestionIcon} /></span><span><strong>{locale === "en" ? t(`ChatInput.quickQuestions.${id}`) : String(title)}</strong><small>{String(text)}</small></span><ChevronRight /></button>)}</div>
+            </div> : <div className={styles.messages}>{messages.filter((m) => m.id !== "welcome").map((message) => <ChatMessage key={message.id} message={message} />)}{showTyping && <TypingIndicator />}</div>}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-full border border-white/10 bg-white/[0.03] p-1 text-xs font-semibold">
-              <button
-                type="button"
-                onClick={() => setTab("chat")}
-                className={cn(
-                  "rounded-full px-3 py-1.5 transition-colors",
-                  tab === "chat" ? "bg-brand-500 text-white" : "text-white/50 hover:text-white"
-                )}
-              >
-                {t("tabs.chat")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setTab("artifacts")}
-                className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors",
-                  tab === "artifacts" ? "bg-brand-500 text-white" : "text-white/50 hover:text-white"
-                )}
-              >
-                <Table2 className="h-3.5 w-3.5" />
-                {t("tabs.artifacts")}
-                {artifacts.length > 0 && (
-                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-white/20 px-1 text-[10px]">
-                    {artifacts.length}
-                  </span>
-                )}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setHistoryOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/60 transition-colors duration-150 hover:text-white lg:hidden"
-            >
-              <HistoryIcon className="h-3.5 w-3.5" />
-              {t("historyButton")}
-            </button>
-          </div>
-        </div>
-
-        {tab === "chat" && (
-          <div className="border-b border-white/10 px-4 py-3 sm:px-5">
-            <ContextSelector enabled={enabledContext} onChange={setEnabledContext} />
-          </div>
-        )}
-
-        {tab === "chat" ? (
-          <>
-            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-              {loadingConversation ? (
-                <div className="flex h-full items-center justify-center">
-                  <Loader2 className="h-5 w-5 animate-spin text-white/40" />
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {messages.map((message) => (
-                    <ChatMessage
-                      key={message.id}
-                      message={message}
-                      onViewArtifacts={
-                        message.role === "assistant" && artifacts.length > 0
-                          ? () => setTab("artifacts")
-                          : undefined
-                      }
-                    />
-                  ))}
-                  {showTyping && <TypingIndicator />}
-                </div>
-              )}
-            </div>
-
-            {focusAnalysis && !activeConversationId && (
-              <div className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-xl border border-brand-500/20 bg-brand-500/[0.06] px-3.5 py-2.5 text-xs text-white/70 sm:mx-5">
-                <span className="truncate">{t("contextLabel", { question: focusAnalysis.question })}</span>
-                <button
-                  type="button"
-                  onClick={() => setFocusAnalysis(null)}
-                  aria-label={t("removeContextAria")}
-                  className="shrink-0 text-white/40 transition-colors hover:text-white"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            )}
-
-            {errorMessage && (
-              <div className="mx-4 mb-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-rose-300 sm:mx-5">
-                {errorMessage}
-              </div>
-            )}
-
-            <ChatInput
-              value={inputValue}
-              onChange={setInputValue}
-              onSend={() => handleSend(inputValue)}
-              onSelectSuggestion={handleSelectSuggestion}
-              disabled={sending || !hasActiveSubscription}
-              userId={userId}
-              attachments={pendingAttachments}
-              onAttachmentsChange={setPendingAttachments}
-            />
-          </>
-        ) : (
-          <ArtifactsPanel artifacts={artifacts} />
-        )}
+          {focusAnalysis && !activeConversationId && <div className={styles.contextChip}><span>{t("contextLabel", {question: focusAnalysis.question})}</span><button onClick={() => setFocusAnalysis(null)}><X /></button></div>}
+          {errorMessage && <div className={styles.error}>{errorMessage}</div>}
+          <ChatInput value={inputValue} onChange={setInputValue} onSend={() => handleSend(inputValue)} onSelectSuggestion={(q: QuickQuestion) => handleSend(q.label)} disabled={!hasActiveSubscription} sending={sending} onStop={handleStop} />
+        </> : <div className={styles.artifacts}><Archive /><h2>{locale === "en" ? "Your generated artifacts" : "Vos artefacts générés"}</h2><p>{locale === "en" ? "Tables, summaries and reports created by the Coach will appear here." : "Les tableaux, synthèses et rapports créés par le Coach apparaîtront ici."}</p></div>}
       </LockedOverlay>
 
-      <CoachMobileHistory
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        conversations={conversations}
-        activeConversationId={activeConversationId}
-        onSelectConversation={handleSelectConversation}
-        onNewConversation={handleNewConversation}
-      />
+      <aside className={`${styles.tools} ${toolsOpen ? styles.toolsOpen : ""}`}>
+        <div className={styles.toolsHeader}><h2>{c.tools}</h2><button onClick={() => setToolsOpen(false)}><X /></button><button><Settings /></button></div>
+        <h3>{c.sources}</h3>
+        <div className={styles.connectors}>{[
+          [c.polymarket, c.connected, "poly", true], [c.wallet, c.readOnly, "wallet", false], [c.sport, c.connected, "sport", true],
+        ].map(([name, status, kind, online]) => <button key={String(name)}><span data-kind={kind}>{kind === "poly" ? "◇" : kind === "sport" ? "⚽" : "▣"}</span><span><strong>{name}</strong><small><i data-online={online} />{status}</small></span><ChevronRight /></button>)}</div>
+        <button className={styles.addMcp} onClick={() => setMcpOpen(true)}><Plus />{c.addMcp}</button>
+        <div className={styles.sourcesTitle}><h3>{c.discussionSources}</h3><CircleHelp /></div>
+        <div className={styles.emptySource}><Archive /><span><strong>{c.noSource}</strong><small>{c.noSourceText}</small></span></div>
+        <div className={styles.secure}><ShieldCheck /><span><strong>{c.secure}</strong><small>{c.secureText}</small></span></div>
+      </aside>
+      {toolsOpen && <button className={styles.backdrop} onClick={() => setToolsOpen(false)} aria-label={c.close} />}
+
+      {mcpOpen && <div className={styles.modalBackdrop} onClick={() => setMcpOpen(false)}><div className={styles.mcpModal} onClick={(e) => e.stopPropagation()}><button className={styles.modalClose} onClick={() => setMcpOpen(false)}><X /></button><span className={styles.mcpIcon}><Link2 /></span><h2>{c.mcpTitle}</h2><p>{c.mcpText}</p><label>{c.endpoint}<input placeholder="https://mcp.example.com/sse" /></label><div className={styles.connectionSteps}><span data-active={connectorState !== "idle"}><i />{connectorState === "idle" ? c.connect : c.connecting}</span><span data-active={["checking", "connected"].includes(connectorState)}><i />{c.checking}</span><span data-active={connectorState === "connected"}><i />{c.confirmed}</span></div><button className={styles.connectButton} onClick={connectMcp} disabled={connectorState !== "idle" && connectorState !== "connected"}>{connectorState === "connected" ? c.close : c.connect}</button></div></div>}
+      {toast && <div className={styles.toast}><ShieldCheck />{toast}</div>}
     </div>
   );
 }
