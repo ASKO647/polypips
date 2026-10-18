@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowUpRight, Check } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -8,9 +11,29 @@ import styles from "./footer.module.css";
 
 export function Footer({ landing = false }: { landing?: boolean }) {
   const t = useTranslations("Footer");
+  const footerRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const footer = footerRef.current;
+    if (!footer) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <footer className={styles.footer}>
+    <footer ref={footerRef} className={`${styles.footer} ${isVisible ? styles.visible : ""}`}>
       {landing && (
         <div className={styles.conversion}>
           <div className={styles.socialProof}>
