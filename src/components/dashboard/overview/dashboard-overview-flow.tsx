@@ -1,213 +1,44 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import {
-  CandlestickChart,
-  GraduationCap,
-  LineChart,
-  Sparkles,
-  Trophy,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocale } from "next-intl";
+import { Bell, Bot, BrainCircuit, CandlestickChart, ChevronDown, ChevronRight, CircleUserRound, GraduationCap, LayoutDashboard, LineChart, Menu, Plus, Search, Sparkles, Star, Trophy, Users, Wallet, X, Zap } from "lucide-react";
+import { Link, useRouter } from "@/i18n/navigation";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
-import { QuickAccessCard } from "@/components/dashboard/overview/quick-access-card";
-import { SubscriptionQuickCard } from "@/components/dashboard/overview/subscription-quick-card";
-import { MarketsTable } from "@/components/dashboard/overview/markets-table";
-import { RecentActivitySection } from "@/components/dashboard/overview/recent-activity-section";
-import {
-  ActivityDonut,
-  type ActivityPeriodCounts,
-  type ActivityPeriodKey,
-} from "@/components/dashboard/overview/activity-donut";
-import { PerformanceCard } from "@/components/dashboard/overview/performance-card";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { PerformanceStats } from "@/lib/supabase/performance";
+import type { ActivityPeriodCounts, ActivityPeriodKey } from "./activity-donut";
+import styles from "./dashboard-overview.module.css";
 
-export function DashboardOverviewFlow({
-  firstName,
-  hasActiveSubscription,
-  subscription,
-  plan,
-  analysesToday,
-  dailyAnalysisLimit,
-  selectedMarketsCount,
-  walletsFollowed,
-  walletsMax,
-  sportAnalysesToday,
-  tradingAnalysesToday,
-  conversationCount,
-  groupsJoinedCount,
-  recentMarkets,
-  notifications,
-  analysesSparkline,
-  walletsSparkline,
-  sportSparkline,
-  tradingSparkline,
-  coachSparkline,
-  activityPeriods,
-  performanceStats,
-}: {
-  /** Real first name from user_metadata (Google OAuth only) — null for
-   * plain email/password accounts, which never collect a name. */
-  firstName: string | null;
-  /** Still needed: the inline market-detail drill-down (AnalysisResult,
-   * below) stays paywalled even though the overview page itself no longer
-   * blurs anything — see the "selectedMarket" branch. */
-  hasActiveSubscription: boolean;
-  subscription: SubscriptionRow | null;
-  plan: PricingPlan;
-  analysesToday: number;
-  dailyAnalysisLimit: number | null;
-  /** Total rows currently in selected_markets — shared across all users
-   * (scan-markets' own picks), not a personal count. */
-  selectedMarketsCount: number;
-  walletsFollowed: number;
-  walletsMax: number | null;
-  sportAnalysesToday: number;
-  tradingAnalysesToday: number;
-  conversationCount: number;
-  /** Community groups this user is currently a member of (real count from
-   * community_group_members via fetchMyGroups). */
-  groupsJoinedCount: number;
-  recentMarkets: MarketAnalysis[];
-  notifications: NotificationItem[];
-  /** Real daily counts (oldest→newest, 7 days) for each quick-access
-   * card's sparkline — all-zero when there's no real activity. */
-  analysesSparkline: number[];
-  walletsSparkline: number[];
-  sportSparkline: number[];
-  tradingSparkline: number[];
-  coachSparkline: number[];
-  activityPeriods: Record<ActivityPeriodKey, ActivityPeriodCounts>;
-  /** null (or resolvedCount === 0) until resolve-markets has confirmed at
-   * least one real market outcome for this user — PerformanceCard renders
-   * its honest empty state in that case. */
-  performanceStats: PerformanceStats | null;
-}) {
-  const t = useTranslations("Dashboard.Overview");
-  const [selectedMarket, setSelectedMarket] = useState<MarketAnalysis | null>(
-    null
-  );
+type Props = { firstName:string|null; hasActiveSubscription:boolean; cancelled:boolean; subscription:SubscriptionRow|null; plan:PricingPlan; analysesToday:number; dailyAnalysisLimit:number|null; selectedMarketsCount:number; walletsFollowed:number; walletsMax:number|null; sportAnalysesToday:number; tradingAnalysesToday:number; conversationCount:number; groupsJoinedCount:number; recentMarkets:MarketAnalysis[]; notifications:NotificationItem[]; analysesSparkline:number[]; walletsSparkline:number[]; sportSparkline:number[]; tradingSparkline:number[]; coachSparkline:number[]; activityPeriods:Record<ActivityPeriodKey,ActivityPeriodCounts>; performanceStats:PerformanceStats|null };
+const text={fr:{dashboard:"Tableau de bord",hello:"Bonjour",sub:"Voici l’essentiel de votre activité aujourd’hui.",new:"Nouvelle analyse",search:"Rechercher...",selected:"Marchés sélectionnés par l’IA",all:"Voir tous les marchés",empty:"Vos prochaines opportunités apparaîtront ici",emptySub:"L’IA actualise une sélection de 9 marchés toutes les 12 heures.",explore:"Explorer les marchés",activity:"Votre activité",resume:"Reprendre une analyse",resumeSub:"Accédez rapidement à vos dernières analyses.",quick:"Accès rapides",quickSub:"Les outils essentiels pour gagner du temps.",coach:"Parler au Coach IA",coachSub:"Posez vos questions, obtenez des analyses",mcp:"Connecter un outil MCP",mcpSub:"Synchronisez vos données",pro:"Polypips Pro",active:"Toutes vos fonctionnalités sont actives",manage:"Gérer mon abonnement",updated:"Mis à jour à l’instant",today:"Analyses aujourd’hui",watched:"Marchés surveillés",wallets:"Smart Wallets",coachStat:"Coach IA",available:"disponibles",add:"Ajoutez votre premier marché",followed:"Portefeuilles suivis",conversation:"Conversation récente",total:"Total"},en:{dashboard:"Dashboard",hello:"Hello",sub:"Here is the essential overview of your activity today.",new:"New analysis",search:"Search...",selected:"AI-selected markets",all:"View all markets",empty:"Your next opportunities will appear here",emptySub:"AI refreshes 9 markets every 12 hours.",explore:"Explore markets",activity:"Your activity",resume:"Resume an analysis",resumeSub:"Quickly access your latest analyses.",quick:"Quick access",quickSub:"Essential tools to save time.",coach:"Talk to AI Coach",coachSub:"Ask questions and get analyses",mcp:"Connect an MCP tool",mcpSub:"Sync your data",pro:"Polypips Pro",active:"All your features are active",manage:"Manage subscription",updated:"Updated just now",today:"Analyses today",watched:"Watched markets",wallets:"Smart Wallets",coachStat:"AI Coach",available:"available",add:"Add your first market",followed:"Wallets followed",conversation:"Recent conversation",total:"Total"}};
+function Counter({value}:{value:number}){const[n,setN]=useState(0);useEffect(()=>{const start=performance.now();let id=0;const run=(now:number)=>{const p=Math.min((now-start)/600,1);setN(Math.round(value*(1-Math.pow(1-p,3))));if(p<1)id=requestAnimationFrame(run)};id=requestAnimationFrame(run);return()=>cancelAnimationFrame(id)},[value]);return <>{n}</>}
+const groups=[{title:"POLYMARKET",color:"#ef2947",items:[["Analyse IA","/dashboard/analyse-ia",Sparkles],["Marchés sélectionnés","/dashboard/markets",LineChart],["Smart Wallet","/dashboard/copy-trading",Wallet]]},{title:"SPORT",color:"#16b97d",items:[["Analyse IA","/dashboard/sports",Sparkles],["Sélection du jour","/dashboard/sports/selection",Star],["Mes analyses","/dashboard/sports/mes-analyses",Trophy]]},{title:"TRADING",color:"#f4b400",items:[["Analyse IA","/dashboard/trading",CandlestickChart],["Sélection du jour","/dashboard/trading/selection",Star],["Mes analyses","/dashboard/trading/mes-analyses",LineChart]]}] as const;
 
-  if (selectedMarket) {
-    return (
-      <AnalysisResult
-        analysis={selectedMarket}
-        onBack={() => setSelectedMarket(null)}
-        backLabel={t("backToDashboard")}
-        locked={!hasActiveSubscription}
-      />
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
-          {firstName ? t("greeting", { name: firstName }) : t("greetingNoName")}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
-          {t("subtitle")}
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <QuickAccessCard
-          href="/dashboard/analyse-ia"
-          icon={Sparkles}
-          title={t("cards.analyseIAPolymarket.title")}
-          stat={
-            dailyAnalysisLimit !== null
-              ? t("cards.analyseIAPolymarket.statLimited", {
-                  today: analysesToday,
-                  limit: dailyAnalysisLimit,
-                })
-              : t("cards.analyseIAPolymarket.statUnlimited")
-          }
-          tone="brand"
-          sparklinePoints={analysesSparkline}
-        />
-        <QuickAccessCard
-          href="/dashboard/markets"
-          icon={LineChart}
-          title={t("cards.marchesSelectionnes.title")}
-          stat={t("cards.marchesSelectionnes.stat", { count: selectedMarketsCount })}
-          tone="sky"
-        />
-        <QuickAccessCard
-          href="/dashboard/copy-trading"
-          icon={Wallet}
-          title={t("cards.smartWallet.title")}
-          stat={
-            walletsMax !== null
-              ? t("cards.smartWallet.statWithMax", { followed: walletsFollowed, max: walletsMax })
-              : t("cards.smartWallet.statNoMax", { count: walletsFollowed })
-          }
-          tone="emerald"
-          sparklinePoints={walletsSparkline}
-        />
-        <QuickAccessCard
-          href="/dashboard/sports"
-          icon={Trophy}
-          title={t("cards.analyseIASport.title")}
-          stat={t("cards.analyseIASport.stat", { count: sportAnalysesToday })}
-          tone="violet"
-          sparklinePoints={sportSparkline}
-        />
-        <QuickAccessCard
-          href="/dashboard/trading"
-          icon={CandlestickChart}
-          title={t("cards.analyseIATrading.title")}
-          stat={t("cards.analyseIATrading.stat", { count: tradingAnalysesToday })}
-          tone="amber"
-          sparklinePoints={tradingSparkline}
-        />
-        <QuickAccessCard
-          href="/dashboard/coach"
-          icon={GraduationCap}
-          title={t("cards.coachIA.title")}
-          stat={t("cards.coachIA.stat", { count: conversationCount })}
-          tone="rose"
-          sparklinePoints={coachSparkline}
-        />
-        <QuickAccessCard
-          href="/dashboard/community"
-          icon={Users}
-          title={t("cards.communaute.title")}
-          stat={t("cards.communaute.stat", { count: groupsJoinedCount })}
-          tone="neutral"
-        />
-        <SubscriptionQuickCard subscription={subscription} plan={plan} />
-      </div>
-
-      {/* Left and right are independent flex-col stacks, not cells of a
-       * single CSS Grid row — a shared row's auto-height always equals its
-       * tallest cell, which previously left dead space below whichever
-       * column (MarketsTable vs. the right stack) happened to be shorter,
-       * before RecentActivitySection appeared. Each column now grows to
-       * its own real content height. Neither column (nor the quick-access
-       * grid above) is blurred on this page anymore — the Tableau de bord
-       * overview is intentionally always-visible, see the "Remove dashboard
-       * overview blur" change; every OTHER dashboard page keeps its own
-       * paywall untouched, including this page's own market-detail
-       * drill-down just below (AnalysisResult, gated by
-       * hasActiveSubscription like before). */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-start">
-        <div className="flex flex-col gap-4 lg:col-span-2">
-          <MarketsTable markets={recentMarkets} onSelect={setSelectedMarket} />
-          <RecentActivitySection notifications={notifications} />
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <ActivityDonut periods={activityPeriods} />
-          <PerformanceCard stats={performanceStats} />
-        </div>
-      </div>
-    </div>
-  );
+export function DashboardOverviewFlow(p:Props){
+ const c=useLocale()==="en"?text.en:text.fr,router=useRouter();
+ const[selected,setSelected]=useState<MarketAnalysis|null>(null),[newMenu,setNewMenu]=useState(false),[mobile,setMobile]=useState(false),[collapsed,setCollapsed]=useState<Record<string,boolean>>({}),[period,setPeriod]=useState<ActivityPeriodKey>("30j"),[toast,setToast]=useState(true);
+ useEffect(()=>{const timer=setTimeout(()=>setToast(false),2000);return()=>clearTimeout(timer)},[]);
+ const activity=p.activityPeriods[period],total=Object.values(activity).reduce((a,b)=>a+b,0),go=(href:string)=>{setMobile(false);router.push(href)};
+ const stats=[{icon:Sparkles,tone:"red",title:c.today,value:p.analysesToday,suffix:p.dailyAnalysisLimit?`/ ${p.dailyAnalysisLimit}`:"",note:c.available,href:"/dashboard/analyse-ia"},{icon:LineChart,tone:"blue",title:c.watched,value:p.selectedMarketsCount,suffix:"",note:c.add,href:"/dashboard/markets"},{icon:Wallet,tone:"green",title:c.wallets,value:p.walletsFollowed,suffix:p.walletsMax?`/ ${p.walletsMax}`:"",note:c.followed,href:"/dashboard/copy-trading"},{icon:GraduationCap,tone:"purple",title:c.coachStat,value:p.conversationCount,suffix:"",note:c.conversation,href:"/dashboard/coach"}];
+ if(selected)return <div className={styles.result}><AnalysisResult analysis={selected} onBack={()=>setSelected(null)} backLabel={c.dashboard} locked={!p.hasActiveSubscription}/></div>;
+ return <div className={styles.app}>
+  {toast&&<div className={styles.toast}>{c.updated}</div>}
+  <aside className={`${styles.sidebar} ${mobile?styles.sidebarOpen:""}`}><div className={styles.brand}><img src="/polypips-mark.png" alt=""/><strong>Polypips</strong><button onClick={()=>setMobile(false)}><X/></button></div><nav>
+   <Link href="/dashboard" className={styles.activeNav}><LayoutDashboard/>{c.dashboard}</Link>
+   {groups.map((g,i)=><section key={g.title} className={styles.navGroup} style={{"--delay":`${110+i*45}ms`} as React.CSSProperties}><button className={styles.groupTitle} onClick={()=>setCollapsed(v=>({...v,[g.title]:!v[g.title]}))}><span style={{background:g.color}}/>{g.title}{g.title==="TRADING"&&<b>NOUVEAU</b>}<ChevronDown className={collapsed[g.title]?styles.chevronClosed:""}/></button><div className={`${styles.groupItems} ${collapsed[g.title]?styles.groupClosed:""}`}>{g.items.map(([label,href,Icon])=><Link key={href} href={href}><Icon/>{label}</Link>)}</div></section>)}
+   <div className={styles.globalLinks}><Link href="/dashboard/coach"><GraduationCap/>Coach IA</Link><Link href="/dashboard/community"><Users/>Communauté</Link><Link href="/dashboard/settings"><CircleUserRound/>Profil</Link></div>
+  </nav><div className={styles.user}><span>{(p.firstName||"P")[0].toUpperCase()}</span><div><strong>{p.firstName||"Polypips"}</strong><small>Compte Polypips Pro</small></div></div></aside>
+  <div className={styles.workspace}><header className={styles.header}><button className={styles.mobileToggle} onClick={()=>setMobile(true)}><Menu/></button><h2>{c.dashboard}</h2><div className={styles.headerTools}><label><Search/><input aria-label={c.search} placeholder={c.search}/></label><button aria-label="Notifications"><Bell/></button><span className={styles.avatar}>{(p.firstName||"P")[0].toUpperCase()}</span></div></header>
+   <main className={styles.main}><div className={styles.hero}><div><h1>{c.hello}, {p.firstName||"Polypips"} <span>👋</span></h1><p>{c.sub}</p></div><div className={styles.analysisWrap}><button className={styles.primaryButton} onClick={()=>setNewMenu(v=>!v)}><Plus/><em>{c.new}</em></button>{newMenu&&<div className={styles.analysisMenu}><button onClick={()=>go("/dashboard/analyse-ia")}><Sparkles/>Polymarket</button><button onClick={()=>go("/dashboard/sports")}><Trophy/>Sport</button><button onClick={()=>go("/dashboard/trading")}><CandlestickChart/>Trading</button></div>}</div></div>
+   <section className={styles.stats}>{stats.map((s,i)=><button key={s.title} style={{"--delay":`${220+i*70}ms`} as React.CSSProperties} onClick={()=>go(s.href)} className={styles.statCard}><span className={`${styles.statIcon} ${styles[s.tone]}`}><s.icon/></span><ChevronRight className={styles.cardArrow}/><strong>{s.title}</strong><div className={styles.statNumber}><Counter value={s.value}/><small>{s.suffix}</small></div><p>{s.note}</p></button>)}</section>
+   <section className={styles.middleGrid}><article className={`${styles.panel} ${styles.marketsPanel}`}><div className={styles.panelHead}><h3><span><LineChart/></span>{c.selected}</h3><Link href="/dashboard/markets">{c.all}<ChevronRight/></Link></div>{p.recentMarkets.length?<div className={styles.marketList}>{p.recentMarkets.slice(0,4).map(m=><button key={m.id} onClick={()=>setSelected(m)}><span>{m.category[0]}</span><div><strong>{m.question}</strong><small>{m.category}</small></div><b>{m.aiProbability}%</b><ChevronRight/></button>)}</div>:<div className={styles.empty}><span><Sparkles/></span><h4>{c.empty}</h4><p>{c.emptySub}</p><Link href="/dashboard/markets">{c.explore}</Link></div>}</article>
+   <article className={`${styles.panel} ${styles.activityPanel}`}><div className={styles.panelHead}><h3><span><LineChart/></span>{c.activity}</h3><div className={styles.periods}>{(["7j","30j","tout"] as ActivityPeriodKey[]).map(x=><button key={x} className={period===x?styles.periodActive:""} onClick={()=>setPeriod(x)}>{x==="7j"?"7 jours":x==="30j"?"30 jours":"Tout"}</button>)}</div></div><div className={styles.activityBody}><div className={styles.donut} style={{"--value":`${Math.min(100,total*8)}%`} as React.CSSProperties}><div><strong><Counter value={total}/></strong><small>{c.total}</small></div></div><ul><li><i className={styles.dotRed}/><span>Polymarket</span><b>{activity.analyses}</b></li><li><i className={styles.dotBlue}/><span>Sport</span><b>{activity.sport}</b></li><li><i className={styles.dotYellow}/><span>Trading</span><b>{activity.trading}</b></li><li><i className={styles.dotGreen}/><span>Wallets</span><b>{activity.wallets}</b></li></ul></div></article></section>
+   <section className={styles.bottomGrid}><article className={styles.panel}><div className={styles.panelHead}><h3><span><LineChart/></span>{c.resume}</h3></div><p className={styles.panelSub}>{c.resumeSub}</p><div className={styles.resumeList}><button onClick={()=>go("/dashboard/analyse-ia")}><span className={styles.blue}><BrainCircuit/></span><div><b>Polymarket</b><small>Analyser un marché</small></div><ChevronRight/></button><button onClick={()=>go("/dashboard/sports")}><span className={styles.green}><Trophy/></span><div><b>Sport</b><small>Analyser un match</small></div><ChevronRight/></button><button onClick={()=>go("/dashboard/trading")}><span className={styles.yellow}><CandlestickChart/></span><div><b>Trading</b><small>Analyser un actif</small></div><ChevronRight/></button></div></article>
+   <article className={styles.panel}><div className={styles.panelHead}><h3><span><Zap/></span>{c.quick}</h3></div><p className={styles.panelSub}>{c.quickSub}</p><div className={styles.quickList}><button onClick={()=>go("/dashboard/coach")}><Bot/><div><b>{c.coach}</b><small>{c.coachSub}</small></div><ChevronRight/></button><button onClick={()=>go("/dashboard/coach")}><Zap/><div><b>{c.mcp}</b><small>{c.mcpSub}</small></div><ChevronRight/></button></div></article>
+   <article className={`${styles.panel} ${styles.proCard}`}><div className={styles.proTitle}><span><GraduationCap/></span><div><h3>{c.pro}</h3><p><i/>{c.active}</p></div></div><ul><li>✓ Analyses IA illimitées</li><li>✓ Accès à tous les marchés</li><li>✓ Smart Wallets</li><li>✓ Analyses Sport et Trading</li><li>✓ Coach IA avancé</li></ul><Link href="/dashboard/subscription">{c.manage}<ChevronRight/></Link></article></section>
+   </main></div>{mobile&&<button className={styles.overlay} aria-label="Fermer" onClick={()=>setMobile(false)}/>}</div>
 }

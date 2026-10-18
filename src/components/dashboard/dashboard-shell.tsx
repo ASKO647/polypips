@@ -36,6 +36,8 @@ function DashboardShellInner({
   const { theme } = useDashboardTheme();
   const pathname = usePathname();
   const isCoachRoute = pathname.startsWith("/dashboard/coach");
+  const isOverviewRoute = pathname === "/dashboard";
+  const isImmersiveRoute = isCoachRoute || isOverviewRoute;
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
   // overview have been converted to the real light/dark theme so far — the
@@ -50,10 +52,10 @@ function DashboardShellInner({
 
   return (
     <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg text-dash-text">
-      {!isCoachRoute && <DashboardSidebar subscription={subscription} userId={userId} creditBalance={creditBalance} />}
+      {!isImmersiveRoute && <DashboardSidebar subscription={subscription} userId={userId} creditBalance={creditBalance} />}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        {!isCoachRoute && <DashboardHeader
+        {!isImmersiveRoute && <DashboardHeader
           menuOpen={mobileMenuOpen}
           onMenuToggle={() => setMobileMenuOpen((v) => !v)}
           notifications={notifications}
@@ -67,18 +69,18 @@ function DashboardShellInner({
         />}
         <main
           data-dashboard-theme={mainTheme}
-          className={isCoachRoute ? "min-h-0 flex-1 bg-white text-[#171012]" : "flex-1 bg-dash-bg px-5 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] text-dash-text lg:px-8 lg:py-8 lg:pb-8"}
+          className={isImmersiveRoute ? "min-h-0 flex-1 bg-white text-[#171012]" : "flex-1 bg-dash-bg px-5 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] text-dash-text lg:px-8 lg:py-8 lg:pb-8"}
         >
           {children}
         </main>
       </div>
 
-      {!isCoachRoute && <DashboardBottomNav
+      {!isImmersiveRoute && <DashboardBottomNav
         onOpenMenu={() => setMobileMenuOpen((v) => !v)}
         menuOpen={mobileMenuOpen}
       />}
 
-      {!isCoachRoute && <DashboardMobileNav
+      {!isImmersiveRoute && <DashboardMobileNav
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         subscription={subscription}
