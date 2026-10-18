@@ -1,214 +1,30 @@
 "use client";
-
-import { useState } from "react";
-import { useTranslations } from "next-intl";
-import { ExternalLink, TrendingDown, TrendingUp, Users, X } from "lucide-react";
-import { LockedOverlay } from "@/components/dashboard/locked-overlay";
-import { WalletLookupPanel } from "@/components/dashboard/copy-trading/wallet-lookup-panel";
-import type { Wallet } from "@/lib/data/smart-money";
-import { cn } from "@/lib/utils";
-import { useCurrency } from "@/providers/currency-provider";
-
-function shortAddress(address: string): string {
-  return `${address.slice(0, 6)}…${address.slice(-4)}`;
-}
-
-function FollowedWalletCard({
-  wallet,
-  onViewDetail,
-  onUnfollow,
-  unfollowPending,
-}: {
-  wallet: Wallet;
-  onViewDetail: () => void;
-  onUnfollow: () => void;
-  unfollowPending: boolean;
-}) {
-  const t = useTranslations("Polymarket.SmartWallet");
-  const { formatAmount } = useCurrency();
-  const changeKnown = wallet.changePercent !== null;
-  const positive = changeKnown && (wallet.changePercent as number) >= 0;
-
-  return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">{wallet.handle}</p>
-          <p className="text-[11px] text-white/35">{shortAddress(wallet.address)}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onUnfollow}
-          disabled={unfollowPending}
-          aria-label={t("unfollowAria")}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/10 text-white/40 transition-colors hover:border-rose-400/40 hover:text-rose-400 disabled:opacity-50"
-        >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      </div>
-
-      <div className="flex items-center justify-between">
-        <p className="font-display text-lg font-bold text-white">{formatAmount(wallet.totalValue)}</p>
-        {changeKnown ? (
-          <span
-            className={cn(
-              "inline-flex items-center gap-1 text-xs font-bold",
-              positive ? "text-emerald-400" : "text-rose-400"
-            )}
-          >
-            {positive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-            {positive ? "+" : ""}
-            {(wallet.changePercent as number).toFixed(1)}%
-          </span>
-        ) : (
-          <span className="text-xs text-white/30">{t("noDataYet")}</span>
-        )}
-      </div>
-
-      <p className="text-xs text-white/40">{t("openPositions", { count: wallet.activePositionsCount })}</p>
-
-      <button
-        type="button"
-        onClick={onViewDetail}
-        className="inline-flex w-fit items-center gap-1 text-xs font-semibold text-brand-400 transition-colors hover:text-brand-300"
-      >
-        {t("viewDetail")}
-        <ExternalLink className="h-3 w-3" />
-      </button>
-    </div>
-  );
-}
-
-export function SmartWalletFlow({
-  followedWallets: initialFollowedWallets,
-  hasActiveSubscription,
-  cancelled,
-  maxTrackedWallets,
-}: {
-  followedWallets: Wallet[];
-  hasActiveSubscription: boolean;
-  /** True when access is blocked because the user cancelled — swaps the
-   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
-  cancelled: boolean;
-  /** null = unlimited (Ultimate, or the legacy grandfather plan). */
-  maxTrackedWallets: number | null;
-}) {
-  const t = useTranslations("Polymarket.SmartWallet");
-  const [followedWallets, setFollowedWallets] = useState(initialFollowedWallets);
-  const [error, setError] = useState<string | null>(null);
-  const [unfollowingId, setUnfollowingId] = useState<string | null>(null);
-  const [prefillAddress, setPrefillAddress] = useState<{ address: string; key: number } | undefined>();
-
-  const handleWalletFollowed = (walletId: string, label: string, address: string) => {
-    setFollowedWallets((prev) =>
-      prev.some((w) => w.id === walletId)
-        ? prev
-        : [
-            {
-              id: walletId,
-              address,
-              handle: label,
-              source: "user_added",
-              totalValue: 0,
-              changePercent: null,
-              activePositionsCount: 0,
-              marketsTrackedCount: 0,
-              chart: [],
-              positions: [],
-              recentMovements: [],
-              history: [],
-              lastSyncedAt: null,
-              winRate: null,
-              roiPercent: null,
-              consistencyScore: null,
-              categoryDiversity: null,
-              avgPositionSize: null,
-              riskLevel: null,
-              trackRecordDays: null,
-            },
-            ...prev,
-          ]
-    );
-  };
-
-  const handleUnfollow = async (walletId: string) => {
-    if (unfollowingId) return;
-    setUnfollowingId(walletId);
-    setError(null);
-    try {
-      const response = await fetch("/api/wallets/follow", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ walletId }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || t("genericError"));
-      setFollowedWallets((prev) => prev.filter((w) => w.id !== walletId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("genericError"));
-    } finally {
-      setUnfollowingId(null);
-    }
-  };
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          {t("heading")}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-          {t("subtitle")}
-        </p>
-      </div>
-
-      {error && (
-        <p className="rounded-xl border border-rose-400/20 bg-rose-500/[0.06] px-4 py-3 text-xs text-rose-300">
-          {error}
-        </p>
-      )}
-
-      <LockedOverlay
-        locked={!hasActiveSubscription}
-        cancelled={cancelled}
-        message={cancelled ? t("lockedMessageCancelled") : t("lockedMessage")}
-      >
-        <WalletLookupPanel onWalletFollowed={handleWalletFollowed} prefillAddress={prefillAddress} />
-
-        <div className="mt-6">
-          <p className="mb-3 text-sm font-semibold text-white">
-            {t("followedWalletsTitle")}{" "}
-            {maxTrackedWallets !== null
-              ? `(${followedWallets.length}/${maxTrackedWallets})`
-              : followedWallets.length > 0 && `(${followedWallets.length})`}
-          </p>
-          {followedWallets.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
-                <Users className="h-5 w-5" strokeWidth={2} />
-              </span>
-              <p className="text-sm font-semibold text-white">{t("emptyFollowedTitle")}</p>
-              <p className="max-w-sm text-xs leading-relaxed text-white/45">
-                {t("emptyFollowedDescription")}
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {followedWallets.map((wallet) => (
-                <FollowedWalletCard
-                  key={wallet.id}
-                  wallet={wallet}
-                  unfollowPending={unfollowingId === wallet.id}
-                  onUnfollow={() => handleUnfollow(wallet.id)}
-                  onViewDetail={() =>
-                    setPrefillAddress((prev) => ({ address: wallet.address, key: (prev?.key ?? 0) + 1 }))
-                  }
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </LockedOverlay>
-    </div>
-  );
+import { useEffect,useMemo,useState } from "react";
+import { useLocale } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { Activity,Bell,BellRing,Bookmark,Check,ChevronDown,ChevronRight,CircleUserRound,Clock3,Copy,GraduationCap,LayoutDashboard,Loader2,Menu,MoreHorizontal,Plus,Search,ShieldCheck,Sparkles,Target,TrendingUp,Trophy,Users,Wallet as WalletIcon,X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { Wallet,WalletLookupResult } from "@/lib/data/smart-money";
+import styles from "./smart-wallet.module.css";
+const RE=/^0x[a-fA-F0-9]{40}$/;
+const words={fr:{dashboard:"Tableau de bord",title:"Smart Wallet",sub:"Suivez les portefeuilles publics, leurs positions et leurs nouvelles activités.",read:"Suivi en lecture seule — Polypips ne peut ni signer ni déplacer vos fonds.",follow:"Suivre un wallet",add:"Ajouter une adresse",tracked:"Wallets suivis",positions:"Positions ouvertes",new:"Nouvelles positions",alerts:"Alertes actives",recent:"Activité récente",none:"Aucune activité détectée",noneSub:"Les nouvelles positions apparaîtront ici.",first:"Suivez votre premier Smart Wallet",firstSub:"Ajoutez une adresse publique Polymarket pour suivre ses positions et recevoir une alerte lorsqu’une nouvelle position est détectée.",safe:"Aucune connexion ni signature requise.",how:"Comment fonctionne Smart Wallet ?",step1:"Ajoutez une adresse publique",step2:"Polypips surveille son activité",step3:"Vous recevez une alerte",coach:"Comprendre un wallet",coachSub:"Demandez au Coach IA de résumer ses positions, son exposition et ses risques.",ask:"Interroger le Coach IA",public:"Adresse publique Polymarket",name:"Nom du wallet (facultatif)",verify:"Vérifier l’adresse",verifying:"Vérification…",confirm:"Commencer le suivi",invalid:"Adresse Polymarket invalide.",close:"Fermer"},en:{dashboard:"Dashboard",title:"Smart Wallet",sub:"Track public wallets, their positions and latest activity.",read:"Read-only tracking — Polypips cannot sign or move your funds.",follow:"Follow a wallet",add:"Add an address",tracked:"Tracked wallets",positions:"Open positions",new:"New positions",alerts:"Active alerts",recent:"Recent activity",none:"No activity detected",noneSub:"New positions will appear here.",first:"Track your first Smart Wallet",firstSub:"Add a public Polymarket address to track its positions and receive alerts.",safe:"No connection or signature required.",how:"How does Smart Wallet work?",step1:"Add a public address",step2:"Polypips monitors activity",step3:"You receive an alert",coach:"Understand a wallet",coachSub:"Ask AI Coach to summarize positions, exposure and risks.",ask:"Ask AI Coach",public:"Public Polymarket address",name:"Wallet name (optional)",verify:"Verify address",verifying:"Verifying…",confirm:"Start tracking",invalid:"Invalid Polymarket address.",close:"Close"}};
+function Counter({value}:{value:number}){const[n,setN]=useState(0);useEffect(()=>{const s=performance.now();let id=0;const run=(t:number)=>{const p=Math.min((t-s)/600,1);setN(Math.round(value*(1-Math.pow(1-p,3))));if(p<1)id=requestAnimationFrame(run)};id=requestAnimationFrame(run);return()=>cancelAnimationFrame(id)},[value]);return <>{n}</>}
+function short(a:string){return a.length>12?`${a.slice(0,6)}…${a.slice(-4)}`:a}
+export function SmartWalletFlow({followedWallets:initial,hasActiveSubscription,maxTrackedWallets}:{followedWallets:Wallet[];hasActiveSubscription:boolean;cancelled:boolean;maxTrackedWallets:number|null}){
+ const c=useLocale()==="en"?words.en:words.fr,[wallets,setWallets]=useState(initial),[modal,setModal]=useState(false),[address,setAddress]=useState(""),[name,setName]=useState(""),[loading,setLoading]=useState(false),[result,setResult]=useState<WalletLookupResult|null>(null),[error,setError]=useState(""),[query,setQuery]=useState(""),[debounced,setDebounced]=useState(""),[filter,setFilter]=useState("all"),[copied,setCopied]=useState<string|null>(null),[mobile,setMobile]=useState(false);
+ useEffect(()=>{const id=setTimeout(()=>setDebounced(query),250);return()=>clearTimeout(id)},[query]);
+ const visible=useMemo(()=>wallets.filter(w=>(filter==="positions"?w.activePositionsCount>0:filter==="active"?!!w.lastSyncedAt:true)&&(w.handle+" "+w.address).toLowerCase().includes(debounced.toLowerCase())),[wallets,filter,debounced]);
+ const positions=wallets.reduce((n,w)=>n+w.activePositionsCount,0),activities=wallets.flatMap(w=>w.recentMovements.map(m=>({...m,wallet:w.handle}))).slice(0,6);
+ const statCards:{Icon:LucideIcon;label:string;value:number;note:string}[]=[{Icon:WalletIcon,label:c.tracked,value:wallets.length,note:`/ ${maxTrackedWallets??"∞"}`},{Icon:Clock3,label:c.positions,value:positions,note:""},{Icon:Activity,label:c.new,value:activities.length,note:"Ces dernières 24 h"},{Icon:BellRing,label:c.alerts,value:wallets.length,note:""}];
+ const verify=async()=>{if(!RE.test(address.trim())){setError(c.invalid);return}setLoading(true);setError("");try{const r=await fetch("/api/copy-trading/wallet-lookup",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({address:address.trim().toLowerCase()})});const d=await r.json();if(!r.ok)throw new Error(d.message);setResult(d)}catch(e){setError(e instanceof Error?e.message:c.invalid)}finally{setLoading(false)}};
+ const follow=async()=>{if(!result||!hasActiveSubscription)return;setLoading(true);try{const r=await fetch("/api/wallets/follow",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(result.walletId?{walletId:result.walletId}:{address:result.address})});const d=await r.json();if(!r.ok)throw new Error(d.message);const id=d.walletId||result.walletId;if(id&&!wallets.some(w=>w.id===id))setWallets(v=>[{id,address:result.address,handle:name.trim()||result.handle,source:"user_added",totalValue:result.totalValue,changePercent:null,activePositionsCount:result.positions.length,marketsTrackedCount:result.positions.length,chart:[],positions:result.positions,recentMovements:result.recentMovements,history:result.history,lastSyncedAt:new Date().toISOString(),winRate:result.winRate,roiPercent:result.roiPercent,consistencyScore:result.consistencyScore,categoryDiversity:result.categoryDiversity,avgPositionSize:result.avgPositionSize,riskLevel:result.riskLevel,trackRecordDays:result.trackRecordDays},...v]);setModal(false);setResult(null);setAddress("");setName("")}catch(e){setError(e instanceof Error?e.message:c.invalid)}finally{setLoading(false)}};
+ const open=()=>{setModal(true);setError("");setResult(null)};
+ return <div className={styles.app}><aside className={`${styles.sidebar} ${mobile?styles.open:""}`}><div className={styles.brand}><img src="/polypips-mark.png" alt=""/><strong>Polypips</strong><button onClick={()=>setMobile(false)}><X/></button></div><nav><Link href="/dashboard"><LayoutDashboard/>{c.dashboard}</Link><h4><i/>POLYMARKET<ChevronDown/></h4><Link href="/dashboard/analyse-ia"><Sparkles/>Analyse IA</Link><Link href="/dashboard/markets"><TrendingUp/>Marchés sélectionnés</Link><Link href="/dashboard/copy-trading" className={styles.active}><WalletIcon/>Smart Wallet</Link><h4><i className={styles.green}/>SPORT<ChevronDown/></h4><Link href="/dashboard/sports"><Sparkles/>Analyse IA</Link><Link href="/dashboard/sports/selection"><Bookmark/>Sélection du jour</Link><Link href="/dashboard/sports/mes-analyses"><Trophy/>Mes analyses</Link><h4><i className={styles.yellow}/>TRADING<b>NOUVEAU</b><ChevronDown/></h4><Link href="/dashboard/trading"><TrendingUp/>Analyse IA</Link><Link href="/dashboard/trading/selection"><Bookmark/>Sélection du jour</Link><Link href="/dashboard/trading/mes-analyses"><Activity/>Mes analyses</Link><div className={styles.global}><Link href="/dashboard/coach"><GraduationCap/>Coach IA</Link><Link href="/dashboard/community"><Users/>Communauté</Link><Link href="/dashboard/settings"><CircleUserRound/>Profil</Link></div></nav><div className={styles.user}><span>P</span><div><strong>Polypips</strong><small>Compte Polypips Pro</small></div></div></aside>
+ <div className={styles.workspace}><header><button className={styles.menu} onClick={()=>setMobile(true)}><Menu/></button><div>Polymarket <span>/</span><b>Smart Wallet</b></div><label><Search/><input placeholder="Rechercher…"/></label><button><Bell/></button><span className={styles.avatar}>P</span></header><main><div className={styles.hero}><div><h1>{c.title}</h1><p>{c.sub}</p></div><span>{wallets.length}/{maxTrackedWallets??"∞"} wallets suivis</span><button onClick={open}><Plus/>{c.follow}</button></div>
+ <div className={styles.readonly}><ShieldCheck/><b>{c.read}</b></div>
+ <section className={styles.stats}>{statCards.map(({Icon,label,value,note},i)=><article key={label} style={{"--delay":`${i*70}ms`} as React.CSSProperties}><span><Icon/></span><div><small>{label}</small><b><Counter value={value}/>{note.startsWith("/")&&<em>{note}</em>}</b>{!note.startsWith("/")&&<em>{note}</em>}</div></article>)}</section>
+ <section className={styles.content}><article className={styles.walletPanel}><h2>{c.tracked}</h2><div className={styles.tools}><label><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Rechercher une adresse ou un nom"/></label><div>{[["all","Tous"],["active","Actifs récemment"],["positions","Avec positions"]].map(([k,l])=><button key={k} className={filter===k?styles.filterOn:""} onClick={()=>setFilter(k)}>{l}</button>)}</div></div>{visible.length?<div className={styles.walletGrid}>{visible.map(w=><article key={w.id}><div><b>{w.handle}</b><button onClick={()=>{navigator.clipboard.writeText(w.address);setCopied(w.id);setTimeout(()=>setCopied(null),1500)}}>{copied===w.id?<Check/>:<Copy/>}</button><button><MoreHorizontal/></button></div><small>{short(w.address)}</small><p><strong>{w.activePositionsCount}</strong> positions ouvertes</p><span><i/>Surveillance active</span></article>)}</div>:<div className={styles.empty}><span><WalletIcon/></span><h3>{c.first}</h3><p>{c.firstSub}</p><button onClick={open}>{c.add}</button><small>{c.safe}</small></div>}</article>
+ <aside className={styles.right}><article><h2><Clock3/>{c.recent}</h2>{activities.length?<div className={styles.activities}>{activities.map((a,i)=><div key={a.id||i}><i/><span><b>{a.wallet}</b>{a.market}</span><strong>{a.type}</strong></div>)}</div>:<div className={styles.noActivity}><Activity/><b>{c.none}</b><span>{c.noneSub}</span></div>}</article><article><h2><BellRing/>Alertes</h2>{["Nouvelle position","Position clôturée","Variation importante"].map((x,i)=><label key={x}><span>{x}</span><input type="checkbox" defaultChecked={i===0}/><i/></label>)}</article><article className={styles.coach}><h2>{c.coach}</h2><p>{c.coachSub}</p><Link href="/dashboard/coach">{c.ask}<ChevronRight/></Link></article></aside></section>
+ <section className={styles.how}><h2><Target/>{c.how}</h2><div>{[c.step1,c.step2,c.step3].map((x,i)=><article key={x} style={{"--delay":`${i*80}ms`} as React.CSSProperties}><b>{i+1}</b><span>{x}</span></article>)}</div></section></main></div>{mobile&&<button className={styles.overlay} onClick={()=>setMobile(false)}/>}
+ {modal&&<div className={styles.modalBackdrop} onMouseDown={e=>{if(e.target===e.currentTarget)setModal(false)}}><section className={`${styles.modal} ${error?styles.shake:""}`} role="dialog" aria-modal="true"><button className={styles.modalClose} onClick={()=>setModal(false)} aria-label={c.close}><X/></button><WalletIcon/><h2>{c.follow}</h2><p>{c.read}</p><label>{c.public}<input value={address} onChange={e=>setAddress(e.target.value)} placeholder="0x…"/></label><label>{c.name}<input value={name} onChange={e=>setName(e.target.value)}/></label>{error&&<span className={styles.error}>{error}</span>}{result?<div className={styles.summary}><Check/><div><b>{name||result.handle}</b><span>{short(result.address)} · {result.positions.length} positions</span></div></div>:null}<button className={styles.modalAction} onClick={result?follow:verify} disabled={loading}>{loading?<><Loader2/>{c.verifying}</>:result?c.confirm:c.verify}</button><small><ShieldCheck/>{c.safe}</small></section></div>}</div>
 }
