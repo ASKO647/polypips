@@ -7,6 +7,12 @@
     "historyButton": "Historique",
     "removeContextAria": "Retirer le contexte",
     "contextLabel": "Contexte : {question}",
+    "viewArtifactCta": "Voir le résultat structuré dans l'onglet Artefacts →",
+    "tradingDisclaimer": "Ceci n'est ni un conseil financier ni une garantie de résultat — aucune exécution de transaction n'est possible depuis cette conversation.",
+    "tabs": {
+      "chat": "Chat",
+      "artifacts": "Artefacts"
+    },
     "lockedMessage": "Débloquez le Coach IA — Débutez pour 0,99 €",
     "lockedMessageCancelled": "Abonnement annulé — réabonnez-vous pour continuer à utiliser le Coach IA.",
     "welcomeMessage": "Bonjour ! Je suis votre coach IA Polypips. Posez-moi une question sur vos analyses récentes.",
@@ -32,6 +38,9 @@
     "ChatInput": {
       "placeholder": "Posez votre question...",
       "sendAria": "Envoyer",
+      "attachAria": "Joindre un fichier",
+      "removeAttachmentAria": "Retirer la pièce jointe",
+      "attachmentUploadFailed": "L'envoi de la pièce jointe a échoué. Réessayez.",
       "quickQuestions": {
         "why-decision": "Pourquoi l'IA a pris cette décision ?",
         "main-risks": "Quels sont les principaux risques ?",
@@ -41,6 +50,28 @@
     },
     "TypingIndicator": {
       "ariaLabel": "Le coach IA écrit..."
+    },
+    "ContextSelector": {
+      "addButton": "Ajouter un contexte",
+      "panelTitle": "Ce que le Coach peut utiliser",
+      "doneButton": "Terminé",
+      "removeAria": "Retirer {source}",
+      "sources": {
+        "polymarket_analyses": "Analyses Polymarket",
+        "sport_analyses": "Analyses Sport",
+        "trading_analyses": "Analyses Trading",
+        "selected_today": "Sélectionnés du jour",
+        "smart_wallet": "Smart Wallet",
+        "past_conversations": "Conversations précédentes"
+      }
+    },
+    "Artifacts": {
+      "emptyTitle": "Aucun artefact pour le moment",
+      "emptyDescription": "Demandez une comparaison, un rapport, une checklist, un résumé de risque ou un plan de surveillance — le résultat structuré apparaîtra ici.",
+      "riskLevelLabel": "Risque {level}",
+      "keyRisks": "Risques principaux",
+      "mitigations": "Atténuations possibles",
+      "reviewFrequency": "Fréquence de revue : {frequency}"
     }
   }
 }

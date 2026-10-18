@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import type { Artifact, ArtifactType, ContextSource } from "@/lib/data/coach";
 
 export class CoachChatError extends Error {
   code: string;
@@ -12,21 +13,32 @@ export type CoachChatRequest = {
   conversationId: string | null;
   message: string;
   focusAnalysisId?: string;
+  /** Omit to keep the conversation's current toggles; pass an array
+   * (including []) to change them for this and future turns. */
+  enabledContext?: ContextSource[];
+  attachmentIds?: string[];
+  requestArtifact?: boolean;
 };
 
 export type CoachChatResult = {
   conversationId: string;
   title: string;
+  sourcesUsed: ContextSource[];
+  showDisclaimer: boolean;
+  artifact: Artifact | null;
 };
 
 type StreamEvent =
+  | { type: "sources"; sources: ContextSource[] }
   | { type: "delta"; text: string }
-  | { type: "done"; conversationId: string; title: string }
+  | { type: "artifact"; artifactId: string; artifactType: ArtifactType; payload: unknown }
+  | { type: "done"; conversationId: string; title: string; showDisclaimer: boolean }
   | { type: "error"; code: string; message: string };
 
 export async function runCoachChat(
   request: CoachChatRequest,
-  onDelta: (text: string) => void
+  onDelta: (text: string) => void,
+  onSources?: (sources: ContextSource[]) => void
 ): Promise<CoachChatResult> {
   const supabase = createClient();
   const {
@@ -67,6 +79,8 @@ export async function runCoachChat(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let sourcesUsed: ContextSource[] = [];
+  let artifact: Artifact | null = null;
   let result: CoachChatResult | null = null;
 
   const handleLine = (line: string) => {
@@ -77,10 +91,26 @@ export async function runCoachChat(
     } catch {
       return;
     }
-    if (event.type === "delta") {
+    if (event.type === "sources") {
+      sourcesUsed = event.sources;
+      onSources?.(event.sources);
+    } else if (event.type === "delta") {
       onDelta(event.text);
+    } else if (event.type === "artifact") {
+      artifact = {
+        id: event.artifactId,
+        type: event.artifactType,
+        payload: event.payload as Artifact["payload"],
+        createdAt: new Date().toISOString(),
+      };
     } else if (event.type === "done") {
-      result = { conversationId: event.conversationId, title: event.title };
+      result = {
+        conversationId: event.conversationId,
+        title: event.title,
+        sourcesUsed,
+        showDisclaimer: event.showDisclaimer,
+        artifact,
+      };
     } else if (event.type === "error") {
       throw new CoachChatError(event.code, event.message);
     }

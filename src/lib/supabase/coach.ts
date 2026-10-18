@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ConversationSummary, Message } from "@/lib/data/coach";
+import type { Artifact, ConversationSummary, Message } from "@/lib/data/coach";
 
 type ConversationRow = { id: string; title: string; updated_at: string };
 
@@ -94,4 +94,29 @@ export async function fetchConversationMessages(
 
   if (error || !data) return [];
   return data as MessageRow[];
+}
+
+type ArtifactRow = { id: string; type: Artifact["type"]; payload: Artifact["payload"]; created_at: string };
+
+/** Artifacts already produced in a conversation — fetched once when it's
+ * opened, so switching back into an older conversation shows its
+ * Artefacts tab fully populated rather than only whatever was produced
+ * in the current live session. */
+export async function fetchConversationArtifacts(
+  supabase: SupabaseClient,
+  conversationId: string
+): Promise<Artifact[]> {
+  const { data, error } = await supabase
+    .from("coach_artifacts")
+    .select("id, type, payload, created_at")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true });
+
+  if (error || !data) return [];
+  return (data as ArtifactRow[]).map((row) => ({
+    id: row.id,
+    type: row.type,
+    payload: row.payload,
+    createdAt: row.created_at,
+  }));
 }

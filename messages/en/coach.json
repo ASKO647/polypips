@@ -7,6 +7,12 @@
     "historyButton": "History",
     "removeContextAria": "Remove context",
     "contextLabel": "Context: {question}",
+    "viewArtifactCta": "View the structured result in the Artifacts tab →",
+    "tradingDisclaimer": "This is neither financial advice nor a guaranteed outcome — no transaction can be executed from this conversation.",
+    "tabs": {
+      "chat": "Chat",
+      "artifacts": "Artifacts"
+    },
     "lockedMessage": "Unlock the AI Coach — Get started for €0.99",
     "lockedMessageCancelled": "Subscription cancelled — resubscribe to keep using the AI Coach.",
     "welcomeMessage": "Hi! I'm your Polypips AI coach. Ask me anything about your recent analyses.",
@@ -32,6 +38,9 @@
     "ChatInput": {
       "placeholder": "Ask your question...",
       "sendAria": "Send",
+      "attachAria": "Attach a file",
+      "removeAttachmentAria": "Remove attachment",
+      "attachmentUploadFailed": "The attachment couldn't be uploaded. Please try again.",
       "quickQuestions": {
         "why-decision": "Why did the AI make this decision?",
         "main-risks": "What are the main risks?",
@@ -41,6 +50,28 @@
     },
     "TypingIndicator": {
       "ariaLabel": "The AI coach is typing..."
+    },
+    "ContextSelector": {
+      "addButton": "Add context",
+      "panelTitle": "What the Coach can use",
+      "doneButton": "Done",
+      "removeAria": "Remove {source}",
+      "sources": {
+        "polymarket_analyses": "Polymarket analyses",
+        "sport_analyses": "Sport analyses",
+        "trading_analyses": "Trading analyses",
+        "selected_today": "Today's selections",
+        "smart_wallet": "Smart Wallet",
+        "past_conversations": "Previous conversations"
+      }
+    },
+    "Artifacts": {
+      "emptyTitle": "No artifacts yet",
+      "emptyDescription": "Ask for a comparison, a report, a checklist, a risk summary, or a surveillance plan — the structured result will show up here.",
+      "riskLevelLabel": "{level} risk",
+      "keyRisks": "Key risks",
+      "mitigations": "Possible mitigations",
+      "reviewFrequency": "Review frequency: {frequency}"
     }
   }
 }

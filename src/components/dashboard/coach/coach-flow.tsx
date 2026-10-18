@@ -4,32 +4,33 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { History as HistoryIcon, Loader2, X } from "lucide-react";
+import { History as HistoryIcon, Loader2, Table2, X } from "lucide-react";
 import { ChatInput } from "@/components/dashboard/coach/chat-input";
 import { ChatMessage } from "@/components/dashboard/coach/chat-message";
 import { CoachMobileHistory } from "@/components/dashboard/coach/coach-mobile-history";
 import { CoachSidebar } from "@/components/dashboard/coach/coach-sidebar";
 import { TypingIndicator } from "@/components/dashboard/coach/typing-indicator";
+import { ContextSelector } from "@/components/dashboard/coach/context-selector";
+import { ArtifactsPanel } from "@/components/dashboard/coach/artifact-cards";
 import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import {
   coachChatErrorMessage,
+  type Artifact,
+  type ContextSource,
   type ConversationSummary,
   type Message,
   type QuickQuestion,
 } from "@/lib/data/coach";
-import {
-  CoachChatError,
-  runCoachChat,
-} from "@/lib/supabase/coach-chat-client";
+import { CoachChatError, runCoachChat } from "@/lib/supabase/coach-chat-client";
 import { createClient } from "@/lib/supabase/client";
-import { fetchConversationMessages } from "@/lib/supabase/coach";
+import { fetchConversationArtifacts, fetchConversationMessages } from "@/lib/supabase/coach";
+import type { UploadedCoachAttachment } from "@/lib/supabase/coach-attachments";
+import { cn } from "@/lib/utils";
 
 type FocusAnalysis = { id: string; question: string };
+type Tab = "chat" | "artifacts";
 
-function errorContentFor(
-  error: unknown,
-  t: (key: string) => string
-): React.ReactNode {
+function errorContentFor(error: unknown, t: (key: string) => string): React.ReactNode {
   if (error instanceof CoachChatError && error.code === "limit_reached") {
     return (
       <>
@@ -43,18 +44,17 @@ function errorContentFor(
       </>
     );
   }
-  return coachChatErrorMessage(
-    error instanceof CoachChatError ? error.code : "unknown",
-    t
-  );
+  return coachChatErrorMessage(error instanceof CoachChatError ? error.code : "unknown", t);
 }
 
 export function CoachFlow({
+  userId,
   initialConversations,
   initialFocusAnalysis,
   hasActiveSubscription,
   cancelled,
 }: {
+  userId: string | null;
   initialConversations: ConversationSummary[];
   initialFocusAnalysis: FocusAnalysis | null;
   hasActiveSubscription: boolean;
@@ -68,54 +68,56 @@ export function CoachFlow({
     role: "assistant",
     content: t("welcomeMessage"),
   };
-  const [conversations, setConversations] = useState<ConversationSummary[]>(
-    initialConversations
-  );
-  const [activeConversationId, setActiveConversationId] = useState<
-    string | null
-  >(null);
+  const [conversations, setConversations] = useState<ConversationSummary[]>(initialConversations);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
+  const [tab, setTab] = useState<Tab>("chat");
   const [inputValue, setInputValue] = useState("");
   const [sending, setSending] = useState(false);
   const [showTyping, setShowTyping] = useState(false);
   const [loadingConversation, setLoadingConversation] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<React.ReactNode | null>(
-    null
-  );
-  const [focusAnalysis, setFocusAnalysis] = useState<FocusAnalysis | null>(
-    initialFocusAnalysis
-  );
+  const [errorMessage, setErrorMessage] = useState<React.ReactNode | null>(null);
+  const [focusAnalysis, setFocusAnalysis] = useState<FocusAnalysis | null>(initialFocusAnalysis);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [enabledContext, setEnabledContext] = useState<ContextSource[]>([]);
+  const [pendingAttachments, setPendingAttachments] = useState<UploadedCoachAttachment[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, showTyping]);
 
-  const activeConversation =
-    conversations.find((c) => c.id === activeConversationId) ?? null;
+  const activeConversation = conversations.find((c) => c.id === activeConversationId) ?? null;
 
   const handleNewConversation = () => {
     setActiveConversationId(null);
     setMessages([welcomeMessage]);
+    setArtifacts([]);
+    setTab("chat");
     setInputValue("");
     setErrorMessage(null);
     setFocusAnalysis(null);
+    setEnabledContext([]);
+    setPendingAttachments([]);
   };
 
   const handleSelectConversation = async (id: string) => {
     if (id === activeConversationId) return;
     setErrorMessage(null);
     setFocusAnalysis(null);
+    setPendingAttachments([]);
     setActiveConversationId(id);
+    setTab("chat");
     setLoadingConversation(true);
     try {
       const supabase = createClient();
-      const msgs = await fetchConversationMessages(supabase, id);
+      const [msgs, artifactRows] = await Promise.all([
+        fetchConversationMessages(supabase, id),
+        fetchConversationArtifacts(supabase, id),
+      ]);
       setMessages(msgs.length > 0 ? msgs : [welcomeMessage]);
+      setArtifacts(artifactRows);
     } finally {
       setLoadingConversation(false);
     }
@@ -124,11 +126,7 @@ export function CoachFlow({
   const bumpConversation = (id: string, title: string) => {
     setConversations((prev) => {
       const existingIdx = prev.findIndex((c) => c.id === id);
-      const updated: ConversationSummary = {
-        id,
-        title,
-        updatedAt: new Date().toISOString(),
-      };
+      const updated: ConversationSummary = { id, title, updatedAt: new Date().toISOString() };
       if (existingIdx === -1) return [updated, ...prev];
       const rest = prev.filter((c) => c.id !== id);
       return [updated, ...rest];
@@ -141,9 +139,16 @@ export function CoachFlow({
 
     setErrorMessage(null);
     setInputValue("");
+    const sentAttachments = pendingAttachments;
+    setPendingAttachments([]);
     setMessages((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), role: "user", content: trimmed },
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: trimmed,
+        attachments: sentAttachments.map((a) => ({ fileName: a.fileName, kind: a.kind })),
+      },
     ]);
     setSending(true);
     setShowTyping(true);
@@ -157,27 +162,34 @@ export function CoachFlow({
         {
           conversationId: conversationIdAtSend,
           message: trimmed,
-          focusAnalysisId: conversationIdAtSend
-            ? undefined
-            : (focusAnalysis?.id ?? undefined),
+          focusAnalysisId: conversationIdAtSend ? undefined : (focusAnalysis?.id ?? undefined),
+          enabledContext,
+          attachmentIds: sentAttachments.map((a) => a.id),
         },
         (delta) => {
           if (!assistantStarted) {
             assistantStarted = true;
             setShowTyping(false);
-            setMessages((prev) => [
-              ...prev,
-              { id: assistantId, role: "assistant", content: delta },
-            ]);
+            setMessages((prev) => [...prev, { id: assistantId, role: "assistant", content: delta }]);
           } else {
             setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantId ? { ...m, content: m.content + delta } : m
-              )
+              prev.map((m) => (m.id === assistantId ? { ...m, content: m.content + delta } : m))
             );
           }
         }
       );
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantId
+            ? { ...m, sourcesUsed: result.sourcesUsed, showDisclaimer: result.showDisclaimer }
+            : m
+        )
+      );
+
+      if (result.artifact) {
+        setArtifacts((prev) => [...prev, result.artifact as Artifact]);
+      }
 
       setFocusAnalysis(null);
       if (!conversationIdAtSend) {
@@ -208,88 +220,127 @@ export function CoachFlow({
       <LockedOverlay
         locked={!hasActiveSubscription}
         cancelled={cancelled}
-        message={
-          cancelled ? t("lockedMessageCancelled") : t("lockedMessage")
-        }
+        message={cancelled ? t("lockedMessageCancelled") : t("lockedMessage")}
         className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]"
         contentClassName="flex flex-1 flex-col overflow-hidden"
       >
         <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3.5 sm:px-5">
           <div className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500/15">
-              <Image
-                src="/polypips-mark.png"
-                alt=""
-                width={290}
-                height={322}
-                className="h-4 w-auto"
-              />
+              <Image src="/polypips-mark.png" alt="" width={290} height={322} className="h-4 w-auto" />
             </span>
             <div>
-              <p className="font-display text-sm font-bold text-white">
-                {t("headerTitle")}
-              </p>
+              <p className="font-display text-sm font-bold text-white">{t("headerTitle")}</p>
               <p className="max-w-[220px] truncate text-[11px] text-white/40 sm:max-w-xs">
-                {activeConversation
-                  ? activeConversation.title
-                  : t("newConversationDefault")}
+                {activeConversation ? activeConversation.title : t("newConversationDefault")}
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setHistoryOpen(true)}
-            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/60 transition-colors duration-150 hover:text-white lg:hidden"
-          >
-            <HistoryIcon className="h-3.5 w-3.5" />
-            {t("historyButton")}
-          </button>
-        </div>
-
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
-          {loadingConversation ? (
-            <div className="flex h-full items-center justify-center">
-              <Loader2 className="h-5 w-5 animate-spin text-white/40" />
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-full border border-white/10 bg-white/[0.03] p-1 text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setTab("chat")}
+                className={cn(
+                  "rounded-full px-3 py-1.5 transition-colors",
+                  tab === "chat" ? "bg-brand-500 text-white" : "text-white/50 hover:text-white"
+                )}
+              >
+                {t("tabs.chat")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("artifacts")}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-colors",
+                  tab === "artifacts" ? "bg-brand-500 text-white" : "text-white/50 hover:text-white"
+                )}
+              >
+                <Table2 className="h-3.5 w-3.5" />
+                {t("tabs.artifacts")}
+                {artifacts.length > 0 && (
+                  <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-white/20 px-1 text-[10px]">
+                    {artifacts.length}
+                  </span>
+                )}
+              </button>
             </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-              {showTyping && <TypingIndicator />}
-            </div>
-          )}
-        </div>
-
-        {focusAnalysis && !activeConversationId && (
-          <div className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-xl border border-brand-500/20 bg-brand-500/[0.06] px-3.5 py-2.5 text-xs text-white/70 sm:mx-5">
-            <span className="truncate">
-              {t("contextLabel", { question: focusAnalysis.question })}
-            </span>
             <button
               type="button"
-              onClick={() => setFocusAnalysis(null)}
-              aria-label={t("removeContextAria")}
-              className="shrink-0 text-white/40 transition-colors hover:text-white"
+              onClick={() => setHistoryOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-white/60 transition-colors duration-150 hover:text-white lg:hidden"
             >
-              <X className="h-3.5 w-3.5" />
+              <HistoryIcon className="h-3.5 w-3.5" />
+              {t("historyButton")}
             </button>
           </div>
-        )}
+        </div>
 
-        {errorMessage && (
-          <div className="mx-4 mb-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-rose-300 sm:mx-5">
-            {errorMessage}
+        {tab === "chat" && (
+          <div className="border-b border-white/10 px-4 py-3 sm:px-5">
+            <ContextSelector enabled={enabledContext} onChange={setEnabledContext} />
           </div>
         )}
 
-        <ChatInput
-          value={inputValue}
-          onChange={setInputValue}
-          onSend={() => handleSend(inputValue)}
-          onSelectSuggestion={handleSelectSuggestion}
-          disabled={sending || !hasActiveSubscription}
-        />
+        {tab === "chat" ? (
+          <>
+            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 sm:px-5">
+              {loadingConversation ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-5 w-5 animate-spin text-white/40" />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      message={message}
+                      onViewArtifacts={
+                        message.role === "assistant" && artifacts.length > 0
+                          ? () => setTab("artifacts")
+                          : undefined
+                      }
+                    />
+                  ))}
+                  {showTyping && <TypingIndicator />}
+                </div>
+              )}
+            </div>
+
+            {focusAnalysis && !activeConversationId && (
+              <div className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-xl border border-brand-500/20 bg-brand-500/[0.06] px-3.5 py-2.5 text-xs text-white/70 sm:mx-5">
+                <span className="truncate">{t("contextLabel", { question: focusAnalysis.question })}</span>
+                <button
+                  type="button"
+                  onClick={() => setFocusAnalysis(null)}
+                  aria-label={t("removeContextAria")}
+                  className="shrink-0 text-white/40 transition-colors hover:text-white"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="mx-4 mb-3 rounded-xl border border-rose-500/20 bg-rose-500/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-rose-300 sm:mx-5">
+                {errorMessage}
+              </div>
+            )}
+
+            <ChatInput
+              value={inputValue}
+              onChange={setInputValue}
+              onSend={() => handleSend(inputValue)}
+              onSelectSuggestion={handleSelectSuggestion}
+              disabled={sending || !hasActiveSubscription}
+              userId={userId}
+              attachments={pendingAttachments}
+              onAttachmentsChange={setPendingAttachments}
+            />
+          </>
+        ) : (
+          <ArtifactsPanel artifacts={artifacts} />
+        )}
       </LockedOverlay>
 
       <CoachMobileHistory
