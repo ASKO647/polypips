@@ -8,7 +8,6 @@ import {
   fetchSubscription,
   getEffectivePlan,
   hasActiveAccess,
-  isCancelledSubscription,
 } from "@/lib/supabase/subscriptions";
 import {
   countAnalysesToday,
@@ -159,7 +158,6 @@ export default async function DashboardPage() {
       <DashboardOverviewFlow
         firstName={getFirstNameFromUser(user)}
         hasActiveSubscription={hasActiveAccess(subscription)}
-        cancelled={isCancelledSubscription(subscription)}
         subscription={subscription}
         plan={plan}
         analysesToday={analysesToday}

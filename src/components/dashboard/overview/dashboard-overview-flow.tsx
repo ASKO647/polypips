@@ -12,7 +12,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
-import { LockedOverlay } from "@/components/dashboard/locked-overlay";
 import { QuickAccessCard } from "@/components/dashboard/overview/quick-access-card";
 import { SubscriptionQuickCard } from "@/components/dashboard/overview/subscription-quick-card";
 import { MarketsTable } from "@/components/dashboard/overview/markets-table";
@@ -32,7 +31,6 @@ import type { PerformanceStats } from "@/lib/supabase/performance";
 export function DashboardOverviewFlow({
   firstName,
   hasActiveSubscription,
-  cancelled,
   subscription,
   plan,
   analysesToday,
@@ -57,10 +55,10 @@ export function DashboardOverviewFlow({
   /** Real first name from user_metadata (Google OAuth only) — null for
    * plain email/password accounts, which never collect a name. */
   firstName: string | null;
+  /** Still needed: the inline market-detail drill-down (AnalysisResult,
+   * below) stays paywalled even though the overview page itself no longer
+   * blurs anything — see the "selectedMarket" branch. */
   hasActiveSubscription: boolean;
-  /** True when access is blocked because the user cancelled — swaps the
-   * "Débutez pour 0,99 €" first-time CTA for a "réabonnez-vous" one. */
-  cancelled: boolean;
   subscription: SubscriptionRow | null;
   plan: PricingPlan;
   analysesToday: number;
@@ -107,8 +105,6 @@ export function DashboardOverviewFlow({
     );
   }
 
-  const lockedMessage = cancelled ? t("lockedCancelled") : t("lockedDefault");
-
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -120,104 +116,97 @@ export function DashboardOverviewFlow({
         </p>
       </div>
 
-      <LockedOverlay locked={!hasActiveSubscription} cancelled={cancelled} message={lockedMessage}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <QuickAccessCard
-            href="/dashboard/analyse-ia"
-            icon={Sparkles}
-            title={t("cards.analyseIAPolymarket.title")}
-            stat={
-              dailyAnalysisLimit !== null
-                ? t("cards.analyseIAPolymarket.statLimited", {
-                    today: analysesToday,
-                    limit: dailyAnalysisLimit,
-                  })
-                : t("cards.analyseIAPolymarket.statUnlimited")
-            }
-            tone="brand"
-            sparklinePoints={analysesSparkline}
-          />
-          <QuickAccessCard
-            href="/dashboard/markets"
-            icon={LineChart}
-            title={t("cards.marchesSelectionnes.title")}
-            stat={t("cards.marchesSelectionnes.stat", { count: selectedMarketsCount })}
-            tone="sky"
-          />
-          <QuickAccessCard
-            href="/dashboard/copy-trading"
-            icon={Wallet}
-            title={t("cards.smartWallet.title")}
-            stat={
-              walletsMax !== null
-                ? t("cards.smartWallet.statWithMax", { followed: walletsFollowed, max: walletsMax })
-                : t("cards.smartWallet.statNoMax", { count: walletsFollowed })
-            }
-            tone="emerald"
-            sparklinePoints={walletsSparkline}
-          />
-          <QuickAccessCard
-            href="/dashboard/sports"
-            icon={Trophy}
-            title={t("cards.analyseIASport.title")}
-            stat={t("cards.analyseIASport.stat", { count: sportAnalysesToday })}
-            tone="violet"
-            sparklinePoints={sportSparkline}
-          />
-          <QuickAccessCard
-            href="/dashboard/trading"
-            icon={CandlestickChart}
-            title={t("cards.analyseIATrading.title")}
-            stat={t("cards.analyseIATrading.stat", { count: tradingAnalysesToday })}
-            tone="amber"
-            sparklinePoints={tradingSparkline}
-          />
-          <QuickAccessCard
-            href="/dashboard/coach"
-            icon={GraduationCap}
-            title={t("cards.coachIA.title")}
-            stat={t("cards.coachIA.stat", { count: conversationCount })}
-            tone="rose"
-            sparklinePoints={coachSparkline}
-          />
-          <QuickAccessCard
-            href="/dashboard/community"
-            icon={Users}
-            title={t("cards.communaute.title")}
-            stat={t("cards.communaute.stat", { count: groupsJoinedCount })}
-            tone="neutral"
-          />
-          <SubscriptionQuickCard subscription={subscription} plan={plan} />
-        </div>
-      </LockedOverlay>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <QuickAccessCard
+          href="/dashboard/analyse-ia"
+          icon={Sparkles}
+          title={t("cards.analyseIAPolymarket.title")}
+          stat={
+            dailyAnalysisLimit !== null
+              ? t("cards.analyseIAPolymarket.statLimited", {
+                  today: analysesToday,
+                  limit: dailyAnalysisLimit,
+                })
+              : t("cards.analyseIAPolymarket.statUnlimited")
+          }
+          tone="brand"
+          sparklinePoints={analysesSparkline}
+        />
+        <QuickAccessCard
+          href="/dashboard/markets"
+          icon={LineChart}
+          title={t("cards.marchesSelectionnes.title")}
+          stat={t("cards.marchesSelectionnes.stat", { count: selectedMarketsCount })}
+          tone="sky"
+        />
+        <QuickAccessCard
+          href="/dashboard/copy-trading"
+          icon={Wallet}
+          title={t("cards.smartWallet.title")}
+          stat={
+            walletsMax !== null
+              ? t("cards.smartWallet.statWithMax", { followed: walletsFollowed, max: walletsMax })
+              : t("cards.smartWallet.statNoMax", { count: walletsFollowed })
+          }
+          tone="emerald"
+          sparklinePoints={walletsSparkline}
+        />
+        <QuickAccessCard
+          href="/dashboard/sports"
+          icon={Trophy}
+          title={t("cards.analyseIASport.title")}
+          stat={t("cards.analyseIASport.stat", { count: sportAnalysesToday })}
+          tone="violet"
+          sparklinePoints={sportSparkline}
+        />
+        <QuickAccessCard
+          href="/dashboard/trading"
+          icon={CandlestickChart}
+          title={t("cards.analyseIATrading.title")}
+          stat={t("cards.analyseIATrading.stat", { count: tradingAnalysesToday })}
+          tone="amber"
+          sparklinePoints={tradingSparkline}
+        />
+        <QuickAccessCard
+          href="/dashboard/coach"
+          icon={GraduationCap}
+          title={t("cards.coachIA.title")}
+          stat={t("cards.coachIA.stat", { count: conversationCount })}
+          tone="rose"
+          sparklinePoints={coachSparkline}
+        />
+        <QuickAccessCard
+          href="/dashboard/community"
+          icon={Users}
+          title={t("cards.communaute.title")}
+          stat={t("cards.communaute.stat", { count: groupsJoinedCount })}
+          tone="neutral"
+        />
+        <SubscriptionQuickCard subscription={subscription} plan={plan} />
+      </div>
 
       {/* Left and right are independent flex-col stacks, not cells of a
        * single CSS Grid row — a shared row's auto-height always equals its
        * tallest cell, which previously left dead space below whichever
        * column (MarketsTable vs. the right stack) happened to be shorter,
        * before RecentActivitySection appeared. Each column now grows to
-       * its own real content height. MarketsTable and the right column
-       * each get their own LockedOverlay (instead of one overlay spanning
-       * the whole left column) so RecentActivitySection — deliberately
-       * ungated, see the "Fix subscription gating gaps" audit — can sit
-       * right below MarketsTable without also being blurred. */}
+       * its own real content height. Neither column (nor the quick-access
+       * grid above) is blurred on this page anymore — the Tableau de bord
+       * overview is intentionally always-visible, see the "Remove dashboard
+       * overview blur" change; every OTHER dashboard page keeps its own
+       * paywall untouched, including this page's own market-detail
+       * drill-down just below (AnalysisResult, gated by
+       * hasActiveSubscription like before). */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-start">
         <div className="flex flex-col gap-4 lg:col-span-2">
-          <LockedOverlay locked={!hasActiveSubscription} cancelled={cancelled} message={lockedMessage}>
-            <MarketsTable markets={recentMarkets} onSelect={setSelectedMarket} />
-          </LockedOverlay>
+          <MarketsTable markets={recentMarkets} onSelect={setSelectedMarket} />
           <RecentActivitySection notifications={notifications} />
         </div>
 
-        <LockedOverlay
-          locked={!hasActiveSubscription}
-          cancelled={cancelled}
-          message={lockedMessage}
-          contentClassName="flex flex-col gap-4"
-        >
+        <div className="flex flex-col gap-4">
           <ActivityDonut periods={activityPeriods} />
           <PerformanceCard stats={performanceStats} />
-        </LockedOverlay>
+        </div>
       </div>
     </div>
   );
