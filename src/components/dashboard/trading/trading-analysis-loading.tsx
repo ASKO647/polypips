@@ -8,6 +8,7 @@ import {
   type TradingProgressStep,
 } from "@/lib/data/trading-analysis";
 import { cn } from "@/lib/utils";
+import styles from "./trading-analysis.module.css";
 
 export function TradingAnalysisLoading({ currentStep }: { currentStep: TradingProgressStep | null }) {
   const t = useTranslations("Trading");
@@ -15,43 +16,37 @@ export function TradingAnalysisLoading({ currentStep }: { currentStep: TradingPr
   const currentIndex = currentStep ? TRADING_STEP_ORDER.indexOf(currentStep) : -1;
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-8 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16">
-      <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/[0.06]">
-        <Loader2 className="h-7 w-7 animate-spin text-brand-400" strokeWidth={2} />
+    <main className={styles.loadingPage}>
+      <span className={styles.loadingIcon}>
+        <Loader2 className="h-7 w-7 animate-spin" strokeWidth={2} />
       </span>
-
-      <div className="flex w-full max-w-sm flex-col gap-3">
+      <h1>Analyse du graphique en cours…</h1>
+      <p>Polypips lit votre graphique et prépare une synthèse structurée.</p>
+      <div className={styles.loadingSteps}>
         {TRADING_STEP_ORDER.map((step, i) => {
           const current = i === currentIndex;
           const complete = currentIndex >= 0 && i < currentIndex;
           return (
-            <div key={step} className="flex items-center gap-3">
+            <div key={step}>
               <span
                 className={cn(
-                  "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold",
+                  styles.loadingDot,
                   complete
-                    ? "border-emerald-400 bg-emerald-400/15 text-emerald-400"
+                    ? styles.loadingComplete
                     : current
-                      ? "border-brand-400 bg-brand-400/15 text-brand-400"
-                      : "border-white/15 text-white/20"
+                      ? styles.loadingCurrent
+                      : styles.loadingPending
                 )}
               >
                 {complete ? <Check className="h-3 w-3" strokeWidth={3} /> : i + 1}
               </span>
-              <span
-                className={cn(
-                  "text-sm transition-colors duration-200",
-                  complete && "text-white/40",
-                  current && "font-medium text-white",
-                  !complete && !current && "text-white/25"
-                )}
-              >
+              <span>
                 {loadingSteps[step]}
               </span>
             </div>
           );
         })}
       </div>
-    </div>
+    </main>
   );
 }

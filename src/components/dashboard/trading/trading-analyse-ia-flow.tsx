@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { DashboardChrome } from "@/components/dashboard/shared/dashboard-chrome";
 import { TradingChartInput } from "@/components/dashboard/trading/trading-chart-input";
 import { TradingAnalysisLoading } from "@/components/dashboard/trading/trading-analysis-loading";
 import { TradingAnalysisResult } from "@/components/dashboard/trading/trading-analysis-result";
@@ -56,6 +57,8 @@ function errorContentFor(
 }
 
 export function TradingAnalyseIaFlow({ creditBalance }: { creditBalance: number }) {
+  const locale = useLocale();
+  const title = locale === "fr" ? "Analyse IA Trading" : "Trading AI Analysis";
   const t = useTranslations("Trading");
   const tCredits = useTranslations("Credits");
   const [state, setState] = useState<FlowState>("input");
@@ -92,20 +95,22 @@ export function TradingAnalyseIaFlow({ creditBalance }: { creditBalance: number 
   };
 
   if (state === "loading") {
-    return <TradingAnalysisLoading currentStep={currentStep} />;
+    return <DashboardChrome title={title}><TradingAnalysisLoading currentStep={currentStep} /></DashboardChrome>;
   }
 
   if (state === "result" && result) {
-    return <TradingAnalysisResult analysis={result} onBack={handleNewAnalysis} />;
+    return <DashboardChrome title={title}><main className="min-h-screen bg-white p-5 sm:p-8"><TradingAnalysisResult analysis={result} onBack={handleNewAnalysis} /></main></DashboardChrome>;
   }
 
   return (
-    <TradingChartInput
-      creditBalance={creditBalance}
-      errorMessage={errorMessage}
-      file={file}
-      onFileChange={setFile}
-      onAnalyze={handleAnalyze}
-    />
+    <DashboardChrome title={title}>
+      <TradingChartInput
+        creditBalance={creditBalance}
+        errorMessage={errorMessage}
+        file={file}
+        onFileChange={setFile}
+        onAnalyze={handleAnalyze}
+      />
+    </DashboardChrome>
   );
 }
