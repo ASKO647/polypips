@@ -1,161 +1,31 @@
 "use client";
-
-import { useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Sparkles } from "lucide-react";
+import { useEffect,useMemo,useState } from "react";
+import { useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
+import { Bell,Bookmark,ChevronDown,ChevronRight,Clock3,Grid2X2,LayoutDashboard,List,Menu,RefreshCw,Search,Sparkles,TrendingUp,Wallet,X } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
-import { MarketCard } from "@/components/dashboard/markets/market-card";
-import { SyncCountdown } from "@/components/dashboard/sync-countdown";
-import { OnDemandScanButton } from "@/components/dashboard/on-demand-scan-button";
+import { MarketCard } from "./market-card";
 import type { MarketAnalysis } from "@/lib/data/analysis";
-import { SYNC_MARKETS_INTERVAL_MINUTES } from "@/lib/data/markets";
 import type { PlanId } from "@/lib/stripe/plans";
-import { cn } from "@/lib/utils";
-
-type SortKey = "opportunityScore" | "edge" | "aiProbability";
-
-export function MarketsFlow({
-  markets: allMarkets,
-  hasActiveSubscription,
-  currentPlan,
-  lastSyncedAt,
-}: {
-  markets: MarketAnalysis[];
-  hasActiveSubscription: boolean;
-  currentPlan: PlanId | null;
-  lastSyncedAt: string | null;
-}) {
-  const t = useTranslations("Polymarket.Markets");
-  const allCategories = t("allCategories");
-  const sortOptions: { key: SortKey; label: string }[] = [
-    { key: "opportunityScore", label: t("sortOptions.opportunityScore") },
-    { key: "edge", label: t("sortOptions.edge") },
-    { key: "aiProbability", label: t("sortOptions.aiProbability") },
-  ];
-
-  const [selected, setSelected] = useState<MarketAnalysis | null>(null);
-  const [category, setCategory] = useState<string>(allCategories);
-  const [sortKey, setSortKey] = useState<SortKey>("opportunityScore");
-
-  const categories = useMemo(
-    () => [
-      allCategories,
-      ...Array.from(new Set(allMarkets.map((m) => m.category))),
-    ],
-    [allMarkets, allCategories]
-  );
-
-  const markets = useMemo(() => {
-    const filtered =
-      category === allCategories
-        ? allMarkets
-        : allMarkets.filter((m) => m.category === category);
-
-    return [...filtered].sort((a, b) =>
-      sortKey === "edge"
-        ? Math.abs(b.edge) - Math.abs(a.edge)
-        : b[sortKey] - a[sortKey]
-    );
-  }, [allMarkets, category, sortKey, allCategories]);
-
-  if (selected) {
-    return (
-      <AnalysisResult
-        analysis={selected}
-        onBack={() => setSelected(null)}
-        backLabel={t("backToListLabel")}
-        locked={!hasActiveSubscription}
-      />
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            {t("heading")}
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-white/50 sm:text-base">
-            {t("subtitle")}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <SyncCountdown
-            lastSyncedAt={lastSyncedAt}
-            intervalMinutes={SYNC_MARKETS_INTERVAL_MINUTES}
-          />
-          <OnDemandScanButton feature="markets" currentPlan={currentPlan} />
-        </div>
-      </div>
-
-      {allMarkets.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-16 text-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-500/15 text-brand-400">
-            <Sparkles className="h-5 w-5" strokeWidth={2} />
-          </span>
-          <p className="text-sm font-semibold text-white">
-            {t("emptyTitle")}
-          </p>
-          <p className="max-w-sm text-xs leading-relaxed text-white/45">
-            {t("emptyDescription")}
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setCategory(cat)}
-                  className={cn(
-                    "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors duration-150",
-                    category === cat
-                      ? "border-brand-400 bg-brand-500/15 text-brand-400"
-                      : "border-white/10 bg-white/[0.03] text-white/55 hover:border-white/20 hover:text-white"
-                  )}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-white/40">{t("sortByLabel")}</span>
-              <div className="flex flex-wrap gap-1.5">
-                {sortOptions.map((opt) => (
-                  <button
-                    key={opt.key}
-                    type="button"
-                    onClick={() => setSortKey(opt.key)}
-                    className={cn(
-                      "rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors duration-150",
-                      sortKey === opt.key
-                        ? "border-white/25 bg-white/[0.1] text-white"
-                        : "border-white/10 bg-white/[0.03] text-white/50 hover:text-white"
-                    )}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {markets.map((market) => (
-              <MarketCard
-                key={market.id}
-                market={market}
-                onViewDetail={() => setSelected(market)}
-                locked={!hasActiveSubscription}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
+import { meetsPlan } from "@/lib/plan-access";
+import { SYNC_MARKETS_INTERVAL_MINUTES } from "@/lib/data/markets";
+import styles from "./markets-page.module.css";
+const copy={fr:{crumb:"Marchés sélectionnés",title:"Marchés sélectionnés par l’IA",sub:"opportunités actualisées toutes les 12 heures selon l’activité, les données et les risques.",search:"Rechercher un marché",all:"Tous",refresh:"Actualiser",refreshing:"Actualisation…",done:"Actualisé à l’instant",notice:"La sélection met en avant les marchés à surveiller. Elle ne constitue pas un conseil financier.",empty:"Aucun marché ne correspond à vos filtres.",reset:"Réinitialiser les filtres",next:"Prochaine actualisation dans",analyze:"Analyser un autre marché"},en:{crumb:"Selected markets",title:"AI-selected markets",sub:"opportunities refreshed every 12 hours based on activity, data and risk.",search:"Search a market",all:"All",refresh:"Refresh",refreshing:"Refreshing…",done:"Updated just now",notice:"This selection highlights markets worth watching. It is not financial advice.",empty:"No market matches your filters.",reset:"Reset filters",next:"Next refresh in",analyze:"Analyze another market"}};
+export function MarketsFlow({markets:allMarkets,hasActiveSubscription,currentPlan,lastSyncedAt}:{markets:MarketAnalysis[];hasActiveSubscription:boolean;currentPlan:PlanId|null;lastSyncedAt:string|null}){
+ const c=useLocale()==="en"?copy.en:copy.fr,router=useRouter();
+ const[selected,setSelected]=useState<MarketAnalysis|null>(null),[category,setCategory]=useState(c.all),[query,setQuery]=useState(""),[debounced,setDebounced]=useState(""),[view,setView]=useState<"grid"|"list">("grid"),[mobile,setMobile]=useState(false),[pending,setPending]=useState(false),[done,setDone]=useState(false),[remaining,setRemaining]=useState(0);
+ useEffect(()=>{const id=setTimeout(()=>setDebounced(query),250);return()=>clearTimeout(id)},[query]);
+ useEffect(()=>{const tick=()=>{const base=lastSyncedAt?new Date(lastSyncedAt).getTime():Date.now();setRemaining(Math.max(0,base+SYNC_MARKETS_INTERVAL_MINUTES*60000-Date.now()))};tick();const id=setInterval(tick,60000);return()=>clearInterval(id)},[lastSyncedAt]);
+ const categories=useMemo(()=>[c.all,...Array.from(new Set(allMarkets.map(m=>m.category)))],[allMarkets,c.all]);
+ const markets=useMemo(()=>allMarkets.filter(m=>(category===c.all||m.category===category)&&m.question.toLowerCase().includes(debounced.toLowerCase())),[allMarkets,category,debounced,c.all]);
+ const refresh=async()=>{if(pending)return;if(!meetsPlan(currentPlan,"pro_plus")){router.push("/dashboard/subscription");return}setPending(true);setDone(false);try{const res=await fetch("/api/scan/markets",{method:"POST"});if(!res.ok)throw new Error();router.refresh();setDone(true);setTimeout(()=>setDone(false),1000)}finally{setPending(false)}};
+ const reset=()=>{setQuery("");setCategory(c.all)},hours=Math.floor(remaining/3600000),mins=Math.floor((remaining%3600000)/60000);
+ if(selected)return <div className={styles.result}><AnalysisResult analysis={selected} onBack={()=>setSelected(null)} backLabel={c.crumb} locked={!hasActiveSubscription}/></div>;
+ return <div className={styles.app}><aside className={`${styles.sidebar} ${mobile?styles.sidebarOpen:""}`}><div className={styles.brand}><img src="/polypips-mark.png" alt=""/><strong>Polypips</strong><button onClick={()=>setMobile(false)}><X/></button></div><nav><Link href="/dashboard"><LayoutDashboard/>Tableau de bord</Link><h4><i/>POLYMARKET <ChevronDown/></h4><Link href="/dashboard/analyse-ia"><Sparkles/>Analyse IA</Link><Link href="/dashboard/markets" className={styles.active}><TrendingUp/>Marchés sélectionnés</Link><Link href="/dashboard/copy-trading"><Wallet/>Smart Wallet</Link><h4><i className={styles.green}/>SPORT <ChevronDown/></h4><Link href="/dashboard/sports"><Sparkles/>Analyse IA</Link><Link href="/dashboard/sports/selection"><Bookmark/>Sélection du jour</Link><h4><i className={styles.yellow}/>TRADING <ChevronDown/></h4><Link href="/dashboard/trading"><TrendingUp/>Analyse IA</Link></nav></aside>
+ <div className={styles.workspace}><header><button className={styles.mobileButton} onClick={()=>setMobile(true)}><Menu/></button><div>Polymarket <span>/</span> <b>{c.crumb}</b></div><label><Search/><input placeholder="Rechercher…"/></label><button><Bell/></button><span className={styles.avatar}>P</span></header><main><div className={styles.hero}><div><h1>{c.title}</h1><p>{allMarkets.length||9} {c.sub}</p></div><div className={`${styles.status} ${done?styles.done:""}`}><i/>{done?c.done:"Actualisé récemment"}</div><button className={styles.refresh} onClick={refresh} disabled={pending}><RefreshCw className={pending?styles.spinning:""}/>{pending?c.refreshing:c.refresh}</button></div>
+ <section className={styles.filters}><label><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={c.search}/></label><div className={styles.categories}>{categories.map(x=><button key={x} onClick={()=>setCategory(x)} className={category===x?styles.selectedFilter:""}>{x}</button>)}</div><div className={styles.viewToggle}><button className={view==="grid"?styles.viewActive:""} onClick={()=>setView("grid")}><Grid2X2/></button><button className={view==="list"?styles.viewActive:""} onClick={()=>setView("list")}><List/></button></div></section>
+ <div className={styles.notice}>ⓘ <span>{c.notice}</span></div><section className={`${styles.cards} ${view==="list"?styles.list:""} ${pending?styles.loading:""}`}>{markets.map((m,i)=><MarketCard key={m.id} market={m} index={i} view={view} locked={!hasActiveSubscription} onViewDetail={()=>setSelected(m)}/>)}</section>
+ {!markets.length&&<section className={styles.empty}><Search/><h2>{c.empty}</h2><button onClick={reset}>{c.reset}</button></section>}
+ <section className={styles.bottomBar}><div><TrendingUp/><b>{allMarkets.length}</b><span>marchés sélectionnés</span></div><div><Bookmark/><b>{Math.max(1,categories.length-1)}</b><span>catégories actives</span></div><div><Clock3/><span>{c.next}<b>{hours} h {mins} min</b></span></div><Link href="/dashboard/analyse-ia"><Sparkles/>{c.analyze}<ChevronRight/></Link></section></main></div>{mobile&&<button className={styles.overlay} onClick={()=>setMobile(false)} aria-label="Fermer"/>}</div>
 }
