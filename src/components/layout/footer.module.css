@@ -1,0 +1,39 @@
+.footer { position: relative; overflow: hidden; padding: 80px 30px 44px; color: #fff; background: radial-gradient(circle at 50% 27%, rgb(255 68 91 / 70%), transparent 31%), radial-gradient(circle at 83% 55%, rgb(255 80 97 / 26%), transparent 35%), linear-gradient(180deg, #ff2947 0%, #ed1237 54%, #fa304c 100%); }
+.footer::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgb(255 255 255 / 9%), transparent 25%, rgb(121 0 24 / 8%) 72%, transparent); }
+.conversion, .columns { position: relative; z-index: 1; max-width: 1460px; margin-inline: auto; }
+.conversion { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.socialProof { display: flex; align-items: center; gap: 19px; font-size: 18px; font-weight: 750; }
+.avatars { display: flex; padding-left: 14px; }
+.avatars > span { width: 45px; height: 45px; margin-left: -14px; overflow: hidden; border: 2px solid #fff; border-radius: 50%; background: #fff; }
+.avatars img { width: 100%; height: 100%; object-fit: cover; }
+.conversion h2 { max-width: 1150px; margin: 30px auto 29px; font-family: var(--font-display), sans-serif; font-size: clamp(42px, 5.1vw, 78px); font-weight: 850; line-height: 1.03; letter-spacing: -.055em; text-wrap: balance; }
+.primaryCta { display: flex; align-items: center; justify-content: space-between; min-width: 340px; min-height: 68px; gap: 20px; padding: 8px 9px 8px 32px; border: 1px solid rgb(255 255 255 / 82%); border-radius: 99px; color: #121116; background: #fff; box-shadow: 0 16px 30px rgb(130 0 24 / 16%); font-size: 20px; font-weight: 800; text-decoration: none; transition: transform 180ms ease, box-shadow 180ms ease; }
+.ctaArrow { display: grid; place-items: center; width: 51px; height: 51px; flex-shrink: 0; border-radius: 50%; color: #fff; background: #ff1f43; transition: transform 180ms ease; }
+.ctaArrow svg { width: 25px; height: 25px; }
+.primaryCta:hover { transform: translateY(-2px); box-shadow: 0 20px 38px rgb(130 0 24 / 24%); }
+.primaryCta:hover .ctaArrow { transform: translate(3px, -3px); }
+.primaryCta:active { transform: scale(.98); transition-duration: 100ms; }
+.primaryCta:focus-visible, .footer a:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.assurances { display: flex; justify-content: center; flex-wrap: wrap; gap: 23px 41px; margin: 26px 0 0; padding: 0; list-style: none; font-size: 16px; }
+.assurances li { display: flex; align-items: center; gap: 11px; }
+.assurances li > span { display: grid; place-items: center; width: 29px; height: 29px; border-radius: 50%; background: rgb(255 255 255 / 20%); }
+.assurances svg { width: 17px; height: 17px; stroke-width: 3; }
+.columns { display: grid; grid-template-columns: minmax(270px, 1.55fr) repeat(4, minmax(140px, 1fr)); gap: 66px; margin-top: 83px; }
+.brand { max-width: 340px; }
+.logo { color: #fff !important; font-size: 25px !important; }
+.logo img { height: 39px !important; width: auto !important; filter: brightness(0) invert(1); }
+.brand > p:not(.copyright) { margin: 19px 0 13px; max-width: 330px; color: rgb(255 255 255 / 88%); font-size: 17px; line-height: 1.55; }
+.brand > strong { display: block; color: rgb(255 255 255 / 76%); font-size: 15px; font-weight: 500; }
+.socials { display: flex; gap: 14px; margin-top: 18px; }
+.socials a { display: grid; place-items: center; width: 43px; height: 43px; border: 1px solid rgb(255 255 255 / 38%); border-radius: 50%; color: #fff; transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease; }
+.socials a:hover { transform: translateY(-2px); border-color: #fff; background: rgb(255 255 255 / 14%); }
+.socialIcon { width: 18px; height: 18px; }
+.copyright { margin: 20px 0 0; color: rgb(255 255 255 / 70%); font-size: 13px; }
+.column h3 { margin: 7px 0 21px; color: #fff; font-size: 16px; font-weight: 750; }
+.column ul { display: flex; flex-direction: column; gap: 17px; margin: 0; padding: 0; list-style: none; }
+.column a { display: inline-block; color: rgb(255 255 255 / 87%); font-size: 16px; line-height: 1.4; text-decoration: none; transition: color 180ms ease, transform 180ms ease; }
+.column a:hover { color: #fff; transform: translateX(3px); }
+@media (max-width: 1050px) { .columns { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 42px 24px; } .brand { grid-column: 1 / -1; max-width: 500px; } }
+@media (max-width: 700px) { .footer { padding: 64px 21px 35px; } .socialProof { gap: 12px; font-size: 14px; } .avatars > span { width: 39px; height: 39px; } .conversion h2 { margin-block: 26px 25px; font-size: clamp(39px, 11vw, 58px); } .primaryCta { min-width: 0; width: 100%; max-width: 360px; min-height: 62px; padding-left: 24px; font-size: 17px; } .ctaArrow { width: 46px; height: 46px; } .assurances { align-items: flex-start; flex-direction: column; gap: 13px; font-size: 14px; } .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 43px 25px; margin-top: 68px; } .brand { grid-column: 1 / -1; } .column h3 { margin-bottom: 16px; } .column ul { gap: 13px; } .column a { font-size: 14px; } }
+@media (max-width: 390px) { .columns { grid-template-columns: minmax(0, 1fr); } .brand { grid-column: auto; } .socialProof { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .footer *, .footer *::before, .footer *::after { transition: none !important; } .primaryCta:hover, .primaryCta:active, .primaryCta:hover .ctaArrow, .socials a:hover, .column a:hover { transform: none; } }

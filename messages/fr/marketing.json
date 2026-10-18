@@ -24,7 +24,7 @@
     "closeMenu": "Fermer le menu"
   },
   "Footer": {
-    "tagline": "L'IA qui analyse les marchés Polymarket en profondeur et vous donne l'avantage pour décider mieux.",
+    "tagline": "Des analyses IA pour comprendre les marchés, suivre les opportunités et décider avec confiance.",
     "copyright": "© {year} Polypips. Tous droits réservés.",
     "columns": {
       "product": {
@@ -54,7 +54,14 @@
         "contact": "Contact",
         "partners": "Partenaires"
       }
-    }
+    },
+    "activeUsers": "Plus de {count} clients actifs",
+    "conversionTitle": "Votre prochain avantage commence ici.",
+    "cta": "Débuter pour 0,99 €",
+    "arg1": "0,99 € pendant 3 jours",
+    "arg2": "Accès immédiat",
+    "arg3": "Annulation à tout moment",
+    "universes": "Polymarket · Sport · Trading"
   },
   "ChatButton": {
     "title": "Besoin d'aide ?",

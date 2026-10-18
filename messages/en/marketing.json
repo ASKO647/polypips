@@ -24,7 +24,7 @@
     "closeMenu": "Close menu"
   },
   "Footer": {
-    "tagline": "AI that digs deep into Polymarket markets and gives you the edge to decide better.",
+    "tagline": "AI analysis to understand markets, track opportunities and decide with confidence.",
     "copyright": "© {year} Polypips. All rights reserved.",
     "columns": {
       "product": {
@@ -54,7 +54,14 @@
         "contact": "Contact",
         "partners": "Partners"
       }
-    }
+    },
+    "activeUsers": "More than {count} active customers",
+    "conversionTitle": "Your next edge starts here.",
+    "cta": "Get started for $0.99",
+    "arg1": "$0.99 for 3 days",
+    "arg2": "Instant access",
+    "arg3": "Cancel anytime",
+    "universes": "Polymarket · Sports · Trading"
   },
   "ChatButton": {
     "title": "Need help?",

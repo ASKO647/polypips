@@ -65,8 +65,8 @@ export const SOCIAL_LINKS: {
   href: string;
   icon: ComponentType<{ className?: string }>;
 }[] = [
-  { label: "X", href: "#", icon: XIcon },
-  { label: "YouTube", href: "#", icon: YoutubeIcon },
-  { label: "Discord", href: "#", icon: DiscordIcon },
-  { label: "Telegram", href: "#", icon: TelegramIcon },
+  { label: "X", href: "https://x.com/", icon: XIcon },
+  { label: "YouTube", href: "https://www.youtube.com/", icon: YoutubeIcon },
+  { label: "Discord", href: "https://discord.com/", icon: DiscordIcon },
+  { label: "Telegram", href: "https://telegram.org/", icon: TelegramIcon },
 ];

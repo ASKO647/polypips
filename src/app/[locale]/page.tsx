@@ -10,7 +10,6 @@ import { SportShowcase } from "@/components/marketing/sport-showcase";
 import { V2Announcement } from "@/components/marketing/v2-announcement";
 import { Pricing } from "@/components/marketing/pricing";
 import { FAQ } from "@/components/marketing/faq";
-import { FinalCTA } from "@/components/marketing/final-cta";
 import { SmartMoneyActivityPopup } from "@/components/marketing/smart-money-activity-popup";
 
 export default function Home() {
@@ -28,9 +27,8 @@ export default function Home() {
         <V2Announcement />
         <Pricing />
         <FAQ />
-        <FinalCTA />
       </main>
-      <Footer />
+      <Footer landing />
       <SmartMoneyActivityPopup />
     </>
   );
