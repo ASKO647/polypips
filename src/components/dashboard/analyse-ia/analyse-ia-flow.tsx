@@ -9,6 +9,7 @@ import { AnalysisLoading } from "./analysis-loading";
 import { AnalysisResult } from "./analysis-result";
 import { analysisErrorMessage, type AnalysisProgressStep, type MarketAnalysis } from "@/lib/data/analysis";
 import { AnalysisRequestError, runMarketAnalysis, type AnalyzeMarketRequest } from "@/lib/supabase/analyze-market-client";
+import { DashboardChrome } from "@/components/dashboard/shared/dashboard-chrome";
 import styles from "./polymarket-analysis.module.css";
 
 type FlowState="input"|"loading"|"result";
@@ -21,8 +22,7 @@ function errorContentFor(error:unknown,t:(key:string)=>string,tCredits:(key:stri
 }
 
 function AnalysisChrome({children}:{children:React.ReactNode}){
- const[mobile,setMobile]=useState(false),[collapsed,setCollapsed]=useState<Record<string,boolean>>({});
- return <div className={styles.app}><aside className={`${styles.sidebar} ${mobile?styles.sidebarOpen:""}`}><div className={styles.brand}><img src="/polypips-mark.png" alt=""/><strong>Polypips</strong><button onClick={()=>setMobile(false)}><X/></button></div><nav><Link href="/dashboard"><LayoutDashboard/>Tableau de bord</Link>{groups.map((g,i)=><section key={g.title} className={styles.navGroup} style={{"--delay":`${90+i*45}ms`} as React.CSSProperties}><button className={styles.groupTitle} onClick={()=>setCollapsed(v=>({...v,[g.title]:!v[g.title]}))}><span style={{background:g.color}}/>{g.title}{g.title==="TRADING"&&<b>NOUVEAU</b>}<ChevronDown className={collapsed[g.title]?styles.chevronClosed:""}/></button><div className={`${styles.groupItems} ${collapsed[g.title]?styles.groupClosed:""}`}>{g.items.map(([label,href,Icon])=><Link key={href} href={href} className={href==="/dashboard/analyse-ia"?styles.activeNav:""}><Icon/>{label}</Link>)}</div></section>)}<div className={styles.globalLinks}><Link href="/dashboard/coach"><GraduationCap/>Coach IA</Link><Link href="/dashboard/community"><Users/>Communauté</Link><Link href="/dashboard/settings"><CircleUserRound/>Profil</Link></div></nav><div className={styles.user}><span>P</span><div><strong>Polypips</strong><small>Compte Polypips Pro</small></div></div></aside><div className={styles.workspace}><header className={styles.header}><button className={styles.mobileToggle} onClick={()=>setMobile(true)}><Menu/></button><div><span>Polymarket</span><i>/</i><strong>Analyse IA</strong></div><div className={styles.headerTools}><label><Search/><input placeholder="Rechercher..."/></label><button><Bell/></button><span className={styles.avatar}>P</span></div></header><main className={styles.main}>{children}</main></div>{mobile&&<button className={styles.overlay} onClick={()=>setMobile(false)} aria-label="Fermer"/>}</div>
+ return <DashboardChrome title="Analyse IA"><main className={styles.main}>{children}</main></DashboardChrome>
 }
 
 export function AnalyseIaFlow({initialRecentAnalyses,hasActiveSubscription,creditBalance}:{initialRecentAnalyses:MarketAnalysis[];hasActiveSubscription:boolean;creditBalance:number}){
