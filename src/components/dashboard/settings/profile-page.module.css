@@ -5,3 +5,17 @@
 @media(max-width:1000px){.profileContent>div{grid-template-columns:1fr!important}.pageHeader{align-items:flex-start;flex-direction:column}.headerActions{align-self:stretch}.headerActions>button{margin-left:auto}}
 @media(max-width:700px){.page{padding:16px 13px 90px}.pageHeader h1{font-size:25px}.headerActions>span{display:none}.headerActions>button{width:100%}.tabs{margin-inline:-13px;padding-inline:13px}.tabs button{min-width:105px}.profileContent>div{gap:10px!important}.profileContent :global(.p-5),.profileContent :global(.sm\:p-6){padding:13px!important}}
 @media(prefers-reduced-motion:reduce){.page,.profileContent,.profileContent :global(.rounded-2xl){animation:none!important}.page *{transition:color .01ms,background-color .01ms,border-color .01ms!important}}
+
+/* The profile reference is a full-height static canvas without the dashboard top bar. */
+.page{min-height:100vh;padding:20px 32px 28px;background:linear-gradient(145deg,#fff 0%,#fffafb 100%);animation:none}
+.pageHeader{align-items:center}
+.pageHeader h1{margin-top:7px;font-size:36px;line-height:1}
+.pageHeader p{font-size:17px}
+.pageHeader>div:first-child>span{font-size:14px}
+.headerActions>span,.headerActions>button{min-height:42px;padding-inline:17px;font-size:14px}
+.tabs{margin:20px 0 18px}
+.tabs button{min-width:145px;height:48px;font-size:15px}
+.tabs svg{width:17px}
+.profileContent{animation:none}
+@media(max-width:1000px){.page{padding:20px 22px 30px}}
+@media(max-width:700px){.page{padding:18px 14px 90px}.pageHeader h1{font-size:31px}.pageHeader p{font-size:16px}.tabs button{min-width:135px;font-size:15px}}
