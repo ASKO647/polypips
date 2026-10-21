@@ -43,6 +43,7 @@ export function ProfileOverviewTab(props:Props){
         <div className={styles.avatarWrap}><UserAvatar name={name||props.email} avatarUrl={avatar} size={118}/><button onClick={()=>inputRef.current?.click()} disabled={uploading}>{uploading?<Loader2/>:<Camera/>}</button><input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={pick}/></div>
         <h2>{name||"Polypips"}<CheckCircle2/></h2><p>{props.email}</p><span className={styles.planBadge}><Crown/>{props.currentPlan?.name??(fr?"Compte gratuit":"Free account")}</span>
         <button className={styles.primary} onClick={()=>inputRef.current?.click()}><Camera/>{fr?"Modifier la photo":"Change photo"}</button>
+        <button className={styles.deletePhoto} onClick={()=>setAvatar(null)}><Trash2/>{fr?"Supprimer":"Remove"}</button>
         {avatarError&&<small className={styles.error}>{avatarError}</small>}
         <div className={styles.completion}><span>{fr?"Profil complété à 85 %":"Profile 85% complete"}</span><i><b/></i></div>
       </article>
