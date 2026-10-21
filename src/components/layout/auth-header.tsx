@@ -11,7 +11,7 @@ export async function AuthHeader({
   const t = await getTranslations("AuthHeader");
 
   return (
-    <header className="border-b border-border bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+    <header className="border-b border-border bg-surface/90 pt-[var(--safe-top)] backdrop-blur-md">
       <div className="mx-auto flex h-18 w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
         <Logo />
 

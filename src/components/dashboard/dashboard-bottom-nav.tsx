@@ -40,7 +40,7 @@ export function DashboardBottomNav({
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-dash-border bg-dash-bg pb-[env(safe-area-inset-bottom)] pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-dash-border bg-dash-bg pb-[var(--safe-bottom)] pr-[var(--safe-right)] pl-[var(--safe-left)] lg:hidden"
       aria-label={t("ariaLabel")}
     >
       {TABS.map((tab) => {

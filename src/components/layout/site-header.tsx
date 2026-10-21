@@ -43,7 +43,7 @@ export function SiteHeader({ landing = false }: { landing?: boolean }) {
   }
 
   return (
-    <header ref={headerRef} data-scrolled={scrolled} className={`sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 pt-[env(safe-area-inset-top)] backdrop-blur-md ${landing ? introStyles.header : ""}`}>
+    <header ref={headerRef} data-scrolled={scrolled} className={`sticky top-0 z-50 border-b border-black/[0.07] bg-surface/90 pt-[var(--safe-top)] backdrop-blur-md ${landing ? introStyles.header : ""}`}>
       <div className="mx-auto flex h-[76px] w-full max-w-[1200px] items-center justify-between px-6 lg:px-8">
         <Logo />
         <nav className="hidden items-center gap-8 lg:flex">

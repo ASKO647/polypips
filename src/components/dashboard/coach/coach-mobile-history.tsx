@@ -32,7 +32,7 @@ export function CoachMobileHistory({
         onClick={onClose}
         aria-hidden
       />
-      <div className="absolute inset-y-0 right-0 flex w-[280px] max-w-[80vw] animate-fade-up flex-col border-l border-white/10 bg-[#160b0c]">
+      <div className="absolute inset-y-0 right-0 flex w-[280px] max-w-[80vw] animate-fade-up flex-col border-l border-white/10 bg-[#160b0c] pt-[var(--safe-top)] pb-[var(--safe-bottom)]">
         <div className="flex h-[64px] items-center justify-between px-4">
           <span className="font-display text-sm font-bold text-white">
             {t("title")}

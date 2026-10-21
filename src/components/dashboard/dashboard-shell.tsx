@@ -51,7 +51,7 @@ function DashboardShellInner({
   const mainTheme = isCoreThemedRoute ? theme : "dark";
 
   return (
-    <div data-dashboard-theme={theme} className="flex min-h-screen bg-dash-bg text-dash-text">
+    <div data-dashboard-theme={theme} className="flex min-h-dvh bg-dash-bg text-dash-text">
       {!isImmersiveRoute && <DashboardSidebar subscription={subscription} userId={userId} creditBalance={creditBalance} />}
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -69,7 +69,7 @@ function DashboardShellInner({
         />}
         <main
           data-dashboard-theme={mainTheme}
-          className={isImmersiveRoute ? "min-h-0 flex-1 bg-white text-[#171012]" : "flex-1 bg-dash-bg px-5 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] text-dash-text lg:px-8 lg:py-8 lg:pb-8"}
+          className={isImmersiveRoute ? "min-h-0 flex-1 bg-white text-[#171012]" : "flex-1 bg-dash-bg px-5 py-6 pb-[calc(72px+var(--safe-bottom))] text-dash-text lg:px-8 lg:py-8 lg:pb-8"}
         >
           {children}
         </main>

@@ -1,6 +1,6 @@
 .header.header {
   color: #374151;
-  margin-bottom: calc(-93px - env(safe-area-inset-top, 0px));
+  margin-bottom: calc(-93px - var(--safe-top));
   background: transparent;
   border-bottom-color: transparent;
   box-shadow: none;
@@ -73,7 +73,7 @@
   align-items: center;
   max-width: 1260px;
   margin-inline: auto;
-  padding: calc(161px + env(safe-area-inset-top, 0px)) 24px 48px;
+  padding: calc(161px + var(--safe-top)) 24px 48px;
   text-align: center;
 }
 .community {
@@ -133,18 +133,18 @@
   .header a[href$="/signup"] { padding-inline: 18px; font-size: 13px; }
 }
 @media (max-width: 1023px) {
-  .header.header { margin-bottom: calc(-77px - env(safe-area-inset-top, 0px)); }
+  .header.header { margin-bottom: calc(-77px - var(--safe-top)); }
   .header > div:first-child { height: 76px; }
   .header a[aria-label] { font-size: 22px; }
   .header a[aria-label] img { height: 34px; }
-  .inner { padding-top: calc(125px + env(safe-area-inset-top, 0px)); }
+  .inner { padding-top: calc(125px + var(--safe-top)); }
   .title { font-size: clamp(54px, 7vw, 76px); }
   .benefits { gap: 38px; }
   .benefits li { font-size: 13px; gap: 8px; }
   .benefits li + li::before { left: -19px; }
 }
 @media (max-width: 640px) {
-  .inner { padding: calc(115px + env(safe-area-inset-top, 0px)) 20px 36px; }
+  .inner { padding: calc(115px + var(--safe-top)) 20px 36px; }
   .floatingEmoji { font-size: 36px; opacity: .17; }
   .floatingEmoji:nth-child(1) { top: 14%; left: -9px; }
   .floatingEmoji:nth-child(2) { top: 27%; right: -10px; }

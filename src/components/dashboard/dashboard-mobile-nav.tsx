@@ -29,7 +29,7 @@ export function DashboardMobileNav({
         onClick={onClose}
         aria-hidden
       />
-      <div className="absolute inset-y-0 right-0 flex w-[280px] max-w-[80vw] animate-fade-up flex-col overflow-y-auto border-l border-dash-border bg-dash-bg pt-[env(safe-area-inset-top)] pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)]">
+      <div className="absolute inset-y-0 right-0 flex w-[280px] max-w-[80vw] animate-fade-up flex-col overflow-y-auto border-l border-dash-border bg-dash-bg pt-[var(--safe-top)] pr-[var(--safe-right)] pb-[var(--safe-bottom)]">
         <div className="flex h-[72px] shrink-0 items-center justify-between px-5">
           <span className="font-display text-base font-bold text-dash-text">{t("title")}</span>
           <button

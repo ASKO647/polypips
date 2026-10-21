@@ -86,7 +86,7 @@ export function InstallPrompt() {
     <div
       role="dialog"
       aria-label="Installer Polypips"
-      className="fixed inset-x-0 bottom-0 z-[65] px-4 pb-[calc(72px+env(safe-area-inset-bottom))] sm:px-6 lg:pb-[calc(env(safe-area-inset-bottom)+16px)]"
+      className="fixed inset-x-0 bottom-0 z-[65] px-4 pb-[calc(72px+var(--safe-bottom))] sm:px-6 lg:pb-[calc(var(--safe-bottom)+16px)]"
     >
       <div className="mx-auto flex w-full max-w-xl items-start gap-3 rounded-2xl border border-border-strong bg-surface p-4 shadow-[0_16px_48px_rgba(18,5,7,0.16)] sm:p-5">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">

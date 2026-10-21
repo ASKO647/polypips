@@ -112,7 +112,7 @@ export function DashboardHeader({
   }, [trialEndsAt, tick]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[calc(72px+env(safe-area-inset-top))] items-center justify-between border-b border-dash-border bg-dash-bg/95 pt-[env(safe-area-inset-top)] pr-[calc(1.25rem+env(safe-area-inset-right))] pl-[calc(1.25rem+env(safe-area-inset-left))] backdrop-blur-md lg:h-[72px] lg:px-8 lg:pt-0">
+    <header className="sticky top-0 z-30 flex h-[calc(72px+var(--safe-top))] items-center justify-between border-b border-dash-border bg-dash-bg/95 pt-[var(--safe-top)] pr-[calc(1.25rem+var(--safe-right))] pl-[calc(1.25rem+var(--safe-left))] backdrop-blur-md lg:h-[72px] lg:px-8 lg:pt-0">
       <div className="flex min-w-0 items-center gap-3">
         {showBack ? (
           <>
