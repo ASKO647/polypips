@@ -120,6 +120,11 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
             <span className={styles.avatar}>{initial}</span>
           </div>
         </header>}
+        {/* hideHeader pages (Profil) still need a way to reach this sidebar's
+            cross-section quick links on mobile — there is no browser back
+            button in an installed PWA, and this page supplies no header of
+            its own to host the usual toggle. */}
+        {hideHeader && <button className={`${styles.mobileToggle} ${styles.floatingToggle}`} onClick={() => setMobile(true)} aria-label="Ouvrir le menu"><Menu /></button>}
         {children}
       </div>
       {mobile && <button className={styles.overlay} aria-label="Fermer" onClick={() => setMobile(false)} />}
