@@ -45,9 +45,8 @@ export default function TermsPage() {
           graphiques de trading soumis par l&apos;Utilisateur. Le Service
           propose notamment : une analyse IA de marchés individuels, de
           matchs sportifs et de graphiques de trading, une sélection
-          automatisée de marchés Polymarket, un suivi de portefeuilles
-          publics on-chain (« Smart Wallet »), un assistant conversationnel
-          (« Coach IA »), et un espace communautaire.
+          automatisée de marchés Polymarket, et un suivi de portefeuilles
+          publics on-chain (« Smart Wallet »).
         </p>
         <p>
           <strong>

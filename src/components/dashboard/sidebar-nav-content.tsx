@@ -22,8 +22,8 @@ import { cn } from "@/lib/utils";
  * markets), Sport (real-world sports analysis), and Trading (chart
  * screenshot analysis) — each rendered as its own collapsible sidebar
  * group with a clearly different accent color, so a user always knows
- * which product they're in. Tableau de bord/Coach IA/Communauté/Profil
- * aren't scoped to any one and stay outside all three groups. */
+ * which product they're in. Tableau de bord/Profil aren't scoped to any
+ * one and stay outside all three groups. */
 type UniverseGroup = {
   id: string;
   label: string;

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import {
-  ArrowRight, BarChart3, BrainCircuit, Check, ChevronDown, FileDown,
+  ArrowRight, BarChart3, Check, ChevronDown, FileDown,
   FolderOpen, Grid2X2, Info, List, Lock, Plus, Search, Share2,
   ShieldCheck, Target, Trophy,
 } from "lucide-react";
@@ -147,7 +147,6 @@ export function SportAnalysesHistory({ analyses }: { analyses: SportMatchAnalysi
           <aside className={styles.sidePanels}>
             <section><h3><Search />{fr ? "Filtres enregistrés" : "Saved filters"}</h3><p>{fr ? "Retrouvez plus vite vos analyses favorites." : "Find your favorite analyses faster."}</p><button className={styles.sideAction}>{fr ? "Créer un filtre" : "Create a filter"}<Plus /></button></section>
             <section><h3><FileDown />{fr ? "Exporter et partager" : "Export and share"}</h3><p>{fr ? "Sélectionnez une analyse pour activer ces actions." : "Select an analysis to enable these actions."}</p><div className={styles.disabledActions}><button disabled><FileDown />PDF</button><button disabled><Share2 />{fr ? "Partager" : "Share"}</button></div></section>
-            <section className={styles.coach}><span><BrainCircuit /></span><h3>Coach IA</h3><p>{fr ? "Approfondissez vos résultats et posez vos questions au Coach." : "Explore your results and ask the Coach your questions."}</p><Link href="/dashboard/coach">{fr ? "Ouvrir le Coach" : "Open Coach"}<ArrowRight /></Link></section>
           </aside>
         </div>
 

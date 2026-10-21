@@ -110,10 +110,6 @@
       "aiSelected": {
         "title": "Selected markets",
         "description": "Discover the best opportunities picked by our AI, refreshed several times a day."
-      },
-      "aiCoach": {
-        "title": "Personal AI Coach",
-        "description": "Ask any question and get clear answers from our AI."
       }
     }
   },
@@ -269,8 +265,7 @@
       "decision": "AI decision",
       "probability": "Probability & Edge",
       "explanation": "Detailed explanation",
-      "smartMoney": "Smart Wallet",
-      "coach": "AI Coach"
+      "smartMoney": "Smart Wallet"
     },
     "ctaLabel": "Watch the demo (2:15)",
     "launchAria": "Launch the demo",
@@ -322,7 +317,7 @@
     "description": "No tiers, no features locked behind a higher plan: one Polypips Pro subscription, with a discounted trial to get started.",
     "offerLimited": "Limited offer",
     "cardTitle": "Full Polypips access",
-    "cardDescription": "Unlock every feature: AI Analysis, Selected Markets, Smart Wallet, Sport, Trading, AI Coach.",
+    "cardDescription": "Unlock every feature: AI Analysis, Selected Markets, Smart Wallet, Sport, Trading.",
     "thenPrefix": "Then",
     "thenSuffix": "— cancel anytime before the trial ends to pay nothing more.",
     "ctaPrefix": "Start for",
@@ -334,8 +329,7 @@
       "selectedMarkets": "AI-selected markets",
       "smartMoney": "Smart Wallet — look up & track any portfolio",
       "copyTrading": "AI Sport & Trading analysis",
-      "coach": "Personal AI Coach",
-      "stats": "Community & full history"
+      "stats": "Full history"
     }
   },
   "FAQ": {
@@ -357,7 +351,7 @@
       },
       "beginners": {
         "question": "Is the AI suited to beginners?",
-        "answer": "Yes. Every analysis is explained in plain language: favorable factors, risks, and what could change the decision. The AI Coach is there to answer any question you have."
+        "answer": "Yes. Every analysis is explained in plain language: favorable factors, risks, and what could change the decision."
       },
       "markets": {
         "question": "Which markets are covered?",
@@ -390,7 +384,6 @@
     "answerLinks": {
       "features": "Explore the features",
       "markets": "View selected markets",
-      "coach": "Meet the AI Coach",
       "subscription": "Manage my subscription",
       "wallet": "Explore Smart Wallet"
     }
@@ -427,7 +420,6 @@
       "9 AI-selected Polymarket markets, refreshed every 12 hours",
       "Smart Wallet — look up and follow any Polymarket wallet",
       "Instant notification the moment a followed wallet opens a new position",
-      "AI Coach that knows the full history of your analyses",
       "Complete history of your sport picks, available anytime"
     ],
     "cta": "Try V2.0"

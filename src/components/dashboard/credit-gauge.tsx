@@ -17,8 +17,7 @@ const GAUGE_FULL_AT = 20;
 /** Sidebar credit balance indicator — a small gauge (not just a number) so
  * a glance shows roughly how "topped up" the user is, not just a raw
  * count. Live via Supabase Realtime on user_credits (same
- * channel/postgres_changes pattern as Communauté's message/reaction
- * subscriptions — see lib/supabase/community.ts) so a Deep Analysis
+ * channel/postgres_changes pattern used elsewhere in the dashboard) so a Deep Analysis
  * consumption or a credits purchase/referral reward animates the bar
  * immediately, without a page reload. Rendered inside SidebarNavContent,
  * which both the desktop sidebar and the mobile drawer share, so this

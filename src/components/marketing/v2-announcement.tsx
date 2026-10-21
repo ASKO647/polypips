@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
-import { ArrowRight, Bell, CalendarDays, ChartNoAxesColumnIncreasing, Check, ChevronDown, ChevronRight, CircleDot, FileText, MessageCircle, Pause, Play, Search, Sparkles, UserRound, Wallet } from "lucide-react";
+import { ArrowRight, Bell, CalendarDays, ChartNoAxesColumnIncreasing, Check, ChevronDown, ChevronRight, CircleDot, FileText, Pause, Play, Search, Sparkles, Wallet } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { getV2Copy } from "./v2-copy";
@@ -13,8 +13,8 @@ function serverMotion() { return false; }
 function subscribeVisibility(callback: () => void) { document.addEventListener("visibilitychange", callback); return () => document.removeEventListener("visibilitychange", callback); }
 function readVisibility() { return !document.hidden; }
 function serverVisibility() { return false; }
-const featureIcons = [CircleDot, Wallet, MessageCircle, ChartNoAxesColumnIncreasing, Bell, FileText];
-const featureRoutes = ["/dashboard/sports", "/dashboard/copy-trading", "/dashboard/coach", "/dashboard/markets", "/dashboard/copy-trading", "/dashboard/sports/mes-analyses"];
+const featureIcons = [CircleDot, Wallet, ChartNoAxesColumnIncreasing, Bell, FileText];
+const featureRoutes = ["/dashboard/sports", "/dashboard/copy-trading", "/dashboard/markets", "/dashboard/copy-trading", "/dashboard/sports/mes-analyses"];
 
 function SportIcon({ sport }: { sport: number }) {
   return <svg className={styles.sportEmoji} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{sport === 2 ? <><ellipse cx="14" cy="9" rx="6" ry="8" transform="rotate(35 14 9)" /><path d="m9 14-6 8m7-9 7-10M8 8l10 7M11 4l10 7M8 13l11-8M10 17l11-8" /></> : sport === 1 ? <><circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2v20M5 4c9 7 9 9 0 16M19 4c-9 7-9 9 0 16" /></> : <><circle cx="12" cy="12" r="10" /><path d="m12 7 5 4-2 6H9l-2-6 5-4Zm0 0V2m5 9 5-2m-7 8 3 4m-9-4-3 4m1-10L2 9" /></>}</svg>;
@@ -76,11 +76,6 @@ export function V2Announcement() {
             <p>{copy.position}</p>
             <svg className={styles.walletChart} viewBox="0 0 250 80" aria-hidden="true"><path className={styles.chartArea} d="M1 66 18 60 29 64 45 56 57 52 75 58 92 62 106 55 122 48 139 53 155 47 168 32 183 26 200 29 217 16 233 20 249 5V80H1Z" fill="currentColor" /><path className={styles.chartLine} d="M1 66 18 60 29 64 45 56 57 52 75 58 92 62 106 55 122 48 139 53 155 47 168 32 183 26 200 29 217 16 233 20 249 5" pathLength="1" fill="none" /></svg>
           </Link>
-          <div className={styles.coachPanel}>
-            <div className={styles.panelHeading}><span className={styles.iconTile}><MessageCircle aria-hidden="true" /></span><Link href="/dashboard/coach">{copy.coach}</Link></div>
-            <Link href="/dashboard/coach" className={styles.question} aria-label={`${copy.openCoach} — ${copy.question}`}><span>{copy.question}</span><UserRound aria-hidden="true" /></Link>
-            <div className={styles.answer}><span className={styles.chatAvatar}><MessageCircle aria-hidden="true" /></span><div className={styles.answerBody}><span className={styles.typing} aria-hidden="true"><i /><i /><i /></span><div className={styles.answerLines}>{copy.response.map((line, index) => <span key={line} style={{ "--answer-delay": `${3600 + index * 200}ms` } as CSSProperties}>{line}</span>)}<div className={styles.answerSkeleton} aria-hidden="true"><span /><span /></div></div></div></div>
-          </div>
         </div>
       </div>
       <ul className={styles.features}>{copy.features.map((feature, index) => { const FeatureIcon = featureIcons[index]; return <li key={feature.title} style={{ "--feature-delay": `${400 + index * 70}ms` } as CSSProperties}><Link href={featureRoutes[index]}><span className={styles.iconTile}>{index === 0 ? <SportIcon sport={0} /> : <FeatureIcon aria-hidden="true" />}</span><div><h3>{feature.title}</h3><p>{feature.description}</p></div><span className={styles.featureArrow}><ChevronRight aria-hidden="true" /></span></Link></li>; })}</ul>

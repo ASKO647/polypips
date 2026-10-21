@@ -3,7 +3,7 @@ import type { PlanId } from "@/lib/stripe/plans";
 /**
  * Single source of truth for "is plan X good enough for feature Y",
  * across the entire dashboard — every tier-gated blur/lock (Sélectionnés
- * on-demand scan, Smart Wallet cap, Coach IA cap, MoonX, Communauté
+ * on-demand scan, Smart Wallet cap, MoonX
  * Ultimate badge, weekly report, multi-platform, ...) goes through
  * meetsPlan() below instead of hand-rolling its own plan comparison, so
  * the 3-tier ordering can never drift between call sites.

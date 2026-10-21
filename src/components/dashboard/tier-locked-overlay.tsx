@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  * user's `currentPlan` via the centralized meetsPlan() helper (see
  * lib/plan-access.ts) instead of a binary hasActiveAccess check. Every
  * tier-gated feature in the dashboard (on-demand scan, Smart Wallet cap
- * beyond the current plan, Coach IA cap, MoonX, ...) should use this
+ * beyond the current plan, MoonX, ...) should use this
  * rather than duplicating its own plan comparison. */
 export function TierLockedOverlay({
   currentPlan,

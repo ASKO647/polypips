@@ -84,7 +84,6 @@
             "AI analysis of Polymarket markets and sports matches",
             "Daily AI-curated market picks",
             "Smart Wallet portfolio tracking",
-            "Conversational AI coach",
             "Performance tracking statistics"
           ]
         }
@@ -92,7 +91,7 @@
     },
     "Features": {
       "metaTitle": "Features — Polypips",
-      "metaDescription": "AI analysis for Polymarket and Sport, curated markets, Smart Wallet, AI Coach, and stats — everything Polypips offers.",
+      "metaDescription": "AI analysis for Polymarket and Sport, curated markets, Smart Wallet, and stats — everything Polypips offers.",
       "eyebrow": "Features",
       "title": "Everything you need to get an edge",
       "description": "A complete platform to analyze, track, and decide — without juggling ten different tools.",
@@ -128,16 +127,6 @@
             "Manual address search, follow and unfollow at any time",
             "Notifications whenever a followed wallet opens a new position",
             "No real order is ever placed on your behalf — observation only"
-          ]
-        },
-        "aiCoach": {
-          "eyebrow": "AI Coach",
-          "title": "An assistant for your questions",
-          "description": "Ask our conversational assistant about a market, an analysis, or a strategy — it draws on your account's context to answer simply, without unnecessary jargon.",
-          "points": [
-            "Answers tailored to your analyses and follows",
-            "Conversation history kept from one session to the next",
-            "Available directly from the dashboard"
           ]
         },
         "stats": {
@@ -274,7 +263,7 @@
     },
     "Guides": {
       "metaTitle": "Guides — Polypips",
-      "metaDescription": "Step-by-step guides to get started, follow a wallet, and use the AI Coach.",
+      "metaDescription": "Step-by-step guides to get started and follow a wallet.",
       "eyebrow": "Guides",
       "title": "Practical guides",
       "description": "Step-by-step tutorials to get the most out of Polypips.",

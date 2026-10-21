@@ -19,8 +19,6 @@ const MESSAGE_FILES = [
   "polymarket",
   "sport",
   "trading",
-  "coach",
-  "community",
   "profile",
   "subscription",
   "credits",

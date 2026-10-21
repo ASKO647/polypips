@@ -70,35 +70,6 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
-  {
-    slug: "utiliser-le-coach-ia-efficacement",
-    title: "Utiliser le Coach IA efficacement",
-    excerpt: "Poser les bonnes questions et tirer le meilleur de l'assistant conversationnel.",
-    intro:
-      "Le Coach IA répond d'autant mieux que la question posée est précise. Ce guide donne quelques repères pour en tirer le meilleur.",
-    steps: [
-      {
-        title: "Ouvrez le Coach IA",
-        description:
-          "Accédez à l'onglet Coach IA depuis le tableau de bord, ou cliquez sur « Demander au Coach » directement depuis le résultat d'une analyse pour garder le contexte du marché.",
-      },
-      {
-        title: "Posez une question précise",
-        description:
-          "Plutôt qu'une question générale, précisez le marché, l'analyse ou la stratégie concernée : « Pourquoi cette analyse donne-t-elle un edge positif ? » donne une réponse plus utile que « Est-ce un bon pari ? ».",
-      },
-      {
-        title: "Utilisez les questions rapides suggérées",
-        description:
-          "Des questions rapides sont proposées pour démarrer une conversation ou explorer un sujet sans avoir à formuler vous-même la première question.",
-      },
-      {
-        title: "Consultez l'historique de vos conversations",
-        description:
-          "Toutes vos conversations sont conservées et accessibles depuis la barre latérale du Coach IA (ou le menu dédié sur mobile), pour reprendre un échange précédent à tout moment.",
-      },
-    ],
-  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {

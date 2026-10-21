@@ -24,7 +24,6 @@ export type PlanMeta = {
    * Ultimate) — Pro+, Ultimate and the legacy grandfather plan are
    * unlimited on every one of these. */
   dailyAnalysisLimit: number | null;
-  weeklyCoachMessageLimit: number | null;
   maxTrackedWallets: number | null;
   /** Deep Analysis credits granted each billing cycle on top of this
    * plan's price — reset (not accumulated) on renewal, separate from any
@@ -39,7 +38,7 @@ export type PlanMeta = {
    * ("Mes outils connectés") — currently a "Bientôt disponible" placeholder
    * for every plan that has it, see components/dashboard/settings/profile-tab.tsx. */
   moonxAccess: boolean;
-  /** "Ultimate" badge shown next to the user's name in Communauté. */
+  /** "Ultimate" badge shown next to the user's name. */
   ultimateBadge: boolean;
   /** Automatic AI-generated weekly report — placeholder feature, see
    * profile-tab.tsx. */
@@ -56,7 +55,6 @@ export const PLAN_METADATA: PlanMeta[] = [
     hasCountdown: true,
     highlighted: false,
     dailyAnalysisLimit: 10,
-    weeklyCoachMessageLimit: 20,
     maxTrackedWallets: 3,
     includedDeepAnalysisCredits: 0,
     onDemandScan: false,
@@ -69,7 +67,6 @@ export const PLAN_METADATA: PlanMeta[] = [
     id: "pro",
     priceEur: 29.99,
     dailyAnalysisLimit: 10,
-    weeklyCoachMessageLimit: 20,
     maxTrackedWallets: 3,
     includedDeepAnalysisCredits: 0,
     onDemandScan: false,
@@ -83,7 +80,6 @@ export const PLAN_METADATA: PlanMeta[] = [
     priceEur: 49.99,
     highlighted: true,
     dailyAnalysisLimit: null,
-    weeklyCoachMessageLimit: null,
     maxTrackedWallets: 15,
     includedDeepAnalysisCredits: 15,
     onDemandScan: true,
@@ -96,7 +92,6 @@ export const PLAN_METADATA: PlanMeta[] = [
     id: "ultimate",
     priceEur: 79.99,
     dailyAnalysisLimit: null,
-    weeklyCoachMessageLimit: null,
     maxTrackedWallets: null,
     includedDeepAnalysisCredits: 50,
     onDemandScan: true,
@@ -118,7 +113,6 @@ export const PLAN_METADATA: PlanMeta[] = [
     id: "pro_legacy",
     priceEur: 29.99,
     dailyAnalysisLimit: null,
-    weeklyCoachMessageLimit: null,
     maxTrackedWallets: null,
     includedDeepAnalysisCredits: 0,
     onDemandScan: true,
@@ -194,10 +188,6 @@ export function getPlanDisplay(t: PlansTranslator, planId: string): PricingPlan 
 
 export function getDailyAnalysisLimit(plan: PlanMeta): number | null {
   return plan.dailyAnalysisLimit;
-}
-
-export function getWeeklyCoachMessageLimit(plan: PlanMeta): number | null {
-  return plan.weeklyCoachMessageLimit;
 }
 
 /**

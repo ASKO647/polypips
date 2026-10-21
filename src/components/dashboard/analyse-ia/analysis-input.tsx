@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { ArrowRight, BarChart3, Check, Clock3, FileText, Link2, MessageCircle, Shield, Sparkles, TriangleAlert, UploadCloud, X } from "lucide-react";
+import { ArrowRight, BarChart3, Check, Clock3, FileText, Link2, Shield, Sparkles, TriangleAlert, UploadCloud, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { AnalyzeMarketRequest } from "@/lib/supabase/analyze-market-client";
@@ -25,6 +25,5 @@ export function AnalysisInput({recentAnalyses,errorMessage,link,onLinkChange,fil
   </section>
   <aside className={styles.rightPanel}><section className={styles.benefits}><h2>Ce que vous obtiendrez</h2>{[[BarChart3,"Probabilité estimée","Une estimation claire et argumentée."],[FileText,"Arguments pour et contre","Les principaux éléments en faveur et en défaveur."],[TriangleAlert,"Risques à surveiller","Les incertitudes et scénarios alternatifs."],[Link2,"Sources et niveau de confiance","Les sources utilisées et leur fiabilité."]].map(([Icon,title,sub],i)=><div key={title as string} style={{"--delay":`${i*60}ms`} as React.CSSProperties}><span><Icon/></span><p><b>{title as string}</b><small>{sub as string}</small></p></div>)}</section>
    <section className={styles.recents}><h2>Analyses récentes</h2>{recentAnalyses.length?<div>{recentAnalyses.slice(0,3).map(a=><button key={a.id} onClick={()=>onSelectRecent(a)}><span>{a.category[0]}</span><p><b>{a.question}</b><small>{a.aiProbability}% · {a.decision}</small></p><ArrowRight/></button>)}</div>:<div className={styles.noRecent}><Clock3/><b>Aucune analyse récente</b><p>Vos analyses apparaîtront ici une fois un marché analysé.</p></div>}<Link href="/dashboard/markets">Voir tout l’historique <ArrowRight/></Link></section>
-   <Link href="/dashboard/coach" className={styles.coachCard}><span><MessageCircle/></span><p><b>Besoin d’aide ?</b><small>Le Coach IA peut expliquer chaque résultat.</small><em>Ouvrir le Coach IA <ArrowRight/></em></p></Link>
   </aside></div></div>
 }

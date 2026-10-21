@@ -52,9 +52,8 @@ export default function PrivacyPage() {
           <li>
             <strong>Données d&apos;usage :</strong> analyses de marché, de
             matchs sportifs et de graphiques de trading demandées, marchés
-            suivis, portefeuilles Smart Wallet suivis, messages échangés
-            avec le Coach IA, et statistiques de performance associées à
-            votre compte.
+            suivis, portefeuilles Smart Wallet suivis, et statistiques de
+            performance associées à votre compte.
           </li>
           <li>
             <strong>Données techniques :</strong> adresse IP, données de
@@ -135,7 +134,7 @@ export default function PrivacyPage() {
           <li>
             <strong>Anthropic</strong> (Anthropic, PBC) — fournisseur du
             modèle d&apos;intelligence artificielle utilisé pour générer les
-            analyses de marché et les réponses du Coach IA. Le contenu de
+            analyses de marché. Le contenu de
             vos demandes (question posée, contexte du marché) est transmis à
             Anthropic pour générer la réponse, sans être utilisé par
             Anthropic pour entraîner ses modèles dans le cadre de son offre

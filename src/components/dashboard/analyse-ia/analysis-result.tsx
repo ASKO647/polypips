@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  ArrowRight,
   BrainCircuit,
   Check,
   ExternalLink,
@@ -295,15 +294,6 @@ export function AnalysisResult({
           className="sm:flex-1"
         >
           {resolvedBackLabel}
-        </Button>
-        <Button
-          href={`/dashboard/coach?analysisId=${analysis.id}`}
-          className="sm:flex-1"
-        >
-          {t("coachCta")}
-          <ButtonIcon>
-            <ArrowRight className="h-4 w-4" />
-          </ButtonIcon>
         </Button>
       </div>
     </div>

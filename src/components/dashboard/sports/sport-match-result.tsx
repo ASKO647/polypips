@@ -2,7 +2,6 @@
 
 import { useTranslations } from "next-intl";
 import {
-  ArrowRight,
   BrainCircuit,
   Check,
   Lock,
@@ -199,12 +198,6 @@ export function SportMatchResult({
       <div className="flex flex-col gap-3 pt-2 sm:flex-row">
         <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1">
           {backLabel ?? t("Result.newAnalysis")}
-        </Button>
-        <Button href="/dashboard/coach" className="sm:flex-1">
-          {t("Result.askCoach")}
-          <ButtonIcon>
-            <ArrowRight className="h-4 w-4" />
-          </ButtonIcon>
         </Button>
       </div>
     </div>

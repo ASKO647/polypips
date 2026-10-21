@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Sparkles, Trophy, Users, Menu } from "lucide-react";
+import { LayoutDashboard, Sparkles, Trophy, Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { findActiveHref } from "@/lib/dashboard-nav-active";
@@ -12,16 +12,15 @@ const TABS = [
   { label: "accueil", href: "/dashboard", icon: LayoutDashboard },
   { label: "analyseIA", href: "/dashboard/analyse-ia", icon: Sparkles },
   { label: "sport", href: "/dashboard/sports", icon: Trophy },
-  { label: "communaute", href: "/dashboard/community", icon: Users },
 ] as const;
 
 /**
  * Real bottom tab bar for mobile, not just a hamburger — the dashboard has
  * three separate "universes" (Polymarket/Sport/Trading) plus global tools,
  * too much to fit in 5 tabs, so this surfaces only the busiest entry point
- * per universe plus one global tool, and a trailing "Menu" tab that opens
- * the existing full drawer (DashboardMobileNav) for everything else (Smart
- * Wallet, Trading, Coach IA, Profil, ...).
+ * per universe, and a trailing "Menu" tab that opens the existing full
+ * drawer (DashboardMobileNav) for everything else (Smart Wallet, Trading,
+ * Profil, ...).
  */
 export function DashboardBottomNav({
   onOpenMenu,

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  ArrowRight, BarChart3, BrainCircuit, Check, ChevronDown, Clock3, FileChartColumn,
+  ArrowRight, BarChart3, Check, ChevronDown, Clock3, FileChartColumn,
   ImageIcon, Info, LineChart, ListChecks, Lock, ShieldAlert, Sparkles, Target,
   TrendingUp, TriangleAlert, Upload, X,
 } from "lucide-react";
@@ -117,7 +117,6 @@ export function TradingChartInput({ errorMessage, file, onFileChange, onAnalyze,
         <aside className={styles.side}>
           <section><h2><ListChecks />{fr ? "L’analyse comprendra" : "Your analysis includes"}</h2><ul>{([[TrendingUp, fr ? "Tendance dominante" : "Dominant trend"], [BarChart3, fr ? "Supports et résistances" : "Support and resistance"], [LineChart, fr ? "Scénarios haussier et baissier" : "Bullish and bearish scenarios"], [ShieldAlert, fr ? "Zone d’invalidation" : "Invalidation zone"], [TriangleAlert, fr ? "Risques à surveiller" : "Risks to watch"], [Target, fr ? "TP/SL indicatifs" : "Indicative TP/SL"]] as const).map(([Icon, label], index) => <li key={label} style={{ "--delay": `${index * 60}ms` } as React.CSSProperties}><Icon /><span>{label}</span></li>)}</ul></section>
           <section className={styles.recent}><div><h2><Clock3 />{fr ? "Analyses récentes" : "Recent analyses"}</h2><Link href="/dashboard/trading/mes-analyses">{fr ? "Voir tout l’historique" : "View history"}<ArrowRight /></Link></div><span><FileChartColumn /></span><b>{fr ? "Aucune analyse récente" : "No recent analysis"}</b><p>{fr ? "Vos analyses apparaîtront ici une fois que vous aurez importé un graphique." : "Your analyses will appear here after importing a chart."}</p></section>
-          <section className={styles.coach}><BrainCircuit /><div><h2>{fr ? "Approfondir votre analyse" : "Explore your analysis"}</h2><p>{fr ? "Le Coach IA peut expliquer les niveaux, les scénarios et les risques." : "The AI Coach can explain levels, scenarios and risks."}</p></div><Link href="/dashboard/coach">{fr ? "Ouvrir le Coach IA" : "Open AI Coach"}<ArrowRight /></Link></section>
           <p className={styles.disclaimer}><ShieldAlert />{getTradingDisclaimer(tTrading)}</p>
         </aside>
       </div>

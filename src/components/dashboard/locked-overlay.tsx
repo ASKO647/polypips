@@ -26,8 +26,8 @@ export function LockedOverlay({
    * stretch to fill a flex parent (e.g. a fixed-height chat panel). */
   className?: string;
   /** Replaces the content wrapper's default "flex flex-col gap-5" — for
-   * callers whose children need a different layout (e.g. Coach IA's chat
-   * panel, which is itself a flex column with its own header/messages/input
+   * callers whose children need a different layout (e.g. a chat-style
+   * panel that is itself a flex column with its own header/messages/input
    * structure, not a simple vertical stack of cards). */
   contentClassName?: string;
   /** True when `locked` is caused by a cancellation rather than never

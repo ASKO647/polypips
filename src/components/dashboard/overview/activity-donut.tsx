@@ -11,7 +11,6 @@ export type ActivityPeriodCounts = {
   wallets: number;
   sport: number;
   trading: number;
-  coach: number;
 };
 
 const PERIOD_OPTIONS: { key: ActivityPeriodKey; labelKey: string }[] = [
@@ -25,7 +24,6 @@ const SEGMENTS = [
   { key: "wallets" as const, labelKey: "segments.wallets", stroke: "#34d399", dot: "bg-emerald-400" },
   { key: "sport" as const, labelKey: "segments.sport", stroke: "#38bdf8", dot: "bg-sky-400" },
   { key: "trading" as const, labelKey: "segments.trading", stroke: "#fbbf24", dot: "bg-amber-400" },
-  { key: "coach" as const, labelKey: "segments.coach", stroke: "#a78bfa", dot: "bg-violet-400" },
 ];
 
 const SIZE = 160;
@@ -33,9 +31,9 @@ const STROKE_WIDTH = 18;
 const RADIUS = (SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-/** Real 3-way split of the user's own activity (Analyses IA, wallets
- * followed, Coach IA messages) for a chosen period — every number comes
- * from `periods`, computed server-side from real timestamps. An all-zero
+/** Real multi-way split of the user's own activity (Analyses IA, wallets
+ * followed, Sport and Trading analyses) for a chosen period — every number
+ * comes from `periods`, computed server-side from real timestamps. An all-zero
  * period renders an empty ring and an honest "aucune activité" note
  * instead of a fabricated distribution. */
 export function ActivityDonut({
@@ -46,7 +44,7 @@ export function ActivityDonut({
   const t = useTranslations("Dashboard.ActivityDonut");
   const [period, setPeriod] = useState<ActivityPeriodKey>("30j");
   const counts = periods[period];
-  const total = counts.analyses + counts.wallets + counts.sport + counts.trading + counts.coach;
+  const total = counts.analyses + counts.wallets + counts.sport + counts.trading;
 
   let cumulative = 0;
   const arcs = SEGMENTS.map((seg) => {

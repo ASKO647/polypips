@@ -1,8 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 /**
- * Per-plan quota numbers, shared by analyze-market, analyze-sport-match,
- * analyze-trading-chart and coach-chat — kept in sync BY HAND with
+ * Per-plan quota numbers, shared by analyze-market, analyze-sport-match
+ * and analyze-trading-chart — kept in sync BY HAND with
  * PLAN_METADATA in src/lib/data/pricing.ts, since these Edge Functions run
  * on Deno and can't import from the Next.js app's src tree. null means
  * unlimited.
@@ -10,14 +10,6 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 export const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
   decouverte: 10,
   pro: 10,
-  pro_plus: null,
-  ultimate: null,
-  pro_legacy: null,
-};
-
-export const WEEKLY_COACH_MESSAGE_LIMITS: Record<string, number | null> = {
-  decouverte: 20,
-  pro: 20,
   pro_plus: null,
   ultimate: null,
   pro_legacy: null,

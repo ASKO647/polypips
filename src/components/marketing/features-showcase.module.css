@@ -22,8 +22,8 @@
 .card { --demo-start: calc(var(--reveal-delay, 0ms) + 180ms); min-width: 0; display: flex; flex-direction: column; padding: 20px; border: 1px solid #ececf1; border-radius: 19px; background: rgb(255 255 255 / 90%); box-shadow: 0 2px 12px rgb(25 32 55 / 1%); }
 .card[data-kind="analysis"] { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr); gap: 20px; min-height: 342px; padding: 18px 18px 18px 24px; border-color: #ff9eb2; background: linear-gradient(120deg, #fff8f9, #fffafb); }
 .card[data-kind="wallet"], .card[data-kind="sport"] { min-height: 342px; }
-.card[data-kind="trading"], .card[data-kind="markets"], .card[data-kind="coach"] { min-height: 300px; }
-.card[data-kind="coach"] { grid-column: span 2; }
+.card[data-kind="trading"], .card[data-kind="markets"] { min-height: 300px; }
+.card[data-kind="trading"], .card[data-kind="markets"] { grid-column: span 2; }
 .card h3 { margin: 0; color: #090c12; font-size: clamp(19px, 1.37vw, 23px); font-weight: 750; line-height: 1.22; letter-spacing: -.055em; }
 .iconTile { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 58px; height: 58px; border-radius: 14px; color: var(--accent); background: #fff0f3; }
 .iconTile svg { width: 33px; height: 33px; }
@@ -38,10 +38,10 @@
 .tags > span { padding: 7px 13px; border-radius: 999px; color: #f40032; background: #ffeaf0; font-size: 12px; line-height: 1.3; }
 .featureLink { display: inline-flex; align-items: center; align-self: flex-start; gap: 11px; max-width: 100%; min-height: 34px; margin-top: auto; padding: 4px 3px; border-radius: 7px; color: #f60032; font-size: 14px; font-weight: 600; line-height: 1.3; letter-spacing: -.025em; text-decoration: none; transition: transform 180ms ease, box-shadow 180ms ease; }
 .linkArrow { flex-shrink: 0; width: 20px; height: 20px; transition: transform 180ms ease; }
-.featureLink:hover, .marketRow:hover, .coachLink:hover { transform: translateY(-2px); box-shadow: 0 7px 16px rgb(231 0 49 / 9%); }
-.featureLink:hover .linkArrow, .coachLink:hover .linkArrow, .primaryCta:hover .linkArrow { transform: translateX(4px); }
-.featureLink:active, .marketRow:active, .coachLink:active, .primaryCta:active { transform: translateY(0) scale(.98); }
-.featureLink:focus-visible, .marketRow:focus-visible, .coachLink:focus-visible, .primaryCta:focus-visible, .sportTabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.featureLink:hover, .marketRow:hover { transform: translateY(-2px); box-shadow: 0 7px 16px rgb(231 0 49 / 9%); }
+.featureLink:hover .linkArrow, .primaryCta:hover .linkArrow { transform: translateX(4px); }
+.featureLink:active, .marketRow:active, .primaryCta:active { transform: translateY(0) scale(.98); }
+.featureLink:focus-visible, .marketRow:focus-visible, .primaryCta:focus-visible, .sportTabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .analysisPreview { align-self: stretch; min-width: 0; padding: 14px; border: 1px solid rgb(240 241 245 / 70%); border-radius: 14px; background: #fff; }
 .previewTop { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-height: 21px; }
 .previewTop > strong { font-size: 12px; font-weight: 700; letter-spacing: -.035em; }
@@ -102,21 +102,6 @@
 .miniChart { flex: 1; min-width: 30px; height: 33px; margin-left: auto; }
 .marketRow .chevron { transition: transform 180ms ease; }
 .marketRow:hover .chevron { transform: translateX(4px); }
-.conversation { display: flex; flex-direction: column; gap: 10px; padding: 8px 4px 9px; }
-.coachQuestion { align-self: flex-end; max-width: 80%; padding: 9px 14px; border-radius: 12px 12px 3px 12px; color: #43516a; background: #f4f5f7; font-size: 11px; line-height: 1.4; }
-.answerRow { display: flex; align-items: flex-start; gap: 10px; max-width: 92%; }
-.answerRow > .miniIcon { margin-top: 8px; }
-.answerSpace { display: grid; flex: 1; min-width: 0; }
-.typing, .coachAnswer { grid-area: 1 / 1; }
-.typing { display: none; justify-self: start; align-self: start; align-items: center; gap: 5px; min-height: 40px; padding: 12px 18px; border-radius: 12px; background: #fff0f4; }
-.typing i { width: 5px; height: 5px; border-radius: 50%; background: #ff7895; }
-.coachAnswer { padding: 11px 15px; border-radius: 13px; background: #fff4f6; }
-.coachAnswer > strong { display: block; margin-bottom: 7px; color: #ef0738; font-size: 11px; font-weight: 550; }
-.coachLine { display: flex; align-items: flex-start; gap: 8px; margin-top: 4px; color: #657083; font-size: 10px; line-height: 1.45; }
-.coachLine > span { flex-shrink: 0; width: 6px; height: 6px; margin-top: 4px; border-radius: 50%; background: #ff7e99; }
-.coachLink { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 45px; margin-top: auto; padding: 3px 4px 3px 18px; border: 1px solid #e9ecf2; border-radius: 999px; color: #919bb0; background: #fff; text-decoration: none; font-size: 12px; transition: transform 180ms ease, box-shadow 180ms ease; }
-.sendButton { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 36px; height: 36px; border: 2px solid #ffb4c4; border-radius: 50%; color: #fff; background: #ff0738; box-shadow: 0 3px 8px rgb(255 7 56 / 15%); }
-.sendButton svg { width: 23px; height: 23px; }
 .bottomCta { display: flex; flex-direction: column; align-items: center; margin-top: 16px; text-align: center; }
 .primaryCta { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 48px; max-width: 100%; padding: 12px 30px; border: 1px solid #ff8da5; border-radius: 999px; color: #fff; background: linear-gradient(180deg, #ff1947, #ff0035); box-shadow: 0 9px 23px rgb(255 7 56 / 24%); font-size: 15px; font-weight: 600; line-height: 1.4; letter-spacing: -.025em; text-decoration: none; transition: transform 180ms ease, box-shadow 180ms ease; }
 .primaryCta:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgb(255 7 56 / 33%); }
@@ -136,13 +121,6 @@
 .card[data-entered="true"] .candle { animation: candleIn 200ms ease-out calc(var(--demo-start) + var(--candle-delay)) both; }
 .card[data-entered="true"] .chartLevels { animation: appear 300ms ease calc(var(--demo-start) + 1200ms) both; }
 .card[data-entered="true"] .marketCurve { animation: drawLine 700ms ease-in-out calc(var(--demo-start) + var(--curve-delay)) both; }
-.card[data-entered="true"] .coachQuestion { animation: detailIn 300ms ease-out var(--demo-start) both; }
-.card[data-entered="true"] .typing { display: flex; opacity: 0; visibility: hidden; animation: typingWindow 900ms linear calc(var(--demo-start) + 400ms) forwards; }
-.card[data-entered="true"] .typing i { animation: typingDot 450ms ease-in-out calc(var(--demo-start) + 400ms) 2; }
-.card[data-entered="true"] .typing i:nth-child(2) { animation-delay: calc(var(--demo-start) + 520ms); }
-.card[data-entered="true"] .typing i:nth-child(3) { animation-delay: calc(var(--demo-start) + 640ms); }
-.card[data-entered="true"] .coachAnswer { animation: appear 180ms ease calc(var(--demo-start) + 1300ms) both; }
-.card[data-entered="true"] .coachLine { animation: detailIn 200ms ease-out calc(var(--demo-start) + var(--line-delay)) both; }
 @keyframes revealUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
@@ -151,8 +129,6 @@
 @keyframes walletSlide { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes badgePulse { 0%, 100% { box-shadow: 0 3px 8px rgb(255 20 67 / 20%); } 50% { box-shadow: 0 0 0 5px rgb(255 20 67 / 9%); } }
 @keyframes candleIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes typingWindow { 0%, 99.99% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
-@keyframes typingDot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-3px); opacity: 1; } }
 
 @media (min-width: 1101px) and (max-width: 1350px) {
   .card { padding: 16px; }
@@ -188,11 +164,11 @@
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card[data-kind="analysis"] { min-height: 316px; }
   .card[data-kind="wallet"], .card[data-kind="sport"] { min-height: 326px; }
+  .card[data-kind="trading"], .card[data-kind="markets"] { grid-column: auto; }
   .heading h2 { max-width: 860px; margin-inline: auto; font-size: clamp(32px, 4.2vw, 45px); }
   .card h3 { font-size: 22px; }
   .analysisCopy h3 { font-size: 30px; }
   .analysisCopy > p { max-width: 260px; }
-  .card[data-kind="coach"] { min-height: 300px; }
 }
 @media (max-width: 700px) {
   .section { padding: 38px 18px 30px; scroll-margin-top: 92px; }
@@ -203,7 +179,7 @@
   .description { margin-top: 12px; font-size: 14px; line-height: 1.55; }
   .grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .card { padding: 20px; border-radius: 18px; }
-  .card[data-kind="analysis"], .card[data-kind="coach"] { grid-column: auto; }
+  .card[data-kind="analysis"] { grid-column: auto; }
   .card[data-kind="analysis"] { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 20px; }
   .analysisCopy h3 { margin-top: 12px; font-size: 27px; }
   .analysisCopy > p { max-width: 100%; font-size: 17px; }
@@ -227,14 +203,6 @@
   .candleChart { height: 159px; }
   .marketRow { min-height: 48px; }
   .marketRow strong { font-size: 11px; }
-  .card[data-kind="coach"] { min-height: 336px; }
-  .card[data-kind="coach"] .cardHeading { align-items: flex-start; }
-  .conversation { padding-inline: 0; margin-top: 5px; }
-  .answerRow { max-width: 100%; gap: 7px; }
-  .answerRow > .miniIcon { width: 29px; height: 29px; }
-  .coachAnswer { padding: 10px 11px; }
-  .coachLine { font-size: 10px; }
-  .coachLink { min-height: 48px; }
   .bottomCta { margin-top: 22px; }
   .primaryCta { width: 100%; min-height: 52px; padding-inline: 16px; font-size: 14px; gap: 10px; }
   .bottomCta > p { margin-top: 8px; font-size: 10px; }
@@ -252,7 +220,7 @@
   .reveal, .card[data-entered="true"] * { animation: none !important; }
   .reveal[data-ready="true"][data-entered="false"] { opacity: 1; transform: none; }
   .card[data-entered="true"] .analysisWorking, .card[data-entered="true"] .typing { display: none; }
-  .featureLink, .marketRow, .coachLink, .primaryCta, .linkArrow, .track > span { transition: none; }
+  .featureLink, .marketRow, .primaryCta, .linkArrow, .track > span { transition: none; }
 }
 
 /* POLYPIPS - JONCTION BLANCHE */

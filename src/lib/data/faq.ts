@@ -15,7 +15,7 @@ export const FAQ_DETAILS = {
   howAiWorks: { category: "analysis", href: "/features", link: "features" },
   markets: { category: "analysis", href: "/features", link: "features" },
   updateFrequency: { category: "analysis", href: "/dashboard/markets", link: "markets" },
-  beginners: { category: "analysis", href: "/dashboard/coach", link: "coach" },
+  beginners: { category: "analysis", href: "/features", link: "features" },
   cancelAnytime: { category: "subscription", href: "/dashboard/subscription", link: "subscription" },
   copyTrading: { category: "wallet", href: "/dashboard/copy-trading", link: "wallet" },
 } as const;

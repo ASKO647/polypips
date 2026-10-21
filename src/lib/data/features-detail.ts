@@ -1,6 +1,6 @@
-import { Brain, Sparkles, Repeat2, MessageCircleHeart, BarChart3, type LucideIcon } from "lucide-react";
+import { Brain, Sparkles, Repeat2, BarChart3, type LucideIcon } from "lucide-react";
 
-export type FeatureDetailId = "ai-analysis" | "selected-markets" | "copy-trading" | "ai-coach" | "stats";
+export type FeatureDetailId = "ai-analysis" | "selected-markets" | "copy-trading" | "stats";
 
 export type FeatureDetailMeta = {
   id: FeatureDetailId;
@@ -25,7 +25,6 @@ export const FEATURES_DETAIL_META: FeatureDetailMeta[] = [
   { id: "ai-analysis", key: "aiAnalysis", icon: Brain },
   { id: "selected-markets", key: "selectedMarkets", icon: Sparkles },
   { id: "copy-trading", key: "copyTrading", icon: Repeat2 },
-  { id: "ai-coach", key: "aiCoach", icon: MessageCircleHeart },
   { id: "stats", key: "stats", icon: BarChart3 },
 ];
 

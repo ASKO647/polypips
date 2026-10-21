@@ -15,11 +15,6 @@ import {
   fetchAnalysisTimestamps,
 } from "@/lib/supabase/analyses";
 import { fetchSelectedMarkets, countSelectedMarkets } from "@/lib/supabase/selected-markets";
-import {
-  countConversations,
-  countCoachMessagesAllTime,
-  fetchCoachMessageTimestamps,
-} from "@/lib/supabase/coach";
 import { fetchNotifications } from "@/lib/supabase/notifications";
 import {
   countFollowedWallets,
@@ -35,7 +30,6 @@ import {
   countTradingAnalysesAllTime,
   fetchTradingAnalysisTimestamps,
 } from "@/lib/supabase/trading-analyses";
-import { fetchMyGroups } from "@/lib/supabase/community";
 import {
   fetchResolvedAnalyses,
   computePerformanceStats,
@@ -82,14 +76,11 @@ export default async function DashboardPage() {
     analysesToday,
     recentMarkets,
     selectedMarketsCount,
-    conversationCount,
     notifications,
     analysisTimestamps,
     analysesAllTime,
     walletFollowTimestamps,
     walletsFollowedTotal,
-    coachMessageTimestamps,
-    coachMessagesAllTime,
     resolvedAnalyses,
     sportAnalysesToday,
     sportAnalysisTimestamps,
@@ -97,19 +88,15 @@ export default async function DashboardPage() {
     tradingAnalysesToday,
     tradingAnalysisTimestamps,
     tradingAnalysesAllTime,
-    myGroups,
   ] = await Promise.all([
     countAnalysesToday(supabase, user.id),
     fetchSelectedMarkets(supabase, 5),
     countSelectedMarkets(supabase),
-    countConversations(supabase),
     fetchNotifications(supabase, 5),
     fetchAnalysisTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
     countAnalysesAllTime(supabase, user.id),
     fetchWalletFollowTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
     countFollowedWallets(supabase, user.id),
-    fetchCoachMessageTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
-    countCoachMessagesAllTime(supabase, user.id),
     fetchResolvedAnalyses(supabase, user.id),
     countSportAnalysesToday(supabase, user.id),
     fetchSportAnalysisTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
@@ -117,12 +104,10 @@ export default async function DashboardPage() {
     countTradingAnalysesToday(supabase, user.id),
     fetchTradingAnalysisTimestamps(supabase, user.id, ACTIVITY_WINDOW_DAYS),
     countTradingAnalysesAllTime(supabase, user.id),
-    fetchMyGroups(supabase),
   ]);
 
   const analysesSparkline = bucketCountsByDay(analysisTimestamps, SPARKLINE_DAYS);
   const walletsSparkline = bucketCountsByDay(walletFollowTimestamps, SPARKLINE_DAYS);
-  const coachSparkline = bucketCountsByDay(coachMessageTimestamps, SPARKLINE_DAYS);
   const sportSparkline = bucketCountsByDay(sportAnalysisTimestamps, SPARKLINE_DAYS);
   const tradingSparkline = bucketCountsByDay(tradingAnalysisTimestamps, SPARKLINE_DAYS);
 
@@ -132,21 +117,18 @@ export default async function DashboardPage() {
       wallets: sum(walletsSparkline),
       sport: sum(sportSparkline),
       trading: sum(tradingSparkline),
-      coach: sum(coachSparkline),
     },
     "30j": {
       analyses: analysisTimestamps.length,
       wallets: walletFollowTimestamps.length,
       sport: sportAnalysisTimestamps.length,
       trading: tradingAnalysisTimestamps.length,
-      coach: coachMessageTimestamps.length,
     },
     tout: {
       analyses: analysesAllTime,
       wallets: walletsFollowedTotal,
       sport: sportAnalysesAllTime,
       trading: tradingAnalysesAllTime,
-      coach: coachMessagesAllTime,
     },
   };
 
@@ -167,15 +149,12 @@ export default async function DashboardPage() {
         walletsMax={maxTrackedWallets}
         sportAnalysesToday={sportAnalysesToday}
         tradingAnalysesToday={tradingAnalysesToday}
-        conversationCount={conversationCount}
-        groupsJoinedCount={myGroups.length}
         recentMarkets={recentMarkets}
         notifications={notifications}
         analysesSparkline={analysesSparkline}
         walletsSparkline={walletsSparkline}
         sportSparkline={sportSparkline}
         tradingSparkline={tradingSparkline}
-        coachSparkline={coachSparkline}
         activityPeriods={activityPeriods}
         performanceStats={computePerformanceStats(resolvedAnalyses)}
       />

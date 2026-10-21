@@ -110,10 +110,6 @@
       "aiSelected": {
         "title": "Marchés sélectionnés",
         "description": "Découvrez plusieurs fois par jour les meilleures opportunités sélectionnées par notre IA."
-      },
-      "aiCoach": {
-        "title": "Coach IA personnel",
-        "description": "Posez toutes vos questions et obtenez des réponses claires de notre IA."
       }
     }
   },
@@ -269,8 +265,7 @@
       "decision": "Décision IA",
       "probability": "Probabilité & Edge",
       "explanation": "Explication détaillée",
-      "smartMoney": "Smart Wallet",
-      "coach": "Coach IA"
+      "smartMoney": "Smart Wallet"
     },
     "ctaLabel": "Voir la démo (2:15)",
     "launchAria": "Lancer la démonstration",
@@ -322,7 +317,7 @@
     "description": "Pas de paliers, pas de fonctionnalités verrouillées derrière un plan supérieur : un abonnement Polypips Pro, avec un essai à prix réduit pour commencer.",
     "offerLimited": "Offre limitée",
     "cardTitle": "Accès complet Polypips",
-    "cardDescription": "Débloquez toutes les fonctionnalités : Analyse IA, Marchés sélectionnés, Smart Wallet, Sport, Trading, Coach IA.",
+    "cardDescription": "Débloquez toutes les fonctionnalités : Analyse IA, Marchés sélectionnés, Smart Wallet, Sport, Trading.",
     "thenPrefix": "Puis",
     "thenSuffix": "— annulez à tout moment avant la fin de l'essai pour ne rien payer de plus.",
     "ctaPrefix": "Débuter pour",
@@ -334,8 +329,7 @@
       "selectedMarkets": "Marchés sélectionnés par l'IA",
       "smartMoney": "Smart Wallet — recherche & suivi de portefeuilles",
       "copyTrading": "Analyse IA Sport & Trading",
-      "coach": "Coach IA personnel",
-      "stats": "Communauté & historique complet"
+      "stats": "Historique complet"
     }
   },
   "FAQ": {
@@ -357,7 +351,7 @@
       },
       "beginners": {
         "question": "L'IA est-elle adaptée aux débutants ?",
-        "answer": "Oui. Chaque analyse est expliquée en langage clair : facteurs favorables, risques, et ce qui pourrait faire changer la décision. Le Coach IA est là pour répondre à toutes vos questions."
+        "answer": "Oui. Chaque analyse est expliquée en langage clair : facteurs favorables, risques, et ce qui pourrait faire changer la décision."
       },
       "markets": {
         "question": "Quels marchés sont couverts ?",
@@ -390,7 +384,6 @@
     "answerLinks": {
       "features": "Découvrir les fonctionnalités",
       "markets": "Voir les marchés sélectionnés",
-      "coach": "Découvrir le Coach IA",
       "subscription": "Gérer mon abonnement",
       "wallet": "Découvrir Smart Wallet"
     }
@@ -427,7 +420,6 @@
       "9 marchés Polymarket sélectionnés par l'IA, actualisés toutes les 12h",
       "Smart Wallet — recherchez et suivez n'importe quel portefeuille Polymarket",
       "Notification instantanée dès qu'un wallet suivi ouvre une nouvelle position",
-      "Coach IA qui connaît tout l'historique de vos analyses",
       "Historique complet de vos pronostics sport, accessible à tout moment"
     ],
     "cta": "Essayer la V2.0"

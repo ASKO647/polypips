@@ -1,6 +1,5 @@
 import {
   CandlestickChart,
-  GraduationCap,
   History,
   LayoutDashboard,
   LifeBuoy,
@@ -9,7 +8,6 @@ import {
   Star,
   Trophy,
   User,
-  Users,
   Wallet,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -68,22 +66,16 @@ export const TRADING_NAV_ITEMS: DashboardNavItem[] = [
   { label: "trading.mesAnalyses", href: "/dashboard/trading/mes-analyses", icon: History },
 ];
 
-/** Global tools that aren't specific to any universe — Coach IA answers
- * questions about analyses from all three, and Communauté/Profil aren't
- * scoped to a single product domain either. Statistiques used to live
- * here too; removed as its own page (product decision) — its one still-
- * live consumer, the dashboard overview's PerformanceCard, keeps reading
+/** Global tools that aren't specific to any universe — Profil isn't
+ * scoped to a single product domain. Statistiques used to live here too;
+ * removed as its own page (product decision) — its one still-live
+ * consumer, the dashboard overview's PerformanceCard, keeps reading
  * lib/supabase/performance.ts directly, untouched by that removal.
  * Profil (still at /dashboard/settings — same URL Stripe checkout already
  * redirects back to) is a normal sidebar entry rather than tucked into a
  * header-only menu, so it participates in the sidebar's own active-link
  * matching like every other section. */
 export const DASHBOARD_GLOBAL_ITEMS: DashboardNavItem[] = [
-  { label: "global.coach", href: "/dashboard/coach", icon: GraduationCap },
-  // Groups/chat aren't scoped to any one universe — a user's community can
-  // span several interests, so this lives here rather than inside one
-  // universe group.
-  { label: "global.communaute", href: "/dashboard/community", icon: Users },
   { label: "global.profil", href: "/dashboard/settings", icon: User },
 ];
 

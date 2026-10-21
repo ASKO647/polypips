@@ -23,8 +23,6 @@
         "mesAnalyses": "Mes analyses"
       },
       "global": {
-        "coach": "Coach IA",
-        "communaute": "Communauté",
         "profil": "Profil"
       },
       "sportsTitle": "Sports",
@@ -38,7 +36,6 @@
       "accueil": "Accueil",
       "analyseIA": "Analyse IA",
       "sport": "Sport",
-      "communaute": "Communauté",
       "menu": "Menu",
       "menuAriaLabel": "Menu"
     },
@@ -166,14 +163,6 @@
         "analyseIATrading": {
           "title": "Analyse IA Trading",
           "stat": "{count, plural, one {# analyse aujourd'hui} other {# analyses aujourd'hui}}"
-        },
-        "coachIA": {
-          "title": "Coach IA",
-          "stat": "{count, plural, one {# conversation} other {# conversations}}"
-        },
-        "communaute": {
-          "title": "Communauté",
-          "stat": "{count, plural, one {# groupe rejoint} other {# groupes rejoints}}"
         }
       }
     },
@@ -188,8 +177,7 @@
         "analyses": "Analyses Polymarket",
         "wallets": "Wallets suivis",
         "sport": "Analyses Sport",
-        "trading": "Analyses Trading",
-        "coach": "Messages Coach IA"
+        "trading": "Analyses Trading"
       },
       "total": "Total",
       "empty": "Aucune activité enregistrée sur cette période."

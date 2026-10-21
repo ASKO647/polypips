@@ -22,7 +22,6 @@ const DEMO_ITEM_KEYS = [
   "probability",
   "explanation",
   "smartMoney",
-  "coach",
 ] as const;
 
 function MiniStat({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "brand" }) {

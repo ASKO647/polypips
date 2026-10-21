@@ -23,8 +23,6 @@
         "mesAnalyses": "My analyses"
       },
       "global": {
-        "coach": "AI Coach",
-        "communaute": "Community",
         "profil": "Profile"
       },
       "sportsTitle": "Sports",
@@ -38,7 +36,6 @@
       "accueil": "Home",
       "analyseIA": "AI Analysis",
       "sport": "Sport",
-      "communaute": "Community",
       "menu": "Menu",
       "menuAriaLabel": "Menu"
     },
@@ -166,14 +163,6 @@
         "analyseIATrading": {
           "title": "Trading AI Analysis",
           "stat": "{count, plural, one {# analysis today} other {# analyses today}}"
-        },
-        "coachIA": {
-          "title": "AI Coach",
-          "stat": "{count, plural, one {# conversation} other {# conversations}}"
-        },
-        "communaute": {
-          "title": "Community",
-          "stat": "{count, plural, one {# group joined} other {# groups joined}}"
         }
       }
     },
@@ -188,8 +177,7 @@
         "analyses": "Polymarket analyses",
         "wallets": "Wallets followed",
         "sport": "Sport analyses",
-        "trading": "Trading analyses",
-        "coach": "AI Coach messages"
+        "trading": "Trading analyses"
       },
       "total": "Total",
       "empty": "No activity recorded for this period."

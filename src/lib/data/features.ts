@@ -4,12 +4,11 @@ import {
   Trophy,
   LineChart,
   Sparkles,
-  MessageCircleHeart,
   type LucideIcon,
 } from "lucide-react";
 
 export type Feature = {
-  id: "aiAnalysis" | "smartWallet" | "sport" | "trading" | "aiSelected" | "aiCoach";
+  id: "aiAnalysis" | "smartWallet" | "sport" | "trading" | "aiSelected";
   icon: LucideIcon;
 };
 
@@ -24,5 +23,4 @@ export const FEATURES: Feature[] = [
   { id: "sport", icon: Trophy },
   { id: "trading", icon: LineChart },
   { id: "aiSelected", icon: Sparkles },
-  { id: "aiCoach", icon: MessageCircleHeart },
 ];

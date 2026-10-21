@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { getFeaturesCopy, type FeaturesCopy } from "./features-copy";
 import styles from "./features-showcase.module.css";
 
-type IconName = "brain" | "wallet" | "football" | "basket" | "tennis" | "chart" | "sparkles" | "chat" | "document" | "bars" | "warning" | "bank" | "cube" | "target" | "arrow" | "check" | "send";
+type IconName = "brain" | "wallet" | "football" | "basket" | "tennis" | "chart" | "sparkles" | "document" | "bars" | "warning" | "bank" | "cube" | "target" | "arrow" | "check";
 
 const drawings: Record<IconName, ReactNode> = {
     brain: <><path d="M12 4a3 3 0 0 0-5-1.5A3.5 3.5 0 0 0 4 8a4 4 0 0 0 0 7 3.5 3.5 0 0 0 3 5.5A3 3 0 0 0 12 19V4Z" /><path d="M12 4a3 3 0 0 1 5-1.5A3.5 3.5 0 0 1 20 8a4 4 0 0 1 0 7 3.5 3.5 0 0 1-3 5.5A3 3 0 0 1 12 19M7 8c2 0 3 1 3 3M4 15c2-1 4 0 4 2M17 8c-2 0-3 1-3 3M20 15c-2-1-4 0-4 2" /></>,
@@ -16,7 +16,6 @@ const drawings: Record<IconName, ReactNode> = {
     tennis: <><circle cx="12" cy="12" r="9" /><path d="M6 5c6 4 6 10 0 14M18 5c-6 4-6 10 0 14" /></>,
     chart: <><path d="M3 3v18h18M6 16l5-6 4 3 6-8" /></>,
     sparkles: <><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2ZM20 2v5m-2.5-2.5h5" /></>,
-    chat: <path d="M21 11.5a9 9 0 0 1-9 9 10 10 0 0 1-4-.8L3 21l1.4-4.5A9 9 0 1 1 21 11.5Z" />,
     document: <><path d="M14 2H5v20h14V7l-5-5Zm0 0v6h5M8 12h8M8 16h5" /></>,
     bars: <path d="M5 21V12h3v9m4 0V7h3v14m4 0V3h3v18" />,
     warning: <><path d="m12 3 10 18H2L12 3Z" /><path d="M12 9v5m0 3v.1" /></>,
@@ -25,7 +24,6 @@ const drawings: Record<IconName, ReactNode> = {
     target: <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><path d="m12 12 9-9m-3 0h3v3" /></>,
     arrow: <path d="M4 12h16m-6-6 6 6-6 6" />,
     check: <path d="m5 12 4 4L19 6" />,
-    send: <path d="m3 3 19 9L3 21l3-9-3-9Zm3 9h16" />,
 };
 
 function Icon({ name, className }: { name: IconName; className?: string }) {
@@ -174,10 +172,6 @@ function MarketsPreview({ copy }: { copy: FeaturesCopy["markets"] }) {
   return <div className={styles.marketList}>{copy.categories.map((label, index) => <Link href="/dashboard/markets" className={styles.marketRow} key={label}><span className={styles.miniIcon}><Icon name={marketIcons[index]} /></span><strong>{label}</strong><svg className={styles.miniChart} viewBox="0 0 102 38" aria-hidden="true"><path d={`${marketPaths[index]}V38H2Z`} fill="#ff1647" fillOpacity=".035" /><path className={styles.marketCurve} d={marketPaths[index]} pathLength="1" fill="none" stroke="#ff0738" strokeWidth="1.4" style={{ "--curve-delay": `${index * 700}ms` } as CSSProperties} /></svg><span className={styles.chevron} aria-hidden="true">›</span></Link>)}</div>;
 }
 
-function CoachPreview({ copy }: { copy: FeaturesCopy["coach"] }) {
-  return <div className={styles.conversation} aria-hidden="true"><div className={styles.coachQuestion}>{copy.question}</div><div className={styles.answerRow}><span className={styles.miniIcon}><Icon name="chat" /></span><div className={styles.answerSpace}><div className={styles.typing}><i /><i /><i /></div><div className={styles.coachAnswer}><strong>{copy.lead}</strong>{copy.lines.map((line, index) => <div className={styles.coachLine} style={{ "--line-delay": `${1450 + index * 230}ms` } as CSSProperties} key={line}><span />{line}</div>)}</div></div></div></div>;
-}
-
 export function FeatureSection() {
   const copy = getFeaturesCopy(useLocale());
   const headingRef = useRef<HTMLElement>(null);
@@ -201,8 +195,6 @@ export function FeatureSection() {
           <Card kind="trading" index={3}><FeatureHeading icon="chart" title={copy.trading.title} description={copy.trading.description} /><TradingPreview copy={copy.trading} /><FeatureLink href="/dashboard/trading">{copy.trading.cta}</FeatureLink></Card>
 
           <Card kind="markets" index={4}><FeatureHeading icon="sparkles" title={copy.markets.title} /><p className={styles.cardDescription}>{copy.markets.description}</p><MarketsPreview copy={copy.markets} /><FeatureLink href="/dashboard/markets">{copy.markets.cta}</FeatureLink></Card>
-
-          <Card kind="coach" index={5}><FeatureHeading icon="chat" title={copy.coach.title} description={copy.coach.description} /><CoachPreview copy={copy.coach} /><Link href="/dashboard/coach" className={styles.coachLink} aria-label={copy.coach.cta}><span>{copy.coach.placeholder}</span><span className={styles.sendButton}><Icon name="send" className={styles.linkArrow} /></span></Link></Card>
         </div>
 
         <div className={styles.bottomCta}><Link href="/signup" className={styles.primaryCta}><span className={styles.fullCta}>{copy.cta}</span><span className={styles.shortCta}>{copy.shortCta}</span><Icon name="arrow" className={styles.linkArrow} /></Link><p>{copy.support}</p></div>

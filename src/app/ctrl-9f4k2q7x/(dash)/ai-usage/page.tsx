@@ -16,7 +16,6 @@ export default async function OwnerAiUsagePage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
         <StatCard label="Analyses — total" value={String(usage.analysesTotal)} />
         <StatCard label="Analyses — aujourd'hui" value={String(usage.analysesToday)} />
-        <StatCard label="Messages Coach IA — total" value={String(usage.coachMessagesTotal)} />
         <StatCard label="Marchés analysés (scan IA)" value={String(usage.marketsAnalyzed)} />
         <StatCard label="Utilisateurs actifs IA (90j)" value={String(usage.activeAiUsers)} />
       </div>

@@ -28,8 +28,6 @@ export type OwnerProductUsage = {
   selectedMarkets: number;
   smartMoneyFollows: number;
   copyTradingActiveStrategies: number;
-  coachMessages: number;
-  communityMessages: number;
 };
 
 /** One count per feature, all scoped to the same period — powers the
@@ -38,39 +36,28 @@ export type OwnerProductUsage = {
  * that feed it (analyses, wallet follows, etc.), which are already counted
  * elsewhere here. */
 export async function fetchOwnerProductUsage(since: Date | null): Promise<OwnerProductUsage> {
-  const [
-    analyses,
-    selectedMarkets,
-    smartMoneyFollows,
-    copyTradingActiveStrategies,
-    coachMessages,
-    communityMessages,
-  ] = await Promise.all([
-    countSince("analyses", "created_at", since),
-    countSince("selected_markets", "scanned_at", since),
-    countSince("user_wallet_follows", "created_at", since),
-    countSince("copy_trading_strategies", "created_at", since, {
-      column: "status",
-      value: "active",
-    }),
-    countSince("coach_messages", "created_at", since, { column: "role", value: "user" }),
-    countSince("group_messages", "created_at", since),
-  ]);
+  const [analyses, selectedMarkets, smartMoneyFollows, copyTradingActiveStrategies] =
+    await Promise.all([
+      countSince("analyses", "created_at", since),
+      countSince("selected_markets", "scanned_at", since),
+      countSince("user_wallet_follows", "created_at", since),
+      countSince("copy_trading_strategies", "created_at", since, {
+        column: "status",
+        value: "active",
+      }),
+    ]);
 
   return {
     analyses,
     selectedMarkets,
     smartMoneyFollows,
     copyTradingActiveStrategies,
-    coachMessages,
-    communityMessages,
   };
 }
 
 export type OwnerAiUsage = {
   analysesTotal: number;
   analysesToday: number;
-  coachMessagesTotal: number;
   marketsAnalyzed: number;
   activeAiUsers: number;
   evolution30d: number[];
@@ -90,13 +77,11 @@ export async function fetchOwnerAiUsage(): Promise<OwnerAiUsage> {
   const [
     analysesTotal,
     analysesToday,
-    coachMessagesTotal,
     { data: recentAnalyses },
     { data: userIds },
   ] = await Promise.all([
     countSince("analyses", "created_at", null),
     countSince("analyses", "created_at", todayStart),
-    countSince("coach_messages", "created_at", null, { column: "role", value: "user" }),
     supabase
       .from("analyses")
       .select("created_at")
@@ -121,7 +106,6 @@ export async function fetchOwnerAiUsage(): Promise<OwnerAiUsage> {
   return {
     analysesTotal,
     analysesToday,
-    coachMessagesTotal,
     marketsAnalyzed,
     activeAiUsers: distinctUsers.size,
     evolution30d: bucketCountsByDay(timestamps, 30),

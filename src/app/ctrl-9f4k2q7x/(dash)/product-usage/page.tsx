@@ -31,8 +31,6 @@ export default async function OwnerProductUsagePage({
         <StatCard label="Marchés sélectionnés (scans)" value={String(usage.selectedMarkets)} />
         <StatCard label="Suivis Smart Money" value={String(usage.smartMoneyFollows)} />
         <StatCard label="Stratégies Copy Trading actives" value={String(usage.copyTradingActiveStrategies)} />
-        <StatCard label="Messages Coach IA" value={String(usage.coachMessages)} />
-        <StatCard label="Messages Communauté" value={String(usage.communityMessages)} />
       </div>
 
       <p className="text-xs text-slate-500">

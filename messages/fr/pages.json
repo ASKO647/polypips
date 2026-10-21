@@ -84,7 +84,6 @@
             "Analyse IA de marchés Polymarket et de matchs sportifs",
             "Sélection quotidienne de marchés par l'IA",
             "Suivi de portefeuilles Smart Wallet",
-            "Coach IA conversationnel",
             "Statistiques de suivi de performance"
           ]
         }
@@ -92,7 +91,7 @@
     },
     "Features": {
       "metaTitle": "Fonctionnalités — Polypips",
-      "metaDescription": "Analyse IA Polymarket et Sport, marchés sélectionnés, Smart Wallet, Coach IA et statistiques : tout ce que propose Polypips.",
+      "metaDescription": "Analyse IA Polymarket et Sport, marchés sélectionnés, Smart Wallet et statistiques : tout ce que propose Polypips.",
       "eyebrow": "Fonctionnalités",
       "title": "Tout ce dont vous avez besoin pour prendre l'avantage",
       "description": "Une plateforme complète pour analyser, suivre et décider — sans jongler entre dix outils.",
@@ -128,16 +127,6 @@
             "Recherche manuelle par adresse, suivi et arrêt du suivi à tout moment",
             "Notifications dès qu'un portefeuille suivi ouvre une nouvelle position",
             "Aucun ordre réel n'est jamais transmis en votre nom — observation uniquement"
-          ]
-        },
-        "aiCoach": {
-          "eyebrow": "Coach IA",
-          "title": "Un assistant pour poser vos questions",
-          "description": "Posez vos questions sur un marché, une analyse ou une stratégie à notre assistant conversationnel, qui s'appuie sur le contexte de votre compte pour répondre simplement, sans jargon inutile.",
-          "points": [
-            "Réponses contextualisées à vos analyses et suivis",
-            "Historique de conversation conservé d'une session à l'autre",
-            "Disponible directement depuis le tableau de bord"
           ]
         },
         "stats": {
@@ -274,7 +263,7 @@
     },
     "Guides": {
       "metaTitle": "Guides — Polypips",
-      "metaDescription": "Des guides pas à pas pour bien démarrer, suivre un wallet et utiliser le Coach IA.",
+      "metaDescription": "Des guides pas à pas pour bien démarrer et suivre un wallet.",
       "eyebrow": "Guides",
       "title": "Guides pratiques",
       "description": "Des tutoriels pas à pas pour tirer le meilleur de Polypips.",

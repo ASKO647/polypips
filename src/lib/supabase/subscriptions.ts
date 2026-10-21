@@ -104,7 +104,7 @@ export async function userHasActiveAccess(
   return isActiveStatus(data?.status) && !data?.cancel_at_period_end;
 }
 
-/** Same "no access → decouverte limits" fallback used by the coach-chat and
+/** Same "no access → decouverte limits" fallback used by the
  * analyze-market Edge Functions, centralized here for Next.js API routes
  * that need to check a plan-derived limit server-side. */
 export async function getEffectivePlan(
