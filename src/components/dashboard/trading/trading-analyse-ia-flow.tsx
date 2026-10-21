@@ -99,7 +99,7 @@ export function TradingAnalyseIaFlow({ creditBalance }: { creditBalance: number 
   }
 
   if (state === "result" && result) {
-    return <DashboardChrome title={title}><main className="min-h-screen bg-white p-5 sm:p-8"><TradingAnalysisResult analysis={result} onBack={handleNewAnalysis} /></main></DashboardChrome>;
+    return <DashboardChrome title={title}><main className="min-h-dvh bg-white p-5 sm:p-8"><TradingAnalysisResult analysis={result} onBack={handleNewAnalysis} /></main></DashboardChrome>;
   }
 
   return (

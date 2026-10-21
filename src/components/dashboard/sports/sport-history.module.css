@@ -5,10 +5,10 @@
 @media(prefers-reduced-motion:reduce){.page,.hero,.statCard,.filters,.empty,.analysisCard,.sidePanels,.benefits div,.empty>span{animation:none!important;transition:color .01ms,background-color .01ms,border-color .01ms!important}}
 
 /* Layout and typography alignment with the shared dashboard shell. */
-.page{min-height:calc(100vh - 68px);padding-bottom:14px;font-family:var(--font-sans),Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-.resultPage{min-height:calc(100vh - 68px)}
+.page{min-height:calc(100dvh - 68px);padding-bottom:14px;font-family:var(--font-sans),Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.resultPage{min-height:calc(100dvh - 68px)}
 .hero h1{font-weight:800}
 .hero p,.panelHeading p{font-weight:450}
-.historyPanel{min-height:calc(100vh - 370px)}
+.historyPanel{min-height:calc(100dvh - 370px)}
 .privacy{margin-top:4px}
 @media(max-width:700px){.page,.resultPage{padding-bottom:10px}.historyPanel{min-height:420px}}
