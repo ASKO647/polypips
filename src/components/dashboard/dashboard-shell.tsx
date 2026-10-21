@@ -36,7 +36,7 @@ function DashboardShellInner({
   const { theme } = useDashboardTheme();
   const pathname = usePathname();
   const isCoachRoute = pathname.startsWith("/dashboard/coach");
-  const isOverviewRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading";
+  const isOverviewRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection";
   const isImmersiveRoute = isCoachRoute || isOverviewRoute;
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
