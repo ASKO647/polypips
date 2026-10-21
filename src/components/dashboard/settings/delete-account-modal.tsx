@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { TriangleAlert, X } from "lucide-react";
+import { Loader2, TriangleAlert, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export function DeleteAccountModal({
   open,
   onClose,
   onConfirm,
+  confirming = false,
+  error = null,
 }: {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  confirming?: boolean;
+  error?: string | null;
 }) {
   const t = useTranslations("Profile.DeleteAccountModal");
   const [value, setValue] = useState("");
@@ -59,20 +63,24 @@ export function DeleteAccountModal({
           className="mt-4 w-full rounded-xl border border-dash-border bg-dash-surface px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-rose-400/50 focus:outline-none"
         />
 
+        {error && <p className="mt-3 text-sm font-semibold text-rose-400">{error}</p>}
+
         <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
           <button
             type="button"
             onClick={onClose}
-            className="flex h-11 items-center justify-center rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text sm:flex-1"
+            disabled={confirming}
+            className="flex h-11 items-center justify-center rounded-full border border-dash-border-strong text-sm font-semibold text-dash-text-secondary transition-colors hover:border-dash-text-quaternary hover:text-dash-text disabled:opacity-40 sm:flex-1"
           >
             {t("cancel")}
           </button>
           <button
             type="button"
-            disabled={value.trim() !== confirmWord}
+            disabled={value.trim() !== confirmWord || confirming}
             onClick={onConfirm}
-            className="flex h-11 items-center justify-center rounded-full bg-rose-500 px-6 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 sm:flex-1"
+            className="flex h-11 items-center justify-center gap-2 rounded-full bg-rose-500 px-6 text-sm font-semibold text-white transition-transform duration-150 ease-out hover:scale-[1.02] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 sm:flex-1"
           >
+            {confirming && <Loader2 className="h-4 w-4 animate-spin" />}
             {t("delete")}
           </button>
         </div>

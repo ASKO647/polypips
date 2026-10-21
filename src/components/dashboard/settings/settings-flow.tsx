@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { Bell, CheckCircle2, CreditCard, Link2, Lock, Save, Settings, UserRound } from "lucide-react";
+import { Bell, CheckCircle2, CreditCard, Lock, Save, Settings, UserRound } from "lucide-react";
 import { ProfileOverviewTab as ProfileTab } from "@/components/dashboard/settings/profile-overview-tab";
 import { SubscriptionTab } from "@/components/dashboard/settings/subscription-tab";
 import { SecurityTab } from "@/components/dashboard/settings/security-tab";
@@ -14,6 +14,7 @@ import { DeleteAccountModal } from "@/components/dashboard/settings/delete-accou
 import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
+import type { UserSettings } from "@/lib/supabase/user-settings";
 import { DashboardChrome } from "@/components/dashboard/shared/dashboard-chrome";
 import styles from "./profile-page.module.css";
 
@@ -33,6 +34,7 @@ export function SettingsFlow({
   trialDaysRemaining,
   creditBalance,
   referralSlug,
+  settings,
 }: {
   email: string;
   initialUsername: string;
@@ -51,6 +53,7 @@ export function SettingsFlow({
   trialDaysRemaining: number | null;
   creditBalance: number;
   referralSlug: string | null;
+  settings: UserSettings;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -62,6 +65,8 @@ export function SettingsFlow({
   const [actionError, setActionError] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("profile");
   const isSubscriptionTab = activeTab === "subscription";
   const isSecurityTab = activeTab === "security";
@@ -84,19 +89,38 @@ export function SettingsFlow({
     }
   };
 
-  const handleConfirmDelete = () => {
-    console.log("Demande de suppression de compte déclenchée (mock, non branchée à Supabase).");
-    setDeletionRequested(true);
-    setDeleteModalOpen(false);
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const response = await fetch("/api/account/delete", { method: "POST" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || t("deleteError"));
+      setDeletionRequested(true);
+      setDeleteModalOpen(false);
+      window.setTimeout(() => {
+        // Hard navigation, not router.push(): the account (and its session)
+        // no longer exists server-side, so this also clears any client-side
+        // Supabase/auth state a soft navigation would leave stale.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = "/";
+      }, 1500);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : t("deleteError"));
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const currentPlan = subscription
     ? (getPricingPlans(tPlans).find((p) => p.id === subscription.plan) ?? null)
     : null;
+  const dateFormatOptions: Intl.DateTimeFormatOptions =
+    settings.dateFormat === "short"
+      ? { day: "2-digit", month: "2-digit", year: "numeric", timeZone: settings.timezone }
+      : { day: "numeric", month: "long", year: "numeric", timeZone: settings.timezone };
   const periodEndLabel = subscription?.currentPeriodEnd
-    ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(
-        new Date(subscription.currentPeriodEnd),
-      )
+    ? new Intl.DateTimeFormat(locale, dateFormatOptions).format(new Date(subscription.currentPeriodEnd))
     : null;
 
   const tabs = [
@@ -105,7 +129,6 @@ export function SettingsFlow({
     ["security", locale === "fr" ? "Sécurité" : "Security", Lock],
     ["notifications", "Notifications", Bell],
     ["preferences", locale === "fr" ? "Préférences" : "Preferences", Settings],
-    ["connections", locale === "fr" ? "Connexions" : "Connections", Link2],
   ] as const;
 
   return (
@@ -114,7 +137,7 @@ export function SettingsFlow({
       <header className={styles.pageHeader}><div><span>Polypips&nbsp;&nbsp;/&nbsp;&nbsp;{locale === "fr" ? "Profil" : "Profile"}{(isSubscriptionTab || isSecurityTab || isNotificationsTab || isPreferencesTab) && <>&nbsp;&nbsp;/&nbsp;&nbsp;{isPreferencesTab ? (locale === "fr" ? "Préférences" : "Preferences") : isNotificationsTab ? "Notifications" : isSecurityTab ? (locale === "fr" ? "Sécurité" : "Security") : (locale === "fr" ? "Abonnement" : "Subscription")}</>}</span><h1>{isPreferencesTab ? (locale === "fr" ? "Préférences" : "Preferences") : isNotificationsTab ? "Notifications" : isSecurityTab ? (locale === "fr" ? "Sécurité du compte" : "Account security") : isSubscriptionTab ? (locale === "fr" ? "Mon abonnement" : "My subscription") : (locale === "fr" ? "Mon profil" : "My profile")}</h1><p>{isPreferencesTab ? (locale === "fr" ? "Personnalisez l’affichage, les analyses et votre expérience Polypips." : "Customize display, analysis and your Polypips experience.") : isNotificationsTab ? (locale === "fr" ? "Choisissez les alertes que vous souhaitez recevoir et à quel moment." : "Choose which alerts you receive and when.") : isSecurityTab ? (locale === "fr" ? "Protégez votre compte et contrôlez vos connexions." : "Protect your account and control your sign-ins.") : isSubscriptionTab ? (locale === "fr" ? "Gérez votre offre, votre consommation et votre facturation." : "Manage your plan, usage and billing.") : (locale === "fr" ? "Gérez votre identité, votre abonnement et vos préférences." : "Manage your identity, subscription and preferences.")}</p></div><div className={styles.headerActions}>{!isPreferencesTab && <span><CheckCircle2 />{isNotificationsTab ? (locale === "fr" ? "Alertes configurées" : "Alerts configured") : isSecurityTab ? (locale === "fr" ? "Compte protégé" : "Protected account") : isSubscriptionTab ? (subscription && !subscription.cancelAtPeriodEnd ? (locale === "fr" ? "Abonnement actif" : "Active subscription") : (locale === "fr" ? "État du compte" : "Account status")) : (locale === "fr" ? "Compte vérifié" : "Verified account")}</span>}{!isSubscriptionTab && !isSecurityTab && <button onClick={() => document.getElementById(isPreferencesTab ? "preferences-save-action" : isNotificationsTab ? "notifications-save-action" : "profile-save-action")?.click()}><Save />{(isPreferencesTab || isNotificationsTab) ? (locale === "fr" ? "Enregistrer les préférences" : "Save preferences") : (locale === "fr" ? "Enregistrer les modifications" : "Save changes")}</button>}</div></header>
       <nav className={styles.tabs} aria-label={locale === "fr" ? "Rubriques du profil" : "Profile sections"}>{tabs.map(([id,label,Icon]) => <button key={id} className={activeTab === id ? styles.tabActive : ""} onClick={() => setActiveTab(id)}><Icon />{label}</button>)}</nav>
       <div className={styles.profileContent} key={activeTab} data-section={activeTab}>
-      {isPreferencesTab ? <PreferencesTab /> : isNotificationsTab ? <NotificationsTab email={email} /> : isSecurityTab ? <SecurityTab email={email} mfaEnabled={mfaEnabled} /> : isSubscriptionTab ? <SubscriptionTab
+      {isPreferencesTab ? <PreferencesTab initialSettings={settings} /> : isNotificationsTab ? <NotificationsTab email={email} initialSettings={settings} /> : isSecurityTab ? <SecurityTab email={email} mfaEnabled={mfaEnabled} /> : isSubscriptionTab ? <SubscriptionTab
         currentPlan={currentPlan}
         subscription={subscription}
         periodEndLabel={periodEndLabel}
@@ -155,6 +178,8 @@ export function SettingsFlow({
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
+        confirming={deleting}
+        error={deleteError}
       />
     </main>
     </DashboardChrome>

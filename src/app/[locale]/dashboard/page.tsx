@@ -3,7 +3,11 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { DashboardOverviewFlow } from "@/components/dashboard/overview/dashboard-overview-flow";
 import { CheckoutIntentRedirect } from "@/components/dashboard/checkout-intent-redirect";
+import { ResumeRedirect } from "@/components/dashboard/resume-redirect";
 import { createClient, getAuthUser } from "@/lib/supabase/server";
+import { redirect } from "@/i18n/navigation";
+import { getLocale } from "next-intl/server";
+import { fetchUserSettings } from "@/lib/supabase/user-settings";
 import {
   fetchSubscription,
   getEffectivePlan,
@@ -65,10 +69,16 @@ export default async function DashboardPage() {
     );
   }
 
-  const [subscription, plan] = await Promise.all([
+  const [subscription, plan, settings] = await Promise.all([
     fetchSubscription(supabase),
     getEffectivePlan(supabase, user.id),
+    fetchUserSettings(supabase),
   ]);
+
+  if (settings.startPage === "polymarket") {
+    const locale = await getLocale();
+    redirect({ href: "/dashboard/analyse-ia", locale });
+  }
 
   const maxTrackedWallets = getMaxTrackedWallets(plan);
 
@@ -137,6 +147,7 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <CheckoutIntentRedirect />
       </Suspense>
+      <ResumeRedirect enabled={settings.resumeLastSession} />
       <DashboardOverviewFlow
         firstName={getFirstNameFromUser(user)}
         hasActiveSubscription={hasActiveAccess(subscription)}

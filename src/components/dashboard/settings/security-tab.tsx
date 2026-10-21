@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
 import {
   AlertTriangle,
   Bell,
@@ -23,15 +22,16 @@ import {
   X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { MfaEnrollModal } from "@/components/dashboard/settings/mfa-enroll-modal";
 import styles from "./security-tab.module.css";
 
 type Modal = "password" | "passkey" | "sessions" | "suspicious" | null;
 
 export function SecurityTab({ email, mfaEnabled }: { email: string; mfaEnabled: boolean }) {
   const locale = useLocale();
-  const router = useRouter();
   const fr = locale === "fr";
   const [modal, setModal] = useState<Modal>(null);
+  const [mfaModalOpen, setMfaModalOpen] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,7 +39,9 @@ export function SecurityTab({ email, mfaEnabled }: { email: string; mfaEnabled: 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [alerts, setAlerts] = useState([true, true, true]);
+  const [sessionsPassword, setSessionsPassword] = useState("");
+  const [sessionsError, setSessionsError] = useState<string | null>(null);
+  const [sessionsSubmitting, setSessionsSubmitting] = useState(false);
 
   const rules = useMemo(() => [
     { label: fr ? "8 caractères minimum" : "At least 8 characters", ok: password.length >= 8 },
@@ -98,7 +100,7 @@ export function SecurityTab({ email, mfaEnabled }: { email: string; mfaEnabled: 
 
       <article className={styles.card} style={{ "--delay": "60ms" } as React.CSSProperties}>
         <div className={styles.cardHeading}><span><ShieldCheck /></span><div><div className={styles.titleLine}><h3>{fr ? "Authentification à deux facteurs (2FA)" : "Two-factor authentication (2FA)"}</h3><em className={mfaEnabled ? styles.enabled : styles.disabled}>{mfaEnabled ? (fr ? "Activée" : "Enabled") : (fr ? "Non activée" : "Not enabled")}</em></div><p>{fr ? "Ajoutez une couche de sécurité supplémentaire à votre compte." : "Add an extra layer of security to your account."}</p></div></div>
-        <div className={styles.twoFactor}><button className={styles.primaryButton} onClick={() => router.push("/mfa-setup")}>{mfaEnabled ? (fr ? "Gérer la 2FA" : "Manage 2FA") : (fr ? "Activer la 2FA" : "Enable 2FA")}</button><div><span><Smartphone /> <b>{fr ? "Application d’authentification" : "Authenticator app"}</b></span><span><Mail /> <b>SMS</b></span></div></div>
+        <div className={styles.twoFactor}><button className={styles.primaryButton} onClick={() => setMfaModalOpen(true)}>{mfaEnabled ? (fr ? "Gérer la 2FA" : "Manage 2FA") : (fr ? "Activer la 2FA" : "Enable 2FA")}</button><div><span><Smartphone /> <b>{fr ? "Application d’authentification" : "Authenticator app"}</b></span></div></div>
       </article>
 
       <article className={styles.card} style={{ "--delay": "120ms" } as React.CSSProperties}>
@@ -112,7 +114,7 @@ export function SecurityTab({ email, mfaEnabled }: { email: string; mfaEnabled: 
           [fr ? "Nouvelle connexion" : "New sign-in", fr ? "Nouvel appareil détecté" : "New device detected"],
           [fr ? "Changement du mot de passe" : "Password change", fr ? "Confirmation immédiate" : "Immediate confirmation"],
           [fr ? "Activité inhabituelle" : "Unusual activity", fr ? "Alerte en cas d’activité suspecte" : "Alert for suspicious activity"],
-        ].map(([title, subtitle], index) => <div className={styles.alertRow} key={title}><div><AlertTriangle /><span><b>{title}</b><small>{subtitle}</small></span></div><button className={`${styles.toggle} ${alerts[index] ? styles.toggleOn : ""}`} aria-pressed={alerts[index]} onClick={() => setAlerts((current) => current.map((value, i) => i === index ? !value : value))}><i /></button></div>)}</div><aside><Mail /><b>Email</b><span>{email}</span></aside></div>
+        ].map(([title, subtitle]) => <div className={styles.alertRow} key={title}><div><AlertTriangle /><span><b>{title}</b><small>{subtitle}</small></span></div><span className={styles.alwaysOn}><ShieldCheck />{fr ? "Toujours actif" : "Always on"}</span></div>)}</div><aside><Mail /><b>Email</b><span>{email}</span></aside></div>
       </article>
     </div>
 
@@ -130,11 +132,13 @@ export function SecurityTab({ email, mfaEnabled }: { email: string; mfaEnabled: 
       <AlertTriangle /><div><h3>{fr ? "Vous pensez que votre compte est compromis ?" : "Think your account is compromised?"}</h3><p>{fr ? "Modifiez immédiatement votre mot de passe et fermez les autres sessions." : "Immediately change your password and close other sessions."}</p></div><button onClick={() => setModal("suspicious")}>{fr ? "Ce n’était pas moi" : "That wasn't me"}</button>
     </article>
 
+    <MfaEnrollModal open={mfaModalOpen} mfaEnabled={mfaEnabled} onClose={() => setMfaModalOpen(false)} onChanged={() => {}} />
+
     {modal && <div className={styles.overlay} onMouseDown={(event) => event.target === event.currentTarget && setModal(null)}>
-      <div className={styles.modal} role="dialog" aria-modal="true"><button className={styles.close} onClick={() => setModal(null)}><X /></button>
+      <div className={styles.modal} role="dialog" aria-modal="true"><button className={styles.close} onClick={() => { setModal(null); setSessionsPassword(""); setSessionsError(null); }}><X /></button>
         {modal === "password" && <><div className={styles.modalIcon}><LockKeyhole /></div><h2>{fr ? "Modifier le mot de passe" : "Change password"}</h2><p>{fr ? "Choisissez un mot de passe unique et difficile à deviner." : "Choose a unique password that is hard to guess."}</p><label>{fr ? "Nouveau mot de passe" : "New password"}<div className={styles.inputWrap}><input type={passwordVisible ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password"/><button onClick={() => setPasswordVisible((value) => !value)}>{passwordVisible ? <EyeOff /> : <Eye />}</button></div></label><label>{fr ? "Confirmer le mot de passe" : "Confirm password"}<input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password"/></label><div className={styles.strength}><div><i style={{ width: `${strength}%` }}/></div><span>{strength}%</span></div><ul className={styles.rules}>{rules.map((rule) => <li className={rule.ok ? styles.ruleOk : ""} key={rule.label}><Check />{rule.label}</li>)}</ul><label className={styles.checkbox}><input type="checkbox" checked={disconnectOthers} onChange={(event) => setDisconnectOthers(event.target.checked)}/><span>{fr ? "Déconnecter automatiquement les autres appareils" : "Automatically sign out other devices"}</span></label>{message && <div className={styles.formMessage}>{message}</div>}<button className={styles.primaryButton} disabled={saving || !rules.every((rule) => rule.ok)} onClick={savePassword}>{saving ? <><Loader2 className={styles.spinner}/>{fr ? "Enregistrement…" : "Saving…"}</> : (fr ? "Enregistrer le nouveau mot de passe" : "Save new password")}</button></>}
         {modal === "passkey" && <><div className={`${styles.modalIcon} ${styles.keyWave}`}><KeyRound /></div><h2>{fr ? "Ajouter une clé d’accès" : "Add a passkey"}</h2><p>{fr ? "L’enregistrement WebAuthn n’est pas encore relié au backend Polypips. Aucune clé ne sera créée depuis cette fenêtre." : "WebAuthn registration is not connected to the Polypips backend yet. No key will be created from this dialog."}</p><button className={styles.primaryButton} onClick={() => setModal(null)}>{fr ? "J’ai compris" : "Understood"}</button></>}
-        {modal === "sessions" && <><div className={styles.modalIcon}><MonitorSmartphone /></div><h2>{fr ? "Déconnecter les autres appareils" : "Sign out other devices"}</h2><p>{fr ? "Confirmez avec votre mot de passe. Supabase fermera les autres sessions actives." : "Confirm with your password. Supabase will close other active sessions."}</p><label>{fr ? "Mot de passe actuel" : "Current password"}<input type="password" autoComplete="current-password"/></label><button className={styles.primaryButton} onClick={async () => { const supabase = createClient(); await supabase.auth.signOut({ scope: "others" }); setModal(null); notify(fr ? "Autres appareils déconnectés" : "Other devices signed out"); }}>{fr ? "Confirmer la déconnexion" : "Confirm sign out"}</button></>}
+        {modal === "sessions" && <><div className={styles.modalIcon}><MonitorSmartphone /></div><h2>{fr ? "Déconnecter les autres appareils" : "Sign out other devices"}</h2><p>{fr ? "Confirmez avec votre mot de passe. Les autres sessions actives seront fermées." : "Confirm with your password. Other active sessions will be closed."}</p><label>{fr ? "Mot de passe actuel" : "Current password"}<input type="password" autoComplete="current-password" value={sessionsPassword} onChange={(event) => { setSessionsPassword(event.target.value); setSessionsError(null); }}/></label>{sessionsError && <p className={styles.formMessage} style={{ color: "#d51a36" }}>{sessionsError}</p>}<button className={styles.primaryButton} disabled={!sessionsPassword || sessionsSubmitting} onClick={async () => { setSessionsSubmitting(true); setSessionsError(null); const supabase = createClient(); const { error } = await supabase.auth.signInWithPassword({ email, password: sessionsPassword }); if (error) { setSessionsError(fr ? "Mot de passe incorrect." : "Incorrect password."); setSessionsSubmitting(false); return; } await supabase.auth.signOut({ scope: "others" }); setSessionsSubmitting(false); setSessionsPassword(""); setModal(null); notify(fr ? "Autres appareils déconnectés" : "Other devices signed out"); }}>{sessionsSubmitting ? <Loader2 className={styles.spinner} /> : null}{fr ? "Confirmer la déconnexion" : "Confirm sign out"}</button></>}
         {modal === "suspicious" && <><div className={styles.modalIcon}><AlertTriangle /></div><h2>{fr ? "Sécuriser immédiatement le compte" : "Secure account now"}</h2><p>{fr ? "Commencez par modifier votre mot de passe. L’option de déconnexion des autres appareils sera activée automatiquement." : "Start by changing your password. Signing out other devices will be enabled automatically."}</p><button className={styles.primaryButton} onClick={() => { setDisconnectOthers(true); setModal("password"); }}>{fr ? "Modifier mon mot de passe" : "Change my password"}</button></>}
       </div>
     </div>}

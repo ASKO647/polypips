@@ -4,6 +4,7 @@ import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, getTrialEndsAt } from "@/lib/supabase/subscriptions";
 import { fetchNotifications } from "@/lib/supabase/notifications";
 import { fetchCreditBalance } from "@/lib/supabase/credits";
+import { fetchUserSettings } from "@/lib/supabase/user-settings";
 import type { CurrencyCode } from "@/providers/currency-provider";
 
 export default async function DashboardLayout({
@@ -19,10 +20,11 @@ export default async function DashboardLayout({
     return;
   }
 
-  const [subscription, notifications, creditBalance] = await Promise.all([
+  const [subscription, notifications, creditBalance, settings] = await Promise.all([
     fetchSubscription(supabase),
     fetchNotifications(supabase),
     fetchCreditBalance(supabase),
+    fetchUserSettings(supabase),
   ]);
 
   const displayName =
@@ -39,9 +41,11 @@ export default async function DashboardLayout({
       displayName={displayName}
       avatarUrl={avatarUrl}
       initialCurrency={currency}
+      initialThemeChoice={settings.themeChoice}
+      resumeLastSession={settings.resumeLastSession}
       subscription={subscription}
       trialEndsAt={getTrialEndsAt(subscription)}
-      notifications={notifications}
+      notifications={settings.notificationsAppEnabled ? notifications : []}
       creditBalance={creditBalance}
     >
       {children}

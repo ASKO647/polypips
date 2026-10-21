@@ -15,6 +15,7 @@ import {
 } from "@/lib/supabase/profile-activity";
 import { fetchCreditBalance } from "@/lib/supabase/credits";
 import { ensureReferralSlug } from "@/lib/supabase/user-referrals";
+import { fetchUserSettings, DEFAULT_USER_SETTINGS } from "@/lib/supabase/user-settings";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Profile.SettingsPage");
@@ -50,11 +51,12 @@ export default async function SettingsPage() {
         trialDaysRemaining={null}
         creditBalance={0}
         referralSlug={null}
+        settings={DEFAULT_USER_SETTINGS}
       />
     );
   }
 
-  const [subscription, plan, analysesToday, activity, mfaFactors, creditBalance, referralSlug] =
+  const [subscription, plan, analysesToday, activity, mfaFactors, creditBalance, referralSlug, settings] =
     await Promise.all([
       fetchSubscription(supabase),
       getEffectivePlan(supabase, user.id),
@@ -63,13 +65,16 @@ export default async function SettingsPage() {
       supabase.auth.mfa.listFactors(),
       fetchCreditBalance(supabase),
       ensureReferralSlug(supabase, user.id),
+      fetchUserSettings(supabase),
     ]);
 
   const locale = await getLocale();
+  const dateFormatOptions: Intl.DateTimeFormatOptions =
+    settings.dateFormat === "short"
+      ? { day: "2-digit", month: "2-digit", year: "numeric", timeZone: settings.timezone }
+      : { day: "numeric", month: "long", year: "numeric", timeZone: settings.timezone };
   const memberSince = user.created_at
-    ? new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).format(
-        new Date(user.created_at),
-      )
+    ? new Intl.DateTimeFormat(locale, dateFormatOptions).format(new Date(user.created_at))
     : null;
   const googleConnected = (user.app_metadata?.providers as string[] | undefined)?.includes(
     "google"
@@ -93,6 +98,7 @@ export default async function SettingsPage() {
       trialDaysRemaining={getTrialDaysRemaining(subscription)}
       creditBalance={creditBalance}
       referralSlug={referralSlug}
+      settings={settings}
     />
   );
 }

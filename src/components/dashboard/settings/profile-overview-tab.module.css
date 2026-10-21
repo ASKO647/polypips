@@ -15,8 +15,7 @@
 .primary{min-height:46px;border-radius:9px;font-size:15px;box-shadow:none}
 .deletePhoto{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:42px;margin-top:10px;border:1px solid #f0ccd3;border-radius:9px;background:#fff;color:#ed193a;font-size:14px;font-weight:750}
 .deletePhoto svg{width:17px}
-.completion span{font-size:15px}
-.completion i{height:8px}
+.emailValue{display:block;margin-bottom:6px;color:#2b1c21;font-weight:600}
 .cardTitle h3{font-size:19px}
 .cardTitle strong{font-size:22px}
 .sectionTitle h3{font-size:20px}

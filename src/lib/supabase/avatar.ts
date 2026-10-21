@@ -56,3 +56,16 @@ export async function uploadAvatar(
 
   return bustedUrl;
 }
+
+/** Clears `avatar_url` from user_metadata — the storage object itself is
+ * left in place (best-effort delete, errors ignored) since its path is
+ * keyed by userId and gets overwritten on the next upload anyway; what
+ * matters for "Supprimer la photo" to be real is that the app stops
+ * pointing at it. Throws only if the metadata update itself fails. */
+export async function removeAvatar(supabase: SupabaseClient, userId: string): Promise<void> {
+  for (const extension of Object.values(EXTENSION_BY_TYPE)) {
+    await supabase.storage.from("avatars").remove([`${userId}/avatar.${extension}`]).catch(() => {});
+  }
+  const { error } = await supabase.auth.updateUser({ data: { avatar_url: null } });
+  if (error) throw new Error(error.message);
+}

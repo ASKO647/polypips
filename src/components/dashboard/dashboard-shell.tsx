@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
@@ -20,6 +20,7 @@ function DashboardShellInner({
   trialEndsAt,
   notifications,
   creditBalance,
+  resumeLastSession,
   children,
 }: {
   userId: string;
@@ -30,16 +31,33 @@ function DashboardShellInner({
   trialEndsAt: string | null;
   notifications: NotificationItem[];
   creditBalance: number;
+  resumeLastSession: boolean;
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme } = useDashboardTheme();
   const pathname = usePathname();
+
+  // Backs the "Reprendre ma dernière session" preference (Préférences tab):
+  // remembers the last route visited on this browser so the next
+  // /dashboard root load can offer to resume it. Deliberately per-browser
+  // (only the on/off choice itself is synced cross-device via
+  // user_settings) — there's no meaningful cross-device notion of "last
+  // open tab".
+  useEffect(() => {
+    if (!resumeLastSession) return;
+    if (pathname === "/dashboard") return;
+    try {
+      window.localStorage.setItem("polypips-last-path", pathname);
+    } catch {
+      // Best-effort only.
+    }
+  }, [resumeLastSession, pathname]);
   const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses" || pathname === "/dashboard/settings";
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
   // overview have been converted to the real light/dark theme so far — the
-  // rest of the dashboard (Sport, Coach, Stats, Smart Wallet, Markets,
+  // rest of the dashboard (Sport, Stats, Smart Wallet, Markets,
   // Analyse IA) still uses hardcoded dark-mode styling
   // (text-white, bg-white/[…]) designed against a permanently dark canvas.
   // Pin `main`'s theme scope to dark on those routes so their un-converted
@@ -95,6 +113,8 @@ export function DashboardShell({
   displayName,
   avatarUrl,
   initialCurrency,
+  initialThemeChoice,
+  resumeLastSession,
   subscription,
   trialEndsAt,
   notifications,
@@ -106,6 +126,8 @@ export function DashboardShell({
   displayName: string;
   avatarUrl: string | null;
   initialCurrency: CurrencyCode;
+  initialThemeChoice: "light" | "dark" | "system";
+  resumeLastSession: boolean;
   subscription: SubscriptionRow | null;
   trialEndsAt: string | null;
   notifications: NotificationItem[];
@@ -113,7 +135,7 @@ export function DashboardShell({
   children: React.ReactNode;
 }) {
   return (
-    <DashboardThemeProvider>
+    <DashboardThemeProvider initialThemeChoice={initialThemeChoice}>
       <CurrencyProvider initialCurrency={initialCurrency}>
         <DashboardShellInner
           userId={userId}
@@ -124,6 +146,7 @@ export function DashboardShell({
           trialEndsAt={trialEndsAt}
           notifications={notifications}
           creditBalance={creditBalance}
+          resumeLastSession={resumeLastSession}
         >
           {children}
         </DashboardShellInner>
