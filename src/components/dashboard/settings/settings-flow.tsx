@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Bell, CheckCircle2, CreditCard, Link2, Lock, Save, Settings, UserRound } from "lucide-react";
-import { ProfileTab } from "@/components/dashboard/settings/profile-tab";
+import { ProfileOverviewTab as ProfileTab } from "@/components/dashboard/settings/profile-overview-tab";
 import { SubscriptionTab } from "@/components/dashboard/settings/subscription-tab";
 import { SecurityTab } from "@/components/dashboard/settings/security-tab";
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
