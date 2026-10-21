@@ -8,7 +8,6 @@ import {
   CandlestickChart,
   ChevronDown,
   CircleUserRound,
-  GraduationCap,
   LayoutDashboard,
   LineChart,
   Menu,
@@ -16,7 +15,6 @@ import {
   Sparkles,
   Star,
   Trophy,
-  Users,
   Wallet,
   X,
 } from "lucide-react";
@@ -103,8 +101,6 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
             </section>
           ))}
           <div className={styles.globalLinks}>
-            <Link href="/dashboard/coach" className={isActive("/dashboard/coach") ? styles.activeNav : ""} onClick={() => setMobile(false)}><GraduationCap />Coach IA</Link>
-            <Link href="/dashboard/community" className={isActive("/dashboard/community") ? styles.activeNav : ""} onClick={() => setMobile(false)}><Users />Communauté</Link>
             <Link href="/dashboard/settings" className={isActive("/dashboard/settings") ? styles.activeNav : ""} onClick={() => setMobile(false)}><CircleUserRound />Profil</Link>
           </div>
         </nav>
