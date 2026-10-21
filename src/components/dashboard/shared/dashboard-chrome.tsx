@@ -8,6 +8,7 @@ import {
   CandlestickChart,
   ChevronDown,
   CircleUserRound,
+  GraduationCap,
   LayoutDashboard,
   LineChart,
   Menu,
@@ -15,6 +16,7 @@ import {
   Sparkles,
   Star,
   Trophy,
+  Users,
   Wallet,
   X,
 } from "lucide-react";
@@ -55,9 +57,10 @@ type DashboardChromeProps = {
   children: ReactNode;
   title: ReactNode;
   firstName?: string | null;
+  profileLayout?: boolean;
 };
 
-export function DashboardChrome({ children, title, firstName }: DashboardChromeProps) {
+export function DashboardChrome({ children, title, firstName, profileLayout = false }: DashboardChromeProps) {
   const locale = useLocale();
   const pathname = usePathname();
   const [mobile, setMobile] = useState(false);
@@ -78,11 +81,18 @@ export function DashboardChrome({ children, title, firstName }: DashboardChromeP
           <strong>Polypips</strong>
           <button onClick={() => setMobile(false)} aria-label="Fermer le menu"><X /></button>
         </div>
-        <nav>
+        <nav className={profileLayout ? styles.profileNav : undefined}>
           <Link href="/dashboard" className={isActive("/dashboard") ? styles.activeNav : ""} onClick={() => setMobile(false)}>
             <LayoutDashboard />{dashboardLabel}
           </Link>
-          {groups.map((group, index) => (
+          {profileLayout ? <>
+            <Link href="/dashboard/analyse-ia" onClick={() => setMobile(false)}><LineChart />Polymarket</Link>
+            <Link href="/dashboard/sports" onClick={() => setMobile(false)}><Trophy />Sport</Link>
+            <Link href="/dashboard/trading" onClick={() => setMobile(false)}><CandlestickChart />Trading</Link>
+            <Link href="/dashboard/coach" onClick={() => setMobile(false)}><GraduationCap />Coach IA</Link>
+            <Link href="/dashboard/community" onClick={() => setMobile(false)}><Users />Communauté</Link>
+            <Link href="/dashboard/settings" className={styles.activeNav} onClick={() => setMobile(false)}><CircleUserRound />Profil</Link>
+          </> : <>{groups.map((group, index) => (
             <section key={group.title} className={styles.navGroup} style={{ "--delay": `${110 + index * 45}ms` } as React.CSSProperties}>
               <button className={styles.groupTitle} onClick={() => setCollapsed(value => ({ ...value, [group.title]: !value[group.title] }))}>
                 <span style={{ background: group.color }} />
@@ -100,8 +110,11 @@ export function DashboardChrome({ children, title, firstName }: DashboardChromeP
             </section>
           ))}
           <div className={styles.globalLinks}>
+            <Link href="/dashboard/coach" className={isActive("/dashboard/coach") ? styles.activeNav : ""} onClick={() => setMobile(false)}><GraduationCap />Coach IA</Link>
+            <Link href="/dashboard/community" className={isActive("/dashboard/community") ? styles.activeNav : ""} onClick={() => setMobile(false)}><Users />Communauté</Link>
             <Link href="/dashboard/settings" className={isActive("/dashboard/settings") ? styles.activeNav : ""} onClick={() => setMobile(false)}><CircleUserRound />Profil</Link>
           </div>
+          </>}
         </nav>
         <div className={styles.user}>
           <span>{initial}</span>
@@ -110,7 +123,7 @@ export function DashboardChrome({ children, title, firstName }: DashboardChromeP
       </aside>
 
       <div className={styles.workspace}>
-        <header className={styles.header}>
+        {!profileLayout && <header className={styles.header}>
           <button className={styles.mobileToggle} onClick={() => setMobile(true)} aria-label="Ouvrir le menu"><Menu /></button>
           <h2>{title}</h2>
           <div className={styles.headerTools}>
@@ -118,7 +131,7 @@ export function DashboardChrome({ children, title, firstName }: DashboardChromeP
             <button aria-label="Notifications"><Bell /></button>
             <span className={styles.avatar}>{initial}</span>
           </div>
-        </header>
+        </header>}
         {children}
       </div>
       {mobile && <button className={styles.overlay} aria-label="Fermer" onClick={() => setMobile(false)} />}
