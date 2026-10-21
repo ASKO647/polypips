@@ -19,3 +19,9 @@
 .profileContent{animation:none}
 @media(max-width:1000px){.page{padding:20px 22px 30px}}
 @media(max-width:700px){.page{padding:18px 14px 90px}.pageHeader h1{font-size:31px}.pageHeader p{font-size:16px}.tabs button{min-width:135px;font-size:15px}}
+
+/* Keep the approved profile composition: compact account rail on the left,
+   full settings content on the right. This intentionally overrides the old layout. */
+.profileContent>div{grid-template-columns:342px minmax(0,1fr)!important;gap:22px!important}
+@media(max-width:1200px){.profileContent>div{grid-template-columns:290px minmax(0,1fr)!important}}
+@media(max-width:1000px){.profileContent>div{grid-template-columns:1fr!important}}
