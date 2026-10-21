@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Bell, CheckCircle2, CreditCard, Link2, Lock, Save, Settings, UserRound } from "lucide-react";
 import { ProfileTab } from "@/components/dashboard/settings/profile-tab";
+import { SubscriptionTab } from "@/components/dashboard/settings/subscription-tab";
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
@@ -59,6 +60,7 @@ export function SettingsFlow({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
+  const isSubscriptionTab = activeTab === "subscription";
 
   const handleConfirmCancel = async () => {
     setCancelling(true);
@@ -101,12 +103,21 @@ export function SettingsFlow({
   ] as const;
 
   return (
-    <DashboardChrome title={locale === "fr" ? "Profil" : "Profile"} firstName={initialUsername}>
+    <DashboardChrome title={isSubscriptionTab ? (locale === "fr" ? "Abonnement" : "Subscription") : (locale === "fr" ? "Profil" : "Profile")} firstName={initialUsername}>
     <main className={styles.page}>
-      <header className={styles.pageHeader}><div><span>Polypips&nbsp;&nbsp;/&nbsp;&nbsp;{locale === "fr" ? "Profil" : "Profile"}</span><h1>{locale === "fr" ? "Mon profil" : "My profile"}</h1><p>{locale === "fr" ? "Gérez votre identité, votre abonnement et vos préférences." : "Manage your identity, subscription and preferences."}</p></div><div className={styles.headerActions}><span><CheckCircle2 />{locale === "fr" ? "Compte vérifié" : "Verified account"}</span><button onClick={() => document.getElementById("profile-save-action")?.click()}><Save />{locale === "fr" ? "Enregistrer les modifications" : "Save changes"}</button></div></header>
+      <header className={styles.pageHeader}><div><span>Polypips&nbsp;&nbsp;/&nbsp;&nbsp;{locale === "fr" ? "Profil" : "Profile"}{isSubscriptionTab && <>&nbsp;&nbsp;/&nbsp;&nbsp;{locale === "fr" ? "Abonnement" : "Subscription"}</>}</span><h1>{isSubscriptionTab ? (locale === "fr" ? "Mon abonnement" : "My subscription") : (locale === "fr" ? "Mon profil" : "My profile")}</h1><p>{isSubscriptionTab ? (locale === "fr" ? "Gérez votre offre, votre consommation et votre facturation." : "Manage your plan, usage and billing.") : (locale === "fr" ? "Gérez votre identité, votre abonnement et vos préférences." : "Manage your identity, subscription and preferences.")}</p></div><div className={styles.headerActions}><span><CheckCircle2 />{isSubscriptionTab ? (activeTab && subscription && !subscription.cancelAtPeriodEnd ? (locale === "fr" ? "Abonnement actif" : "Active subscription") : (locale === "fr" ? "État du compte" : "Account status")) : (locale === "fr" ? "Compte vérifié" : "Verified account")}</span>{!isSubscriptionTab && <button onClick={() => document.getElementById("profile-save-action")?.click()}><Save />{locale === "fr" ? "Enregistrer les modifications" : "Save changes"}</button>}</div></header>
       <nav className={styles.tabs} aria-label={locale === "fr" ? "Rubriques du profil" : "Profile sections"}>{tabs.map(([id,label,Icon]) => <button key={id} className={activeTab === id ? styles.tabActive : ""} onClick={() => setActiveTab(id)}><Icon />{label}</button>)}</nav>
       <div className={styles.profileContent} key={activeTab} data-section={activeTab}>
-      <ProfileTab
+      {isSubscriptionTab ? <SubscriptionTab
+        currentPlan={currentPlan}
+        subscription={subscription}
+        periodEndLabel={periodEndLabel}
+        analysesToday={analysesToday}
+        dailyAnalysisLimit={dailyAnalysisLimit}
+        creditBalance={creditBalance}
+        activity={activity}
+        onOpenCancelModal={() => setCancelModalOpen(true)}
+      /> : <ProfileTab
         email={email}
         initialUsername={initialUsername}
         initialPseudo={initialPseudo}
@@ -124,7 +135,7 @@ export function SettingsFlow({
         actionError={actionError}
         creditBalance={creditBalance}
         referralSlug={referralSlug}
-      />
+      />}
       </div>
 
       <CancelSubscriptionModal
