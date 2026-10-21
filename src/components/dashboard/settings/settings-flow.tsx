@@ -3,15 +3,15 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { Sparkles } from "lucide-react";
-import { PLAN_ICONS } from "@/components/dashboard/account-status-card";
-import { StatusBadge } from "@/components/dashboard/settings/status-badge";
+import { Bell, CheckCircle2, CreditCard, Link2, Lock, Save, Settings, UserRound } from "lucide-react";
 import { ProfileTab } from "@/components/dashboard/settings/profile-tab";
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
+import { DashboardChrome } from "@/components/dashboard/shared/dashboard-chrome";
+import styles from "./profile-page.module.css";
 
 export function SettingsFlow({
   email,
@@ -58,6 +58,7 @@ export function SettingsFlow({
   const [actionError, setActionError] = useState<string | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deletionRequested, setDeletionRequested] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
 
   const handleConfirmCancel = async () => {
     setCancelling(true);
@@ -90,38 +91,21 @@ export function SettingsFlow({
       )
     : null;
 
-  const PlanIcon = PLAN_ICONS[plan.id] ?? PLAN_ICONS.pro;
-  const planBadgeValue =
-    trialDaysRemaining !== null ? t("trialDaysBadge", { days: trialDaysRemaining }) : plan.name;
-  const analysesRemaining = dailyAnalysisLimit !== null ? dailyAnalysisLimit - analysesToday : null;
+  const tabs = [
+    ["profile", locale === "fr" ? "Profil" : "Profile", UserRound],
+    ["subscription", locale === "fr" ? "Abonnement" : "Subscription", CreditCard],
+    ["security", locale === "fr" ? "Sécurité" : "Security", Lock],
+    ["notifications", "Notifications", Bell],
+    ["preferences", locale === "fr" ? "Préférences" : "Preferences", Settings],
+    ["connections", locale === "fr" ? "Connexions" : "Connections", Link2],
+  ] as const;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
-            {t("heading")}
-          </h1>
-          <p className="mt-2 text-sm leading-relaxed text-dash-text-tertiary sm:text-base">
-            {t("subtitle")}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <StatusBadge icon={PlanIcon} label={t("planBadgeLabel")} value={planBadgeValue} tone="brand" />
-          <StatusBadge
-            icon={Sparkles}
-            label={t("analysesBadgeLabel")}
-            value={
-              analysesRemaining !== null
-                ? t("analysesRemaining", { count: Math.max(analysesRemaining, 0) })
-                : t("analysesUnlimited")
-            }
-            tone={analysesRemaining !== null && analysesRemaining <= 0 ? "amber" : "emerald"}
-          />
-        </div>
-      </div>
-
+    <DashboardChrome title={locale === "fr" ? "Profil" : "Profile"} firstName={initialUsername}>
+    <main className={styles.page}>
+      <header className={styles.pageHeader}><div><span>Polypips&nbsp;&nbsp;/&nbsp;&nbsp;{locale === "fr" ? "Profil" : "Profile"}</span><h1>{locale === "fr" ? "Mon profil" : "My profile"}</h1><p>{locale === "fr" ? "Gérez votre identité, votre abonnement et vos préférences." : "Manage your identity, subscription and preferences."}</p></div><div className={styles.headerActions}><span><CheckCircle2 />{locale === "fr" ? "Compte vérifié" : "Verified account"}</span><button onClick={() => document.getElementById("profile-save-action")?.click()}><Save />{locale === "fr" ? "Enregistrer les modifications" : "Save changes"}</button></div></header>
+      <nav className={styles.tabs} aria-label={locale === "fr" ? "Rubriques du profil" : "Profile sections"}>{tabs.map(([id,label,Icon]) => <button key={id} className={activeTab === id ? styles.tabActive : ""} onClick={() => setActiveTab(id)}><Icon />{label}</button>)}</nav>
+      <div className={styles.profileContent} key={activeTab} data-section={activeTab}>
       <ProfileTab
         email={email}
         initialUsername={initialUsername}
@@ -141,6 +125,7 @@ export function SettingsFlow({
         creditBalance={creditBalance}
         referralSlug={referralSlug}
       />
+      </div>
 
       <CancelSubscriptionModal
         open={cancelModalOpen}
@@ -154,6 +139,7 @@ export function SettingsFlow({
         onClose={() => setDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </main>
+    </DashboardChrome>
   );
 }

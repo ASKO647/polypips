@@ -35,11 +35,11 @@ function DashboardShellInner({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme } = useDashboardTheme();
   const pathname = usePathname();
-  const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses";
+  const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses" || pathname === "/dashboard/settings";
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
   // overview have been converted to the real light/dark theme so far — the
-  // rest of the dashboard (Sport, Stats, Smart Wallet, Markets,
+  // rest of the dashboard (Sport, Coach, Stats, Smart Wallet, Markets,
   // Analyse IA) still uses hardcoded dark-mode styling
   // (text-white, bg-white/[…]) designed against a permanently dark canvas.
   // Pin `main`'s theme scope to dark on those routes so their un-converted

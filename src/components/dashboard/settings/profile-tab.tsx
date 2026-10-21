@@ -481,6 +481,7 @@ export function ProfileTab({
             )}
             {error && <span className="text-xs text-rose-400">{error}</span>}
             <button
+              id="profile-save-action"
               type="button"
               onClick={handleSave}
               disabled={saving || !dirty}
