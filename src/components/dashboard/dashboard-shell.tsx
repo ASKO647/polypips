@@ -57,12 +57,7 @@ function DashboardShellInner({
       // Best-effort only.
     }
   }, [resumeLastSession, pathname]);
-  // Settings deliberately isn't in this list (any more): it has its own
-  // page-level header/tabs, but still needs the real mobile chrome — the
-  // burger, drawer and bottom nav are how you navigate away from it or
-  // open the menu at all, since there's no browser back button inside an
-  // installed PWA.
-  const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses";
+  const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses" || pathname === "/dashboard/settings";
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
   // overview have been converted to the real light/dark theme so far — the

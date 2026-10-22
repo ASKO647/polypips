@@ -55,9 +55,10 @@ type DashboardChromeProps = {
   children: ReactNode;
   title: ReactNode;
   firstName?: string | null;
+  hideHeader?: boolean;
 };
 
-export function DashboardChrome({ children, title, firstName }: DashboardChromeProps) {
+export function DashboardChrome({ children, title, firstName, hideHeader = false }: DashboardChromeProps) {
   const locale = useLocale();
   const pathname = usePathname();
   const [mobile, setMobile] = useState(false);
@@ -110,7 +111,7 @@ export function DashboardChrome({ children, title, firstName }: DashboardChromeP
       </aside>
 
       <div className={styles.workspace}>
-        <header className={styles.header}>
+        {!hideHeader && <header className={styles.header}>
           <button className={styles.mobileToggle} onClick={() => setMobile(true)} aria-label="Ouvrir le menu"><Menu /></button>
           <h2>{title}</h2>
           <div className={styles.headerTools}>
@@ -118,7 +119,12 @@ export function DashboardChrome({ children, title, firstName }: DashboardChromeP
             <button aria-label="Notifications"><Bell /></button>
             <span className={styles.avatar}>{initial}</span>
           </div>
-        </header>
+        </header>}
+        {/* hideHeader pages (Profil) still need a way to reach this sidebar's
+            cross-section quick links on mobile — there is no browser back
+            button in an installed PWA, and this page supplies no header of
+            its own to host the usual toggle. */}
+        {hideHeader && <button className={`${styles.mobileToggle} ${styles.floatingToggle}`} onClick={() => setMobile(true)} aria-label="Ouvrir le menu"><Menu /></button>}
         {children}
       </div>
       {mobile && <button className={styles.overlay} aria-label="Fermer" onClick={() => setMobile(false)} />}
