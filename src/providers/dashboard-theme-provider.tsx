@@ -1,6 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import styles from "./dashboard-preferences.module.css";
+import { createClient } from "@/lib/supabase/client";
+import { fetchUserSettings } from "@/lib/supabase/user-settings";
 
 export type DashboardTheme = "dark" | "light";
 
@@ -32,27 +35,34 @@ export function DashboardThemeProvider({
   initialThemeChoice?: "light" | "dark" | "system";
 }) {
   const [theme, setThemeState] = useState<DashboardTheme>("dark");
+  const [choice, setChoice] = useState<"light" | "dark" | "system">(initialThemeChoice ?? "light");
+  const [display, setDisplay] = useState({ density: "comfortable", animations: true, reduceMotion: false, contrast: false, keyboardFocus: true, textSize: 50 });
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored === "light" || stored === "dark") {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setThemeState(stored);
-        return;
-      }
-    } catch {
-      // localStorage unavailable (private mode, blocked) — fall through to the synced choice.
-    }
-    if (initialThemeChoice === "light") {
-      setThemeState("light");
-    } else if (initialThemeChoice === "system") {
-      setThemeState(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let previewed = false;
+    const update = (event: Event) => {
+      previewed = true;
+      const values = (event as CustomEvent).detail;
+      if (!values) return;
+      setDisplay(current => ({ ...current, ...values }));
+      if (["light", "dark", "system"].includes(values.themeChoice)) setChoice(values.themeChoice);
+    };
+    window.addEventListener("polypips-preferences-preview", update);
+    let active = true;
+    fetchUserSettings(createClient()).then(settings => { if (active && !previewed) { setDisplay(settings); setChoice(settings.themeChoice); } });
+    return () => { active = false; window.removeEventListener("polypips-preferences-preview", update); };
   }, []);
 
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const apply = () => setThemeState(choice === "system" ? (media.matches ? "dark" : "light") : choice);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, [choice]);
+
   const setTheme = (next: DashboardTheme) => {
+    setChoice(next);
     setThemeState(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
@@ -65,7 +75,7 @@ export function DashboardThemeProvider({
 
   return (
     <DashboardThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
-      {children}
+      <div className={styles.runtime} data-density={display.density} data-motion={!display.animations || display.reduceMotion ? "reduced" : "full"} data-contrast={display.contrast} data-focus={display.keyboardFocus} style={{ "--preference-scale": String(.9 + Math.max(0, Math.min(100, display.textSize)) * .004) } as React.CSSProperties}>{children}</div>
     </DashboardThemeContext.Provider>
   );
 }
