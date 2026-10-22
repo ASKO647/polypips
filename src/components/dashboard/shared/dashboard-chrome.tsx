@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
+import { ProfileMenu } from "@/components/dashboard/profile-menu";
 import { useDashboardAvatar } from "@/providers/dashboard-avatar-provider";
+import { useDashboardProfileMenu } from "@/providers/dashboard-profile-menu-provider";
 import styles from "../overview/dashboard-overview.module.css";
 
 const groups = [
@@ -64,6 +66,7 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
   const locale = useLocale();
   const pathname = usePathname();
   const avatarUrl = useDashboardAvatar();
+  const profile = useDashboardProfileMenu();
   const [mobile, setMobile] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const displayName = firstName || "Polypips";
@@ -107,10 +110,20 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
             <Link href="/dashboard/settings" className={isActive("/dashboard/settings") ? styles.activeNav : ""} onClick={() => setMobile(false)}><CircleUserRound />Profil</Link>
           </div>
         </nav>
-        <div className={styles.user}>
-          {avatarUrl ? <UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar} /> : <span className={styles.avatar}>{initial}</span>}
-          <div><strong>{displayName}</strong><small>Compte Polypips Pro</small></div>
-        </div>
+        <ProfileMenu
+          displayName={displayName}
+          email={profile.email}
+          avatarUrl={avatarUrl}
+          planLabel={profile.planLabel}
+          creditBalance={profile.creditBalance}
+          placement="sidebar"
+          trigger={({ onClick, open, ariaLabel }) => (
+            <button type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={open} aria-label={ariaLabel} className={styles.user}>
+              {avatarUrl ? <UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar} /> : <span className={styles.avatar}>{initial}</span>}
+              <div><strong>{displayName}</strong><small>Compte Polypips Pro</small></div>
+            </button>
+          )}
+        />
       </aside>
 
       <div className={styles.workspace}>
@@ -120,7 +133,19 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
           <div className={styles.headerTools}>
             <label><Search /><input aria-label={searchLabel} placeholder={searchLabel} /></label>
             <button aria-label="Notifications"><Bell /></button>
-            {avatarUrl ? <UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar} /> : <span className={styles.avatar}>{initial}</span>}
+            <ProfileMenu
+              displayName={displayName}
+              email={profile.email}
+              avatarUrl={avatarUrl}
+              planLabel={profile.planLabel}
+              creditBalance={profile.creditBalance}
+              placement="header"
+              trigger={({ onClick, open, ariaLabel }) => (
+                <button type="button" onClick={onClick} aria-haspopup="menu" aria-expanded={open} aria-label={ariaLabel} className={styles.avatarTrigger}>
+                  {avatarUrl ? <UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar} /> : <span className={styles.avatar}>{initial}</span>}
+                </button>
+              )}
+            />
           </div>
         </header>}
         {/* hideHeader pages (Profil) still need a way to reach this sidebar's

@@ -17,6 +17,7 @@ import {
 } from "@/lib/data/dashboard-nav";
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
+import { daysRemainingFrom, planPillLabel } from "@/lib/plan-pill";
 
 /** Longest-prefix match so a sub-route like /dashboard/markets/abc123
  * still resolves to "Marchés sélectionnés" rather than falling through to
@@ -35,35 +36,6 @@ function pageTitleKeyFor(pathname: string): string | null {
     .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0];
   return match?.label ?? null;
-}
-
-function daysRemainingFrom(trialEndsAt: string): number {
-  const diffMs = new Date(trialEndsAt).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
-}
-
-type PlanPillTranslator = (key: string, values?: Record<string, number>) => string;
-
-/** Merges the old full-width TrialBanner's "expire dans X jours" copy into
- * this same pill instead of a separate CTA banner — there is no higher paid
- * tier to upsell to (single-tier pricing: discovery trial rolls straight
- * into Pro), so the count is purely informational now, never a button.
- * `t` must be scoped to the "Dashboard.Header.planPill" namespace. */
-function planPillLabel(
-  t: PlanPillTranslator,
-  subscription: SubscriptionRow | null,
-  cancelled: boolean,
-  trialDaysRemaining: number | null
-): string {
-  if (!subscription || cancelled) return t("none");
-  if (subscription.status === "trialing") {
-    if (trialDaysRemaining === null) return t("discovery");
-    return trialDaysRemaining > 0
-      ? t("discoveryDaysRemaining", { days: trialDaysRemaining })
-      : t("discoveryLastDay");
-  }
-  if (subscription.status === "past_due") return t("pastDue");
-  return t("pro");
 }
 
 export function DashboardHeader({
@@ -160,6 +132,7 @@ export function DashboardHeader({
           avatarUrl={avatarUrl}
           planLabel={planPillLabel(tPlanPill, subscription, cancelled, trialDaysRemaining)}
           creditBalance={creditBalance}
+          placement="header"
         />
 
         <button

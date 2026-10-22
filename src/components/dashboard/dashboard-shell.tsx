@@ -10,6 +10,7 @@ import { DashboardBottomNav } from "@/components/dashboard/dashboard-bottom-nav"
 import { DashboardThemeProvider, useDashboardTheme } from "@/providers/dashboard-theme-provider";
 import { CurrencyProvider, type CurrencyCode } from "@/providers/currency-provider";
 import { DashboardAvatarProvider } from "@/providers/dashboard-avatar-provider";
+import { DashboardProfileMenuProvider } from "@/providers/dashboard-profile-menu-provider";
 import { isCancelledSubscription, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { NotificationItem } from "@/lib/data/notifications";
 
@@ -73,6 +74,14 @@ function DashboardShellInner({
 
   return (
     <DashboardAvatarProvider avatarUrl={avatarUrl}>
+    <DashboardProfileMenuProvider
+      email={userEmail}
+      displayName={displayName}
+      subscription={subscription}
+      cancelled={isCancelledSubscription(subscription)}
+      trialEndsAt={trialEndsAt}
+      creditBalance={creditBalance}
+    >
     <div data-dashboard-theme={theme} className="flex min-h-dvh bg-dash-bg text-dash-text">
       {!isImmersiveRoute && <DashboardSidebar subscription={subscription} userId={userId} creditBalance={creditBalance} />}
 
@@ -110,6 +119,7 @@ function DashboardShellInner({
         creditBalance={creditBalance}
       />}
     </div>
+    </DashboardProfileMenuProvider>
     </DashboardAvatarProvider>
   );
 }
