@@ -68,7 +68,7 @@ function DashboardShellInner({
   // text stays legible regardless of the user's chosen theme, until they
   // get their own dedicated conversion pass.
   const isCoreThemedRoute = pathname === "/dashboard" || pathname.startsWith("/dashboard/settings");
-  const mainTheme = isCoreThemedRoute ? theme : "dark";
+  const mainTheme = theme;
 
   return (
     <div data-dashboard-theme={theme} className="flex min-h-dvh bg-dash-bg text-dash-text">
