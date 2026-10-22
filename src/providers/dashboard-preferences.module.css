@@ -1,0 +1,14 @@
+.runtime{display:contents}
+.runtime [data-dashboard-theme] :is(p,label,input,select,textarea,button,a,small,span){font-size:calc(14px * var(--preference-scale,1.1))!important}
+.runtime [data-dashboard-theme] h1{font-size:calc(30px * var(--preference-scale,1.1))!important}
+.runtime [data-dashboard-theme] :is(h2,h3){font-size:calc(19px * var(--preference-scale,1.1))!important}
+.runtime[data-motion="reduced"] *,.runtime[data-motion="reduced"] *::before,.runtime[data-motion="reduced"] *::after{animation:none!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+.runtime[data-focus="true"] :focus-visible{outline:3px solid #f3183e!important;outline-offset:3px}
+.runtime[data-density="compact"] [data-dashboard-theme] :is(article,section){padding-block:12px!important}
+.runtime [data-dashboard-theme="dark"] :is(main,article,section){background-color:var(--dash-bg,#18141a)!important;background-image:none!important;color:var(--dash-text,#f6edf1)!important}
+.runtime [data-dashboard-theme="dark"] :is(input,select,textarea){background:#251c22!important;color:#f6edf1!important;border-color:#614451!important;color-scheme:dark}
+.runtime [data-dashboard-theme="dark"] :is(h1,h2,h3,p,label){color:var(--dash-text,#f6edf1)!important}
+.runtime[data-density="compact"] [data-dashboard-theme] :is(input,select,button){min-height:34px}
+.runtime[data-contrast="true"] [data-dashboard-theme]{--dash-text:#000;--dash-text-secondary:#161616;--dash-text-tertiary:#222;--dash-border:#111}
+.runtime[data-contrast="true"] [data-dashboard-theme="dark"]{--dash-text:#fff;--dash-text-secondary:#fff;--dash-text-tertiary:#eee;--dash-border:#fff}
+@media(max-width:700px){.runtime [data-dashboard-theme] :is(input,select,textarea){font-size:max(16px,calc(14px * var(--preference-scale,1.1)))!important}}
