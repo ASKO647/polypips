@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +19,15 @@ export function UserAvatar({
   size?: number;
   className?: string;
 }) {
-  if (avatarUrl) {
+  // Falls back to initials if the URL points at a removed/broken object —
+  // a stale cross-device URL, a manually-deleted storage object, or any
+  // other fetch failure — rather than showing a next/image broken-image
+  // icon in a user-facing avatar slot. Stores which URL failed (not just
+  // a boolean) so a new avatarUrl — a fresh upload, say — naturally gets a
+  // clean attempt again without needing an effect to reset anything.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
+  if (avatarUrl && avatarUrl !== failedUrl) {
     return (
       <Image
         src={avatarUrl}
@@ -26,6 +37,7 @@ export function UserAvatar({
         className={cn("shrink-0 rounded-full object-cover", className)}
         style={{ width: size, height: size }}
         unoptimized
+        onError={() => setFailedUrl(avatarUrl)}
       />
     );
   }

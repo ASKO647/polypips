@@ -5,6 +5,8 @@ import { useLocale } from "next-intl";
 import { Bell, BrainCircuit, CandlestickChart, ChevronDown, ChevronRight, CircleUserRound, GraduationCap, LayoutDashboard, LineChart, Menu, Plus, Search, Sparkles, Star, Trophy, Wallet, X } from "lucide-react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { AnalysisResult } from "@/components/dashboard/analyse-ia/analysis-result";
+import { UserAvatar } from "@/components/dashboard/user-avatar";
+import { useDashboardAvatar } from "@/providers/dashboard-avatar-provider";
 import type { MarketAnalysis } from "@/lib/data/analysis";
 import type { NotificationItem } from "@/lib/data/notifications";
 import type { PricingPlan } from "@/lib/data/pricing";
@@ -20,6 +22,8 @@ const groups=[{title:"POLYMARKET",color:"#ef2947",items:[["Analyse IA","/dashboa
 
 export function DashboardOverviewFlow(p:Props){
  const c=useLocale()==="en"?text.en:text.fr,router=useRouter();
+ const avatarUrl=useDashboardAvatar();
+ const displayName=p.firstName||"Polypips";
  const[selected,setSelected]=useState<MarketAnalysis|null>(null),[newMenu,setNewMenu]=useState(false),[mobile,setMobile]=useState(false),[collapsed,setCollapsed]=useState<Record<string,boolean>>({}),[period,setPeriod]=useState<ActivityPeriodKey>("30j"),[toast,setToast]=useState(true);
  useEffect(()=>{const timer=setTimeout(()=>setToast(false),2000);return()=>clearTimeout(timer)},[]);
  const activity=p.activityPeriods[period],total=Object.values(activity).reduce((a,b)=>a+b,0),go=(href:string)=>{setMobile(false);router.push(href)};
@@ -31,8 +35,8 @@ export function DashboardOverviewFlow(p:Props){
    <Link href="/dashboard" className={styles.activeNav}><LayoutDashboard/>{c.dashboard}</Link>
    {groups.map((g,i)=><section key={g.title} className={styles.navGroup} style={{"--delay":`${110+i*45}ms`} as React.CSSProperties}><button className={styles.groupTitle} onClick={()=>setCollapsed(v=>({...v,[g.title]:!v[g.title]}))}><span style={{background:g.color}}/>{g.title}{g.title==="TRADING"&&<b>NOUVEAU</b>}<ChevronDown className={collapsed[g.title]?styles.chevronClosed:""}/></button><div className={`${styles.groupItems} ${collapsed[g.title]?styles.groupClosed:""}`}>{g.items.map(([label,href,Icon])=><Link key={href} href={href}><Icon/>{label}</Link>)}</div></section>)}
    <div className={styles.globalLinks}><Link href="/dashboard/settings"><CircleUserRound/>Profil</Link></div>
-  </nav><div className={styles.user}><span>{(p.firstName||"P")[0].toUpperCase()}</span><div><strong>{p.firstName||"Polypips"}</strong><small>Compte Polypips Pro</small></div></div></aside>
-  <div className={styles.workspace}><header className={styles.header}><button className={styles.mobileToggle} onClick={()=>setMobile(true)} aria-label="Ouvrir le menu"><Menu/></button><h2>{c.dashboard}</h2><div className={styles.headerTools}><label><Search/><input aria-label={c.search} placeholder={c.search}/></label><button aria-label="Notifications"><Bell/></button><span className={styles.avatar}>{(p.firstName||"P")[0].toUpperCase()}</span></div></header>
+  </nav><div className={styles.user}>{avatarUrl?<UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar}/>:<span className={styles.avatar}>{displayName[0].toUpperCase()}</span>}<div><strong>{displayName}</strong><small>Compte Polypips Pro</small></div></div></aside>
+  <div className={styles.workspace}><header className={styles.header}><button className={styles.mobileToggle} onClick={()=>setMobile(true)} aria-label="Ouvrir le menu"><Menu/></button><h2>{c.dashboard}</h2><div className={styles.headerTools}><label><Search/><input aria-label={c.search} placeholder={c.search}/></label><button aria-label="Notifications"><Bell/></button>{avatarUrl?<UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar}/>:<span className={styles.avatar}>{displayName[0].toUpperCase()}</span>}</div></header>
    <main className={styles.main}><div className={styles.hero}><div><h1>{c.hello}, {p.firstName||"Polypips"} <span>👋</span></h1><p>{c.sub}</p></div><div className={styles.analysisWrap}><button className={styles.primaryButton} onClick={()=>setNewMenu(v=>!v)}><Plus/><em>{c.new}</em></button>{newMenu&&<div className={styles.analysisMenu}><button onClick={()=>go("/dashboard/analyse-ia")}><Sparkles/>Polymarket</button><button onClick={()=>go("/dashboard/sports")}><Trophy/>Sport</button><button onClick={()=>go("/dashboard/trading")}><CandlestickChart/>Trading</button></div>}</div></div>
    <section className={styles.stats}>{stats.map((s,i)=><button key={s.title} style={{"--delay":`${220+i*70}ms`} as React.CSSProperties} onClick={()=>go(s.href)} className={styles.statCard}><span className={`${styles.statIcon} ${styles[s.tone]}`}><s.icon/></span><ChevronRight className={styles.cardArrow}/><strong>{s.title}</strong><div className={styles.statNumber}><Counter value={s.value}/><small>{s.suffix}</small></div><p>{s.note}</p></button>)}</section>
    <section className={styles.middleGrid}><article className={`${styles.panel} ${styles.marketsPanel}`}><div className={styles.panelHead}><h3><span><LineChart/></span>{c.selected}</h3><Link href="/dashboard/markets">{c.all}<ChevronRight/></Link></div>{p.recentMarkets.length?<div className={styles.marketList}>{p.recentMarkets.slice(0,4).map(m=><button key={m.id} onClick={()=>setSelected(m)}><span>{m.category[0]}</span><div><strong>{m.question}</strong><small>{m.category}</small></div><b>{m.aiProbability}%</b><ChevronRight/></button>)}</div>:<div className={styles.empty}><span><Sparkles/></span><h4>{c.empty}</h4><p>{c.emptySub}</p><Link href="/dashboard/markets">{c.explore}</Link></div>}</article>

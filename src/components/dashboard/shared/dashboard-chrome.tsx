@@ -19,6 +19,8 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { UserAvatar } from "@/components/dashboard/user-avatar";
+import { useDashboardAvatar } from "@/providers/dashboard-avatar-provider";
 import styles from "../overview/dashboard-overview.module.css";
 
 const groups = [
@@ -61,6 +63,7 @@ type DashboardChromeProps = {
 export function DashboardChrome({ children, title, firstName, hideHeader = false }: DashboardChromeProps) {
   const locale = useLocale();
   const pathname = usePathname();
+  const avatarUrl = useDashboardAvatar();
   const [mobile, setMobile] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const displayName = firstName || "Polypips";
@@ -105,7 +108,7 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
           </div>
         </nav>
         <div className={styles.user}>
-          <span>{initial}</span>
+          {avatarUrl ? <UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar} /> : <span className={styles.avatar}>{initial}</span>}
           <div><strong>{displayName}</strong><small>Compte Polypips Pro</small></div>
         </div>
       </aside>
@@ -117,7 +120,7 @@ export function DashboardChrome({ children, title, firstName, hideHeader = false
           <div className={styles.headerTools}>
             <label><Search /><input aria-label={searchLabel} placeholder={searchLabel} /></label>
             <button aria-label="Notifications"><Bell /></button>
-            <span className={styles.avatar}>{initial}</span>
+            {avatarUrl ? <UserAvatar name={displayName} avatarUrl={avatarUrl} size={44} className={styles.avatar} /> : <span className={styles.avatar}>{initial}</span>}
           </div>
         </header>}
         {/* hideHeader pages (Profil) still need a way to reach this sidebar's

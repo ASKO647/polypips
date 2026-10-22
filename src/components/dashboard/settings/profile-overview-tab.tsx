@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useLocale } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { CalendarDays, Camera, CheckCircle2, Crown, Database, Download, Loader2, LockKeyhole, Settings, ShieldCheck, Trash2, UserRound } from "lucide-react";
 import { UserAvatar } from "@/components/dashboard/user-avatar";
 import { createClient } from "@/lib/supabase/client";
@@ -23,7 +23,7 @@ type Props = {
 };
 
 export function ProfileOverviewTab(props:Props){
-  const locale=useLocale(); const fr=locale==="fr";
+  const locale=useLocale(); const fr=locale==="fr"; const router=useRouter();
   const [name,setName]=useState(props.initialUsername); const [pseudo,setPseudo]=useState(props.initialPseudo);
   const [avatar,setAvatar]=useState(props.initialAvatarUrl); const [uploading,setUploading]=useState(false);
   const [avatarError,setAvatarError]=useState<string|null>(null); const [saving,setSaving]=useState(false);
@@ -35,8 +35,8 @@ export function ProfileOverviewTab(props:Props){
   const active=(props.subscription?.status==="active"||props.subscription?.status==="trialing")&&!props.subscription?.cancelAtPeriodEnd;
 
   async function save(){if(saving||!dirty)return;setSaving(true);setError(null);const supabase=createClient();const {error:e}=await supabase.auth.updateUser({data:{full_name:name.trim(),username:pseudo.trim(),phone,country,birth_date:birthDate}});setSaving(false);if(e)setError(e.message);else setSaved(true)}
-  async function pick(event:React.ChangeEvent<HTMLInputElement>){const file=event.target.files?.[0];event.target.value="";if(!file)return;const validation=validateAvatarFile(file);if(validation){setAvatarError(validation);return}setUploading(true);setAvatarError(null);try{const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error(fr?"Session expirée":"Session expired");setAvatar(await uploadAvatar(supabase,user.id,file))}catch(e){setAvatarError(e instanceof Error?e.message:"Upload impossible")}finally{setUploading(false)}}
-  async function removePhoto(){const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return;setUploading(true);setAvatarError(null);try{await removeAvatar(supabase,user.id);setAvatar(null)}catch(e){setAvatarError(e instanceof Error?e.message:(fr?"Suppression impossible":"Could not remove photo"))}finally{setUploading(false)}}
+  async function pick(event:React.ChangeEvent<HTMLInputElement>){const file=event.target.files?.[0];event.target.value="";if(!file)return;const validation=validateAvatarFile(file);if(validation){setAvatarError(validation);return}setUploading(true);setAvatarError(null);try{const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)throw new Error(fr?"Session expirée":"Session expired");setAvatar(await uploadAvatar(supabase,user.id,file));router.refresh()}catch(e){setAvatarError(e instanceof Error?e.message:"Upload impossible")}finally{setUploading(false)}}
+  async function removePhoto(){const supabase=createClient();const {data:{user}}=await supabase.auth.getUser();if(!user)return;setUploading(true);setAvatarError(null);try{await removeAvatar(supabase,user.id);setAvatar(null);router.refresh()}catch(e){setAvatarError(e instanceof Error?e.message:(fr?"Suppression impossible":"Could not remove photo"))}finally{setUploading(false)}}
   async function resetPassword(){const supabase=createClient();const {error:e}=await supabase.auth.resetPasswordForEmail(props.email,{redirectTo:`${window.location.origin}/reset-password`});if(e)setError(e.message);else setSaved(true)}
 
   return <div className={styles.layout}>

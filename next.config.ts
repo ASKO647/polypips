@@ -5,6 +5,22 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   /**
+   * UserAvatar renders user-uploaded avatars with next/image. It also
+   * passes `unoptimized`, which skips Next's image-optimization proxy
+   * entirely and therefore doesn't strictly require this — but declaring
+   * the real public Supabase Storage domain here means the optimizer
+   * keeps working correctly if `unoptimized` is ever dropped later.
+   */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "iybhrrzllvggbwgwkufh.supabase.co",
+        pathname: "/storage/v1/object/public/avatars/**",
+      },
+    ],
+  },
+  /**
    * Coach IA and Communauté were removed from the dashboard. These
    * redirects cover old links, bookmarks, and already-installed PWAs that
    * may still hold a cached navigation to these dead routes — redirecting
