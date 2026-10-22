@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -20,7 +20,7 @@ function Segmented({ options, value, onChange }: { options:string[]; value:strin
 
 const DENSITY_LABELS = { comfortable: "Confortable", compact: "Compacte" } as const;
 
-export function PreferencesTab({ initialSettings }: { initialSettings: UserSettings }){
+export function PreferencesTab({ initialSettings = DEFAULT_USER_SETTINGS }: { initialSettings?: UserSettings }){
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
@@ -44,49 +44,67 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
   const [saving,setSaving]=useState(false);
   const [dirty,setDirty]=useState(false);
   const [confirmReset,setConfirmReset]=useState(false);
+  const [error,setError]=useState<string|null>(null);
+
+  useEffect(()=>{
+    window.dispatchEvent(new CustomEvent("polypips-preferences-preview",{detail:{themeChoice,density,animations,reduceMotion,contrast,keyboardFocus,textSize}}));
+  },[themeChoice,density,animations,reduceMotion,contrast,keyboardFocus,textSize]);
 
   const change=(fn:()=>void)=>{fn();setDirty(true);setSaved(false)};
   const chooseTheme=(choice:ThemeChoice)=>change(()=>{setThemeChoice(choice);if(choice==="system")setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");else setTheme(choice)});
 
   const save=async()=>{
-    if(saving)return;
+    if(saving)return false;
     setSaving(true);
+    setError(null);
     try{
       const supabase=createClient();
       const {data:{user}}=await supabase.auth.getUser();
+      if(!user) throw new Error("Votre session a expiré. Reconnectez-vous pour enregistrer vos préférences.");
       if(user){
         await saveUserSettings(supabase,user.id,{themeChoice,density,animations,timezone,dateFormat,startPage,resumeLastSession:resume,resumeLastSessionConfirmed:resumeConfirmed,textSize,reduceMotion,contrast,keyboardFocus});
       }
       setDirty(false);setSaved(true);
       window.setTimeout(()=>setSaved(false),3000);
       router.refresh();
+      return true;
+    } catch(error) {
+      setError(error instanceof Error ? error.message : "Impossible d’enregistrer les préférences. Réessayez.");
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
   const reset=async()=>{
+    if(saving)return;
+    setSaving(true);setError(null);
+    try {
+    const supabase=createClient();
+    const {data:{user}}=await supabase.auth.getUser();
+    if(!user)throw new Error("Votre session a expiré.");
+    await saveUserSettings(supabase,user.id,DEFAULT_USER_SETTINGS);
     const d=DEFAULT_USER_SETTINGS;
     setThemeChoice(d.themeChoice);setTheme(d.themeChoice==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):d.themeChoice);
     setDensity(d.density);setAnimations(d.animations);setTimezone(d.timezone);setDateFormat(d.dateFormat);
     setStartPage(d.startPage);setResume(d.resumeLastSession);setResumeConfirmed(d.resumeLastSessionConfirmed);setTextSize(d.textSize);setReduceMotion(d.reduceMotion);
     setContrast(d.contrast);setKeyboardFocus(d.keyboardFocus);
     setConfirmReset(false);setSaved(true);setDirty(false);
-    const supabase=createClient();
-    const {data:{user}}=await supabase.auth.getUser();
-    if(user) await saveUserSettings(supabase,user.id,d);
     router.refresh();
+    }catch(error){setError(error instanceof Error?error.message:"La réinitialisation a échoué.");}finally{setSaving(false);}
   };
 
-  const switchLocale=(next:string)=>{
+  const switchLocale=async(next:string)=>{
     if(next===locale)return;
+    if(dirty && !(await save()))return;
     startTransition(()=>{router.replace(pathname,{locale: next as (typeof routing.locales)[number]})});
   };
 
   return <section className={`${styles.root} ${density==="compact"?styles.compact:""} ${reduceMotion?styles.reduced:""} ${contrast?styles.highContrast:""} ${keyboardFocus?styles.strongFocus:""}`} style={{ fontSize: `${90 + textSize * 0.2}%` }}>
     {saved&&<div className={styles.toast}><CheckCircle2/>Préférences enregistrées</div>}
+    {error&&<p role="alert" className={styles.error}>{error}</p>}
     <button id="preferences-save-action" className={styles.hiddenAction} onClick={save}/>
-    <div className={styles.grid}>
+    <fieldset className={styles.grid} disabled={saving}>
       <article className={styles.card}>
         <header><Palette/><div><h2>Apparence</h2><p>Choisissez le thème et l’aspect de l’interface.</p></div></header>
         <div className={styles.themes}>{(["light","dark","system"] as ThemeChoice[]).map((choice)=><button className={themeChoice===choice?styles.themeSelected:""} onClick={()=>chooseTheme(choice)} key={choice}><div className={`${styles.themePreview} ${styles[choice]}`}><aside/><main><i/><i/><i/></main></div><span>{choice==="light"?<Sun/>:choice==="dark"?<Moon/>:<Palette/>}{choice==="light"?"Clair":choice==="dark"?"Sombre":"Système"}</span></button>)}</div>
@@ -97,7 +115,7 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
         <label><Languages/>Langue<select value={locale} onChange={e=>switchLocale(e.target.value)}>{routing.locales.map(code=><option value={code} key={code}>{code==="fr"?"Français":"English"}</option>)}</select></label>
         <label><Clock3/>Fuseau horaire<select value={timezone} onChange={e=>change(()=>setTimezone(e.target.value))}><option value="Europe/Paris">Europe/Paris</option><option value="UTC">UTC</option><option value="America/New_York">America/New_York</option></select></label>
         <label><List/>Format de date<select value={dateFormat} onChange={e=>change(()=>setDateFormat(e.target.value as "long"|"short"))}><option value="long">21 octobre 2026</option><option value="short">21/10/2026</option></select></label>
-        <label><Database/>Devise<select value={currency} onChange={e=>{setCurrency(e.target.value as typeof currency).catch(()=>{})}}>{SUPPORTED_CURRENCIES.map(c=><option value={c.code} key={c.code}>{c.label}</option>)}</select></label>
+        <label><Database/>Devise<select value={currency} onChange={e=>{setCurrency(e.target.value as typeof currency).catch(error=>setError(error instanceof Error?error.message:"Impossible de modifier la devise."))}}>{SUPPORTED_CURRENCIES.map(c=><option value={c.code} key={c.code}>{c.label}</option>)}</select></label>
       </div></article>
 
       <article className={styles.card}><header><Settings/><div><h2>Expérience Polypips</h2><p>Choisissez votre page de démarrage et vos préférences de navigation.</p></div></header><div className={styles.formRows}>
@@ -111,7 +129,7 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
         <div><span>Contraste renforcé</span><Toggle value={contrast} label="Contraste renforcé" onChange={()=>change(()=>setContrast(v=>!v))}/></div>
         <div><span>Focus clavier renforcé</span><Toggle value={keyboardFocus} label="Focus clavier renforcé" onChange={()=>change(()=>setKeyboardFocus(v=>!v))}/></div>
       </div></article>
-    </div>
+    </fieldset>
     <button className={styles.reset} onClick={()=>setConfirmReset(true)}><RotateCcw/><span><b>Réinitialiser toutes les préférences</b><small>Cette action ne supprime aucune donnée de votre compte.</small></span></button>
     <div className={styles.mobileSave}><button disabled={!dirty||saving} onClick={save}>{saving?"Enregistrement…":"Enregistrer les préférences"}</button></div>
     {confirmReset&&<div className={styles.overlay}><div className={styles.modal}><RotateCcw/><h3>Réinitialiser les préférences ?</h3><p>Vos données et vos analyses ne seront pas supprimées.</p><div><button onClick={()=>setConfirmReset(false)}>Annuler</button><button onClick={reset}>Réinitialiser</button></div></div></div>}
