@@ -35,6 +35,7 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
   const [dateFormat,setDateFormat]=useState<"long"|"short">(initialSettings.dateFormat);
   const [startPage,setStartPage]=useState<StartPage>(initialSettings.startPage);
   const [resume,setResume]=useState(initialSettings.resumeLastSession);
+  const [resumeConfirmed,setResumeConfirmed]=useState(initialSettings.resumeLastSessionConfirmed);
   const [textSize,setTextSize]=useState(initialSettings.textSize);
   const [reduceMotion,setReduceMotion]=useState(initialSettings.reduceMotion);
   const [contrast,setContrast]=useState(initialSettings.contrast);
@@ -54,7 +55,7 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
       const supabase=createClient();
       const {data:{user}}=await supabase.auth.getUser();
       if(user){
-        await saveUserSettings(supabase,user.id,{themeChoice,density,animations,timezone,dateFormat,startPage,resumeLastSession:resume,textSize,reduceMotion,contrast,keyboardFocus});
+        await saveUserSettings(supabase,user.id,{themeChoice,density,animations,timezone,dateFormat,startPage,resumeLastSession:resume,resumeLastSessionConfirmed:resumeConfirmed,textSize,reduceMotion,contrast,keyboardFocus});
       }
       setDirty(false);setSaved(true);
       window.setTimeout(()=>setSaved(false),3000);
@@ -68,7 +69,7 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
     const d=DEFAULT_USER_SETTINGS;
     setThemeChoice(d.themeChoice);setTheme(d.themeChoice==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):d.themeChoice);
     setDensity(d.density);setAnimations(d.animations);setTimezone(d.timezone);setDateFormat(d.dateFormat);
-    setStartPage(d.startPage);setResume(d.resumeLastSession);setTextSize(d.textSize);setReduceMotion(d.reduceMotion);
+    setStartPage(d.startPage);setResume(d.resumeLastSession);setResumeConfirmed(d.resumeLastSessionConfirmed);setTextSize(d.textSize);setReduceMotion(d.reduceMotion);
     setContrast(d.contrast);setKeyboardFocus(d.keyboardFocus);
     setConfirmReset(false);setSaved(true);setDirty(false);
     const supabase=createClient();
@@ -101,7 +102,7 @@ export function PreferencesTab({ initialSettings }: { initialSettings: UserSetti
 
       <article className={styles.card}><header><Settings/><div><h2>Expérience Polypips</h2><p>Choisissez votre page de démarrage et vos préférences de navigation.</p></div></header><div className={styles.formRows}>
         <label><Home/>Page affichée au démarrage<select value={startPage} onChange={e=>change(()=>setStartPage(e.target.value as StartPage))}><option value="dashboard">Tableau de bord</option><option value="polymarket">Polymarket</option></select></label>
-        <div><RotateCcw/><span>Reprendre ma dernière session</span><Toggle value={resume} label="Reprendre ma dernière session" onChange={()=>change(()=>setResume(v=>!v))}/></div>
+        <div><RotateCcw/><span>Reprendre ma dernière session</span><Toggle value={resume} label="Reprendre ma dernière session" onChange={()=>change(()=>{setResume(v=>!v);setResumeConfirmed(true)})}/></div>
       </div></article>
 
       <article className={styles.card}><header><Accessibility/><div><h2>Accessibilité</h2><p>Adaptez l’interface à vos besoins.</p></div></header><div className={styles.accessRows}>

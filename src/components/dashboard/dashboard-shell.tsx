@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
+import { isResumableDashboardRoute } from "@/lib/dashboard-resumable-routes";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav";
@@ -43,17 +44,25 @@ function DashboardShellInner({
   // /dashboard root load can offer to resume it. Deliberately per-browser
   // (only the on/off choice itself is synced cross-device via
   // user_settings) — there's no meaningful cross-device notion of "last
-  // open tab".
+  // open tab". Only ever writes a route from the resumable allow-list —
+  // never Paramètres, l'abonnement, ou une route qui n'existe plus —
+  // since DashboardEntryRedirect trusts this value without re-checking
+  // anything beyond "is it still in the allow-list".
   useEffect(() => {
     if (!resumeLastSession) return;
-    if (pathname === "/dashboard") return;
+    if (!isResumableDashboardRoute(pathname)) return;
     try {
       window.localStorage.setItem("polypips-last-path", pathname);
     } catch {
       // Best-effort only.
     }
   }, [resumeLastSession, pathname]);
-  const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses" || pathname === "/dashboard/settings";
+  // Settings deliberately isn't in this list (any more): it has its own
+  // page-level header/tabs, but still needs the real mobile chrome — the
+  // burger, drawer and bottom nav are how you navigate away from it or
+  // open the menu at all, since there's no browser back button inside an
+  // installed PWA.
+  const isImmersiveRoute = pathname === "/dashboard" || pathname === "/dashboard/analyse-ia" || pathname === "/dashboard/markets" || pathname === "/dashboard/copy-trading" || pathname === "/dashboard/sports" || pathname === "/dashboard/sports/selection" || pathname === "/dashboard/sports/mes-analyses" || pathname === "/dashboard/trading" || pathname === "/dashboard/trading/selection" || pathname === "/dashboard/trading/mes-analyses";
 
   // Only the sidebar, header, profile menu, Settings, and the Dashboard
   // overview have been converted to the real light/dark theme so far — the

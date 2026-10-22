@@ -52,7 +52,12 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
 
   if (!open) {
     return (
-      <Button type="button" variant="outline" onClick={() => setOpen(true)}>
+      <Button
+        type="button"
+        variant="outline"
+        className="border-dash-border-strong bg-dash-surface text-dash-text-secondary hover:border-dash-text-quaternary hover:bg-dash-surface hover:text-dash-text"
+        onClick={() => setOpen(true)}
+      >
         {t("cta")}
       </Button>
     );
@@ -66,7 +71,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
           placeholder={t("placeholder", { email: currentEmail })}
-          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/25 focus:outline-none"
+          className="w-full rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-faint focus:border-dash-border-strong focus:outline-none"
         />
         {error && <p className="text-xs text-rose-400">{error}</p>}
       </div>
@@ -85,6 +90,7 @@ export function ChangeEmailButton({ currentEmail }: { currentEmail: string }) {
         <Button
           type="button"
           variant="outline"
+          className="border-dash-border-strong bg-dash-surface text-dash-text-secondary hover:border-dash-text-quaternary hover:bg-dash-surface hover:text-dash-text"
           onClick={() => {
             setOpen(false);
             setNewEmail("");

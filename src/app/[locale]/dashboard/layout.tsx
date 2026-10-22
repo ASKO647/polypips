@@ -4,7 +4,7 @@ import { createClient, getAuthUser } from "@/lib/supabase/server";
 import { fetchSubscription, getTrialEndsAt } from "@/lib/supabase/subscriptions";
 import { fetchNotifications } from "@/lib/supabase/notifications";
 import { fetchCreditBalance } from "@/lib/supabase/credits";
-import { fetchUserSettings } from "@/lib/supabase/user-settings";
+import { fetchUserSettings, isResumeLastSessionActive } from "@/lib/supabase/user-settings";
 import type { CurrencyCode } from "@/providers/currency-provider";
 
 export default async function DashboardLayout({
@@ -42,7 +42,7 @@ export default async function DashboardLayout({
       avatarUrl={avatarUrl}
       initialCurrency={currency}
       initialThemeChoice={settings.themeChoice}
-      resumeLastSession={settings.resumeLastSession}
+      resumeLastSession={isResumeLastSessionActive(settings)}
       subscription={subscription}
       trialEndsAt={getTrialEndsAt(subscription)}
       notifications={settings.notificationsAppEnabled ? notifications : []}

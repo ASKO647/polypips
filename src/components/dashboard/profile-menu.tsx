@@ -101,7 +101,7 @@ export function ProfileMenu({
         aria-label={t("ariaLabel")}
         aria-haspopup="true"
         aria-expanded={open}
-        className="flex items-center gap-1.5 rounded-full border border-dash-border bg-dash-surface-alt py-1 pl-1 pr-2 transition-colors hover:border-dash-border-strong"
+        className="flex min-h-11 items-center gap-1.5 rounded-full border border-dash-border bg-dash-surface-alt py-1 pl-1 pr-2 transition-colors hover:border-dash-border-strong"
       >
         <UserAvatar name={displayName || email} avatarUrl={avatarUrl} size={32} className="text-xs" />
         <ChevronDown
