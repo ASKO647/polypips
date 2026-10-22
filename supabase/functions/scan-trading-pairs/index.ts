@@ -6,6 +6,7 @@ import {
   type TradingChartVerdict,
 } from "../analyze-trading-chart/anthropic-trading-analysis.ts";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
+import { checkGlobalMonthlyHardCap } from "../_shared/ai-budget.ts";
 
 /**
  * The Trading universe's "Sélection du jour" — same automated-scan concept
@@ -86,6 +87,27 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Margin protection: scan-trading-pairs stays off by default — same
+  // reasoning as SPORT_SCAN_ENABLED in scan-sport-matches. Set
+  // TRADING_SCAN_ENABLED=true in this function's environment to turn it on.
+  if (Deno.env.get("TRADING_SCAN_ENABLED") !== "true") {
+    return new Response(
+      JSON.stringify({ error: "scan_disabled", message: "scan-trading-pairs est désactivé (TRADING_SCAN_ENABLED)." }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const hardCap = await checkGlobalMonthlyHardCap();
+  if (hardCap.exceeded) {
+    console.error(
+      `[scan-trading-pairs] AI_MONTHLY_HARD_CAP_EUR exceeded ($${hardCap.spentUsd.toFixed(2)} spent vs $${hardCap.capUsd.toFixed(2)} cap this month) — skipping this run entirely`
+    );
+    return new Response(
+      JSON.stringify({ error: "monthly_hard_cap_exceeded", spentUsd: hardCap.spentUsd, capUsd: hardCap.capUsd }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
   const scannedAt = new Date().toISOString();
 
@@ -112,11 +134,20 @@ Deno.serve(async (req) => {
     }
 
     try {
-      const verdict = await analyzeTradingCandles({
-        displaySymbol: pair.displaySymbol,
-        timeframe: TIMEFRAME_LABEL,
-        candles,
-      });
+      const verdict = await analyzeTradingCandles(
+        {
+          displaySymbol: pair.displaySymbol,
+          timeframe: TIMEFRAME_LABEL,
+          candles,
+        },
+        {
+          functionName: "scan-trading-pairs",
+          userId: null,
+          analysisId: null,
+          kind: "scan",
+          creditSource: "none",
+        }
+      );
       rows.push({
         symbol: pair.symbol,
         display_symbol: pair.displaySymbol,

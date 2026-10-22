@@ -1,5 +1,6 @@
 import Anthropic from "npm:@anthropic-ai/sdk@0.116.0";
 import type { GammaMarket } from "./gamma.ts";
+import { logAiUsageEvent, usageFromResponse, type AiTelemetry } from "../_shared/ai-pricing.ts";
 
 /** "deep" = Analyse Approfondie (claude-opus-5, adaptive thinking, effort
  * "high" — the exact model/config confirmed against the credit-pack
@@ -337,15 +338,23 @@ async function requestMultiCandidateVerdictOnce(
   eventTitle: string,
   candidates: GammaMarket[],
   marketUrl: string | null,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<AiMultiCandidateVerdict> {
   const candidateLabels = candidates.map((c) => c.groupItemTitle || c.question);
   const deep = depth === "deep";
+  const model = deep ? "claude-opus-5" : "claude-haiku-4-5";
   let response;
   try {
     response = await client.messages.create({
-      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
-      max_tokens: deep ? 16000 : 8192,
+      model,
+      // ~1,200 tokens is a typical standard response for this schema
+      // (8 required fields, 3-5 short factors/risks); 3500/10000 leave
+      // comfortable headroom above that (deep mode's extra factors/risks
+      // and longer explanation, plus adaptive-thinking tokens, both count
+      // against this same ceiling) without paying for ~7x unused
+      // capacity the old 8192/16000 values reserved on every call.
+      max_tokens: deep ? 10000 : 3500,
       ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
         format: {
@@ -365,6 +374,8 @@ async function requestMultiCandidateVerdictOnce(
     logAnthropicError("analyzeMultiCandidateMarket", error);
     throw new AiServiceError("Échec de l'appel à l'API Anthropic pour le verdict d'analyse.");
   }
+
+  await logAiUsageEvent({ ...telemetry, model, usage: usageFromResponse(response) });
 
   if (response.stop_reason === "refusal") {
     console.error(
@@ -407,10 +418,11 @@ export async function analyzeMultiCandidateMarket(
   eventTitle: string,
   candidates: GammaMarket[],
   marketUrl: string | null,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<AiMultiCandidateVerdict> {
   try {
-    return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl, depth);
+    return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl, depth, telemetry);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
 
@@ -418,7 +430,7 @@ export async function analyzeMultiCandidateMarket(
       `[anthropic:analyzeMultiCandidateMarket] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl, depth);
+      return await requestMultiCandidateVerdictOnce(eventTitle, candidates, marketUrl, depth, telemetry);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);
@@ -435,22 +447,27 @@ export async function analyzeMultiCandidateMarket(
 async function requestVerdictOnce(
   market: GammaMarket,
   marketUrl: string | null,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<AiVerdict> {
   const outcomes = effectiveOutcomes(market);
   const deep = depth === "deep";
+  const model = deep ? "claude-opus-5" : "claude-haiku-4-5";
   let response;
   try {
     response = await client.messages.create({
-      // Standard: claude-haiku-4-5, no thinking — cost-conscious, unlimited
-      // on a paid plan. Deep ("Analyse Approfondie", credit-gated):
-      // claude-opus-5 with adaptive thinking at effort "high" — the exact
-      // model/config confirmed against the credit-pack pricing grid.
-      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
-      // 8192 is enough for the standard schema (see below); deep mode asks
-      // for a longer explanation and more factors/risks on top of the
-      // thinking tokens themselves, so it gets more headroom.
-      max_tokens: deep ? 16000 : 8192,
+      // Standard: claude-haiku-4-5, no thinking — cost-conscious. Deep
+      // ("Analyse Approfondie", credit-gated): claude-opus-5 with
+      // adaptive thinking at effort "high" — the exact model/config
+      // confirmed against the credit-pack pricing grid.
+      model,
+      // ~1,200 tokens is a typical standard response for this schema (8
+      // required fields, 3-5 short factors/risks); 3500/10000 leave
+      // comfortable headroom above that (deep mode's extra factors/risks,
+      // longer explanation, and adaptive-thinking tokens all count
+      // against this same ceiling) without reserving ~7x unused capacity
+      // the old 8192/16000 values did on every single call.
+      max_tokens: deep ? 10000 : 3500,
       // No `thinking`/`effort` for standard: Haiku 4.5 has no extended
       // thinking when the field is omitted, and output_config.effort
       // errors on Haiku 4.5 (an Opus-tier-and-newer control) — this is
@@ -472,6 +489,8 @@ async function requestVerdictOnce(
     logAnthropicError("analyzeMarket", error);
     throw new AiServiceError("Échec de l'appel à l'API Anthropic pour le verdict d'analyse.");
   }
+
+  await logAiUsageEvent({ ...telemetry, model, usage: usageFromResponse(response) });
 
   if (response.stop_reason === "refusal") {
     console.error(
@@ -525,10 +544,11 @@ async function requestVerdictOnce(
 export async function analyzeMarket(
   market: GammaMarket,
   marketUrl: string | null,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<AiVerdict> {
   try {
-    return await requestVerdictOnce(market, marketUrl, depth);
+    return await requestVerdictOnce(market, marketUrl, depth, telemetry);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
 
@@ -536,7 +556,7 @@ export async function analyzeMarket(
       `[anthropic:analyzeMarket] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestVerdictOnce(market, marketUrl, depth);
+      return await requestVerdictOnce(market, marketUrl, depth, telemetry);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);
@@ -573,7 +593,8 @@ Réponds UNIQUEMENT avec cette question, sans phrase d'introduction ni commentai
  * can then look the market up on the Gamma API for real numeric data. */
 export async function extractMarketQuestionFromImage(
   imageBase64: string,
-  mediaType: string
+  mediaType: string,
+  telemetry: AiTelemetry
 ): Promise<string | null> {
   let response;
   try {
@@ -610,6 +631,8 @@ export async function extractMarketQuestionFromImage(
       "Échec de l'appel à l'API Anthropic pour la lecture de l'image."
     );
   }
+
+  await logAiUsageEvent({ ...telemetry, model: "claude-haiku-4-5", usage: usageFromResponse(response) });
 
   // A refusal or unreadable image is a content-level outcome, not an API
   // failure — surfaced to the caller as "no question found" (image_unreadable),

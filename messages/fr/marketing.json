@@ -343,7 +343,7 @@
       },
       "updateFrequency": {
         "question": "À quelle fréquence les analyses sont-elles mises à jour ?",
-        "answer": "Les analyses demandées utilisent les données disponibles au moment de votre demande. La sélection automatique comprend 9 marchés Polymarket à court terme, actualisés toutes les 12 h."
+        "answer": "Les analyses demandées utilisent les données disponibles au moment de votre demande. La sélection automatique comprend 9 marchés Polymarket à court terme, actualisés toutes les 24 h."
       },
       "cancelAnytime": {
         "question": "Puis-je annuler à tout moment ?",
@@ -417,7 +417,7 @@
     "description": "Le plus gros lancement depuis les débuts de Polypips : une nouvelle Analyse IA Sport, de vrais wallets Polymarket à suivre, une IA encore plus affûtée. Tout est déjà actif sur votre compte.",
     "highlights": [
       "Analyse IA Sport — recherchez 2 équipes, l'IA trouve leurs prochaines confrontations réelles",
-      "9 marchés Polymarket sélectionnés par l'IA, actualisés toutes les 12h",
+      "9 marchés Polymarket sélectionnés par l'IA, actualisés toutes les 24h",
       "Smart Wallet — recherchez et suivez n'importe quel portefeuille Polymarket",
       "Notification instantanée dès qu'un wallet suivi ouvre une nouvelle position",
       "Historique complet de vos pronostics sport, accessible à tout moment"

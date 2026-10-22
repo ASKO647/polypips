@@ -1,6 +1,7 @@
 import Anthropic from "npm:@anthropic-ai/sdk@0.116.0";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
 import type { Candle } from "../_shared/binance.ts";
+import { logAiUsageEvent, usageFromResponse, type AiTelemetry } from "../_shared/ai-pricing.ts";
 
 /**
  * The Trading universe's "Analyse IA": the user drops a screenshot of a
@@ -236,7 +237,7 @@ type VerdictContent =
   | { kind: "image"; imageBase64: string; mediaType: string; depth?: AnalysisDepth }
   | { kind: "candles"; input: CandleAnalysisInput };
 
-async function requestVerdictOnce(content: VerdictContent): Promise<TradingChartVerdict> {
+async function requestVerdictOnce(content: VerdictContent, telemetry: AiTelemetry): Promise<TradingChartVerdict> {
   // Depth only ever applies to the screenshot flow — the candles flow
   // (automated "Sélection du jour") has no per-request user choice.
   const deep = content.kind === "image" && content.depth === "deep";
@@ -258,11 +259,15 @@ async function requestVerdictOnce(content: VerdictContent): Promise<TradingChart
         ]
       : [SYSTEM_PROMPT_CANDLES, buildCandlesUserPrompt(content.input)];
 
+  const model = deep ? "claude-opus-5" : "claude-haiku-4-5";
   let response;
   try {
     response = await client.messages.create({
-      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
-      max_tokens: deep ? 16000 : 8192,
+      model,
+      // See analyze-market/anthropic-analysis.ts's identical comment —
+      // same schema shape/size, same reasoning for 3500/10000 (was
+      // 8192/16000).
+      max_tokens: deep ? 10000 : 3500,
       ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
         format: { type: "json_schema", schema: buildSchema(deep ? "deep" : "standard") },
@@ -275,6 +280,8 @@ async function requestVerdictOnce(content: VerdictContent): Promise<TradingChart
     logAnthropicError("analyzeTradingChart", error);
     throw new AiServiceError("Échec de l'appel à l'API Anthropic pour l'analyse du graphique.");
   }
+
+  await logAiUsageEvent({ ...telemetry, model, usage: usageFromResponse(response) });
 
   if (response.stop_reason === "refusal") {
     console.error(
@@ -311,16 +318,16 @@ async function requestVerdictOnce(content: VerdictContent): Promise<TradingChart
 
 /** Same one-retry-on-malformed-response policy as analyze-market's own
  * analyzeMarket — see that function's comment for why. */
-async function requestVerdictWithRetry(content: VerdictContent): Promise<TradingChartVerdict> {
+async function requestVerdictWithRetry(content: VerdictContent, telemetry: AiTelemetry): Promise<TradingChartVerdict> {
   try {
-    return await requestVerdictOnce(content);
+    return await requestVerdictOnce(content, telemetry);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
     console.warn(
       `[anthropic-trading:analyzeTradingChart] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestVerdictOnce(content);
+      return await requestVerdictOnce(content, telemetry);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);
@@ -333,9 +340,10 @@ async function requestVerdictWithRetry(content: VerdictContent): Promise<Trading
 export async function analyzeTradingChart(
   imageBase64: string,
   mediaType: string,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<TradingChartVerdict> {
-  return requestVerdictWithRetry({ kind: "image", imageBase64, mediaType, depth });
+  return requestVerdictWithRetry({ kind: "image", imageBase64, mediaType, depth }, telemetry);
 }
 
 /** Trading "Sélection du jour" entry point (scan-trading-pairs) — same
@@ -346,6 +354,9 @@ export async function analyzeTradingChart(
  * analyzeSportMatch's predictedWinner is still read from the model even
  * though the caller already knows the two real team names — the schema's
  * enum/null constraints are what actually keep it honest. */
-export async function analyzeTradingCandles(input: CandleAnalysisInput): Promise<TradingChartVerdict> {
-  return requestVerdictWithRetry({ kind: "candles", input });
+export async function analyzeTradingCandles(
+  input: CandleAnalysisInput,
+  telemetry: AiTelemetry
+): Promise<TradingChartVerdict> {
+  return requestVerdictWithRetry({ kind: "candles", input }, telemetry);
 }

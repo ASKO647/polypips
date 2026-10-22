@@ -91,7 +91,7 @@
       "sports_api_unavailable": "La source de données sportives est momentanément indisponible. Réessayez dans quelques instants.",
       "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
       "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
-      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € pour des analyses illimitées.",
+      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.",
       "unknown": "Une erreur inattendue est survenue. Réessayez."
     }
   }

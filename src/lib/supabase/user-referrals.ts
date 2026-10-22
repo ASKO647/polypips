@@ -46,12 +46,13 @@ export async function ensureReferralSlug(
   return null;
 }
 
-/** Grants the 15-credit welcome bonus — idempotent server-side (see
+/** Marks the user as "welcomed" — idempotent server-side (see
  * ensure_welcome_credits' partial unique index), so safe to call from
  * every signup path without tracking "have we already called this"
- * client-side. Same two call sites as recordSignupSource/
- * recordInfluencerReferral: signup-form.tsx's immediate-session branch
- * and /auth/callback. */
+ * client-side. No longer grants any credits (WELCOME_CREDITS = 0 in
+ * src/lib/data/pricing.ts — margin protection; was 15). Still called from
+ * the same two call sites as recordSignupSource/recordInfluencerReferral:
+ * signup-form.tsx's immediate-session branch and /auth/callback. */
 export async function ensureWelcomeCredits(supabase: SupabaseClient): Promise<void> {
   const { error } = await supabase.rpc("ensure_welcome_credits");
   if (error) {
@@ -59,10 +60,11 @@ export async function ensureWelcomeCredits(supabase: SupabaseClient): Promise<vo
   }
 }
 
-/** Records a referred signup and grants the referred user's +5 bonus
- * credits (20 total with the welcome bonus) — same two call sites as
- * ensureWelcomeCredits. A no-op server-side if the slug is unknown, a
- * self-referral, or this user was already referred. */
+/** Records a referred signup — no credit grant anymore (margin
+ * protection: referral bonuses now pay out only on the referred user's
+ * first real payment, via recordUserReferralConversion below). Same two
+ * call sites as ensureWelcomeCredits. A no-op server-side if the slug is
+ * unknown, a self-referral, or this user was already referred. */
 export async function recordUserReferral(
   supabase: SupabaseClient,
   attribution: ReferralAttribution
@@ -74,9 +76,10 @@ export async function recordUserReferral(
 }
 
 /** Called from the Stripe webhook's checkout.session.completed handler
- * (service_role), right next to recordInfluencerConversion — grants the
- * referrer's +10 credits once their referred user's subscription payment
- * actually goes through. Idempotent server-side (see
+ * (service_role), right next to recordInfluencerConversion — grants BOTH
+ * the referred user's +5 credits and the referrer's +10 credits, once the
+ * referred user's first real subscription payment actually goes through
+ * (never at signup — margin protection). Idempotent server-side (see
  * record_user_referral_conversion's atomic UPDATE ... WHERE
  * referrer_credited_at IS NULL), so a redelivered webhook event is safely
  * a no-op. */

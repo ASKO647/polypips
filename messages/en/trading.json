@@ -13,7 +13,7 @@
       "unauthorized": "Your session has expired. Please log back in and try again.",
       "ai_error": "The AI analysis service is temporarily unavailable. Please try again shortly.",
       "network_error": "Unable to connect. Check your connection and try again.",
-      "limit_reached": "You've reached your free daily analysis limit. Start for €0.99 for unlimited analyses.",
+      "limit_reached": "You've reached your free daily analysis limit. Start for €0.99 to unlock the discovery offer.",
       "unknown": "An unexpected error occurred. Please try again."
     },
     "recommendation": {

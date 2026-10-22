@@ -7,7 +7,7 @@
       "priceSuffix": "for 3 days",
       "afterOffer": "Then $29.99 / month (Pro plan)",
       "features": [
-        "10 AI analyses per day (Polymarket, Sport, Trading)",
+        "3 AI analyses per day (Polymarket, Sport, Trading)",
         "View-only Polymarket/Sport/Trading Sélectionnés",
         "Smart Wallet: up to 3 tracked wallets"
       ],
@@ -31,7 +31,7 @@
       "price": "$49.99",
       "priceSuffix": "/ month",
       "features": [
-        "Unlimited AI analyses",
+        "Up to 40 AI analyses per day",
         "Unlimited Sélectionnés + on-demand scan",
         "Smart Wallet: up to 15 tracked wallets",
         "15 Deep Analysis credits included every month",
@@ -46,7 +46,7 @@
       "price": "$29.99",
       "priceSuffix": "/ month",
       "features": [
-        "Unlimited AI analyses",
+        "Up to 40 AI analyses per day",
         "Unlimited Sélectionnés + on-demand scan",
         "Unlimited Smart Wallet"
       ],
@@ -54,11 +54,12 @@
     },
     "ultimate": {
       "name": "Polypips Ultimate",
-      "tagline": "The full Polypips experience, with no limits at all",
+      "tagline": "The full Polypips experience, at its most generous",
       "price": "$79.99",
       "priceSuffix": "/ month",
       "features": [
-        "Everything in Pro+, with no limits at all",
+        "Up to 80 AI analyses per day",
+        "Everything in Pro+, even more generous",
         "Unlimited Smart Wallet",
         "50 Deep Analysis credits included every month",
         "Automatic weekly AI report (coming soon)",

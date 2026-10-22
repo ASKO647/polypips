@@ -18,6 +18,7 @@ const groups=[{title:"POLYMARKET",color:"#ef2947",items:[["Analyse IA","/dashboa
 function errorContentFor(error:unknown,t:(key:string)=>string,tCredits:(key:string)=>string):React.ReactNode{
  if(error instanceof AnalysisRequestError&&error.code==="no_credits")return <>{tCredits("DeepAnalysis.noCreditsMessage")} <Link href="/dashboard/credits">{tCredits("DeepAnalysis.buyCreditsCta")}</Link></>;
  if(error instanceof AnalysisRequestError&&error.code==="limit_reached")return <>{error.message} <Link href="/dashboard/settings">{t("changePlanLink")}</Link></>;
+ if(error instanceof AnalysisRequestError&&error.code==="monthly_budget_reached")return <>{error.message} <Link href="/dashboard/credits">{tCredits("DeepAnalysis.buyCreditsCta")}</Link></>;
  return analysisErrorMessage(error instanceof AnalysisRequestError?error.code:"unknown",t);
 }
 

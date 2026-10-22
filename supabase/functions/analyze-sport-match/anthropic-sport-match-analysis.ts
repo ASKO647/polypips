@@ -1,5 +1,6 @@
 import Anthropic from "npm:@anthropic-ai/sdk@0.116.0";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
+import { logAiUsageEvent, usageFromResponse, type AiTelemetry } from "../_shared/ai-pricing.ts";
 
 /**
  * The Sport universe's "Analyse IA", step 2: the user has already picked
@@ -213,15 +214,20 @@ Produis ton pronostic structuré sur cette rencontre, ainsi que 2 à 3 marchés 
 
 async function requestVerdictOnce(
   input: SportMatchInput,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<SportMatchVerdict> {
   const outcomes = outcomeLabels(input);
   const deep = depth === "deep";
+  const model = deep ? "claude-opus-5" : "claude-haiku-4-5";
   let response;
   try {
     response = await client.messages.create({
-      model: deep ? "claude-opus-5" : "claude-haiku-4-5",
-      max_tokens: deep ? 16000 : 8192,
+      model,
+      // See analyze-market/anthropic-analysis.ts's identical comment —
+      // same schema shape/size, same reasoning for 3500/10000 (was
+      // 8192/16000).
+      max_tokens: deep ? 10000 : 3500,
       ...(deep ? { thinking: { type: "adaptive" as const } } : {}),
       output_config: {
         format: { type: "json_schema", schema: buildSchema(outcomes, depth) },
@@ -234,6 +240,8 @@ async function requestVerdictOnce(
     logAnthropicError("analyzeSportMatch", error);
     throw new AiServiceError("Échec de l'appel à l'API Anthropic pour le pronostic.");
   }
+
+  await logAiUsageEvent({ ...telemetry, model, usage: usageFromResponse(response) });
 
   if (response.stop_reason === "refusal") {
     console.error(
@@ -272,17 +280,18 @@ async function requestVerdictOnce(
  * analyzeMarket — see that function's comment for why. */
 export async function analyzeSportMatch(
   input: SportMatchInput,
-  depth: AnalysisDepth = "standard"
+  depth: AnalysisDepth = "standard",
+  telemetry: AiTelemetry
 ): Promise<SportMatchVerdict> {
   try {
-    return await requestVerdictOnce(input, depth);
+    return await requestVerdictOnce(input, depth, telemetry);
   } catch (error) {
     if (!(error instanceof MalformedVerdictError)) throw error;
     console.warn(
       `[anthropic-sport-match:analyzeSportMatch] réponse inexploitable (${error.message}) — nouvelle tentative`
     );
     try {
-      return await requestVerdictOnce(input, depth);
+      return await requestVerdictOnce(input, depth, telemetry);
     } catch (retryError) {
       if (retryError instanceof MalformedVerdictError) {
         throw new AiServiceError(retryError.message);

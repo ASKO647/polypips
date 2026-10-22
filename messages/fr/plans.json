@@ -7,7 +7,7 @@
       "priceSuffix": "pendant 3 jours",
       "afterOffer": "Puis 29,99 € / mois (formule Pro)",
       "features": [
-        "10 analyses IA par jour (Polymarket, Sport, Trading)",
+        "3 analyses IA par jour (Polymarket, Sport, Trading)",
         "Marchés/Sport/Trading Sélectionnés en consultation",
         "Smart Wallet : jusqu'à 3 portefeuilles suivis"
       ],
@@ -31,7 +31,7 @@
       "price": "49,99 €",
       "priceSuffix": "/ mois",
       "features": [
-        "Analyses IA illimitées",
+        "Jusqu'à 40 analyses IA par jour",
         "Sélections illimitées + scan à la demande",
         "Smart Wallet : jusqu'à 15 portefeuilles suivis",
         "15 crédits Analyse Approfondie inclus chaque mois",
@@ -46,7 +46,7 @@
       "price": "29,99 €",
       "priceSuffix": "/ mois",
       "features": [
-        "Analyses IA illimitées",
+        "Jusqu'à 40 analyses IA par jour",
         "Sélections illimitées + scan à la demande",
         "Smart Wallet illimité"
       ],
@@ -54,11 +54,12 @@
     },
     "ultimate": {
       "name": "Polypips Ultimate",
-      "tagline": "L'expérience Polypips complète, sans aucune limite",
+      "tagline": "L'expérience Polypips complète, au niveau le plus généreux",
       "price": "79,99 €",
       "priceSuffix": "/ mois",
       "features": [
-        "Tout Pro+, sans aucune limite",
+        "Jusqu'à 80 analyses IA par jour",
+        "Tout Pro+, en plus généreux",
         "Smart Wallet illimité",
         "50 crédits Analyse Approfondie inclus chaque mois",
         "Rapport IA hebdomadaire automatique (bientôt disponible)",

@@ -52,7 +52,7 @@
     },
     "Referral": {
       "title": "Refer a friend",
-      "description": "They get 5 bonus credits when they sign up, you get 10 credits as soon as they go Pro.",
+      "description": "They get 5 bonus credits and you get 10 credits, both as soon as they go on a paid plan.",
       "linkLabel": "Your referral link",
       "copyButton": "Copy",
       "copiedLabel": "Copied!",

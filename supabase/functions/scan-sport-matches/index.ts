@@ -18,6 +18,7 @@ import {
   type SportMatchInput,
 } from "../analyze-sport-match/anthropic-sport-match-analysis.ts";
 import { AiServiceError } from "../analyze-market/anthropic-analysis.ts";
+import { checkGlobalMonthlyHardCap } from "../_shared/ai-budget.ts";
 
 /**
  * The Sport universe's "Sélection du jour" — same automated-scan concept
@@ -243,6 +244,30 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Margin protection: scan-sport-matches stays off by default — unlike
+  // scan-markets, it has no committed cron job at all (see this function's
+  // own file comment history), but this explicit flag documents that and
+  // makes the "disabled" state a deliberate, visible config rather than
+  // an implicit "nobody ever scheduled it". Set SPORT_SCAN_ENABLED=true in
+  // this function's environment to turn it on.
+  if (Deno.env.get("SPORT_SCAN_ENABLED") !== "true") {
+    return new Response(
+      JSON.stringify({ error: "scan_disabled", message: "scan-sport-matches est désactivé (SPORT_SCAN_ENABLED)." }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  const hardCap = await checkGlobalMonthlyHardCap();
+  if (hardCap.exceeded) {
+    console.error(
+      `[scan-sport-matches] AI_MONTHLY_HARD_CAP_EUR exceeded ($${hardCap.spentUsd.toFixed(2)} spent vs $${hardCap.capUsd.toFixed(2)} cap this month) — skipping this run entirely`
+    );
+    return new Response(
+      JSON.stringify({ error: "monthly_hard_cap_exceeded", spentUsd: hardCap.spentUsd, capUsd: hardCap.capUsd }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   const apiSportsKey = Deno.env.get("API_SPORTS_KEY");
   const oddsApiKey = Deno.env.get("ODDS_API_KEY");
   if (!apiSportsKey || !oddsApiKey) {
@@ -305,7 +330,13 @@ Deno.serve(async (req) => {
     };
 
     try {
-      const verdict = await analyzeSportMatch(input);
+      const verdict = await analyzeSportMatch(input, "standard", {
+        functionName: "scan-sport-matches",
+        userId: null,
+        analysisId: null,
+        kind: "scan",
+        creditSource: "none",
+      });
       rows.push({
         sport: pick.sport,
         home_team_name: pick.homeTeamName,

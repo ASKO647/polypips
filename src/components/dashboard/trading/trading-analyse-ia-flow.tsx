@@ -53,6 +53,19 @@ function errorContentFor(
       </>
     );
   }
+  if (error instanceof TradingAnalysisError && error.code === "monthly_budget_reached") {
+    return (
+      <>
+        {error.message}{" "}
+        <Link
+          href="/dashboard/credits"
+          className="font-semibold text-brand-400 underline underline-offset-2 hover:text-brand-300"
+        >
+          {tCredits("DeepAnalysis.buyCreditsCta")}
+        </Link>
+      </>
+    );
+  }
   return tradingErrorMessage(t, error instanceof TradingAnalysisError ? error.code : "unknown");
 }
 

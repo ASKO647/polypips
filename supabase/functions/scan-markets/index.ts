@@ -7,6 +7,7 @@ import {
   type GammaMarket,
 } from "../analyze-market/gamma.ts";
 import { analyzeMarket, AiServiceError } from "../analyze-market/anthropic-analysis.ts";
+import { checkGlobalMonthlyHardCap } from "../_shared/ai-budget.ts";
 
 /**
  * Cost control: this function burns one Anthropic call per candidate on
@@ -14,22 +15,31 @@ import { analyzeMarket, AiServiceError } from "../analyze-market/anthropic-analy
  * than scanning everything Gamma returns — see the task summary for the
  * cost/freshness discussion behind the default cron interval.
  *
- * Brought down from 45 to 30 after runs at 45/CONCURRENCY=9 started
- * failing every single candidate with WORKER_RESOURCE_LIMIT (546) — the
- * "all 45 failed at once" shape is the signature of the isolate itself
- * getting killed for exceeding its CPU/memory budget mid-run, not of
- * individual analyses failing independently. Supabase documents a 2000ms
- * *actual CPU time* budget per isolate (not wall-clock — awaiting the
- * Anthropic call doesn't count) and a 400s wall-clock ceiling; the
- * concurrency drop below is the main lever against the memory spike (many
- * large extended-thinking responses parsed/held at once), and this drop
+ * Brought down from 45 to 30 (then to 20 — margin protection, see the
+ * delivery report) after runs at 45/CONCURRENCY=9 started failing every
+ * single candidate with WORKER_RESOURCE_LIMIT (546) — the "all 45 failed
+ * at once" shape is the signature of the isolate itself getting killed
+ * for exceeding its CPU/memory budget mid-run, not of individual
+ * analyses failing independently. Supabase documents a 2000ms *actual CPU
+ * time* budget per isolate (not wall-clock — awaiting the Anthropic call
+ * doesn't count) and a 400s wall-clock ceiling; the concurrency drop
+ * below is the main lever against the memory spike (many large
+ * extended-thinking responses parsed/held at once), and this drop
  * shortens the run and its cumulative CPU/memory footprint on top of that.
  * (Sources: https://supabase.com/docs/guides/functions/limits,
  * https://supabase.com/docs/guides/troubleshooting/edge-function-546-error-response
  * — exact per-isolate memory ceiling in MB isn't published, so this is
  * still a calibrated guess, not a value read off a documented number.)
+ *
+ * 20 (was 30) roughly halves this function's AI cost per run on top of
+ * the 24h cron interval (was ~8h) — see the cron migration's own comment.
+ * SELECTION_SIZE (9) stays reachable: CANDIDATE_FETCH_POOL (72) and the
+ * resolvesSoon() filter run before this slice, and the qualification bar
+ * (OPPORTUNITY_THRESHOLD / MIN_ABS_EDGE) is unchanged — flagged in the
+ * delivery report as a ratio worth watching in production (this couldn't
+ * be verified against real qualification rates from this environment).
  */
-const MAX_CANDIDATES_PER_RUN = 30;
+const MAX_CANDIDATES_PER_RUN = 20;
 /** Over-fetch before filtering/sorting so the volume/liquidity floor in
  * listCandidateMarkets still leaves enough candidates to pick from. Keeps
  * the original ~2.4x margin over MAX_CANDIDATES_PER_RUN (60 candidates for
@@ -210,6 +220,23 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Margin protection — platform-wide safety net, independent of any one
+  // customer's own budget. See _shared/ai-budget.ts's own comment: once
+  // exceeded, every automated scan stops calling the AI for the rest of
+  // the calendar month, and the owner console shows a clear alert (no
+  // outbound notification exists in this codebase to page the owner any
+  // other way).
+  const hardCap = await checkGlobalMonthlyHardCap();
+  if (hardCap.exceeded) {
+    console.error(
+      `[scan-markets] AI_MONTHLY_HARD_CAP_EUR exceeded ($${hardCap.spentUsd.toFixed(2)} spent vs $${hardCap.capUsd.toFixed(2)} cap this month) — skipping this run entirely`
+    );
+    return new Response(
+      JSON.stringify({ error: "monthly_hard_cap_exceeded", spentUsd: hardCap.spentUsd, capUsd: hardCap.capUsd }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
 
   const now = Date.now();
@@ -249,7 +276,13 @@ Deno.serve(async (req) => {
 
     let verdict;
     try {
-      verdict = await analyzeMarket(market, marketUrl);
+      verdict = await analyzeMarket(market, marketUrl, "standard", {
+        functionName: "scan-markets",
+        userId: null,
+        analysisId: null,
+        kind: "scan",
+        creditSource: "none",
+      });
     } catch (error) {
       console.error(
         `[scan-markets] analysis failed for ${market.slug}`,

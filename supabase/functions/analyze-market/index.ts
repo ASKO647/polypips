@@ -23,6 +23,11 @@ import {
   InsufficientCreditsError,
 } from "../_shared/deep-analysis-credits.ts";
 import { DAILY_ANALYSIS_LIMITS, countCombinedDailyAnalyses } from "../_shared/plan-quotas.ts";
+import {
+  checkMonthlySpendCap,
+  wouldConsumeIncludedCredit,
+  formatMonthlyBudgetMessage,
+} from "../_shared/ai-budget.ts";
 
 type AnalyzeRequest =
   | { type: "link"; link: string; depth?: AnalysisDepth }
@@ -39,11 +44,12 @@ type ProgressStep = "fetching_market" | "calling_ai" | "receiving_result";
 /** A user with NO row in `subscriptions` at all (never paid, or a lapsed
  * subscription) still gets to run real analyses up to this ceiling, so the
  * product is provable before paying — this is deliberately independent of
- * the "decouverte" plan's own limits above, which only apply to someone
- * genuinely on that paid 3-day trial. Don't fold this into
- * DAILY_ANALYSIS_LIMITS.decouverte: that plan is unlimited now, and a
- * literal-string fallback collision there would make anonymous non-payers
- * unlimited too. */
+ * the "decouverte" plan's own limit (3/day — see DAILY_ANALYSIS_LIMITS),
+ * which only applies to someone genuinely on that paid 3-day trial. Not
+ * covered by the per-plan margin budgets in src/lib/data/pricing.ts
+ * either, since this is pre-payment usage, not a paying customer's — see
+ * the delivery report for why this is flagged as a gap worth the owner's
+ * attention rather than silently tightened without being asked. */
 const FREE_DEMO_DAILY_LIMIT = 10;
 
 function confidenceLabel(value: string): "Faible" | "Moyenne" | "Élevée" {
@@ -147,10 +153,12 @@ Deno.serve(async (req) => {
       };
 
       // Analyse Approfondie (depth "deep") is never gated by the daily
-      // quota below — it's credit-gated instead, checked right before the
+      // count below — it's credit-gated instead, checked right before the
       // AI call once we know a real market was actually resolved (see the
-      // consumeDeepAnalysisCredit call further down). The standard flow's
-      // quota is untouched.
+      // consumeDeepAnalysisCredit call further down, which also carries
+      // the monthly spend-cap check when the credit about to be spent is
+      // an included one — see wouldConsumeIncludedCredit).
+      let subscriptionPlan: string | null = null;
       if (depth === "standard") {
         const { data: subscriptionRow } = await supabase
           .from("subscriptions")
@@ -165,6 +173,7 @@ Deno.serve(async (req) => {
         const hasAccess =
           (subscriptionRow?.status === "active" || subscriptionRow?.status === "trialing") &&
           !subscriptionRow?.cancel_at_period_end;
+        subscriptionPlan = hasAccess ? subscriptionRow!.plan : null;
         const dailyLimit = hasAccess
           ? (DAILY_ANALYSIS_LIMITS[subscriptionRow!.plan] ?? FREE_DEMO_DAILY_LIMIT)
           : FREE_DEMO_DAILY_LIMIT;
@@ -179,8 +188,22 @@ Deno.serve(async (req) => {
               "limit_reached",
               hasAccess
                 ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
-                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.`
             );
+            return;
+          }
+        }
+
+        // Margin protection: every standard analysis counts toward this
+        // customer's monthly AI spend cap — see
+        // src/lib/data/pricing.ts's MONTHLY_AI_BUDGET_EUR_BY_PLAN. Checked
+        // AFTER the daily-count gate (cheaper check first) but BEFORE any
+        // market/AI work starts, so an over-budget month never consumes
+        // anything.
+        if (hasAccess && subscriptionPlan) {
+          const cap = await checkMonthlySpendCap(supabase, user.id, subscriptionPlan);
+          if (cap.exceeded && cap.cycleEnd) {
+            emitErrorAndClose("monthly_budget_reached", formatMonthlyBudgetMessage(cap.cycleEnd));
             return;
           }
         }
@@ -233,7 +256,14 @@ Deno.serve(async (req) => {
         try {
           question = await extractMarketQuestionFromImage(
             body.imageBase64,
-            body.imageMediaType
+            body.imageMediaType,
+            {
+              functionName: "analyze-market",
+              userId: user.id,
+              analysisId,
+              kind: "image_extraction",
+              creditSource: "none",
+            }
           );
         } catch (error) {
           // logAnthropicError already logged the precise cause (status, type,
@@ -285,7 +315,31 @@ Deno.serve(async (req) => {
       // _shared/deep-analysis-credits.ts and the consume_deep_analysis_credit
       // RPC (service_role only, user.id from the verified JWT above, never
       // from request input).
+      // "none" for a standard analysis (no credit involved at all) — set
+      // below only inside the depth === "deep" branch, and logged on
+      // every ai_usage_events row this request produces.
+      let creditSource: "included" | "purchased" | "none" = "none";
       if (depth === "deep") {
+        // Only an included-credit spend counts toward the monthly margin
+        // cap — a purchased pack was already paid for separately. See
+        // _shared/ai-budget.ts's own comment on wouldConsumeIncludedCredit.
+        const willBeIncluded = await wouldConsumeIncludedCredit(user.id);
+        creditSource = willBeIncluded ? "included" : "purchased";
+        if (willBeIncluded) {
+          const { data: subscriptionRow } = await supabase
+            .from("subscriptions")
+            .select("plan")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (subscriptionRow?.plan) {
+            const cap = await checkMonthlySpendCap(supabase, user.id, subscriptionRow.plan);
+            if (cap.exceeded && cap.cycleEnd) {
+              emitErrorAndClose("monthly_budget_reached", formatMonthlyBudgetMessage(cap.cycleEnd));
+              return;
+            }
+          }
+        }
+
         try {
           await consumeDeepAnalysisCredit(user.id, analysisId);
         } catch (error) {
@@ -331,7 +385,13 @@ Deno.serve(async (req) => {
         const { eventSlug, eventTitle, candidates } = resolution;
         let verdict;
         try {
-          verdict = await analyzeMultiCandidateMarket(eventTitle, candidates, marketUrl, depth);
+          verdict = await analyzeMultiCandidateMarket(eventTitle, candidates, marketUrl, depth, {
+            functionName: "analyze-market",
+            userId: user.id,
+            analysisId,
+            kind: depth,
+            creditSource,
+          });
         } catch (error) {
           console.error(
             `[analyze-market] échec IA pendant la génération du verdict multi-candidats (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`
@@ -380,7 +440,13 @@ Deno.serve(async (req) => {
         market = resolution.market;
         let verdict;
         try {
-          verdict = await analyzeMarket(market, marketUrl, depth);
+          verdict = await analyzeMarket(market, marketUrl, depth, {
+            functionName: "analyze-market",
+            userId: user.id,
+            analysisId,
+            kind: depth,
+            creditSource,
+          });
         } catch (error) {
           // logAnthropicError already logged the precise cause (status, type,
           // message) inside anthropic-analysis.ts for diagnosis in the

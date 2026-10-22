@@ -8,6 +8,11 @@ import {
   InsufficientCreditsError,
 } from "../_shared/deep-analysis-credits.ts";
 import { DAILY_ANALYSIS_LIMITS, countCombinedDailyAnalyses } from "../_shared/plan-quotas.ts";
+import {
+  checkMonthlySpendCap,
+  wouldConsumeIncludedCredit,
+  formatMonthlyBudgetMessage,
+} from "../_shared/ai-budget.ts";
 
 function parseDepth(value: unknown): AnalysisDepth {
   return value === "deep" ? "deep" : "standard";
@@ -113,9 +118,11 @@ Deno.serve(async (req) => {
         controller.close();
       };
 
-      // Analyse Approfondie bypasses the daily quota entirely — it's
+      // Analyse Approfondie bypasses the daily count entirely — it's
       // credit-gated instead, checked further down right before the AI
-      // call. The standard flow's quota is untouched.
+      // call (see creditSource below). The standard flow's quota is
+      // untouched.
+      let creditSource: "included" | "purchased" | "none" = "none";
       if (depth === "standard") {
         const { data: subscriptionRow } = await supabase
           .from("subscriptions")
@@ -140,12 +147,39 @@ Deno.serve(async (req) => {
               "limit_reached",
               hasAccess
                 ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
-                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites. Débutez pour 0,99 € pour des analyses illimitées.`
+                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.`
             );
             return;
           }
         }
+
+        // Margin protection — see analyze-market/index.ts's identical
+        // check for the full reasoning.
+        if (hasAccess && subscriptionRow?.plan) {
+          const cap = await checkMonthlySpendCap(supabase, user.id, subscriptionRow.plan);
+          if (cap.exceeded && cap.cycleEnd) {
+            emitErrorAndClose("monthly_budget_reached", formatMonthlyBudgetMessage(cap.cycleEnd));
+            return;
+          }
+        }
       } else {
+        const willBeIncluded = await wouldConsumeIncludedCredit(user.id);
+        creditSource = willBeIncluded ? "included" : "purchased";
+        if (willBeIncluded) {
+          const { data: subscriptionRow } = await supabase
+            .from("subscriptions")
+            .select("plan")
+            .eq("user_id", user.id)
+            .maybeSingle();
+          if (subscriptionRow?.plan) {
+            const cap = await checkMonthlySpendCap(supabase, user.id, subscriptionRow.plan);
+            if (cap.exceeded && cap.cycleEnd) {
+              emitErrorAndClose("monthly_budget_reached", formatMonthlyBudgetMessage(cap.cycleEnd));
+              return;
+            }
+          }
+        }
+
         try {
           await consumeDeepAnalysisCredit(user.id, analysisId);
         } catch (error) {
@@ -169,7 +203,13 @@ Deno.serve(async (req) => {
 
       let verdict;
       try {
-        verdict = await analyzeTradingChart(input.imageBase64, input.imageMediaType, depth);
+        verdict = await analyzeTradingChart(input.imageBase64, input.imageMediaType, depth, {
+          functionName: "analyze-trading-chart",
+          userId: user.id,
+          analysisId,
+          kind: depth,
+          creditSource,
+        });
       } catch (error) {
         console.error(
           `[analyze-trading-chart] échec IA pendant la lecture du graphique (${error instanceof AiServiceError ? "appel Anthropic" : "erreur inattendue"})`

@@ -4,15 +4,34 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * Per-plan quota numbers, shared by analyze-market, analyze-sport-match
  * and analyze-trading-chart — kept in sync BY HAND with
  * PLAN_METADATA in src/lib/data/pricing.ts, since these Edge Functions run
- * on Deno and can't import from the Next.js app's src tree. null means
- * unlimited.
+ * on Deno and can't import from the Next.js app's src tree. No plan is
+ * "null" (unlimited) anymore — every tier has a real, generous cap so the
+ * guaranteed-margin AI budget below can never be blown by raw volume
+ * alone. See pricing.ts's own comment on MONTHLY_AI_BUDGET_EUR_BY_PLAN
+ * for why "unlimited" was removed.
  */
 export const DAILY_ANALYSIS_LIMITS: Record<string, number | null> = {
-  decouverte: 10,
+  decouverte: 3,
   pro: 10,
-  pro_plus: null,
-  ultimate: null,
-  pro_legacy: null,
+  pro_plus: 40,
+  ultimate: 80,
+  pro_legacy: 40,
+};
+
+/**
+ * Margin protection — kept in sync BY HAND with
+ * MONTHLY_AI_BUDGET_EUR_BY_PLAN in src/lib/data/pricing.ts (same
+ * Deno-can't-import-the-Next.js-tree reason as above). null means "no
+ * monthly AI spend-cap check for this plan" (decouverte only — its 3/day
+ * cap over a 3-day trial already bounds its AI cost to a few cents, see
+ * pricing.ts's comment).
+ */
+export const MONTHLY_AI_BUDGET_EUR_BY_PLAN: Record<string, number | null> = {
+  decouverte: null,
+  pro: 9.0,
+  pro_plus: 15.0,
+  ultimate: 24.0,
+  pro_legacy: 9.0,
 };
 
 /**
