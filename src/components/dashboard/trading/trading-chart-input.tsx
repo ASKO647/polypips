@@ -21,6 +21,15 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+const MARKET_ASSETS = {
+  Crypto: ["BTC/USDT", "ETH/USDT", "SOL/USDT", "BNB/USDT", "XRP/USDT"],
+  Forex: ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD"],
+  Indices: ["S&P 500", "NASDAQ 100", "Dow Jones", "CAC 40", "DAX 40"],
+  Actions: ["Apple (AAPL)", "Microsoft (MSFT)", "NVIDIA (NVDA)", "Tesla (TSLA)", "Amazon (AMZN)"],
+  Commodities: ["Gold (XAU/USD)", "Silver (XAG/USD)", "WTI", "Brent"],
+} as const;
+type Market = keyof typeof MARKET_ASSETS;
+
 export function TradingChartInput({ errorMessage, file, onFileChange, onAnalyze, creditBalance }: {
   errorMessage: React.ReactNode | null;
   file: File | null;
@@ -36,6 +45,11 @@ export function TradingChartInput({ errorMessage, file, onFileChange, onAnalyze,
   const [preparing, setPreparing] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [context, setContext] = useState("");
+  const [market, setMarket] = useState<Market>("Crypto");
+  const [asset, setAsset] = useState("");
+  const [timeframe, setTimeframe] = useState("");
+  const [customAsset, setCustomAsset] = useState("");
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -78,10 +92,12 @@ export function TradingChartInput({ errorMessage, file, onFileChange, onAnalyze,
           {errorMessage && <div className={styles.error}><TriangleAlert />{errorMessage}</div>}
 
           <div className={styles.selects}>
-            <label><b>{fr ? "Actif" : "Asset"}</b><span><BarChart3 />{fr ? "Ex. BTC/USDT" : "E.g. BTC/USDT"}<ChevronDown /></span></label>
-            <label><b>{fr ? "Unité de temps" : "Timeframe"}</b><span><Clock3 />{fr ? "Ex. 4 h" : "E.g. 4h"}<ChevronDown /></span></label>
-            <label><b>{fr ? "Marché" : "Market"}</b><span><LineChart />Crypto<ChevronDown /></span></label>
+            <label><b>{fr ? "Actif" : "Asset"}</b><span className={styles.selectControl}><BarChart3 /><select aria-label={fr ? "Actif" : "Asset"} value={asset} onChange={event => { setAsset(event.target.value); setCustomAsset(""); }}><option value="">{fr ? "Choisir un actif" : "Choose an asset"}</option>{MARKET_ASSETS[market].map(value => <option key={value} value={value}>{value}</option>)}<option value="custom">{fr ? "Autre actif…" : "Other asset…"}</option></select><ChevronDown /></span></label>
+            <label><b>{fr ? "Unité de temps" : "Timeframe"}</b><span className={styles.selectControl}><Clock3 /><select aria-label={fr ? "Unité de temps" : "Timeframe"} value={timeframe} onChange={event => setTimeframe(event.target.value)}><option value="">{fr ? "Choisir une unité" : "Choose a timeframe"}</option>{["1 min", "5 min", "15 min", "30 min", "1 h", "4 h", "1 D", "1 W", "1 M"].map(value => <option key={value} value={value}>{value}</option>)}</select><ChevronDown /></span></label>
+            <label><b>{fr ? "Marché" : "Market"}</b><span className={styles.selectControl}><LineChart /><select aria-label={fr ? "Marché" : "Market"} value={market} onChange={event => { setMarket(event.target.value as Market); setAsset(""); setCustomAsset(""); }}>{Object.keys(MARKET_ASSETS).map(value => <option key={value} value={value}>{value === "Commodities" && fr ? "Matières premières" : value === "Actions" && !fr ? "Stocks" : value}</option>)}</select><ChevronDown /></span></label>
           </div>
+          {asset === "custom" && <label className={styles.customAsset}>{fr ? "Nom ou symbole de l’actif" : "Asset name or symbol"}<input value={customAsset} maxLength={80} onChange={event => setCustomAsset(event.target.value)} placeholder={fr ? "Ex. AVAX/USDT" : "E.g. AVAX/USDT"} /></label>}
+          {(asset || timeframe) && <p className={styles.selectionSummary}>{[asset === "custom" ? customAsset : asset, timeframe, market === "Commodities" && fr ? "Matières premières" : market].filter(Boolean).join(" · ")}</p>}
 
           <div
             className={`${styles.dropzone} ${dragOver ? styles.dragging : ""} ${preview ? styles.hasPreview : ""}`}
