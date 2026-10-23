@@ -26,7 +26,7 @@
         "gamma_unavailable": "The Polymarket API is temporarily unavailable. Try again in a moment.",
         "ai_error": "The AI analysis service is temporarily unavailable. Try again in a moment.",
         "network_error": "Connection failed. Check your connection and try again.",
-        "limit_reached": "You've reached your free analysis limit for today. Get started for €0.99 to unlock the discovery offer.",
+        "limit_reached": "You've reached your free analysis limit for today. Get started for €1.00 to unlock the discovery offer.",
         "unknown": "An unexpected error occurred. Please try again."
       }
     },
@@ -35,7 +35,7 @@
       "viewOnPolymarket": "View on Polymarket",
       "lockedMessage": "The full decision, edge, and detailed explanation are reserved for subscribers.",
       "redirecting": "Redirecting...",
-      "unlockCta": "Unlock this analysis — Get started for €0.99",
+      "unlockCta": "Unlock this analysis — Get started for €1.00",
       "checkoutUnavailable": "Checkout unavailable.",
       "decisionLabel": "AI Decision",
       "marketLabel": "Market",
@@ -87,7 +87,7 @@
       "subtitle": "Look up a Polymarket wallet by address to see its positions, profile, and activity. Follow it to get notified as soon as it opens a new position — replicating it yourself on Polymarket is entirely up to you.",
       "genericError": "Something went wrong.",
       "lockedMessageCancelled": "Subscription cancelled — resubscribe to keep using Smart Wallet.",
-      "lockedMessage": "Unlock Smart Wallet — Get started for €0.99",
+      "lockedMessage": "Unlock Smart Wallet — Get started for €1.00",
       "unfollowAria": "Stop following this wallet",
       "noDataYet": "No data yet",
       "openPositions": "{count, plural, one {# open position} other {# open positions}}",

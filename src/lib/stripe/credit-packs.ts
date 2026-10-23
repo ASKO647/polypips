@@ -4,7 +4,7 @@
  * subscription. These are never a Stripe Price object (no product to
  * manage in the Dashboard): each Checkout Session builds its own
  * price_data line item inline, same technique already used for the
- * Découverte plan's 0,99€ upfront charge in /api/stripe/checkout.
+ * Découverte plan's 1,00€ upfront charge in /api/stripe/checkout.
  */
 
 export type CreditPackId = "decouverte" | "standard" | "pro" | "power";

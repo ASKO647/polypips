@@ -31,7 +31,7 @@ export function LockedOverlay({
    * structure, not a simple vertical stack of cards). */
   contentClassName?: string;
   /** True when `locked` is caused by a cancellation rather than never
-   * having subscribed — swaps the "Débutez pour 0,99 €" first-time CTA for
+   * having subscribed — swaps the "Débutez pour 1,00 €" first-time CTA for
    * a smaller, quieter "réabonnez-vous" one and resubscribes straight to
    * Pro instead of re-selling the discovery trial to someone who already
    * had one. `message` is still fully caller-provided either way. */

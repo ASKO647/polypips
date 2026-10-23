@@ -171,7 +171,7 @@ Deno.serve(async (req) => {
               "limit_reached",
               hasAccess
                 ? `Vous avez atteint votre limite de ${dailyLimit} analyses aujourd'hui.`
-                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.`
+                : `Vous avez atteint votre limite de ${dailyLimit} analyses gratuites aujourd'hui. Débutez pour 1,00 € et accédez à l'offre découverte.`
             );
             return;
           }

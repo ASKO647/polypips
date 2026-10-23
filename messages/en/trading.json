@@ -13,7 +13,7 @@
       "unauthorized": "Your session has expired. Please log back in and try again.",
       "ai_error": "The AI analysis service is temporarily unavailable. Please try again shortly.",
       "network_error": "Unable to connect. Check your connection and try again.",
-      "limit_reached": "You've reached your free daily analysis limit. Start for €0.99 to unlock the discovery offer.",
+      "limit_reached": "You've reached your free daily analysis limit. Start for €1.00 to unlock the discovery offer.",
       "unknown": "An unexpected error occurred. Please try again."
     },
     "recommendation": {
@@ -73,7 +73,7 @@
       "unlockButton": "Unlock this analysis",
       "viewFullAnalysis": "View full analysis",
       "lockedMessage": "The full recommendation, key levels and detailed analysis are reserved for subscribers.",
-      "unlockCta": "Unlock this analysis — Start for €0.99"
+      "unlockCta": "Unlock this analysis — Start for €1.00"
     }
   }
 }

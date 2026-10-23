@@ -28,7 +28,7 @@ export default async function OwnerSubscriptionsPage({
       </div>
 
       <p className="max-w-2xl text-sm text-slate-400">
-        Modèle actuel : Découverte (0,99 € / 3 jours) convertit automatiquement en
+        Modèle actuel : Découverte (1,00 € / 3 jours) convertit automatiquement en
         Pro (29,99 € / mois). Le plan &quot;pro-plus&quot; à 79 € est retiré et ne peut plus
         réapparaître (contrainte SQL sur subscriptions.plan).
       </p>

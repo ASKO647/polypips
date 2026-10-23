@@ -21,7 +21,7 @@ const copy = {
     fit: "Ajuster à l’écran",
     original: "Voir l’image originale",
     note: "Certaines captures présentent des paris en cours, des positions ouvertes ou des gains potentiels.",
-    cta: "Essayer Polypips pour 0,99 €",
+    cta: "Essayer Polypips pour 1,00 €",
     support: "Une plateforme. Trois univers à analyser.",
     status: {
       won: "Pari marqué gagné",
@@ -55,7 +55,7 @@ const copy = {
     fit: "Fit to screen",
     original: "View original image",
     note: "Some screenshots show unsettled bets, open positions or potential winnings.",
-    cta: "Try Polypips for $0.99",
+    cta: "Try Polypips for $1.00",
     support: "One platform. Three worlds to analyze.",
     status: {
       won: "Bet marked as won",

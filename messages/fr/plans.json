@@ -3,7 +3,7 @@
     "decouverte": {
       "name": "Offre découverte",
       "tagline": "L'entrée idéale pour tester Polypips — accès Pro pendant 3 jours",
-      "price": "0,99 €",
+      "price": "1,00 €",
       "priceSuffix": "pendant 3 jours",
       "afterOffer": "Puis 29,99 € / mois (formule Pro)",
       "features": [
@@ -11,7 +11,7 @@
         "Marchés/Sport/Trading Sélectionnés en consultation",
         "Smart Wallet : jusqu'à 3 portefeuilles suivis"
       ],
-      "cta": "Débutez pour 0,99 €"
+      "cta": "Débutez pour 1,00 €"
     },
     "pro": {
       "name": "Polypips Pro",
@@ -75,8 +75,8 @@
   },
   "StripeCheckout": {
     "discoveryProductName": "Polypips — Période découverte (3 jours)",
-    "discoveryProductDescription": "Accès Pro à Polypips pendant 3 jours, facturé 0,99 € dès aujourd'hui. Puis 29,99 €/mois, sauf annulation avant la fin des 3 jours.",
-    "discoverySubmitMessage": "**0,99 € facturés aujourd'hui** pour votre période découverte de 3 jours — ce n'est pas un essai gratuit. Puis 29,99 €/mois, résiliable à tout moment avant la fin des 3 jours pour ne rien payer de plus.",
+    "discoveryProductDescription": "Accès Pro à Polypips pendant 3 jours, facturé 1,00 € dès aujourd'hui. Puis 29,99 €/mois, sauf annulation avant la fin des 3 jours.",
+    "discoverySubmitMessage": "**1,00 € facturés aujourd'hui** pour votre période découverte de 3 jours — ce n'est pas un essai gratuit. Puis 29,99 €/mois, résiliable à tout moment avant la fin des 3 jours pour ne rien payer de plus.",
     "errors": {
       "invalid_input": "Corps de requête JSON invalide.",
       "unknown_plan": "Plan inconnu.",

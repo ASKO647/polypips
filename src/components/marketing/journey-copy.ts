@@ -41,7 +41,7 @@ const copy = {
     swipe: "Faites glisser pour parcourir les étapes.",
     cta: "Lancer ma première analyse",
     offerLead: "Débutez pour",
-    offerPrice: "0,99 €",
+    offerPrice: "1,00 €",
   },
   en: {
     eyebrow: "HOW IT WORKS",
@@ -85,7 +85,7 @@ const copy = {
     swipe: "Swipe through the steps.",
     cta: "Start my first analysis",
     offerLead: "Get started for",
-    offerPrice: "$0.99",
+    offerPrice: "$1.00",
   },
 } as const;
 

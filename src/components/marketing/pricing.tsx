@@ -11,7 +11,7 @@ import { getPricingPlans } from "@/lib/data/pricing";
 
 /**
  * Single-plan pricing card — there is only one real subscription
- * (Pro), entered through a 3-day, 0,99 € discovery trial that rolls
+ * (Pro), entered through a 3-day, 1,00 € discovery trial that rolls
  * automatically into 29,99 €/mois. Checkout still targets the
  * "decouverte" plan id (see lib/stripe/plans + the webhook's own
  * upsertSubscription, which transitions plan/status once the trial

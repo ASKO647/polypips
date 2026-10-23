@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /** The only real recurring price in the system (see PLAN_PRICE_IDS in
- * lib/stripe/plans.ts) — both "decouverte" (after its 3-day/0,99€ trial)
+ * lib/stripe/plans.ts) — both "decouverte" (after its 3-day/1,00€ trial)
  * and "pro" bill through this exact price, so every active/trialing row is
  * worth the same amount regardless of which plan value it currently has. */
 const PRO_MONTHLY_PRICE_EUR = 29.99;

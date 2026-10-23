@@ -94,7 +94,7 @@
     "LockedOverlay": {
       "redirecting": "Redirection...",
       "resubscribe": "Réabonnez-vous",
-      "unlockCta": "Débloquez — Débutez pour 0,99 €"
+      "unlockCta": "Débloquez — Débutez pour 1,00 €"
     },
     "TierGate": {
       "redirecting": "Redirection...",
@@ -140,7 +140,7 @@
       "subtitle": "Vue d'ensemble de votre activité et de vos accès rapides.",
       "backToDashboard": "Retour au tableau de bord",
       "lockedCancelled": "Abonnement annulé — réabonnez-vous pour continuer à utiliser le tableau de bord.",
-      "lockedDefault": "Débloquez le tableau de bord complet — Débutez pour 0,99 €",
+      "lockedDefault": "Débloquez le tableau de bord complet — Débutez pour 1,00 €",
       "cards": {
         "analyseIAPolymarket": {
           "title": "Analyse IA Polymarket",

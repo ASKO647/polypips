@@ -2,7 +2,7 @@
   "Pages": {
     "Pricing": {
       "metaTitle": "Tarifs — Polypips",
-      "metaDescription": "L'offre découverte à 0,99 € pendant 3 jours, puis l'abonnement Pro à 29,99 €/mois.",
+      "metaDescription": "L'offre découverte à 1,00 € pendant 3 jours, puis l'abonnement Pro à 29,99 €/mois.",
       "eyebrow": "Tarifs",
       "title": "Un seul accès, toutes les fonctionnalités",
       "description": "Pas de paliers, pas de fonctionnalité verrouillée derrière un plan supérieur : commencez par l'offre découverte, ou passez directement à l'abonnement Pro.",
@@ -26,7 +26,7 @@
         "simplicityTitle": "La simplicité avant tout",
         "simplicityDescription": "Une seule offre, sans palier caché, et des explications en langage clair plutôt que du jargon technique."
       },
-      "ctaLabel": "Débutez pour 0,99 €"
+      "ctaLabel": "Débutez pour 1,00 €"
     },
     "Contact": {
       "metaTitle": "Contact — Polypips",
@@ -97,7 +97,7 @@
       "description": "Une plateforme complète pour analyser, suivre et décider — sans jongler entre dix outils.",
       "previewLabel": "Aperçu de l'interface — bientôt disponible",
       "footerNote": "Toutes ces fonctionnalités sont incluses dans un seul abonnement, sans palier ni fonctionnalité verrouillée.",
-      "ctaLabel": "Débutez pour 0,99 €",
+      "ctaLabel": "Débutez pour 1,00 €",
       "items": {
         "aiAnalysis": {
           "eyebrow": "Analyse IA",
@@ -148,7 +148,7 @@
       "title": "Comment ça marche ?",
       "description": "De l'inscription au suivi de vos performances, en quatre étapes claires.",
       "stepLabel": "Étape {number}",
-      "ctaLabel": "Débutez pour 0,99 €",
+      "ctaLabel": "Débutez pour 1,00 €",
       "steps": {
         "create": {
           "title": "Créez votre compte",
@@ -211,7 +211,7 @@
       "items": {
         "discoveryOffer": {
           "question": "Comment fonctionne l'offre découverte ?",
-          "answer": "L'offre découverte donne un accès complet à Polypips pendant 3 jours pour 0,99 €. Sauf résiliation avant la fin de cette période, elle se transforme automatiquement en abonnement Pro à 29,99 € par mois."
+          "answer": "L'offre découverte donne un accès complet à Polypips pendant 3 jours pour 1,00 €. Sauf résiliation avant la fin de cette période, elle se transforme automatiquement en abonnement Pro à 29,99 € par mois."
         },
         "cancelSubscription": {
           "question": "Comment annuler mon abonnement ?",

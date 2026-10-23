@@ -19,7 +19,7 @@ const PLAN_ENV_VARS: Record<PayingPlanId, string> = {
  * environment so switching between Stripe test and live mode (or rotating
  * a price itself) never requires a code change or redeploy. The
  * "decouverte" plan bills through the exact same Pro price as "pro" — its
- * Checkout Session additionally attaches a one-time 0,99€ line item and a
+ * Checkout Session additionally attaches a one-time 1,00€ line item and a
  * 3-day trial (see /api/stripe/checkout), so "decouverte" and "pro" are
  * indistinguishable by price ID alone. subscription_data.metadata.plan is
  * what actually disambiguates them once the subscription exists in

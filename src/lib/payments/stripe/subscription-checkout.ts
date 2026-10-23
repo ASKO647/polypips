@@ -17,10 +17,10 @@ function resolveLocale(value: unknown): string {
     : routing.defaultLocale;
 }
 
-/** 0,99 € — the "decouverte" plan's upfront charge, in cents. Not a Stripe
+/** 1,00 € — the "decouverte" plan's upfront charge, in cents. Not a Stripe
  * Price object: created inline per session via price_data since it's a
  * one-off amount, not a reusable product. */
-const DISCOVERY_UPFRONT_AMOUNT_CENTS = 99;
+const DISCOVERY_UPFRONT_AMOUNT_CENTS = 100;
 
 /**
  * Moved here verbatim from /api/stripe/checkout/route.ts (which is now a
@@ -192,7 +192,7 @@ export async function createStripeSubscriptionCheckout(request: Request): Promis
       },
       // Stripe's hosted Checkout page auto-generates its own "X days free"
       // copy the moment trial_period_days is set, with no parameter to
-      // reword it even though a real 0,99 € invoice_item is charged in the
+      // reword it even though a real 1,00 € invoice_item is charged in the
       // same session — custom_text.submit is the one supported lever,
       // rendered right next to the Pay button. Markdown bold/links only.
       ...(effectivePlan === "decouverte"

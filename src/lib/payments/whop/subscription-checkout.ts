@@ -50,6 +50,14 @@ async function assertWhopPlanMatchesPricing(whopPlanId: string, expectedPlan: Wh
       `Whop plan ${whopPlanId} renewal_price (${plan.renewal_price}) does not match pricing.ts's ${expectedPlan} price (${expectedRenewalEur}) — refusing checkout. Update the Whop plan or pricing.ts so they agree.`
     );
   }
+  if (expectedPlan === "decouverte") {
+    const expectedInitialEur = getPlanMeta("decouverte").priceEur;
+    if (typeof plan.initial_price === "number" && Math.abs(plan.initial_price - expectedInitialEur) > 0.01) {
+      throw new Error(
+        `Whop plan ${whopPlanId} initial_price (${plan.initial_price}) does not match pricing.ts's decouverte price (${expectedInitialEur}) — refusing checkout. Update the Whop plan or pricing.ts so they agree.`
+      );
+    }
+  }
 }
 
 /**

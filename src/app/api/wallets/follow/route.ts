@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error: "subscription_required",
-        message: "Cette fonctionnalité est réservée aux abonnés. Débutez pour 0,99 €.",
+        message: "Cette fonctionnalité est réservée aux abonnés. Débutez pour 1,00 €.",
       },
       { status: 403 }
     );

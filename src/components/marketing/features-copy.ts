@@ -50,8 +50,8 @@ const copy = {
       cta: "Voir les sélections",
       categories: ["Politique", "Crypto", "Économie"],
     },
-    cta: "Débloquer mes analyses pour 0,99 €",
-    shortCta: "Débutez pour 0,99 €",
+    cta: "Débloquer mes analyses pour 1,00 €",
+    shortCta: "Débutez pour 1,00 €",
     support: "Une plateforme. Trois univers à analyser.",
   },
   en: {
@@ -105,8 +105,8 @@ const copy = {
       cta: "View the selections",
       categories: ["Politics", "Crypto", "Economy"],
     },
-    cta: "Unlock my analyses for $0.99",
-    shortCta: "Get started for $0.99",
+    cta: "Unlock my analyses for $1.00",
+    shortCta: "Get started for $1.00",
     support: "One platform. Three worlds to analyze.",
   },
 } as const;

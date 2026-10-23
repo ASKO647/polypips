@@ -19,7 +19,7 @@
   },
   "Header": {
     "login": "Log in",
-    "cta": "Start for $0.99",
+    "cta": "Start for $1.00",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },
@@ -57,8 +57,8 @@
     },
     "activeUsers": "More than {count} active customers",
     "conversionTitle": "Your next edge starts here.",
-    "cta": "Get started for $0.99",
-    "arg1": "$0.99 for 3 days",
+    "cta": "Get started for $1.00",
+    "arg1": "$1.00 for 3 days",
     "arg2": "Instant access",
     "arg3": "Cancel anytime",
     "universes": "Polymarket · Sports · Trading"
@@ -71,7 +71,7 @@
   },
   "AnnouncementBar": {
     "badge": "Limited offer",
-    "text": "The $0.99 offer ends in"
+    "text": "The $1.00 offer ends in"
   },
   "Hero": {
     "title1": "AI analyzes.",
@@ -79,7 +79,7 @@
     "title3": "The market follows.",
     "description": "Polypips digs deep into Polymarket markets, tells you which position has the strongest signal, and explains why.",
     "tagline": "Less research. Less hesitation. Just the edge you're looking for.",
-    "ctaTrial": "Start for $0.99",
+    "ctaTrial": "Start for $1.00",
     "ctaDemo": "Watch the demo",
     "trust1": "Full access for 3 days",
     "trust2": "No card required",
@@ -366,7 +366,7 @@
     "contactTitle": "Another question?",
     "contactDescription": "Our team is here to help.",
     "contactLink": "Contact us",
-    "cta": "Get started for €0.99",
+    "cta": "Get started for €1.00",
     "searchLabel": "Search the FAQ",
     "searchPlaceholder": "Search for a question…",
     "clearSearch": "Clear search",
@@ -391,10 +391,10 @@
   "FinalCTA": {
     "title1": "Ready to get the edge",
     "title2": "on Polymarket?",
-    "arg1": "$0.99 for 3 days",
+    "arg1": "$1.00 for 3 days",
     "arg2": "Instant access",
     "arg3": "Cancel anytime",
-    "cta": "Start for $0.99"
+    "cta": "Start for $1.00"
   },
   "SmartMoneyPopup": {
     "label": "Smart Wallet activity",

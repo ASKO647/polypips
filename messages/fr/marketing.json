@@ -19,7 +19,7 @@
   },
   "Header": {
     "login": "Se connecter",
-    "cta": "Débutez pour 0,99 €",
+    "cta": "Débutez pour 1,00 €",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu"
   },
@@ -57,8 +57,8 @@
     },
     "activeUsers": "Plus de {count} clients actifs",
     "conversionTitle": "Votre prochain avantage commence ici.",
-    "cta": "Débuter pour 0,99 €",
-    "arg1": "0,99 € pendant 3 jours",
+    "cta": "Débuter pour 1,00 €",
+    "arg1": "1,00 € pendant 3 jours",
     "arg2": "Accès immédiat",
     "arg3": "Annulation à tout moment",
     "universes": "Polymarket · Sport · Trading"
@@ -71,7 +71,7 @@
   },
   "AnnouncementBar": {
     "badge": "Offre limitée",
-    "text": "L'offre à 0,99 € se termine dans"
+    "text": "L'offre à 1,00 € se termine dans"
   },
   "Hero": {
     "title1": "L'IA qui analyse.",
@@ -79,7 +79,7 @@
     "title3": "Le marché suit.",
     "description": "Polypips analyse les marchés Polymarket en profondeur, vous indique quelle position présente le meilleur signal et vous explique pourquoi.",
     "tagline": "Plus de recherches. Plus d'hésitations. Juste l'avantage que vous cherchez.",
-    "ctaTrial": "Débutez pour 0,99 €",
+    "ctaTrial": "Débutez pour 1,00 €",
     "ctaDemo": "Voir la démo",
     "trust1": "Accès complet pendant 3 jours",
     "trust2": "Aucune carte requise",
@@ -366,7 +366,7 @@
     "contactTitle": "Une autre question ?",
     "contactDescription": "Notre équipe peut vous aider.",
     "contactLink": "Nous contacter",
-    "cta": "Débuter pour 0,99 €",
+    "cta": "Débuter pour 1,00 €",
     "searchLabel": "Rechercher dans la FAQ",
     "searchPlaceholder": "Rechercher une question…",
     "clearSearch": "Effacer la recherche",
@@ -391,10 +391,10 @@
   "FinalCTA": {
     "title1": "Prêt à prendre l'avantage",
     "title2": "sur Polymarket ?",
-    "arg1": "0,99 € pendant 3 jours",
+    "arg1": "1,00 € pendant 3 jours",
     "arg2": "Accès immédiat",
     "arg3": "Annulation à tout moment",
-    "cta": "Débutez pour 0,99 €"
+    "cta": "Débutez pour 1,00 €"
   },
   "SmartMoneyPopup": {
     "label": "Activité Smart Wallet",

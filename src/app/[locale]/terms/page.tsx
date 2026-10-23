@@ -99,7 +99,7 @@ export default function TermsPage() {
         <ul>
           <li>
             <strong>Offre découverte :</strong> accès complet au Service
-            pendant 3 jours pour 0,99&nbsp;€, puis reconduction automatique
+            pendant 3 jours pour 1,00&nbsp;€, puis reconduction automatique
             en abonnement mensuel à 29,99&nbsp;€/mois sauf résiliation avant
             la fin des 3 jours.
           </li>

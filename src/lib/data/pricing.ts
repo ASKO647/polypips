@@ -61,7 +61,7 @@ export const REFERRAL_REFERRER_BONUS_CREDITS = 10;
  *   Ultimate 79,99 € -> 24,00 €
  * "pro_legacre" is priced identically to Pro (29,99 €) so it gets the same
  * 9,00 € budget — not given an explicit number in the spec; flagged in
- * the delivery report as a choice to confirm. "decouverte" (0,99 € / 3
+ * the delivery report as a choice to confirm. "decouverte" (1,00 € / 3
  * days) has no explicit budget either: its own 3/day cap already bounds
  * its AI cost to a few cents for the whole trial (see the report), so no
  * monthly spend-cap check is wired for it — only the daily-count cap
@@ -148,7 +148,7 @@ export type PlanMeta = {
 export const PLAN_METADATA: PlanMeta[] = [
   {
     id: "decouverte",
-    priceEur: 0.99,
+    priceEur: 1.0,
     hasCountdown: true,
     highlighted: false,
     dailyAnalysisLimit: 3,

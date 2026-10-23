@@ -94,7 +94,7 @@
     "LockedOverlay": {
       "redirecting": "Redirecting...",
       "resubscribe": "Resubscribe",
-      "unlockCta": "Unlock — Start for $0.99"
+      "unlockCta": "Unlock — Start for $1.00"
     },
     "TierGate": {
       "redirecting": "Redirecting...",
@@ -140,7 +140,7 @@
       "subtitle": "An overview of your activity and quick access.",
       "backToDashboard": "Back to dashboard",
       "lockedCancelled": "Subscription cancelled — resubscribe to keep using the dashboard.",
-      "lockedDefault": "Unlock the full dashboard — Start for $0.99",
+      "lockedDefault": "Unlock the full dashboard — Start for $1.00",
       "cards": {
         "analyseIAPolymarket": {
           "title": "Polymarket AI Analysis",

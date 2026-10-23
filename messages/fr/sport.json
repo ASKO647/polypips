@@ -59,7 +59,7 @@
       "unlockButton": "Débloquer ce pronostic",
       "viewFullAnalysis": "Voir le pronostic complet",
       "lockedMessage": "Le pronostic complet, les facteurs favorables et les risques sont réservés aux abonnés.",
-      "unlockCta": "Débloquez ce pronostic — Débutez pour 0,99 €"
+      "unlockCta": "Débloquez ce pronostic — Débutez pour 1,00 €"
     },
     "Result": {
       "aiForecast": "Pronostic IA",
@@ -91,7 +91,7 @@
       "sports_api_unavailable": "La source de données sportives est momentanément indisponible. Réessayez dans quelques instants.",
       "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
       "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
-      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.",
+      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 1,00 € et accédez à l'offre découverte.",
       "unknown": "Une erreur inattendue est survenue. Réessayez."
     }
   }

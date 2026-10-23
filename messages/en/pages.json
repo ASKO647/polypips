@@ -2,7 +2,7 @@
   "Pages": {
     "Pricing": {
       "metaTitle": "Pricing — Polypips",
-      "metaDescription": "The $0.99 discovery offer for 3 days, then the Pro subscription at $29.99/month.",
+      "metaDescription": "The $1.00 discovery offer for 3 days, then the Pro subscription at $29.99/month.",
       "eyebrow": "Pricing",
       "title": "One plan, every feature",
       "description": "No tiers, no feature locked behind a higher plan: start with the discovery offer, or go straight to the Pro subscription.",
@@ -26,7 +26,7 @@
         "simplicityTitle": "Simplicity first",
         "simplicityDescription": "One plan, no hidden tiers, and explanations in plain language instead of jargon."
       },
-      "ctaLabel": "Start for $0.99"
+      "ctaLabel": "Start for $1.00"
     },
     "Contact": {
       "metaTitle": "Contact — Polypips",
@@ -97,7 +97,7 @@
       "description": "A complete platform to analyze, track, and decide — without juggling ten different tools.",
       "previewLabel": "Interface preview — coming soon",
       "footerNote": "All these features are included in a single subscription, with no tiers and nothing locked behind a higher plan.",
-      "ctaLabel": "Start for $0.99",
+      "ctaLabel": "Start for $1.00",
       "items": {
         "aiAnalysis": {
           "eyebrow": "AI Analysis",
@@ -148,7 +148,7 @@
       "title": "How does it work?",
       "description": "From signup to tracking your performance, in four clear steps.",
       "stepLabel": "Step {number}",
-      "ctaLabel": "Start for $0.99",
+      "ctaLabel": "Start for $1.00",
       "steps": {
         "create": {
           "title": "Create your account",
@@ -211,7 +211,7 @@
       "items": {
         "discoveryOffer": {
           "question": "How does the discovery offer work?",
-          "answer": "The discovery offer gives you full access to Polypips for 3 days for $0.99. Unless you cancel before the end of that period, it automatically converts into a Pro subscription at $29.99 per month."
+          "answer": "The discovery offer gives you full access to Polypips for 3 days for $1.00. Unless you cancel before the end of that period, it automatically converts into a Pro subscription at $29.99 per month."
         },
         "cancelSubscription": {
           "question": "How do I cancel my subscription?",

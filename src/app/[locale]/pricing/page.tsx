@@ -18,7 +18,7 @@ export default async function PricingPage() {
   const t = await getTranslations("Pages.Pricing");
   const tPlans = await getTranslations("Plans");
   const plans = getPricingPlans(tPlans);
-  // "decouverte" is the entry-point hook (3-day Pro access for 0,99 €),
+  // "decouverte" is the entry-point hook (3-day Pro access for 1,00 €),
   // shown first — the 3 real recurring tiers (pro/pro_plus/ultimate)
   // follow in ascending order regardless of PLAN_METADATA's own order.
   const orderedPlans = [

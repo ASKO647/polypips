@@ -18,14 +18,14 @@ const copy = {
     badge: "POLYPIPS · ANALYSE IA SPORT", demo: "DÉMONSTRATION", title: "Barça contre Real Madrid",
     description: "Forme, confrontations et statistiques :", description2: "comprenez les scénarios du match avec Polypips.",
     outcomes: ["Victoire Barça", "Match nul", "Victoire Real Madrid"], illustrative: "Probabilités illustratives",
-    ready: "Analyse prête", cta: "Analyser mon match", start: "Débuter pour", price: "0,99 €",
+    ready: "Analyse prête", cta: "Analyser mon match", start: "Débuter pour", price: "1,00 €",
     disclaimer: "Exemple visuel · Les données affichées sont illustratives.", pause: "Suspendre les animations", resume: "Reprendre les animations", leagues: "Championnats de football",
   },
   en: {
     badge: "POLYPIPS · AI SPORTS ANALYSIS", demo: "DEMONSTRATION", title: "Barça versus Real Madrid",
     description: "Form, head-to-head results and statistics:", description2: "understand match scenarios with Polypips.",
     outcomes: ["Barça win", "Draw", "Real Madrid win"], illustrative: "Illustrative probabilities",
-    ready: "Analysis ready", cta: "Analyse my match", start: "Get started for", price: "€0.99",
+    ready: "Analysis ready", cta: "Analyse my match", start: "Get started for", price: "€1.00",
     disclaimer: "Visual example · The data shown is illustrative.", pause: "Pause animations", resume: "Resume animations", leagues: "Football leagues",
   },
 };

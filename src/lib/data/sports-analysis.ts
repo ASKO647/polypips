@@ -65,7 +65,7 @@ export function sportMatchErrorMessage(code: string): string {
       "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
     network_error: "Connexion impossible. Vérifiez votre connexion et réessayez.",
     limit_reached:
-      "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.",
+      "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 1,00 € et accédez à l'offre découverte.",
     unknown: "Une erreur inattendue est survenue. Réessayez.",
   };
   return FALLBACK[code as SportMatchErrorCode] ?? FALLBACK.unknown;

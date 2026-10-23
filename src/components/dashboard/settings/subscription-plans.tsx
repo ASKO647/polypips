@@ -45,7 +45,7 @@ export function SubscriptionPlans({
   // The discovery offer is one-shot: `subscription !== null` means this user
   // has already had a subscription at some point (rows are never deleted,
   // only marked "canceled" — see /api/stripe/checkout and
-  // /api/stripe/webhook). Hide the card so nobody sees a 0,99 € price they'd
+  // /api/stripe/webhook). Hide the card so nobody sees a 1,00 € price they'd
   // actually be charged 29,99 € for — except while they're still mid-way
   // through an active discovery trial, where it correctly reads as their
   // current plan rather than a new purchase.

@@ -134,7 +134,7 @@ async function handleSubscriptionPaymentSucceeded(
     .maybeSingle();
   const isFirstPayment = !existingRow;
 
-  // decouverte's own two price points: 0,99€ for the very first payment,
+  // decouverte's own two price points: 1,00€ for the very first payment,
   // then the full Pro price for every renewal after the trial window —
   // same two-price shape Stripe implements with trial_period_days + a
   // separate one-off line item (see
@@ -179,7 +179,7 @@ async function handleSubscriptionPaymentSucceeded(
   // Conversion mirrors the Stripe webhook's handleSubscriptionUpdated:
   // the first renewal payment after a decouverte trial is what actually
   // flips the stored plan to "pro" and stamps converted_from_trial/
-  // converted_at — never done at the initial 0,99€ payment itself.
+  // converted_at — never done at the initial 1,00€ payment itself.
   const wasDecouverteTrial = existingRow?.plan === "decouverte";
   const justConverted = !isFirstPayment && wasDecouverteTrial && plan === "decouverte";
   const resolvedPlan: PlanId = justConverted ? "pro" : plan === "decouverte" && !isFirstPayment ? "pro" : plan;

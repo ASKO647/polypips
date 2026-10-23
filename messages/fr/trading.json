@@ -13,7 +13,7 @@
       "unauthorized": "Votre session a expiré. Reconnectez-vous et réessayez.",
       "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
       "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
-      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.",
+      "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 1,00 € et accédez à l'offre découverte.",
       "unknown": "Une erreur inattendue est survenue. Réessayez."
     },
     "recommendation": {
@@ -73,7 +73,7 @@
       "unlockButton": "Débloquer cette analyse",
       "viewFullAnalysis": "Voir l'analyse complète",
       "lockedMessage": "La recommandation complète, les niveaux clés et l'analyse détaillée sont réservés aux abonnés.",
-      "unlockCta": "Débloquez cette analyse — Débutez pour 0,99 €"
+      "unlockCta": "Débloquez cette analyse — Débutez pour 1,00 €"
     }
   }
 }

@@ -27,7 +27,7 @@ export const GUIDES: Guide[] = [
       {
         title: "Choisissez votre offre",
         description:
-          "Sélectionnez l'offre découverte (0,99 € pendant 3 jours) pour tester la plateforme, ou passez directement à l'abonnement Pro. Vous pouvez changer d'avis à tout moment depuis Paramètres.",
+          "Sélectionnez l'offre découverte (1,00 € pendant 3 jours) pour tester la plateforme, ou passez directement à l'abonnement Pro. Vous pouvez changer d'avis à tout moment depuis Paramètres.",
       },
       {
         title: "Explorez les marchés sélectionnés",

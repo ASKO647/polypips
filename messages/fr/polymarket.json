@@ -26,7 +26,7 @@
         "gamma_unavailable": "L'API Polymarket est momentanément indisponible. Réessayez dans quelques instants.",
         "ai_error": "Le service d'analyse IA est temporairement indisponible. Réessayez dans quelques instants.",
         "network_error": "Connexion impossible. Vérifiez votre connexion et réessayez.",
-        "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 0,99 € et accédez à l'offre découverte.",
+        "limit_reached": "Vous avez atteint votre limite d'analyses gratuites aujourd'hui. Débutez pour 1,00 € et accédez à l'offre découverte.",
         "unknown": "Une erreur inattendue est survenue. Réessayez."
       }
     },
@@ -35,7 +35,7 @@
       "viewOnPolymarket": "Voir sur Polymarket",
       "lockedMessage": "La décision complète, l'edge et l'explication détaillée sont réservées aux abonnés.",
       "redirecting": "Redirection...",
-      "unlockCta": "Débloquez cette analyse — Débutez pour 0,99 €",
+      "unlockCta": "Débloquez cette analyse — Débutez pour 1,00 €",
       "checkoutUnavailable": "Checkout indisponible.",
       "decisionLabel": "Décision IA",
       "marketLabel": "Marché",
@@ -87,7 +87,7 @@
       "subtitle": "Recherchez un portefeuille Polymarket par adresse pour voir ses positions, son profil et son activité. Suivez-le pour être notifié dès qu'il ouvre une nouvelle position — libre à vous de la répliquer vous-même sur Polymarket.",
       "genericError": "Une erreur est survenue.",
       "lockedMessageCancelled": "Abonnement annulé — réabonnez-vous pour continuer à utiliser Smart Wallet.",
-      "lockedMessage": "Débloquez Smart Wallet — Débutez pour 0,99 €",
+      "lockedMessage": "Débloquez Smart Wallet — Débutez pour 1,00 €",
       "unfollowAria": "Ne plus suivre ce wallet",
       "noDataYet": "Pas encore de données",
       "openPositions": "{count, plural, one {# position ouverte} other {# positions ouvertes}}",
