@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { useCurrency } from "@/providers/currency-provider";
 import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import { hasActiveAccess, type SubscriptionRow } from "@/lib/supabase/subscriptions";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
+import { fetchSubscription } from "@/lib/supabase/subscriptions";
+import styles from "./subscription-plans.module.css";
 
 /**
  * The dashboard's own "mini pricing page" (point 9) — distinct from the
@@ -27,12 +29,18 @@ export function SubscriptionPlans({
   const locale = useLocale();
   const t = useTranslations("SubscriptionPlans");
   const tPlans = useTranslations("Plans");
-  const hasAccess = hasActiveAccess(subscription);
+  const [liveSubscription, setLiveSubscription] = useState(subscription);
+  const hasAccess = hasActiveAccess(liveSubscription);
   const cancelAtPeriodEnd = subscription?.cancelAtPeriodEnd ?? false;
-  const currentPlanId = subscription?.plan ?? null;
-  const { formatAmount } = useCurrency();
+  const currentPlanId = liveSubscription?.plan ?? null;
+  const formatAmount = (amount: number) => new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(amount);
   const [pendingPlan, setPendingPlan] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<PricingPlan | null>(null);
+  const [compare, setCompare] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const modal = useRef<HTMLDialogElement>(null);
+  useEffect(() => { if (chosen || compare) modal.current?.showModal(); else modal.current?.close(); }, [chosen, compare]);
 
   // The discovery offer is one-shot: `subscription !== null` means this user
   // has already had a subscription at some point (rows are never deleted,
@@ -44,7 +52,7 @@ export function SubscriptionPlans({
   const isCurrentlyOnDiscoveryTrial = hasAccess && currentPlanId === "decouverte";
   const hasSubscribedBefore = subscription !== null;
   const visiblePlans = getPricingPlans(tPlans).filter(
-    (plan) => plan.id !== "decouverte" || !hasSubscribedBefore || isCurrentlyOnDiscoveryTrial
+    (plan) => ["pro", "pro_plus", "ultimate"].includes(plan.id)
   );
 
   const handleChoose = async (plan: PricingPlan) => {
@@ -62,7 +70,15 @@ export function SubscriptionPlans({
         // Plan change applied in place on the existing subscription
         // (proration handled by Stripe) — no Checkout redirect, just
         // reload so this page reflects the new plan.
-        window.location.assign(`/${locale}/dashboard/settings?checkout=success`);
+        const started = Date.now();
+        while (Date.now() - started < 60000) {
+          const updated = await fetchSubscription(createClient());
+          if (updated?.plan === plan.id && hasActiveAccess(updated)) {
+            setLiveSubscription(updated); setChosen(null); setPendingPlan(null); setConfirmed(true); return;
+          }
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+        throw new Error(locale === "fr" ? "La confirmation prend plus de temps. Actualisez pour vérifier votre offre." : "Confirmation is taking longer. Refresh to check your plan.");
         return;
       }
       if (!response.ok || !data.url) {
@@ -76,7 +92,8 @@ export function SubscriptionPlans({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className={`${styles.root} flex flex-col gap-6`}>
+      {confirmed && <p role="status" className={styles.success}><Check />{locale === "fr" ? "Votre nouvelle offre est active" : "Your new plan is active"}</p>}
       {hasAccess && (
         <p className="rounded-xl border border-dash-border bg-dash-surface-alt px-4 py-3 text-sm text-dash-text-secondary">
           {cancelAtPeriodEnd
@@ -89,13 +106,13 @@ export function SubscriptionPlans({
 
       {error && <p className="text-sm text-rose-400">{error}</p>}
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className={`${styles.cards} grid gap-5`}>
         {visiblePlans.map((plan) => {
           const isCurrent = hasAccess && !cancelAtPeriodEnd && plan.id === currentPlanId;
           return (
             <div
               key={plan.id}
-              className={cn(
+              className={cn(styles.card,
                 "flex flex-col gap-4 rounded-2xl border p-6",
                 plan.highlighted
                   ? "border-brand-400/50 bg-brand-500/[0.04]"
@@ -103,6 +120,7 @@ export function SubscriptionPlans({
               )}
             >
               <div>
+                {plan.highlighted && <span className={styles.badge}>{locale === "fr" ? "Le plus populaire" : "Most popular"}</span>}
                 <div className="flex items-center gap-2">
                   <h2 className="font-display text-lg font-bold text-dash-text">{plan.name}</h2>
                   {isCurrent && (
@@ -135,7 +153,7 @@ export function SubscriptionPlans({
 
               <button
                 type="button"
-                onClick={() => handleChoose(plan)}
+                onClick={() => { setError(null); setChosen(plan); }}
                 disabled={isCurrent || pendingPlan !== null}
                 className={cn(
                   "mt-auto flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60",
@@ -156,6 +174,12 @@ export function SubscriptionPlans({
           );
         })}
       </div>
+      <div className={styles.assurances}>{locale === "fr" ? "Sans engagement · Changez d’offre à tout moment · Paiement sécurisé" : "No commitment · Change plans anytime · Secure payment"}</div>
+      <button className={styles.compareButton} onClick={() => setCompare(true)}>{locale === "fr" ? "Comparer toutes les fonctionnalités →" : "Compare all features →"}</button>
+      <dialog ref={modal} className={styles.modal} onCancel={event => { if (pendingPlan) event.preventDefault(); else { setChosen(null); setCompare(false); } }}>
+        <button className={styles.close} aria-label="Fermer" disabled={pendingPlan !== null} onClick={() => { setChosen(null); setCompare(false); }}>×</button>
+        {compare ? <><h2>{locale === "fr" ? "Comparaison des offres" : "Compare plans"}</h2><div className={styles.comparison}>{visiblePlans.map(plan => <article key={plan.id}><h3>{plan.name}</h3><b>{plan.price} {plan.priceSuffix}</b><ul>{plan.features.map(feature => <li key={feature}><Check />{feature}</li>)}</ul></article>)}</div></> : chosen && <><h2>{locale === "fr" ? "Récapitulatif de votre offre" : "Your plan summary"}</h2><h3>{chosen.name}</h3><strong>{chosen.price} {chosen.priceSuffix}</strong><ul>{chosen.features.slice(0,4).map(feature => <li key={feature}><Check />{feature}</li>)}</ul><dl><dt>{locale === "fr" ? "Montant débité aujourd’hui" : "Amount due today"}</dt><dd>{hasAccess ? (locale === "fr" ? "Prorata calculé par Stripe" : "Proration calculated by Stripe") : chosen.price}</dd><dt>{locale === "fr" ? "Prochain prélèvement" : "Next payment"}</dt><dd>{hasAccess && periodEndLabel ? periodEndLabel : (locale === "fr" ? "Un mois après l’activation, confirmé par Stripe" : "One month after activation, confirmed by Stripe")}</dd></dl><p>{locale === "fr" ? "Facturation mensuelle en euros. Les éventuels ajustements sont calculés par Stripe." : "Monthly billing in euros. Stripe calculates any adjustments."}</p>{error && <p role="alert">{error}</p>}<button className={styles.pay} disabled={pendingPlan !== null} onClick={() => handleChoose(chosen)}>{pendingPlan ? <><Loader2 />{locale === "fr" ? "Vérification…" : "Verifying…"}</> : (locale === "fr" ? "Confirmer et payer" : "Confirm and pay")}</button></>}
+      </dialog>
 
       <Link
         href="/dashboard/settings"

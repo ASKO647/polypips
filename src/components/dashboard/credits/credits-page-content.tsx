@@ -1,242 +1,80 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import {
-  ArrowDownCircle,
-  ArrowUpCircle,
-  BrainCircuit,
-  Check,
-  Gift,
-  Loader2,
-  RotateCcw,
-  Sparkles,
-  Users,
-  X,
-} from "lucide-react";
-import { useCurrency } from "@/providers/currency-provider";
+import { BrainCircuit, Check, Clock3, Loader2, ShieldCheck, X } from "lucide-react";
 import { CREDIT_PACK_ORDER, CREDIT_PACKS, pricePerCredit, type CreditPackId } from "@/lib/stripe/credit-packs";
-import { formatRelativeTime } from "@/lib/supabase/analyses";
-import type { CreditTransaction } from "@/lib/supabase/credits";
+import { fetchCreditBalance, fetchCreditTransactions, type CreditTransaction } from "@/lib/supabase/credits";
+import { createClient } from "@/lib/supabase/client";
 import { ReferralCard } from "@/components/dashboard/credits/referral-card";
-import { cn } from "@/lib/utils";
+import { DashboardChrome } from "@/components/dashboard/shared/dashboard-chrome";
+import styles from "./credits-page.module.css";
 
-function PackCard({ packId, highlight }: { packId: CreditPackId; highlight?: "popular" | "value" }) {
-  const t = useTranslations("Credits");
-  const locale = useLocale();
-  const { formatAmount } = useCurrency();
-  const [pending, setPending] = useState(false);
-  const pack = CREDIT_PACKS[packId];
+function BalanceNumber({value}:{value:number}) {
+  const [display,setDisplay]=useState(value);
+  const previous=useRef(0);
+  useEffect(()=>{
+    if(window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.querySelector('[data-motion="reduced"]')){setDisplay(value);previous.current=value;return;}
+    const from=previous.current,start=performance.now();let frame=0;
+    const tick=(now:number)=>{const p=Math.min((now-start)/(from===0?600:450),1);setDisplay(Math.round(from+(value-from)*(1-Math.pow(1-p,3))));if(p<1)frame=requestAnimationFrame(tick);};
+    frame=requestAnimationFrame(tick);previous.current=value;return()=>cancelAnimationFrame(frame);
+  },[value]);
+  return <>{display}</>;
+}
 
-  const handleBuy = async () => {
-    if (pending) return;
-    setPending(true);
-    try {
-      const response = await fetch("/api/checkout/credits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pack: packId, locale }),
-      });
-      const data = await response.json();
-      if (!response.ok || !data.url) {
-        throw new Error(data.message || t("genericError"));
-      }
+const purchaseKey="polypips-pending-credit-purchase";
+export function CreditsPageContent({balance,transactions,referralSlug}:{balance:number;transactions:CreditTransaction[];referralSlug:string|null}) {
+  const t=useTranslations("Credits"),locale=useLocale(),fr=locale==="fr",params=useSearchParams();
+  const [currentBalance,setBalance]=useState(balance),[history,setHistory]=useState(transactions);
+  const [chosen,setChosen]=useState<CreditPackId|null>(null),[showHistory,setShowHistory]=useState(false),[pending,setPending]=useState(false),[verifying,setVerifying]=useState(false),[success,setSuccess]=useState(false),[error,setError]=useState<string|null>(null);
+  const dialog=useRef<HTMLDialogElement>(null),buyLock=useRef(false);
+  useEffect(()=>{const unlock=(event:PageTransitionEvent)=>{if(event.persisted){buyLock.current=false;setPending(false);}};window.addEventListener("pageshow",unlock);return()=>window.removeEventListener("pageshow",unlock);},[]);
+  const money=(amount:number)=>new Intl.NumberFormat(locale,{style:"currency",currency:"EUR"}).format(amount);
+  useEffect(()=>{if(chosen||showHistory)dialog.current?.showModal();else dialog.current?.close();},[chosen,showHistory]);
+  useEffect(()=>{
+    if(params.get("purchase")!=="success")return;
+    let active=true,timer:ReturnType<typeof setTimeout>;let oldIds:string[]|null=null;
+    try{const raw=sessionStorage.getItem(purchaseKey);if(raw)oldIds=JSON.parse(raw).ids;}catch{}
+    if(!Array.isArray(oldIds)){setError(fr?"Actualisez votre historique pour vérifier le paiement.":"Refresh your history to verify payment.");return;}
+    setVerifying(true);const started=Date.now(),baseline=new Set(oldIds);
+    const refresh=async()=>{
+      try{
+        const client=createClient();
+        const [nextBalance,nextHistory]=await Promise.all([fetchCreditBalance(client),fetchCreditTransactions(client)]);
+        if(!active)return;
+        setBalance(nextBalance);setHistory(nextHistory);
+        if(nextHistory.some(tx=>tx.type==="purchase"&&!baseline.has(tx.id))){
+          setSuccess(true);setVerifying(false);sessionStorage.removeItem(purchaseKey);return;
+        }
+      }catch{}
+      if(active&&Date.now()-started<60000)timer=setTimeout(refresh,2000);
+      else if(active){setVerifying(false);setError(fr?"Le paiement est encore en cours de confirmation. Consultez l’historique dans quelques instants.":"Payment confirmation is still pending. Check history shortly.");}
+    };
+    refresh();return()=>{active=false;clearTimeout(timer);};
+  },[params,fr]);
+  const buy=async()=>{
+    if(!chosen||buyLock.current)return;
+    buyLock.current=true;setPending(true);setError(null);
+    try{
+      sessionStorage.setItem(purchaseKey,JSON.stringify({ids:history.filter(tx=>tx.type==="purchase").map(tx=>tx.id)}));
+      const response=await fetch("/api/checkout/credits",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({pack:chosen,locale})});
+      const data=await response.json();if(!response.ok||!data.url)throw new Error(data.message||t("genericError"));
       window.location.assign(data.url);
-    } catch {
-      setPending(false);
-    }
+    }catch(e){setError(e instanceof Error?e.message:t("genericError"));setPending(false);buyLock.current=false;}
   };
-
-  return (
-    <div
-      className={cn(
-        "flex flex-col gap-4 rounded-2xl border p-6",
-        highlight ? "border-brand-400/50 bg-brand-500/[0.04]" : "border-dash-border bg-dash-surface"
-      )}
-    >
-      <div className="flex items-center gap-2">
-        <h3 className="font-display text-lg font-bold text-dash-text">{t(`packs.${packId}.name`)}</h3>
-        {highlight && (
-          <span className="rounded-full bg-brand-500/15 px-2.5 py-0.5 text-[11px] font-bold text-brand-400">
-            {highlight === "popular" ? t("mostPopular") : t("bestValue")}
-          </span>
-        )}
-      </div>
-      <p className="text-sm text-dash-text-tertiary">{t(`packs.${packId}.description`)}</p>
-
-      <div className="flex items-baseline gap-1.5">
-        <span className="font-display text-3xl font-bold text-dash-text">
-          {formatAmount(pack.priceCents / 100)}
-        </span>
-      </div>
-      <p className="-mt-2.5 text-sm text-dash-text-secondary">{t("creditsLabel", { count: pack.credits })}</p>
-      <p className="text-xs text-dash-text-quaternary">
-        {t("pricePerCredit", { price: formatAmount(pricePerCredit(pack)) })}
-      </p>
-
-      <button
-        type="button"
-        onClick={handleBuy}
-        disabled={pending}
-        className={cn(
-          "mt-auto flex h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-60",
-          highlight
-            ? "bg-brand-500 text-white hover:bg-brand-600"
-            : "border border-dash-border-strong text-dash-text hover:border-dash-text-quaternary"
-        )}
-      >
-        {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : t("buyButton")}
-      </button>
-    </div>
-  );
-}
-
-const TRANSACTION_ICON: Record<CreditTransaction["type"], typeof ArrowUpCircle> = {
-  purchase: ArrowUpCircle,
-  consumption: ArrowDownCircle,
-  refund: RotateCcw,
-  welcome: Gift,
-  referral: Users,
-  plan_grant: Sparkles,
-  plan_reset: RotateCcw,
-};
-
-function TransactionRow({ tx }: { tx: CreditTransaction }) {
-  const t = useTranslations("Credits");
-  const Icon = TRANSACTION_ICON[tx.type];
-  const positive = tx.amount > 0;
-  return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-dash-border bg-dash-surface px-4 py-3">
-      <div className="flex items-center gap-3">
-        <span
-          className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-            positive ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
-          )}
-        >
-          <Icon className="h-4 w-4" strokeWidth={2.25} />
-        </span>
-        <div className="flex flex-col">
-          <span className="text-sm font-medium text-dash-text">{t(`History.${tx.type}`)}</span>
-          <span className="text-xs text-dash-text-quaternary">{formatRelativeTime(tx.createdAt)}</span>
-        </div>
-      </div>
-      <span className={cn("text-sm font-bold", positive ? "text-emerald-400" : "text-rose-400")}>
-        {positive ? "+" : ""}
-        {tx.amount}
-      </span>
-    </div>
-  );
-}
-
-export function CreditsPageContent({
-  balance,
-  transactions,
-  referralSlug,
-}: {
-  balance: number;
-  transactions: CreditTransaction[];
-  referralSlug: string | null;
-}) {
-  const t = useTranslations("Credits");
-  const searchParams = useSearchParams();
-  const purchaseStatus = searchParams.get("purchase");
-  const [bannerDismissed, setBannerDismissed] = useState(false);
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-dash-text sm:text-3xl">
-          {t("title")}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-dash-text-secondary sm:text-base">
-          {t("description")}
-        </p>
-      </div>
-
-      {purchaseStatus && !bannerDismissed && (
-        <div
-          className={cn(
-            "flex items-center justify-between gap-3 rounded-xl border px-4 py-3.5",
-            purchaseStatus === "success"
-              ? "border-emerald-500/20 bg-emerald-500/[0.06]"
-              : "border-dash-border bg-dash-surface-alt"
-          )}
-        >
-          <div className="flex items-center gap-2.5">
-            {purchaseStatus === "success" ? (
-              <Check className="h-4 w-4 shrink-0 text-emerald-400" strokeWidth={2.25} />
-            ) : (
-              <X className="h-4 w-4 shrink-0 text-dash-text-tertiary" strokeWidth={2.25} />
-            )}
-            <p
-              className={cn(
-                "text-sm",
-                purchaseStatus === "success" ? "text-emerald-300" : "text-dash-text-secondary"
-              )}
-            >
-              {purchaseStatus === "success" ? t("purchaseSuccess") : t("purchaseCancelled")}
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setBannerDismissed(true)}
-            className="text-dash-text-quaternary hover:text-dash-text"
-            aria-label="close"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      <div className="flex items-center gap-4 rounded-2xl border border-dash-border bg-dash-surface p-6">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-500/15 text-brand-400">
-          <BrainCircuit className="h-6 w-6" strokeWidth={2} />
-        </span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-dash-text-tertiary">
-            {t("balanceLabel")}
-          </p>
-          <p className="font-display text-3xl font-bold text-dash-text">
-            {balance} <span className="text-lg font-semibold text-dash-text-tertiary">{t("balanceUnit", { count: balance })}</span>
-          </p>
-        </div>
-      </div>
-
-      <ReferralCard referralSlug={referralSlug} />
-
-      <div>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-dash-text-tertiary">
-          {t("packsTitle")}
-        </p>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {CREDIT_PACK_ORDER.map((packId) => (
-            <PackCard
-              key={packId}
-              packId={packId}
-              highlight={packId === "standard" ? "popular" : packId === "power" ? "value" : undefined}
-            />
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-dash-text-tertiary">
-          {t("History.title")}
-        </p>
-        {transactions.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-dash-border px-4 py-8 text-center text-sm text-dash-text-quaternary">
-            {t("History.empty")}
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {transactions.map((tx) => (
-              <TransactionRow key={tx.id} tx={tx} />
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const openHistory=async()=>{setShowHistory(true);try{const client=createClient();const [b,h]=await Promise.all([fetchCreditBalance(client),fetchCreditTransactions(client,100)]);setBalance(b);setHistory(h);}catch{setError(t("genericError"));}};
+  const row=(tx:CreditTransaction)=><div className={styles.transaction} key={tx.id}><div><strong>{t(`History.${tx.type}`)}</strong><small>{new Intl.DateTimeFormat(locale,{dateStyle:"medium",timeStyle:"short"}).format(new Date(tx.createdAt))}</small><span>{tx.type==="purchase"?(fr?"Crédits achetés":"Purchased credits"):tx.type==="plan_grant"||tx.type==="plan_reset"?(fr?"Crédits d’abonnement":"Subscription credits"):t(`History.${tx.type}`)}</span></div><b className={tx.amount>0?styles.positive:styles.negative}>{tx.amount>0?"+":""}{tx.amount}</b></div>;
+  return <DashboardChrome hideHeader title={t("title")}><main className={styles.page}>
+    <header className={styles.header}><div><p className={styles.breadcrumb}>Polypips / {fr?"Profil / Crédits":"Profile / Credits"}</p><h1>{t("title")}</h1><p>{t("description")}</p></div><button className={styles.outline} onClick={openHistory}><Clock3/>{fr?"Historique des crédits":"Credit history"}</button></header>
+    {verifying&&<p className={styles.notice} role="status"><Loader2/>{fr?"Confirmation de votre achat…":"Confirming your purchase…"}</p>}
+    {success&&<p className={styles.success} role="status"><Check/>{t("purchaseSuccess")}</p>}
+    {params.get("purchase")==="cancelled"&&<p className={styles.notice}>{t("purchaseCancelled")}</p>}
+    {error&&<p role="alert" className={styles.error}>{error}</p>}
+    <div className={styles.topGrid}><section className={styles.balance}><span><BrainCircuit/></span><div><small>{t("balanceLabel")}</small><h2><BalanceNumber value={currentBalance}/> {t("balanceUnit",{count:currentBalance})}</h2><p>{fr?"Les crédits achetés n’expirent pas":"Purchased credits do not expire"}</p></div><button className={styles.primary} onClick={()=>document.getElementById("credit-packs")?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"})}>{fr?"Acheter des crédits":"Buy credits"}</button></section><div className={styles.referral}><ReferralCard referralSlug={referralSlug}/></div></div>
+    <section id="credit-packs"><h2 className={styles.sectionTitle}>{t("packsTitle")}</h2><p className={styles.subtitle}>{fr?"Choisissez un pack selon votre fréquence d’utilisation.":"Choose a pack to suit your usage."}</p><div className={styles.packs}>{CREDIT_PACK_ORDER.map((id,index)=>{const pack=CREDIT_PACKS[id],highlight=id==="standard"||id==="power";return <article key={id} className={`${styles.pack} ${highlight?styles.highlight:""} ${chosen===id?styles.chosen:""}`} style={{"--delay":`${index*70}ms`} as React.CSSProperties}><div className={styles.packTitle}><h3>{t(`packs.${id}.name`)}</h3>{highlight&&<span>{id==="standard"?t("mostPopular"):t("bestValue")}</span>}</div><p>{t(`packs.${id}.description`)}</p><strong>{money(pack.priceCents/100)}</strong><span>{t("creditsLabel",{count:pack.credits})}</span><small>{t("pricePerCredit",{price:money(pricePerCredit(pack))})}</small><button className={highlight?styles.primary:styles.outline} disabled={pending||verifying} onClick={()=>{setError(null);setChosen(id);}}>{t("buyButton")}</button></article>})}</div></section>
+    <section className={styles.explainer}><strong>{fr?"Comment fonctionnent les crédits ?":"How do credits work?"}</strong><span>1 {fr?"crédit = 1 Analyse Approfondie":"credit = 1 Deep Analysis"}</span><span>{fr?"Débit uniquement au lancement":"Debited only when launched"}</span><span><ShieldCheck/>{fr?"Paiement sécurisé":"Secure payment"}</span><small>{fr?"Les crédits inclus dans l’abonnement sont renouvelés par cycle ; les crédits achetés n’expirent pas.":"Subscription credits renew each cycle; purchased credits do not expire."}</small></section>
+    <section className={styles.recent}><header><div><h2>{fr?"Historique récent":"Recent history"}</h2>{!history.length&&<p>{t("History.empty")}</p>}</div><button className={styles.outline} onClick={openHistory}>{fr?"Voir tout l’historique":"View all history"}</button></header>{history.slice(0,3).map(row)}</section>
+    <dialog ref={dialog} className={styles.drawer} onCancel={event=>{if(pending)event.preventDefault();else{setChosen(null);setShowHistory(false);}}}><button className={styles.close} disabled={pending} aria-label={fr?"Fermer":"Close"} onClick={()=>{setChosen(null);setShowHistory(false);}}><X/></button>{showHistory?<><h2>{t("History.title")}</h2>{history.length?history.map(row):<p>{t("History.empty")}</p>}</>:chosen&&<><BrainCircuit className={styles.brain}/><h2>{fr?"Confirmez votre pack":"Confirm your pack"}</h2><h3>{t(`packs.${chosen}.name`)}</h3><dl><dt>{fr?"Nombre de crédits":"Credits"}</dt><dd>{CREDIT_PACKS[chosen].credits}</dd><dt>{fr?"Montant total":"Total amount"}</dt><dd>{money(CREDIT_PACKS[chosen].priceCents/100)}</dd></dl><p>{fr?"Paiement unique en euros. Les crédits seront ajoutés après confirmation du paiement.":"One-time payment in euros. Credits are added after payment confirmation."}</p>{error&&<p role="alert" className={styles.error}>{error}</p>}<button className={styles.primary} disabled={pending} onClick={buy}>{pending?<><Loader2/>{fr?"Redirection vers le paiement…":"Redirecting to checkout…"}</>:(fr?"Confirmer et payer":"Confirm and pay")}</button></>}</dialog>
+  </main></DashboardChrome>;
 }
