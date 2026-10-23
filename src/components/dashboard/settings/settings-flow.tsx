@@ -12,6 +12,7 @@ import { PreferencesTab } from "@/components/dashboard/settings/preferences-tab"
 import { CancelSubscriptionModal } from "@/components/dashboard/settings/cancel-subscription-modal";
 import { DeleteAccountModal } from "@/components/dashboard/settings/delete-account-modal";
 import { DashboardChrome } from "@/components/dashboard/shared/dashboard-chrome";
+import { CheckoutPendingBanner } from "@/components/dashboard/checkout-pending-banner";
 import { getPricingPlans, type PricingPlan } from "@/lib/data/pricing";
 import type { SubscriptionRow } from "@/lib/supabase/subscriptions";
 import type { ProfileActivityStats } from "@/lib/supabase/profile-activity";
@@ -35,6 +36,7 @@ export function SettingsFlow({
   creditBalance,
   referralSlug,
   settings,
+  paymentProviderLabel,
 }: {
   email: string;
   initialUsername: string;
@@ -54,6 +56,12 @@ export function SettingsFlow({
   creditBalance: number;
   referralSlug: string | null;
   settings: UserSettings;
+  /** "Stripe" or "Whop" — whichever PAYMENT_PROVIDER is actually active
+   * (src/lib/payments/config.ts), computed server-side so this never
+   * drifts from the real switch. Threaded down to SubscriptionTab so its
+   * placeholder payment-method/invoice copy never names the inactive
+   * provider. */
+  paymentProviderLabel: string;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -77,7 +85,7 @@ export function SettingsFlow({
     setCancelling(true);
     setActionError(null);
     try {
-      const response = await fetch("/api/stripe/cancel", { method: "POST" });
+      const response = await fetch("/api/checkout/cancel", { method: "POST" });
       if (!response.ok) throw new Error(t("cancelError"));
       setSubscription((prev) => (prev ? { ...prev, cancelAtPeriodEnd: true } : prev));
       setCancelModalOpen(false);
@@ -134,6 +142,7 @@ export function SettingsFlow({
   return (
     <DashboardChrome hideHeader title={isPreferencesTab ? (locale === "fr" ? "Préférences" : "Preferences") : isNotificationsTab ? "Notifications" : isSecurityTab ? (locale === "fr" ? "Sécurité" : "Security") : isSubscriptionTab ? (locale === "fr" ? "Abonnement" : "Subscription") : (locale === "fr" ? "Profil" : "Profile")} firstName={initialUsername}>
     <main className={styles.page}>
+      <CheckoutPendingBanner baselinePlan={subscription?.plan ?? null} baselineStatus={subscription?.status ?? null} />
       <header className={styles.pageHeader}><div><div className={styles.headerTop}><Link href="/dashboard" aria-label={locale === "fr" ? "Retour au tableau de bord" : "Back to dashboard"} className={styles.backButton}><ArrowLeft /></Link><span>Polypips&nbsp;&nbsp;/&nbsp;&nbsp;{locale === "fr" ? "Profil" : "Profile"}{(isSubscriptionTab || isSecurityTab || isNotificationsTab || isPreferencesTab) && <>&nbsp;&nbsp;/&nbsp;&nbsp;{isPreferencesTab ? (locale === "fr" ? "Préférences" : "Preferences") : isNotificationsTab ? "Notifications" : isSecurityTab ? (locale === "fr" ? "Sécurité" : "Security") : (locale === "fr" ? "Abonnement" : "Subscription")}</>}</span></div><h1>{isPreferencesTab ? (locale === "fr" ? "Préférences" : "Preferences") : isNotificationsTab ? "Notifications" : isSecurityTab ? (locale === "fr" ? "Sécurité du compte" : "Account security") : isSubscriptionTab ? (locale === "fr" ? "Mon abonnement" : "My subscription") : (locale === "fr" ? "Mon profil" : "My profile")}</h1><p>{isPreferencesTab ? (locale === "fr" ? "Personnalisez l’affichage, les analyses et votre expérience Polypips." : "Customize display, analysis and your Polypips experience.") : isNotificationsTab ? (locale === "fr" ? "Choisissez les alertes que vous souhaitez recevoir et à quel moment." : "Choose which alerts you receive and when.") : isSecurityTab ? (locale === "fr" ? "Protégez votre compte et contrôlez vos connexions." : "Protect your account and control your sign-ins.") : isSubscriptionTab ? (locale === "fr" ? "Gérez votre offre, votre consommation et votre facturation." : "Manage your plan, usage and billing.") : (locale === "fr" ? "Gérez votre identité, votre abonnement et vos préférences." : "Manage your identity, subscription and preferences.")}</p></div><div className={styles.headerActions}>{!isPreferencesTab && <span><CheckCircle2 />{isNotificationsTab ? (locale === "fr" ? "Alertes configurées" : "Alerts configured") : isSecurityTab ? (locale === "fr" ? "Compte protégé" : "Protected account") : isSubscriptionTab ? (subscription && !subscription.cancelAtPeriodEnd ? (locale === "fr" ? "Abonnement actif" : "Active subscription") : (locale === "fr" ? "État du compte" : "Account status")) : (locale === "fr" ? "Compte vérifié" : "Verified account")}</span>}{!isSubscriptionTab && !isSecurityTab && <button onClick={() => document.getElementById(isPreferencesTab ? "preferences-save-action" : isNotificationsTab ? "notifications-save-action" : "profile-save-action")?.click()}><Save />{(isPreferencesTab || isNotificationsTab) ? (locale === "fr" ? "Enregistrer les préférences" : "Save preferences") : (locale === "fr" ? "Enregistrer les modifications" : "Save changes")}</button>}</div></header>
       <nav className={styles.tabs} aria-label={locale === "fr" ? "Rubriques du profil" : "Profile sections"}>{tabs.map(([id,label,Icon]) => <button key={id} className={activeTab === id ? styles.tabActive : ""} onClick={() => setActiveTab(id)}><Icon />{label}</button>)}</nav>
       <div className={styles.profileContent} key={activeTab} data-section={activeTab}>
@@ -146,6 +155,7 @@ export function SettingsFlow({
         creditBalance={creditBalance}
         activity={activity}
         onOpenCancelModal={() => setCancelModalOpen(true)}
+        paymentProviderLabel={paymentProviderLabel}
       /> : <ProfileTab
         email={email}
         initialUsername={initialUsername}

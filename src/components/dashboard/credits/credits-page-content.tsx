@@ -33,7 +33,7 @@ function PackCard({ packId, highlight }: { packId: CreditPackId; highlight?: "po
     if (pending) return;
     setPending(true);
     try {
-      const response = await fetch("/api/stripe/credits-checkout", {
+      const response = await fetch("/api/checkout/credits", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pack: packId, locale }),

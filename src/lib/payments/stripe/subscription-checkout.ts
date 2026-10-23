@@ -1,0 +1,221 @@
+import { NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
+import { getStripe } from "@/lib/stripe/server";
+import { isCheckoutPlanId, PLAN_PRICE_IDS, type PayingPlanId } from "@/lib/stripe/plans";
+import { createClient } from "@/lib/supabase/server";
+import { routing } from "@/i18n/routing";
+
+/** This route lives outside [locale] (route handlers have no [locale]
+ * param), so the caller passes its own current locale explicitly in the
+ * request body — same reasoning as /auth/callback's `locale` query param.
+ * Falls back to the app's default locale for any missing/invalid value
+ * rather than ever building an unprefixed redirect URL, which would 404
+ * now that every real page lives under /fr or /en. */
+function resolveLocale(value: unknown): string {
+  return typeof value === "string" && routing.locales.includes(value as (typeof routing.locales)[number])
+    ? value
+    : routing.defaultLocale;
+}
+
+/** 0,99 € — the "decouverte" plan's upfront charge, in cents. Not a Stripe
+ * Price object: created inline per session via price_data since it's a
+ * one-off amount, not a reusable product. */
+const DISCOVERY_UPFRONT_AMOUNT_CENTS = 99;
+
+/**
+ * Moved here verbatim from /api/stripe/checkout/route.ts (which is now a
+ * thin wrapper calling this) so the generic /api/checkout/subscription
+ * route can call the exact same Stripe logic without duplicating it — see
+ * src/lib/payments/config.ts for the provider switch that picks between
+ * this and src/lib/payments/whop/subscription-checkout.ts.
+ */
+export async function createStripeSubscriptionCheckout(request: Request): Promise<Response> {
+  let body: { plan?: string; locale?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid_input" }, { status: 400 });
+  }
+
+  const locale = resolveLocale(body.locale);
+  // Locale-aware even though this route lives outside [locale]: the caller
+  // passes its current locale in the body (see resolveLocale above), and
+  // getTranslations accepts it explicitly here.
+  const t = await getTranslations({ locale, namespace: "StripeCheckout" });
+
+  // "pro_legacy" is deliberately excluded by isCheckoutPlanId — it can
+  // never be requested by a client, only assigned by the one-time legacy
+  // migration.
+  if (!body.plan || !isCheckoutPlanId(body.plan)) {
+    return NextResponse.json(
+      { error: "invalid_input", message: t("errors.unknown_plan") },
+      { status: 400 }
+    );
+  }
+  const plan: "decouverte" | PayingPlanId = body.plan;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || !user.email) {
+    return NextResponse.json(
+      { error: "unauthorized", message: t("errors.unauthorized") },
+      { status: 401 }
+    );
+  }
+
+  // Reuse the Stripe customer if this user already has one (e.g. they
+  // cancelled and are resubscribing) instead of creating a duplicate. The
+  // row's mere existence — regardless of status, even "canceled" — is also
+  // the primary signal that this user has already had a subscription:
+  // rows are upserted on user_id and never deleted (see
+  // /api/stripe/webhook's handleSubscriptionDeleted, which only flips
+  // status to "canceled"), so a returning row here reliably means the
+  // discovery offer was already consumed once.
+  const { data: existing } = await supabase
+    .from("subscriptions")
+    .select("stripe_customer_id, stripe_subscription_id, plan, status, cancel_at_period_end")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  let existingCustomerId = existing?.stripe_customer_id as string | null | undefined;
+  let hasSubscribedBefore = existing !== null;
+
+  const stripe = getStripe();
+
+  // Defense-in-depth: only when the local table has no row at all (e.g. a
+  // webhook delivery was missed) fall back to asking Stripe directly by
+  // email, so the discovery offer can't be re-triggered just because the
+  // local row is missing or was never written. Skipped in the common case
+  // (a row already exists) to avoid an extra Stripe round-trip on every
+  // checkout.
+  if (!hasSubscribedBefore) {
+    try {
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const stripeCustomer = customers.data[0];
+      if (stripeCustomer) {
+        existingCustomerId = stripeCustomer.id;
+        const subscriptions = await stripe.subscriptions.list({
+          customer: stripeCustomer.id,
+          status: "all",
+          limit: 1,
+        });
+        if (subscriptions.data.length > 0) {
+          hasSubscribedBefore = true;
+        }
+      }
+    } catch (error) {
+      console.error("[stripe/checkout] Stripe-side history check failed", error);
+    }
+  }
+
+  // A user who already has a real, currently-active/trialing subscription
+  // never gets a second Checkout Session created for them — that would
+  // leave them with two live Stripe subscriptions billing in parallel.
+  // Requesting a different paid tier while already subscribed is a PLAN
+  // CHANGE, handled entirely server-side by updating the existing
+  // subscription's price in place (Stripe prorates automatically). The
+  // discovery offer ("decouverte") never applies here: hasSubscribedBefore
+  // below already forces it to "pro" for anyone with an existing row.
+  const hasActiveAccessNow =
+    existing !== null &&
+    (existing.status === "active" || existing.status === "trialing") &&
+    !existing.cancel_at_period_end;
+
+  if (hasActiveAccessNow && plan !== "decouverte" && existing!.stripe_subscription_id) {
+    if (existing!.plan === plan) {
+      return NextResponse.json(
+        { error: "already_on_plan", message: t("errors.already_on_plan") },
+        { status: 409 }
+      );
+    }
+    try {
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        existing!.stripe_subscription_id
+      );
+      const itemId = stripeSubscription.items.data[0]?.id;
+      if (!itemId) throw new Error("Subscription has no line item to update.");
+
+      await stripe.subscriptions.update(existing!.stripe_subscription_id, {
+        items: [{ id: itemId, price: PLAN_PRICE_IDS[plan] }],
+        proration_behavior: "create_prorations",
+        metadata: { ...stripeSubscription.metadata, plan },
+      });
+
+      return NextResponse.json({ changed: true });
+    } catch (error) {
+      console.error("[stripe/checkout] plan change failed", error);
+      return NextResponse.json(
+        { error: "stripe_error", message: t("errors.stripe_error") },
+        { status: 502 }
+      );
+    }
+  }
+
+  // A user who has ever had a subscription always pays full price
+  // directly, regardless of what the client requested — the discovery
+  // offer can only ever be granted once per user.
+  const effectivePlan: "decouverte" | PayingPlanId = hasSubscribedBefore
+    ? plan === "decouverte"
+      ? "pro"
+      : plan
+    : plan;
+  const billedPlan: PayingPlanId = effectivePlan === "decouverte" ? "pro" : effectivePlan;
+
+  const origin = new URL(request.url).origin;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [
+        { price: PLAN_PRICE_IDS[billedPlan], quantity: 1 },
+        ...(effectivePlan === "decouverte"
+          ? [
+              {
+                price_data: {
+                  currency: "eur",
+                  unit_amount: DISCOVERY_UPFRONT_AMOUNT_CENTS,
+                  product_data: {
+                    name: t("discoveryProductName"),
+                    description: t("discoveryProductDescription"),
+                  },
+                },
+                quantity: 1,
+              },
+            ]
+          : []),
+      ],
+      subscription_data: {
+        ...(effectivePlan === "decouverte" ? { trial_period_days: 3 } : {}),
+        metadata: { supabase_user_id: user.id, plan: effectivePlan },
+      },
+      // Stripe's hosted Checkout page auto-generates its own "X days free"
+      // copy the moment trial_period_days is set, with no parameter to
+      // reword it even though a real 0,99 € invoice_item is charged in the
+      // same session — custom_text.submit is the one supported lever,
+      // rendered right next to the Pay button. Markdown bold/links only.
+      ...(effectivePlan === "decouverte"
+        ? { custom_text: { submit: { message: t("discoverySubmitMessage") } } }
+        : {}),
+      client_reference_id: user.id,
+      ...(existingCustomerId
+        ? { customer: existingCustomerId }
+        : { customer_email: user.email }),
+      success_url: `${origin}/${locale}/dashboard/settings?checkout=success`,
+      cancel_url: `${origin}/${locale}/#tarifs?checkout=cancelled`,
+    });
+
+    if (!session.url) {
+      throw new Error("Checkout session created without a redirect URL.");
+    }
+
+    return NextResponse.json({ url: session.url });
+  } catch (error) {
+    console.error("[stripe/checkout] failed to create session", error);
+    return NextResponse.json(
+      { error: "stripe_error", message: t("errors.stripe_error") },
+      { status: 502 }
+    );
+  }
+}

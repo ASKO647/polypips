@@ -13,14 +13,19 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { LegalPageShell, LegalSection, ToComplete } from "@/components/marketing/legal-page-shell";
+import { getActivePaymentProvider } from "@/lib/payments/config";
 
 export const metadata: Metadata = {
   title: "Conditions générales — Polypips",
 };
 
+/** "Stripe" or "Whop" — see privacy/page.tsx's identical constant. */
+const PAYMENT_PROCESSOR_NAME = { stripe: "Stripe", whop: "Whop" } as const;
+
 const LAST_UPDATED = "20 août 2026";
 
 export default function TermsPage() {
+  const processorName = PAYMENT_PROCESSOR_NAME[getActivePaymentProvider()];
   return (
     <LegalPageShell
       title="Conditions générales de vente et d'utilisation"
@@ -105,7 +110,8 @@ export default function TermsPage() {
         </ul>
         <p>
           Les tarifs sont indiqués toutes taxes comprises (TTC) en euros. Le
-          paiement est traité par notre prestataire Stripe (voir notre{" "}
+          paiement est traité par notre prestataire {processorName} (voir
+          notre{" "}
           <Link
             href="/privacy"
             className="font-semibold text-brand-600 underline underline-offset-2 hover:text-brand-700"

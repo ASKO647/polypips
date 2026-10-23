@@ -7,7 +7,7 @@
       "title": "Un seul accès, toutes les fonctionnalités",
       "description": "Pas de paliers, pas de fonctionnalité verrouillée derrière un plan supérieur : commencez par l'offre découverte, ou passez directement à l'abonnement Pro.",
       "indicative": "à titre indicatif",
-      "guarantees": ["Accès instantané", "Annulez à tout moment", "Paiement sécurisé par Stripe"],
+      "guarantees": ["Accès instantané", "Annulez à tout moment", "Paiement sécurisé"],
       "disclaimer": "Les analyses fournies par Polypips sont à titre informatif et ne constituent pas un conseil financier ou d'investissement. Aucun ordre n'est jamais exécuté automatiquement pour votre compte — Smart Wallet est un outil d'observation, pas d'exécution."
     },
     "About": {
@@ -219,7 +219,7 @@
         },
         "paymentMethods": {
           "question": "Quels moyens de paiement sont acceptés ?",
-          "answer": "Les paiements sont traités par Stripe et acceptent les principales cartes bancaires. Polypips ne stocke jamais vos coordonnées de carte bancaire."
+          "answer": "Les paiements sont traités par notre prestataire de paiement et acceptent les principales cartes bancaires. Polypips ne stocke jamais vos coordonnées de carte bancaire."
         },
         "connectWallet": {
           "question": "Dois-je connecter mon propre portefeuille crypto à Polypips ?",

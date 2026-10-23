@@ -5,7 +5,8 @@
  * reviewed by a qualified professional (lawyer / DPO / legal counsel)
  * before this site goes into real production, and every
  * [À COMPLÉTER : ...] placeholder must be filled in with accurate
- * information first. The list of sub-processors (Supabase, Stripe,
+ * information first. The list of sub-processors (Supabase, Stripe/Whop —
+ * whichever PAYMENT_PROVIDER is active, see src/lib/payments/config.ts —
  * Anthropic, Vercel, API-Sports) reflects the codebase's actual
  * third-party integrations at the time this draft was written — verify it
  * still matches reality before publishing, and add any new integration
@@ -13,6 +14,7 @@
  */
 import type { Metadata } from "next";
 import { LegalPageShell, LegalSection, ToComplete } from "@/components/marketing/legal-page-shell";
+import { getActivePaymentProvider } from "@/lib/payments/config";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité — Polypips",
@@ -20,7 +22,18 @@ export const metadata: Metadata = {
 
 const LAST_UPDATED = "20 août 2026";
 
+/** Name/privacy-policy link for whichever payment provider is actually
+ * active (src/lib/payments/config.ts) — the Whop URL comes from a
+ * third-party tracker, not whop.com itself (unreachable from this
+ * environment), so confirm it still resolves before publishing. See the
+ * delivery report. */
+const PAYMENT_PROCESSOR = {
+  stripe: { name: "Stripe", legalName: "Stripe, Inc.", privacyUrl: "https://stripe.com/fr/privacy" },
+  whop: { name: "Whop", legalName: "Whop, Inc.", privacyUrl: "https://whop.com/privacy/" },
+} as const;
+
 export default function PrivacyPage() {
+  const processor = PAYMENT_PROCESSOR[getActivePaymentProvider()];
   return (
     <LegalPageShell
       title="Politique de confidentialité"
@@ -46,8 +59,9 @@ export default function PrivacyPage() {
           <li>
             <strong>Données de paiement :</strong> Polypips ne stocke aucune
             donnée bancaire — le paiement et sa gestion sont intégralement
-            délégués à Stripe (voir Article 5). Polypips conserve uniquement
-            l&apos;identifiant client Stripe et le statut de l&apos;abonnement.
+            délégués à {processor.name} (voir Article 5). Polypips conserve
+            uniquement l&apos;identifiant client {processor.name} et le statut
+            de l&apos;abonnement.
           </li>
           <li>
             <strong>Données d&apos;usage :</strong> analyses de marché, de
@@ -117,17 +131,18 @@ export default function PrivacyPage() {
             l&apos;application (comptes, analyses, messages, abonnements).
           </li>
           <li>
-            <strong>Stripe</strong> (Stripe, Inc.) — traitement des paiements
-            et de la facturation de l&apos;abonnement. Stripe agit comme
-            responsable de traitement autonome pour les données de paiement
-            qu&apos;il collecte directement ; voir la{" "}
+            <strong>{processor.name}</strong> ({processor.legalName}) —
+            traitement des paiements et de la facturation de
+            l&apos;abonnement. {processor.name} agit comme responsable de
+            traitement autonome pour les données de paiement qu&apos;il
+            collecte directement ; voir la{" "}
             <a
-              href="https://stripe.com/fr/privacy"
+              href={processor.privacyUrl}
               target="_blank"
               rel="noreferrer"
               className="font-semibold text-brand-600 underline underline-offset-2 hover:text-brand-700"
             >
-              politique de confidentialité de Stripe
+              politique de confidentialité de {processor.name}
             </a>
             .
           </li>
@@ -159,8 +174,8 @@ export default function PrivacyPage() {
 
       <LegalSection title="6. Transferts hors Union européenne">
         <p>
-          Certains de nos sous-traitants (Stripe, Anthropic, Vercel) sont
-          susceptibles de traiter des données en dehors de l&apos;Union
+          Certains de nos sous-traitants ({processor.name}, Anthropic, Vercel)
+          sont susceptibles de traiter des données en dehors de l&apos;Union
           européenne, notamment aux États-Unis. Ces transferts sont encadrés
           par les garanties appropriées prévues par le RGPD (clauses
           contractuelles types de la Commission européenne, ou mécanisme

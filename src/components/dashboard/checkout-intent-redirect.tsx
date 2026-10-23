@@ -24,7 +24,7 @@ export function CheckoutIntentRedirect() {
   useEffect(() => {
     if (!plan) return;
 
-    fetch("/api/stripe/checkout", {
+    fetch("/api/checkout/subscription", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ plan, locale }),

@@ -32,6 +32,10 @@ type Props = {
   creditBalance: number;
   activity: { analysesCount: number; marketsFollowedCount: number; walletsFollowedCount: number };
   onOpenCancelModal: () => void;
+  /** "Stripe" or "Whop" — see settings-flow.tsx's identical prop. Only
+   * placeholder/not-yet-connected copy below names it (payment method,
+   * invoices, annual billing); none of it is used for anything else. */
+  paymentProviderLabel: string;
 };
 
 export function SubscriptionTab({
@@ -43,6 +47,7 @@ export function SubscriptionTab({
   creditBalance,
   activity,
   onOpenCancelModal,
+  paymentProviderLabel,
 }: Props) {
   const locale = useLocale();
   const tPlans = useTranslations("Plans");
@@ -63,7 +68,7 @@ export function SubscriptionTab({
     setPendingPlan(plan.id);
     setError(null);
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/checkout/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: plan.id, locale }),
@@ -110,8 +115,8 @@ export function SubscriptionTab({
     annual: {
       title: locale === "fr" ? "Passer au paiement annuel" : "Switch to annual billing",
       body: locale === "fr"
-        ? "La facturation annuelle n’est pas encore activée dans Stripe pour votre compte. Votre abonnement actuel ne sera pas modifié."
-        : "Annual billing is not enabled in Stripe for your account yet. Your current subscription will not be changed.",
+        ? `La facturation annuelle n’est pas encore activée dans ${paymentProviderLabel} pour votre compte. Votre abonnement actuel ne sera pas modifié.`
+        : `Annual billing is not enabled in ${paymentProviderLabel} for your account yet. Your current subscription will not be changed.`,
     },
     payment: {
       title: locale === "fr" ? "Moyen de paiement" : "Payment method",
@@ -122,8 +127,8 @@ export function SubscriptionTab({
     invoice: {
       title: locale === "fr" ? "Télécharger une facture" : "Download an invoice",
       body: locale === "fr"
-        ? "Aucune facture Stripe n’est disponible via l’interface actuelle. Le téléchargement sera proposé dès que le portail de facturation sera connecté."
-        : "Stripe invoices are not available in the current interface. Downloads will be enabled once the billing portal is connected.",
+        ? `Aucune facture ${paymentProviderLabel} n’est disponible via l’interface actuelle. Le téléchargement sera proposé dès que le portail de facturation sera connecté.`
+        : `${paymentProviderLabel} invoices are not available in the current interface. Downloads will be enabled once the billing portal is connected.`,
     },
     pause: {
       title: locale === "fr" ? "Mettre l’abonnement en pause" : "Pause subscription",
@@ -169,7 +174,7 @@ export function SubscriptionTab({
       <div className={styles.twoColumns}>
         <article className={styles.card}>
           <div className={styles.cardHeader}><span className={styles.smallIcon}><CreditCard /></span><div><h3>{locale === "fr" ? "Moyen de paiement" : "Payment method"}</h3><p>{locale === "fr" ? "Gérez la carte utilisée pour vos paiements." : "Manage the card used for payments."}</p></div></div>
-          <div className={styles.paymentRow}><div className={styles.fakeCard}>VISA</div><div><strong>•••• •••• ••••</strong><span>{locale === "fr" ? "Données protégées par Stripe" : "Protected by Stripe"}</span></div><button onClick={() => setInfoModal("payment")}>{locale === "fr" ? "Modifier" : "Edit"}</button></div>
+          <div className={styles.paymentRow}><div className={styles.fakeCard}>VISA</div><div><strong>•••• •••• ••••</strong><span>{locale === "fr" ? `Données protégées par ${paymentProviderLabel}` : `Protected by ${paymentProviderLabel}`}</span></div><button onClick={() => setInfoModal("payment")}>{locale === "fr" ? "Modifier" : "Edit"}</button></div>
           <div className={styles.secure}><ShieldCheck />{locale === "fr" ? "Polypips ne stocke aucune donnée bancaire." : "Polypips stores no banking data."}</div>
         </article>
 
@@ -182,7 +187,7 @@ export function SubscriptionTab({
       </div>
 
       <article className={styles.card}>
-        <div className={styles.sectionTitle}><div><FileText /><span><h3>{locale === "fr" ? "Historique de facturation" : "Billing history"}</h3><p>{locale === "fr" ? "Vos factures apparaîtront ici dès que le portail Stripe sera relié." : "Your invoices will appear here once the Stripe portal is connected."}</p></span></div></div>
+        <div className={styles.sectionTitle}><div><FileText /><span><h3>{locale === "fr" ? "Historique de facturation" : "Billing history"}</h3><p>{locale === "fr" ? `Vos factures apparaîtront ici dès que le portail ${paymentProviderLabel} sera relié.` : `Your invoices will appear here once the ${paymentProviderLabel} portal is connected.`}</p></span></div></div>
         <div className={styles.table}>
           <div className={styles.tableHead}><span>Date</span><span>{locale === "fr" ? "Description" : "Description"}</span><span>{locale === "fr" ? "Montant" : "Amount"}</span><span>{locale === "fr" ? "Statut" : "Status"}</span><span>PDF</span></div>
           <div className={styles.emptyInvoice}><ReceiptText /><span>{locale === "fr" ? "Aucune facture accessible pour le moment" : "No invoice available yet"}</span><button onClick={() => setInfoModal("invoice")}><Download />{locale === "fr" ? "Vérifier les factures" : "Check invoices"}</button></div>

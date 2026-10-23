@@ -45,7 +45,7 @@ export function LockedOverlay({
     if (unlocking) return;
     setUnlocking(true);
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/checkout/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: cancelled ? "pro" : "decouverte", locale }),

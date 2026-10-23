@@ -16,6 +16,9 @@ import {
 import { fetchCreditBalance } from "@/lib/supabase/credits";
 import { ensureReferralSlug } from "@/lib/supabase/user-referrals";
 import { fetchUserSettings, DEFAULT_USER_SETTINGS } from "@/lib/supabase/user-settings";
+import { getActivePaymentProvider } from "@/lib/payments/config";
+
+const PAYMENT_PROVIDER_LABEL = getActivePaymentProvider() === "whop" ? "Whop" : "Stripe";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Profile.SettingsPage");
@@ -52,6 +55,7 @@ export default async function SettingsPage() {
         creditBalance={0}
         referralSlug={null}
         settings={DEFAULT_USER_SETTINGS}
+        paymentProviderLabel={PAYMENT_PROVIDER_LABEL}
       />
     );
   }
@@ -99,6 +103,7 @@ export default async function SettingsPage() {
       creditBalance={creditBalance}
       referralSlug={referralSlug}
       settings={settings}
+      paymentProviderLabel={PAYMENT_PROVIDER_LABEL}
     />
   );
 }

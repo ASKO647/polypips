@@ -7,7 +7,7 @@
       "title": "One plan, every feature",
       "description": "No tiers, no feature locked behind a higher plan: start with the discovery offer, or go straight to the Pro subscription.",
       "indicative": "for reference",
-      "guarantees": ["Instant access", "Cancel anytime", "Secure payment via Stripe"],
+      "guarantees": ["Instant access", "Cancel anytime", "Secure payment"],
       "disclaimer": "The analyses Polypips provides are for informational purposes only and do not constitute financial or investment advice. No order is ever automatically executed on your behalf — Smart Wallet is an observation tool, not automatic execution."
     },
     "About": {
@@ -219,7 +219,7 @@
         },
         "paymentMethods": {
           "question": "What payment methods are accepted?",
-          "answer": "Payments are processed by Stripe and accept all major cards. Polypips never stores your card details."
+          "answer": "Payments are processed by our payment provider and accept all major cards. Polypips never stores your card details."
         },
         "connectWallet": {
           "question": "Do I need to connect my own crypto wallet to Polypips?",

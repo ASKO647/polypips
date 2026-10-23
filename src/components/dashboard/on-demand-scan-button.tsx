@@ -32,7 +32,7 @@ export function OnDemandScanButton({
     if (pending) return;
     setPending(true);
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/checkout/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: upgradeTargetPlan("pro_plus"), locale }),

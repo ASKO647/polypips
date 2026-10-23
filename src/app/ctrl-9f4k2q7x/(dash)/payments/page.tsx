@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { StatCard } from "@/components/owner/stat-card";
 import { PeriodFilter } from "@/components/owner/period-filter";
 import { fetchOwnerPaymentsSummary, fetchRecentOwnerPayments } from "@/lib/stripe/owner-reports";
+import { fetchOwnerWhopSummary } from "@/lib/supabase/owner-whop-reports";
+import { getActivePaymentProvider } from "@/lib/payments/config";
 import { parseOwnerPeriod, ownerPeriodSince } from "@/lib/owner-period";
 import { formatOwnerEur, formatOwnerDateTime } from "@/lib/owner-format";
 import { OWNER_BASE_PATH } from "@/lib/owner-path";
@@ -18,6 +20,40 @@ export default async function OwnerPaymentsPage({
   const period = parseOwnerPeriod(periodParam);
   const since = ownerPeriodSince(period);
   const basePath = `${OWNER_BASE_PATH}/payments`;
+  const provider = getActivePaymentProvider();
+
+  if (provider === "whop") {
+    const whop = await fetchOwnerWhopSummary(since);
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display text-xl font-semibold text-white">Payments (Whop)</h1>
+          <PeriodFilter basePath={basePath} active={period} />
+        </div>
+
+        {!whop.hasData ? (
+          <p className="text-sm text-slate-500">
+            Aucune donnée de paiement Whop pour le moment — soit la migration
+            whop_webhook_events n&apos;a pas encore été appliquée, soit aucun
+            webhook Whop n&apos;a encore été reçu.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            <StatCard label="Paiements réussis" value={String(whop.succeededCount)} />
+            <StatCard label="Échecs" value={String(whop.failedCount)} />
+            <StatCard label="Remboursements" value={String(whop.refundedCount)} />
+            <StatCard label="Litiges" value={String(whop.disputedCount)} />
+            <StatCard label="Revenu brut (Whop)" value={formatOwnerEur(whop.grossRevenueEur)} />
+          </div>
+        )}
+        <p className="text-xs text-slate-500">
+          Construit à partir du registre local whop_webhook_events (chaque
+          webhook reçu), pas d&apos;un appel direct à l&apos;API Whop — voir le
+          rapport de livraison.
+        </p>
+      </div>
+    );
+  }
 
   const [summary, recent] = await Promise.all([
     fetchOwnerPaymentsSummary(since),

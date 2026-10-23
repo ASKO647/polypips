@@ -52,7 +52,7 @@ export function SubscriptionPlans({
     setPendingPlan(plan.id);
     setError(null);
     try {
-      const response = await fetch("/api/stripe/checkout", {
+      const response = await fetch("/api/checkout/subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: plan.id, locale }),
