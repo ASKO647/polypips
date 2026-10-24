@@ -129,7 +129,7 @@ async function handleSubscriptionPaymentSucceeded(
 
   const { data: existingRow } = await supabase
     .from("subscriptions")
-    .select("id, plan")
+    .select("id, plan, status, disputed")
     .eq("whop_membership_id", membershipId)
     .maybeSingle();
   const isFirstPayment = !existingRow;
@@ -210,6 +210,20 @@ async function handleSubscriptionPaymentSucceeded(
   if (isFirstPayment) {
     const paidCents = paidEur !== null ? Math.round(paidEur * 100) : null;
     await recordInfluencerConversion(supabase, userId, paidCents);
+  }
+
+  // Referral bonus (+5 filleul / +10 parrain) only at a first payment at
+  // FULL price — never at decouverte's own 1,00 € entry payment, which
+  // wouldn't cover the AI cost of a single referred signup. Fires at (a)
+  // the first payment of a plan that isn't decouverte to begin with, or
+  // (b) the first renewal after a decouverte trial (justConverted,
+  // computed above — this is the payment that actually charges the full
+  // Pro price). Also refused if the subscription was already flagged
+  // disputed or canceled before this payment — existingRow reflects the
+  // state as it stood right before this event's upsert above.
+  const referralBonusEligible = justConverted || (isFirstPayment && plan !== "decouverte");
+  const blockedByPriorState = existingRow?.disputed === true || existingRow?.status === "canceled";
+  if (referralBonusEligible && !blockedByPriorState) {
     await recordUserReferralConversion(supabase, userId);
   }
 }

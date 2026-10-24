@@ -52,7 +52,7 @@
     },
     "Referral": {
       "title": "Parrainez un ami",
-      "description": "Il reçoit 5 crédits bonus et vous recevez 10 crédits, tous les deux dès qu'il passe sur un abonnement payant.",
+      "description": "Il reçoit 5 crédits bonus et vous recevez 10 crédits, tous les deux après son premier paiement mensuel.",
       "linkLabel": "Votre lien de parrainage",
       "copyButton": "Copier",
       "copiedLabel": "Copié !",

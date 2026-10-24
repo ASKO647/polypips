@@ -149,12 +149,19 @@ async function handleCheckoutCompleted(
   // (in cents) — exactly "le montant du premier paiement" the commission
   // is computed from, no separate invoice fetch needed.
   await recordInfluencerConversion(supabase, userId, session.amount_total);
-  // Referrer's +10 credit reward — only fires once this user's Pro
-  // subscription payment actually went through (this exact handler),
-  // never at mere signup. Idempotent server-side (see
-  // record_user_referral_conversion), so a redelivered webhook event
-  // can't double-credit the referrer.
-  await recordUserReferralConversion(supabase, userId);
+  // Referrer's +10 / referred's +5 credit reward — only at a first
+  // payment at FULL price. For every plan except decouverte this exact
+  // checkout.session.completed IS that full-price first payment.
+  // decouverte's own entry checkout only charges 1,00 € (session.amount_total
+  // reflects that), which wouldn't cover the AI cost of a single referred
+  // signup — so decouverte is excluded here and granted instead in
+  // handleSubscriptionUpdated's isConversion branch below, the event
+  // that actually charges the full Pro price for the first time.
+  // Idempotent server-side either way (see record_user_referral_conversion),
+  // so a redelivered webhook event can't double-credit the referrer.
+  if (subscription.metadata?.plan !== "decouverte") {
+    await recordUserReferralConversion(supabase, userId);
+  }
 }
 
 async function handleSubscriptionUpdated(
@@ -192,6 +199,26 @@ async function handleSubscriptionUpdated(
   }
 
   await upsertSubscription(supabase, userId, customerId, effective, isConversion);
+
+  if (isConversion) {
+    // This is the event deferred out of handleCheckoutCompleted above:
+    // the first renewal after a decouverte trial, which actually charges
+    // the full Pro price for the first time — exactly where the referral
+    // bonus belongs. Guarded against a subscription already flagged
+    // disputed, mirroring the Whop webhook's equivalent guard — though
+    // nothing in this file currently sets `disputed` for a Stripe-provider
+    // row (no charge.dispute.created/charge.refunded handler exists here;
+    // flagged in the delivery report), so this check is a no-op safety
+    // net today rather than an active protection.
+    const { data: subscriptionRow } = await supabase
+      .from("subscriptions")
+      .select("disputed")
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (!subscriptionRow?.disputed) {
+      await recordUserReferralConversion(supabase, userId);
+    }
+  }
 }
 
 async function handleSubscriptionDeleted(
