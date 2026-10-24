@@ -37,10 +37,12 @@ import { refreshSupabaseSession } from "@/lib/supabase/middleware";
  * should ever redirect or localize — and letting it through here would
  * also mean an unauthorized visitor's request to that path gets touched
  * (and its shape logged) by this middleware before ever reaching the
- * route's own auth check. /i is excluded for the same "no [locale]
- * segment, must resolve its own redirect" reason as /auth/callback — see
- * src/app/i/[slug]/route.ts — it's the short link handed to influencers
- * and needs to stay short (/i/slug, never /fr/i/slug).
+ * route's own auth check. /i and /r are excluded for the same "no
+ * [locale] segment, must resolve its own redirect" reason as
+ * /auth/callback — see src/app/i/[slug]/route.ts and src/app/r/[slug]/
+ * route.ts — they're the short links handed to influencers and referrers
+ * respectively, and need to stay short (/i/slug or /r/slug, never
+ * /fr/i/slug or /fr/r/slug).
  *
  * The matcher below must be a statically-analyzable literal (Next.js
  * parses it at build time, a computed string fails the build) — so the
@@ -62,5 +64,5 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|auth/callback|ctrl-9f4k2q7x|i/|_next|_vercel|.*\\..*).*)"],
+  matcher: ["/((?!api|auth/callback|ctrl-9f4k2q7x|i/|r/|_next|_vercel|.*\\..*).*)"],
 };
